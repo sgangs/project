@@ -68,7 +68,7 @@ class User(AbstractUser):
     		length=len(data)+2
     		today_string=today.strftime('%y')
     		next_user_number='001'
-    		last_user=type(self).objects.filter(user_id__contains=today_string).order_by('user_id').last()
+    		last_user=type(self).objects.filter(tenant=self.tenant).filter(user_id__contains=today_string).order_by('user_id').last()
     		if last_user:
     			last_user_number=int(last_user.user_id[length:])
     			next_user_number='{0:03d}'.format(last_user_number + 1)
@@ -76,3 +76,4 @@ class User(AbstractUser):
     		self.registered_on=timezone.now()
 
     	super(User, self).save(*args, **kwargs)
+    
