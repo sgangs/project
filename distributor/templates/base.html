@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Latest compiled and minified CSS -->
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+		
+
+		<!--jquery-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>  	
+
+		{% load staticfiles %}
+		<!-- Base styling -->	
+		{% block style %}
+		<link rel="stylesheet" href="{% static 'master/base_style.css' %}">
+		{% endblock %}
+
+		{% block title %}
+		{% endblock %}	
+
+
+
+	</head>
+	<body>
+		<div class="blockcontent">
+			<!-- This div is the top-most navigation class -->
+			<div>
+  				<div class="col-md-6">
+					<h1>{{request.user.tenant.name}}</h1>
+				</div>
+				<div class="col-md-6" align="right">
+					<h2> Welcome Mr. {{request.user.first_name}}</h2>
+				</div>
+			</div>
+			<ul class="nav nav-tabs"></ul>
+			<ul class="nav nav-pills">
+				<li role="presentation" class="dropdown"><a href="{% url 'master:landing' %}">Home</a></li>
+	  			<li role="presentation" class="dropdown">
+	  				<a class="dropdown-toggle" data-toggle="dropdown">
+	      				Master <span class="caret"></span>
+	    			</a>
+	    			<ul class="dropdown-menu">
+	      				<li><a href="{% url 'master:list_base' %}">Master List</a></li>
+	    				<li><a href="{% url 'master:new_base' %}">Add New</a></li>
+	    				<li role="separator" class="divider"></li>
+	    				<li><a href="#">Project Reports</a></li>
+	    			</ul>
+	  			</li>
+	  			<li role="presentation" class="dropdown">
+	  					<a class="dropdown-toggle" data-toggle="dropdown">
+	      					Purchase<span class="caret"></span>
+	    				</a>
+	    			<ul class="dropdown-menu">
+	      				<li><a href="{% url 'purchase:base' %}">Purchase Base</a></li>
+	    			</ul>
+	  			</li>
+	  			<li role="presentation" class="dropdown">
+	  					<a class="dropdown-toggle" data-toggle="dropdown">
+	  						Sales<span class="caret"></span></a>
+	  				<ul class="dropdown-menu">
+	      				<li><a href="{% url 'sales:base' %}">Sales Base</a></li>
+	    			</ul>
+	  			</li>
+	  			<li role="presentation" class="dropdown"><a href="{% url 'inventory:list' %}">Inventory</a></li>
+	  			<li role="presentation" class="dropdown"><a href="{% url 'accounts:base' %}">Accounts</a></li>
+	  			 <li role="presentation" class="navbar-right"><a href="{% url 'logout' %}">Logout</a></li>
+	  		</ul>
+
+	  		
+			<div>
+				{% block content %}
+				{% endblock %}
+			</div>
+		</div>
+
+				
+		
+
+	</body>
+</html>

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+
+{% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
+    <title>Accounts Base List</title>
+
+{% endblock %}
+
+{% block content%}
+
+    <div class="container">
+
+        <div class="row">
+
+            <!--<div class="col-lg-12">
+                <h1 class="page-header">Thumbnail Gallery</h1>
+            </div>-->
+
+            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'accounts:period_list' %}">
+                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Accounting Period List" alt="Accounting Period List">
+                </a>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'accounts:chart_list' %}">
+                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Account Chart List" alt="Account Chart List">
+                </a>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'accounts:journal_list' %}">
+                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Journal List" alt="Journal List">
+                </a>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'accounts:period_new' %}">
+                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Add New Accounting Period" alt="Add new accounting period">
+                </a>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'accounts:chart_new' %}">
+                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Add New Account" alt="Add new account">
+                </a>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'accounts:journalentry_new' %}">
+                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Add New Journal Entry" alt="Add new journal entry">
+                </a>
+            </div>
+        </div>
+
+        <hr>
+
+        
+    </div>
+    <!-- /.container -->
+
+{% endblock %}

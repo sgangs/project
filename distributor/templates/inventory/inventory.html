@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    Inventory Master 
+</title>
+<!-- Datatable CSS-->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<!-- Datatable jQuery-->
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+{% load static from staticfiles %}
+{% endblock %}
+
+{% block content%}
+	<h2>Inventory Table</h2>
+  <h1></h1>
+	<!-- This if-else set is used to add the "add new item" button to the top of the list. The details inside script is used for the related jquery file -->
+
+	<div class="table-responsive">
+		<table class="table table-striped table-bordered table-hover" id="inventory">
+			<thead class="thead-inverse header-background">
+    			<tr>
+      				<th class="text-center">Name</th>
+              <th class="text-center">Item Code</th>
+              <th class="text-center">Subcode</th>
+      				<!--<th class="text-center">Batch</th>-->
+      				<th class="text-center">Cost Price</th>
+      				<th class="text-center">Sales Price</th>
+      				<th class="text-center">Unit</th>
+      				<th class="text-center">Stock</th>
+    			</tr>
+  			</thead>
+  			<tbody>
+  				{% for inventory in inventories %}
+    			<tr align="center">
+      				<td>{{inventory.item.product.name}}</td>
+              <td>{{inventory.item.product.key}}</td>
+              <td>{{inventory.item.sub_key}}</td>
+      				<!--<td>{{inventory.item.batch}}</td>-->
+      				<td>{{inventory.item.cost_price}}</td>
+      				<td>{{inventory.item.selling_price}}</td>
+      				<td>{{inventory.item.product.unit}}</td>
+      				<td>{{inventory.quantity}}</td>
+	    		</tr>
+	    		{% endfor %}
+    		</tbody>
+    	</table> 
+    </div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#inventory').DataTable({
+      "searching": false
+    });
+  });
+</script>
+	
+{% endblock %}
+
+
+
+

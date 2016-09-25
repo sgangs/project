@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+
+{% load static from staticfiles %}
+
+<script src="{% static 'bill/script.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
+<title>Sales Invoice</title>
+
+{% endblock %}
+
+{% block content%}
+<invoice>
+<div id="invoice">
+	<invoiceheader>
+		<!--
+		<h1>Invoice</h1>
+		<address>
+			<p>Jonathan Neal</p>
+			<p>101 E. Chapman Ave<br>Orange, CA 92866</p>
+			<p>(800) 555-1234</p>
+		</address>
+		<span><img alt="" src="logo.png"><input type="file" accept="image/*"></span>
+	-->
+	</invoiceheader>
+	<invoicearticle>
+		<!--<h1>Recipient</h1>-->
+		{% if type == 'Sales Invoice' %}
+		<code>
+			<p>Customer code: 
+				<input id="customer-code" ></input></p>
+		</code>
+		<address>
+			<p></p>
+			<p id="companyname"></p>
+			<p id = "companyaddress"></p>
+		</address>
+		{% elif type == 'Sales_Invoice_Details' %}
+		
+		<address>
+			<p></p>
+			<p id="companyname">{{invoice.customer_name}}</p>
+			<p id = "companyaddress"></p>
+		</address>
+		{% endif %}
+
+		<table class="meta">
+			{% if type == 'Sales Invoice' %}
+			<tr>
+				<th><span>Invoice #</span></th>
+				<td><span>Autocreated</span></td>
+			</tr>
+			<tr>
+				<th><span>Date</span></th>
+				<td><span>{{date|date:"d-m-Y"}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Amount Due</span></th>
+				<td><span id="prefix">Rs. </span><span>600.00</span></td>
+			</tr>
+			{% elif type == 'Sales_Invoice_Details' %}
+			<tr>
+				<th><span>Invoice #</span></th>
+				<td><span>{{invoice.invoice_id}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Date</span></th>
+				<td><span>{{invoice.date|date:"d-m-Y"}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Amount Due</span></th>
+				<td><span id="prefix">Rs. </span><span></span></td>
+			</tr>
+			{% endif %}
+		</table>
+		<table class="inventory	table-hover" id="inventory_table">
+			<thead class="header-background">
+				<tr>
+				{% if type == 'Sales Invoice' %}
+					<th colspan="1"><span>Item Code</span></th>
+					<th colspan="2"><span>Item Name</span></th>
+					<th colspan="1"><span>Unit Rate</span></th>
+					<th colspan="1"><span>Quantity</span></th>
+					<th colspan="1"><span>Discount 1(%)</span></th>
+					<th colspan="1"><span>Discount 2</span></th>
+					<th colspan="1"><span>Free Quantity</span></th>
+					<th colspan="1"><span>VAT Type</span></th>
+					<th colspan="1"><span>VAT</span></th>
+					<th colspan="1"><span>Net Rate</span></th>
+				</tr>
+			</thead>
+				{% elif type == 'Sales_Invoice_Details' %}
+				<tr>
+					<th hidden colspan="1"><span>Item Code</span></th>
+					<th colspan="2"><span>Item Name</span></th>
+					<th colspan="1"><span>Unit Rate</span></th>
+					<th colspan="1"><span>Quantity</span></th>
+					<th colspan="1"><span>Discount 1(%)</span></th>
+					<th colspan="1"><span>Discount 2</span></th>
+					<th colspan="1"><span>Free Quantity</span></th>
+					<th colspan="1"><span>VAT Type</span></th>
+					<th colspan="1"><span>VAT</span></th>
+					<th colspan="1"><span>Net Rate</span></th>
+				</tr>
+				{% endif %}
+			</thead>
+			<form>
+			<tbody>
+				{% if type == 'Sales Invoice' %}
+					<tr class="data">
+						<td colspan="1"><a class="cut">-</a><span class="itemcode" contenteditable></span></td>
+						<td colspan="2"><span></span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span contenteditable></span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span contenteditable>0</span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span></span></td>
+					</tr>
+
+
+				{% elif type == 'Sales_Invoice_Details' %}
+					{% for item in items %}
+						<tr class="data">
+							<td hidden colspan="1"><span class="itemcode"></span></td>
+							<td colspan="2"><span>{{item.name}}</span></td>
+							<td colspan="1"><span>{{item.selling_price}}</span></td>
+							<td colspan="1"><span>{{item.quantity}}</span></td>
+							<td colspan="1"><span></span></td>
+							<td colspan="1"><span></span></td>
+							<td colspan="1"><span></span></td>
+							<td colspan="1"><span></span></td>
+							<td colspan="1"><span></span></td>
+							<td colspan="1"><span></span></td>
+						</tr>
+					{% endfor %}	
+				{% endif %}
+			</tbody>
+			</form>
+		</table>
+
+		{% if type == 'Sales Invoice' %}
+		<div>
+			<a class="add ">+</a>
+			
+		</div>
+		{% endif %}
+		
+		<table class="balance">
+			{% if type == 'Sales Invoice' %}
+			<tr>
+				<th><span>Total</span></th>
+				<td><span data-prefix></span><span id="total">600.00</span></td>
+			</tr>
+			<tr>
+				<th><span>Grand Discount</span></th>
+				<td><span data-prefix></span><span contenteditable id="grand_discount">0.00</span></td>
+			</tr>
+			<tr>
+				<th><span>Net Toal</span></th>
+				<td><span data-prefix></span><span id="net_total">0.00</span></td>
+			</tr>
+			
+			<tr>
+				<th><span>Amount Paid</span></th>
+				<td><span data-prefix></span><span contenteditable id="amount_paid">0.00</span></td>
+			</tr>
+			<tr>
+				<th><span>Balance Due</span></th>
+				<td><span data-prefix></span><span></span></td>
+			</tr>
+
+			{% elif type == 'Sales_Invoice_Details' %}
+			<tr>
+				<th><span>Total</span></th>
+				<td><span data-prefix></span><span id="total"></span></td>
+			</tr>
+			<tr>
+				<th><span>Grand Discount</span></th>
+				<td><span data-prefix></span><span id="grand_discount">{{invoice.grand_discount}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Net Toal</span></th>
+				<td><span data-prefix></span><span id="net_total">0.00</span></td>
+			</tr>
+			
+			<tr>
+				<th><span>Amount Paid</span></th>
+				<td><span data-prefix></span><span id="amount_paid">{{invoice.amount_paid}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Balance Due</span></th>
+				<td><span data-prefix></span><span></span></td>
+			</tr>
+			{% endif %}
+		</table>
+	
+	{% if type == 'Sales Invoice' %}
+	<button type="button" class="btn btn-primary btn-xs save">Save</button>
+	{% endif %}
+
+	</article>
+
+</div>
+</invoice>
+
+
+<script type="text/javascript">
+/*	url_sellbill = '{% url "salesinvoice" %}'   */
+	csrf_token='{{csrf_token}}'
+
+</script>
+
+
+{% endblock %}
+		<!--Not needed now-->
+		<!--
+		<aside>
+			<h1><span>Additional Notes</span></h1>
+			<div>
+				<p>A finance charge of 1.5% will be made on unpaid balances after 30 days.</p>
+			</div>
+		</aside>
+		-->
+	

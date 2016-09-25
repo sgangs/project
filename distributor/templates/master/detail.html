@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    Details 
+</title>
+{% endblock %}
+ 
+
+{% block content%}
+	<div class="panel panel-default">
+	<div class="panel-heading">Master Details for {{item.name}}</div>
+	<table class="table">
+		{%for field in client_fields%}
+			<tr>
+				<td>{{ field.verbose_name|capfirst }}</td>
+				<td>{{ item.field.name }}</td>
+			</tr>
+					
+		{% endfor %}
+
+	</table>
+	</div>
+{% endblock %}
+
+
+

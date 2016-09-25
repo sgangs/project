@@ -1,0 +1,49 @@
+{% extends "master/list.html" %}
+
+{% block title %}
+<title>
+  Sales Invoice List
+</title>
+
+{% endblock %}
+
+{% block heading %}
+  <h2>Sales Invoice</h2>
+{% endblock %}
+
+
+{% block details %}
+
+	<div class="table-responsive table-details">
+		<table class="table table-striped table-bordered table-hover">
+			<thead class="thead-inverse header-background">
+    			<tr>
+      				<th class="text-center">Invoice ID</th>
+      				<th class="text-center">Created On</th>
+              {% if type == 'Due'%}
+              <th class="text-center">Balance Due</th>
+              <th class="text-center"></th>
+              {% endif %}
+      				<!--<th class="text-center">Status</th>-->
+    			</tr>
+  			</thead>
+  			<tbody>
+  				{% for item in items %}
+    			<tr align="center">
+            {% if type == 'List' %}
+            <td><a href="{{item.get_absolute_url}}">{{item.invoice_id}}</a></td>
+            {% else %}
+            <td>{{item.invoice_id}}</td>
+            {% endif %}
+    				<td>{{item.date|date:'D, d-m-Y'}}</td>
+            {% if type == 'Due'%}
+            <td>{{item.balance_due}}</td>
+            <td><a href="{{item.get_absolute_url}}due"> Edit Collection Amount</a></td>
+            {% endif %}	
+	    		</tr>
+	    		{% endfor %}
+    		</tbody>
+    	</table> 
+    </div>
+
+{% endblock %}

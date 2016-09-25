@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+
+{% load static from staticfiles %}
+
+<script src="{% static 'accounts/journalscript.js' %}"></script>
+<script src="{% static 'accounts/journalgeneral.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
+<title>New Journal Entry</title>
+
+{% endblock %}
+
+{% block content%}
+
+<div id="invoice">
+	<invoicearticle>
+		{% block meta %}	
+
+		<h1><center>New Journal Entry</center></h1>
+				
+
+		<input id="journal-type" placeholder="Journal Type" ></input>
+		<input id="journal-group" placeholder="Journal Group" ></input>
+
+		<!--<address>
+			<p></p>
+			<p id="companyname"></p>
+			<p id = "companyaddress"></p>
+		</address>-->
+			
+		
+		<table class="meta">			
+<!--			
+			<tr>
+				<th><span>Date</span></th>
+				<td><span id="date"></span></td>
+			</tr>
+-->
+		</table>
+		{% endblock %}
+
+		<table class="inventory	table-hover" id="journal_table">
+			<thead class="header-background">
+				<tr>				
+					<th colspan="1"><span>Account Key</span></th>
+					<th colspan="1"><span>Account Name</span></th>
+					<th colspan="1"><span>Transaction Type</span></th>
+					<th colspan="1"><span>Value</span></th>
+				</tr>					
+			</thead>
+			<form>
+			<tbody>
+				{% block items_tr %}
+					<tr class="data">
+						<td colspan="1"><a class="cut">-</a><span class="accountskey" contenteditable></span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span>
+							<select>
+								<option disabled selected hidden style='display: none' value>Select An Option</option>
+  								<option data-id="Debit">Debit</option>
+  								<option data-id="Credit">Credit</option>
+  							</select>
+						</span></td>
+						<td colspan="1"><span contenteditable></span></td>
+					</tr>
+				{% endblock %}
+			</tbody>
+			</form>
+		</table>
+	{%block add%}
+		<div><a class="add">+</a></div>
+	{% endblock %}
+
+	{% block balance_table %}		
+	{% endblock %}
+
+	{% block save %}	
+	<button type="button" class="btn btn-primary btn-xs save">Save</button>
+	{% endblock %}
+	
+	</invoicearticle>
+
+</div>
+
+
+<script type="text/javascript">
+	csrf_token='{{csrf_token}}';
+	redirect_url= "{% url 'accounts:journal_list' %}"	
+</script>
+
+{% endblock %}
+
+

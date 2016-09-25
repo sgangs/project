@@ -1,0 +1,89 @@
+{% extends "bill/purchase/purchase.html" %}
+
+
+	{% block meta %}	
+
+		<h1><center>Purchase Invoice View</center></h1>
+				
+
+		<textarea id="vendor-code"></textarea>
+
+		<!--<address>
+			<p></p>
+			<p id="companyname"></p>
+			<p id = "companyaddress"></p>
+		</address>-->
+			
+		
+		<table class="meta">			
+			
+			<tr>
+				<th><span>Date</span></th>
+				<td><span id="date">{{invoice.date|date:"d-m-Y"}}</span></td>
+			</tr>
+
+			<tr>
+				<th><span>Amount Due</span></th>
+				<td><span id="prefix">Rs. </span><span>600.00</span></td>
+			</tr>
+			
+		</table>
+
+	{% endblock %}
+
+	{% block items_tr %}
+
+		{% for item in items %}
+			<tr class="data">
+				<td colspan="1"><span class="itemcode" >{{item.product_key}}</span></td>
+				<td colspan="1"><span class="subitemcode" >{{item.subproduct_key}}</span></td>
+				<td colspan="2"><span >{{item.product_name}}</span></td>
+				<td colspan="1"><span >{{item.cost_price}}</span></td>
+				<td colspan="1"><span >{{item.quantity}}</span></td>
+				<!--<td colspan="1"><span contenteditable></span></td>
+				<td colspan="1"><span contenteditable></span></td>-->
+				<td colspan="1"><span >{{item.free}}</span></td>
+				<td colspan="1"><span >{{item.vat_type}}</span></td>
+				<td colspan="1"><span >{{item.vat_percent}}</span></td>
+				<td colspan="1"><span ></span></td>
+			</tr>
+		{% endfor %}
+	{% endblock %}
+
+	{%block add%}
+	{% endblock %}
+
+	{% block balance_table %}
+		<table class="balance">
+			<tr>
+				<th><span>Total</span></th>
+				<td><span data-prefix></span><span id="total">{{invoice.total}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Grand Discount</span></th>
+				<td><span data-prefix></span><span id="grand_discount">{{invoice.grand_discount}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Net Toal</span></th>
+				<td><span data-prefix></span><span id="net_total">{{invoice.total|add:0}}</span></td>
+			</tr>
+			
+			<tr>
+				<th><span>Amount Paid</span></th>
+				<td><span data-prefix></span><span id="amount_paid">{{invoice.amount_paid}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Balance Due</span></th>
+				<td><span data-prefix></span><span></span></td>
+			</tr>			
+		</table>
+
+	<script type="text/javascript">
+		$("#vendor-code").val("{{vendor}}");
+        $("#vendor-code").attr("disabled","True");
+	</script>
+	{% endblock %}
+
+	{% block save %}	
+	{% endblock %}
+
