@@ -14,6 +14,7 @@ from distribution_accounts.models import accountChart, Journal, journalEntry
 from distribution_user.models import Tenant
 
 #Purchase Invoice Base
+@login_required
 def purchase_base(request):
 		return render(request, 'bill/base/purchase_base.html')
 
