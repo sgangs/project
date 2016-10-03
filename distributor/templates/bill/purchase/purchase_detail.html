@@ -6,7 +6,8 @@
 		<h1><center>Purchase Invoice View</center></h1>
 				
 
-		<textarea id="vendor-code"></textarea>
+		<p><textarea id="vendor-code"></textarea></p>
+		<textarea id="warehouse-code"></textarea>
 
 		<!--<address>
 			<p></p>
@@ -24,7 +25,7 @@
 
 			<tr>
 				<th><span>Amount Due</span></th>
-				<td><span id="prefix">Rs. </span><span>600.00</span></td>
+				<td><span id="prefix">Rs. </span><span></span></td>
 			</tr>
 			
 		</table>
@@ -79,8 +80,10 @@
 		</table>
 
 	<script type="text/javascript">
-		$("#vendor-code").val("{{vendor}}");
+		$("#vendor-code").val("{{invoice.vendor_key.name}}");
         $("#vendor-code").attr("disabled","True");
+        $("#warehouse-code").val("{{invoice.warehouse.address}}");
+        $("#warehouse-code").attr("disabled","True");
 	</script>
 	{% endblock %}
 

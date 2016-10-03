@@ -8,8 +8,8 @@ import json
 import re
 #from datetime import datetime
 from distribution_user.models import Tenant
-from .models import accountingPeriod, accountChart, Journal, journalEntry
-from .forms import PeriodForm, ChartForm
+from .models import accountingPeriod, accountChart, Journal, journalEntry, paymentMode
+from .forms import PeriodForm, ChartForm, PaymentForm
 
 @login_required
 #This is the accounts base list
@@ -37,13 +37,16 @@ def master_list(request, type):
 	#for the list to be displayed	
 	if (type=="Period"):
 		items = accountingPeriod.objects.for_tenant(request.user.tenant).all()
+	elif (type=="Payment Mode"):
+		items = paymentMode.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'master/list_table.html',{'items':items, 'type':type})
 	elif (type=="Chart"):
 		accounts = accountChart.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'accounts/accountlist.html',{'accounts':accounts})
 	return render(request, 'master/list.html',{'items':items, 'type':type})
 
 @login_required
-#For adding new entry for Manufacturer, Unit, Zone, Vendor & Account
+#For adding new entry for Aoccunting Period or Chart of Account
 def master_new(request, type):
 	if (type == "Period"):
 		importform=PeriodForm
@@ -61,6 +64,23 @@ def master_new(request, type):
 			return redirect(name)
 	else:
 		form=importform()	
+	return render(request, 'master/new.html',{'form': form, 'item': type})
+
+@login_required
+#Add new payment moce
+def new_payment_mode(request, type):
+	name='accounts:paymentmode_list'
+	form=PaymentForm(tenant=request.user.tenant)
+	if (request.method == "POST"):
+		form = PaymentForm(request.POST, tenant=request.user.tenant)
+		if form.is_valid():
+			item=form.save(commit=False)
+			current_tenant=request.user.tenant
+			item.tenant=current_tenant
+			default=item.default
+			account=item.payment_account
+			item.save()
+			return redirect(name)
 	return render(request, 'master/new.html',{'form': form, 'item': type})
 	
 

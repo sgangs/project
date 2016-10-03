@@ -11,8 +11,7 @@ from distribution_user.models import Tenant
 class TenantManager(models.Manager):
 	def for_tenant(self, tenant):
 		return self.get_queryset().filter(tenant=tenant)
-
-
+		
 
 #This creates an accounting period
 class accountingPeriod(models.Model):
@@ -138,3 +137,20 @@ class journalEntry(models.Model):
 	def __str__(self):
 		return self.name
 
+
+#This model is for modes of payment
+class paymentMode(models.Model):
+	choice=(('Yes','Yes'),
+				('No','No'))
+	name = models.TextField('Payment Mode Name')
+	payment_account=models.ForeignKey(accountChart,related_name='paymentMode_accountChart')
+	default=models.CharField('Default Payment Mode ?', max_length=3,choices=choice, default="No")
+	tenant=models.ForeignKey(Tenant,related_name='paymentmode_account_user_tenant')
+	objects = TenantManager()
+
+	class Meta:
+		unique_together = (("payment_account", "tenant"),("name", "tenant") )
+		ordering = ('name',)
+
+	def __str__(self):
+		return self.name

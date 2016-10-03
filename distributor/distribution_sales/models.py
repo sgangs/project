@@ -5,7 +5,7 @@ from django.template.defaultfilters import slugify
 import datetime as dt
 from datetime import datetime
 
-from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit
+from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit, Warehouse
 from distribution_user.models import Tenant
 
 
@@ -21,9 +21,10 @@ class salesInvoice(models.Model):
 	slug=models.SlugField(max_length=300)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
 	grand_discount=models.DecimalField(max_digits=10, decimal_places=2)
-	#amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
+	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
 	date=models.DateTimeField(default=datetime.now, blank=True)
 	customer=models.ForeignKey(Customer, related_name='salesInvoice_sales_master_customer')
+	warehouse=models.ForeignKey(Warehouse, related_name='salesInvoice_sales_master_warehouse')
 	tenant=models.ForeignKey(Tenant,related_name='sales_sales_user_tenant')
 	objects = TenantManager()
 		
@@ -54,7 +55,7 @@ class salesInvoice(models.Model):
 
 
 	def __str__(self):
-		return  '%s %s %s' % (self.invoice_id, self.customer_name, self.date)
+		return  '%s %s' % (self.invoice_id, self.date)
 
 
 
@@ -78,6 +79,7 @@ class salesLineItem(models.Model):
 	invoice_no=models.ForeignKey(salesInvoice, related_name='salesLineItem_sales_sales_salesInvoice')
 	item_key=models.CharField('product-id', max_length = 10)
 
+#This stores all the individual payments made againt the invoice(s), like a ledger
 class salesPayment(models.Model):
 	invoice_no=models.ForeignKey(salesInvoice, related_name='salesPayment_sales_sales_salesInvoice')
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)

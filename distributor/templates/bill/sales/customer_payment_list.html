@@ -1,0 +1,53 @@
+{% extends "master/list.html" %}
+
+{% block title %}
+<title>
+  Sales Invoice Pending Collection
+  {% load template_tags %}
+</title>
+<!-- Datatable CSS-->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<!-- Datatable jQuery-->
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block heading %}
+  <h2>Customer Pending Bills Analysis</h2>
+{% endblock %}
+
+
+{% block details %}
+
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover" id="due">
+      <thead class="thead-inverse header-background">
+          <tr>
+              <th class="text-center">Customer Key</th>
+              <th class="text-center">Customer Name</th>
+              <th class="text-center">Customer Zone</th>
+              <th class="text-center">Balance Due</th>
+          </tr>
+        </thead>
+      <tbody>
+        {% for customer in customers %}
+            <tr align="center">
+              <td>{{customer.key}}</td>
+              <td>{{customer.name}}</td>
+              <td>{{customer.zone.name}}</td>
+              <td>{{customer.total}}</td>
+              </tr>
+        {% endfor %}
+      </tbody>
+    </table> 
+  </div>
+
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#due').DataTable({
+      "searching": false
+    });
+  });
+</script>
+
+{% endblock %}

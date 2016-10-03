@@ -6,7 +6,8 @@
 		<h1><center>Sales Invoice View</center></h1>
 				
 
-		<textarea id="customer-code"></textarea>
+		<p><textarea id="customer-code"></textarea></p>
+		<textarea id="warehouse-code"></textarea>
 
 		<!--<address>
 			<p></p>
@@ -70,7 +71,7 @@
 			
 			<tr>
 				<th><span>Amount Paid</span></th>
-				<td><span data-prefix></span><span id="amount_paid">{{payment}}</span></td>
+				<td><span data-prefix></span><span id="amount_paid">{{invoice.amount_paid}}</span></td>
 			</tr>
 			<tr>
 				<th><span>Balance Due</span></th>
@@ -81,6 +82,8 @@
 	<script type="text/javascript">
 		$("#customer-code").val("{{invoice.customer.name}}");
         $("#customer-code").attr("disabled","True");
+        $("#warehouse-code").val("{{invoice.warehouse.address}}");
+        $("#warehouse-code").attr("disabled","True");
 	</script>
 	{% endblock %}
 

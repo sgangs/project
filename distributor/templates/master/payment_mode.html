@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    System Master 
+</title>
+<!--jQuery & javascript for this html-->
+{% load static from staticfiles %}
+	<script src="{% static 'master/script.js' %}"></script>
+{% endblock %}
+
+{% block content%}
+
+	{% block heading %}
+	{% if type != 'subProduct' %}
+		<h2>Master List for {{type}}</h2>
+	{% else %}
+		<h2>Sales Invoices</h2>
+	{% endif %}	
+	{% endblock %}
+
+
+
+
+	<!-- This if-else set is used to add the "add new item" button to the top of the list. The details inside script is used for the related jquery file which is used to process the deletion of item -->
+
+	{% if type == 'Manufacturer' %}
+		<a href="#"><button type="button" class="btn btn-primary">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+		<script>
+ 			url_list = '#'; 		
+ 			listtype = 'Manufacturer'
+		</script>
+	
+	{% endif %}
+
+	<!-- This is used to list the items in the front end and also for adding a delete button-->
+
+	{% block details %}
+
+	{% for item in items %}
+		<div>
+			<h3><a href= "{{item.get_absolute_url}}" >{{item.name}}</a></h3>
+				<h6 hidden>{{item.key}}</h6>
+				<button type="button" class="btn btn-primary btn-xs delete" data-confirm="Are you sure to delete this item?">
+				<span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+		</div>
+	{% endfor %}
+
+	{% endblock %}
+
+	<script>
+ 		csrf_token = '{{ csrf_token }}'; 		
+ 	</script>
+	
+{% endblock %}
+
+
+

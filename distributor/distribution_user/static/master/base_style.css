@@ -6,21 +6,6 @@ body {
 }
 
 
-form {
-    overflow:auto;
-}
-
-form p {
-    width:100%;
-    overflow:auto;
-}
-
-label {
-    float:left;
-    clear:both;
-    color:#333;
-    margin-bottom:4px;
-}
 input, textarea {
     clear:both;
     float:left;
@@ -29,14 +14,6 @@ input, textarea {
     border:0;
     padding:6px 10px;
     font-size:14px;
-}
-input[type=submit], a.button {
-    font-weight:bold;
-    background:#00bfff;
-    color:#fff;
-    padding:10px 20px;
-    font-size:14px;
-    text-transform:uppercase;
 }
 .errorlist {
     color:#cc0033;
@@ -51,7 +28,5 @@ input[type=submit], a.button {
     float:left;
     font-size:13px;
 }
-.login-form {
-    float:left;
-}
+
 

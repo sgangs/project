@@ -31,10 +31,11 @@
 	<invoicearticle>
 		{% block meta %}	
 
-		<h1><center>Purchase Invoice Creation</center></h1>
-				
+		<h1><center>Purchase Invoice Creation</center></h1>	
 
-		<input id="vendor-code" placeholder="Vendor Code" ></input>
+		<p><textarea id="vendor-code" placeholder="Vendor Code" ></textarea></p>
+		<!--<p><textarea id="warehouse-code" placeholder="Warehouse Code" ></textarea></p>-->
+		<textarea id="warehouse-code">{{default}}</textarea><h6>Please enter warehouse key for changing Warehouse</h6>
 
 		<!--<address>
 			<p></p>
@@ -52,7 +53,7 @@
 
 			<tr>
 				<th><span>Amount Due</span></th>
-				<td><span id="prefix">Rs. </span><span>600.00</span></td>
+				<td><span id="prefix">Rs. </span><span></span></td>
 			</tr>
 			
 		</table>
@@ -133,11 +134,12 @@
 
 </div>
 
-
+{% block scripting%}
 <script type="text/javascript">
 	csrf_token='{{csrf_token}}';
 	redirect_url= "{% url 'purchase:invoice_list' %}"	
 </script>
+{% endblock %}
 
 {% endblock %}
 

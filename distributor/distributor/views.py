@@ -6,8 +6,8 @@ from django.views.generic import TemplateView
 
 from distribution_user.forms import UserRegistrationForm,CustomerRegistrationForm
 from distribution_user.models import User, Tenant
-
-from distribution_accounts.models import accountChart
+from distribution_accounts.models import accountChart, paymentMode
+from distribution_master.models import Warehouse
 
 
 
@@ -33,6 +33,12 @@ def RegisterView(request):
                     new_tenant.save()
                     new_user.tenant=new_tenant
                     new_user.save()
+                    warehouse=Warehouse()
+                    warehouse.key="master"
+                    warehouse.address=new_tenant.address
+                    warehouse.default="Yes"
+                    warehouse.tenant=new_tenant
+                    warehouse.save()
                     i=6
                     while (i>0):
                         account=accountChart()
@@ -69,6 +75,11 @@ def RegisterView(request):
                         account.tenant=new_tenant
                         account.save()
                         i=i-1
+                    payment= paymentMode()
+                    payment.name="Cash"
+                    paymentMode.default="Yes"
+                    payment.payment_account=accountChart.objects.for_tenant(request.user.tenant).get(key__exact="cash")
+                    payment.save()
                 except:
                     transaction.rollback()
 

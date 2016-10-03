@@ -49,12 +49,12 @@ function generateTableRow() {
 
 	emptyColumn.className ='data';	
 
-	emptyColumn.innerHTML = '<td><a class="cut">-</a><span class="itemcode" contenteditable></span></td>' +
-		'<td colspan="1"><span class="subitemcode" contenteditable></span></td>' +
+	emptyColumn.innerHTML = '<td><a class="cut">-</a><span class="itemcode" ></span></td>' +
+		'<td colspan="1"><span class="subitemcode" ></span></td>' +
 		'<td colspan="2"><span></span></td>' +
 		'<td><span></span></td>' +
-		'<td><span contenteditable></span></td>' +
-		'<td><span contenteditable>0</span></td>'+
+		'<td><span ></span></td>' +
+		'<td><span>0</span></td>'+
 		'<td><span></span></td>' +
 		'<td><span></span></td>' +
 		'<td><span></span></td>' ;

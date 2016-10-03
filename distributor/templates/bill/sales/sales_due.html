@@ -83,7 +83,7 @@
 			
 			<tr>
 				<th><span>Amount Already Paid</span></th>
-				<td><span data-prefix></span><span>{{payment}}</span></td>
+				<td><span data-prefix></span><span>{{invoice.amount_paid}}</span></td>
 			</tr>
 			<tr>
 				<th><span>Balance Due</span></th>
@@ -92,6 +92,15 @@
 			<tr>
 				<th><span>Amount Paid Currently</span></th>
 				<td><span data-prefix></span><span contenteditable id="amount_paid"></span></td>
+			</tr>
+			<tr>
+				<th><span>Payment Mode</span></th>
+				<td><span contenteditable id="payment_mode"><select>
+									<option selected data-id="{{default.name}}">{{default.name}}</option>
+									{% for mode in payment_modes %}
+  									<option data-id="{{mode.name}}">{{mode.name}}</option>
+  									{% endfor %}
+  					</select></span></td>
 			</tr>
 		</table>
 	{% endblock %}

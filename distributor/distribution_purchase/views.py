@@ -7,10 +7,10 @@ from decimal import *
 import json
 from datetime import datetime
 
-from .models import purchaseInvoice, purchaseLineItem
-from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit
+from .models import purchaseInvoice, purchaseLineItem, purchasePayment
+from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit, Warehouse
 from distribution_inventory.models import Inventory
-from distribution_accounts.models import accountChart, Journal, journalEntry
+from distribution_accounts.models import accountChart, Journal, journalEntry, paymentMode
 from distribution_user.models import Tenant
 
 #Purchase Invoice Base
@@ -26,9 +26,21 @@ def purchase_list(request, type):
 	return render(request, 'master/purchase/purchase_list.html',{'items':items, 'type': type})
 
 @login_required
+#To display list of purchase invoices with payment pending
+def purchase_due(request, type):
+	invoices=purchaseInvoice.objects.for_tenant(request.user.tenant)\
+		.annotate(balance_due=F('total')-F('grand_discount')-F('amount_paid'))
+	items=invoices.exclude(balance_due=0)
+	return render(request, 'master/purchase/purchase_list.html',{'items':items, 'type': type})
+
+
+
+@login_required
 #This view helps in creating & thereafter saving a purchase invoice
 def purchaseinvoice(request, type):
 	date=datetime.now()	
+	warehouse=Warehouse.objects.for_tenant(request.user.tenant).get(default="Yes")
+	warehousekey=warehouse.key
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
@@ -37,6 +49,10 @@ def purchaseinvoice(request, type):
 		if (calltype == 'vendor'):
 			vendorkey = request.POST.get('vendor_code')
 			response_data['name'] = Vendor.objects.for_tenant(request.user.tenant).get(key__iexact=vendorkey).name
+
+		elif (calltype == 'warehouse'):
+			warehousekey = request.POST.get('warehouse_code')
+			response_data['name'] = Warehouse.objects.for_tenant(request.user.tenant).get(key__iexact=warehousekey).address
 					
 		#getting item data
 		elif (calltype == 'item'):
@@ -71,8 +87,13 @@ def purchaseinvoice(request, type):
 					grand_discount=request.POST.get('grand_discount')
 					Invoice=purchaseInvoice()
 					vendorkey = request.POST.get('vendor')
+					change_warehouse=request.POST.get('change_warehouse')
+					if (change_warehouse == "true"):
+						warehousekey = request.POST.get('warehouse')
 					Invoice.tenant=request.user.tenant
 					Invoice.vendor_key = Vendor.objects.for_tenant(request.user.tenant).get(key__iexact=vendorkey)
+					warehouse_object = Warehouse.objects.for_tenant(request.user.tenant).get(key__iexact=warehousekey)
+					Invoice.warehouse=warehouse_object
 					Invoice.total = total
 					Invoice.grand_discount = grand_discount
 					Invoice.amount_paid = request.POST.get('amount_paid')
@@ -131,7 +152,7 @@ def purchaseinvoice(request, type):
 						LineItem.vat_type=item.vat_type
 						LineItem.vat_percent=item.vat_percent
 						LineItem.save()
-						inventory=Inventory.objects.get(item=subitem)
+						inventory=Inventory.objects.filter(warehouse=warehouse_object).get(item=subitem)
 						invoiceQuantity=int(data['itemQuantity'])
 						inventory.quantity=F('quantity') + invoiceQuantity
 						inventory.save()
@@ -145,48 +166,86 @@ def purchaseinvoice(request, type):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-
 	#return render(request, 'bill/purchaseinvoice.html', {'date':date,'type': type})
-	return render(request, 'bill/purchase/purchase.html', {'date':date,'type': type})
+	return render(request, 'bill/purchase/purchase.html', {'date':date,'type': type, 'default':warehouse})
 
 
 @login_required
 def purchase_detail(request, type, detail):
-	#search for the clicked item details one after other and then get the item details and authorize or unauthorize them
-	invoice_id=detail.split("-",1)[1]
-	invoice=purchaseInvoice.objects.for_tenant(request.user.tenant).get(invoice_id__iexact=invoice_id)
-	#The next line gets the lineitem details of the onvoice
-	details=invoice.purchaseLineItem_purchaseInvoice.all()
-	#vendorkey=str(invoice.vendor_key_id)
-	#vendorname=Vendor.objects.get(key__iexact=vendorkey).name
-	vendorname=invoice.vendor_key.name
-	#if (type== 'Authorize'):
-	#	if request.method == 'POST':
-	#		calltype = request.POST.get('calltype')
-	#		response_data = {}
-	#		if (calltype == 'Authorized'):
-	#			emr.status="Authorized"
-	#			comment = request.POST.get('comment')
-	#			if (comment!= ''):
-	#				emr.comment=comment
-	#				response_data['note']='EMR Authorized successfully'
-	#				emr.save()
-	#			else:
-	#				response_data['note']="Comment cannot be blank"
-	#		if (calltype == 'Not Authorized'):
-	#			emr.status="Not Authorized"
-	#			comment = request.POST.get('comment')
-	#			if (comment!= ''):
-	#				emr.comment=comment
-	#				response_data['note']='EMR un-authorized request noted'
-	#				emr.save()
-	#			else:
-	#				response_data['note']="Comment cannot be blank"
-	#		jsondata = json.dumps(response_data)
-	#		return HttpResponse(jsondata)
-	#	return render(request, 'project/bill/emr_auth.html',{'items': details, 'emr':emr})
+	date=datetime.now()
 	if (type== 'Detail'):
-		#status=emr.status
-		return render(request, 'bill/purchase/purchase_detail.html',{'items': details, 'invoice':invoice, 'vendor': vendorname})
+		invoice_id=detail.split("-",1)[1]
+		invoice=purchaseInvoice.objects.for_tenant(request.user.tenant).get(invoice_id__iexact=invoice_id)
+		details=invoice.purchaseLineItem_purchaseInvoice.all()
+		return render(request, 'bill/purchase/purchase_detail.html',{'items': details, 'invoice':invoice})
+	elif (type== 'Due'):
+		invoice_id=detail.split("-",1)[1]
+		invoice=purchaseInvoice.objects.for_tenant(request.user.tenant)\
+			.annotate(balance_due=F('total')-F('grand_discount')-F('amount_paid'))\
+			.get(invoice_id__iexact=invoice_id)
+		details=invoice.purchaseLineItem_purchaseInvoice.all()
+		payment_mode=paymentMode.objects.for_tenant(request.user.tenant).filter(default="No")
+		default_mode=paymentMode.objects.for_tenant(request.user.tenant).get(default="Yes")
+		if request.method == 'POST':
+			response_data = {}
+			calltype = request.POST.get('calltype')
+			current_amount_paid = Decimal(request.POST.get('amount_paid'))
+			payment_mode=paymentMode.objects.for_tenant(request.user.tenant).\
+						get(name__exact=request.POST.get('payment_mode'))
+			payment_account=payment_mode.payment_account
+			total_due=invoice.balance_due
+			with transaction.atomic():
+				try:
+					#I forgor why I used the first filter in if, need to confirm this
+					if(current_amount_paid>0 and current_amount_paid>total_due):
+						response_data['name']= "Paid amount cannot be more than due amount"
+					else:
+						amount_already_paid=invoice.amount_paid
+						invoice.amount_paid=amount_already_paid+current_amount_paid
+						invoice.save()
+						payment=purchasePayment()
+						payment.invoice_no=invoice
+						payment.amount_paid=current_amount_paid
+						payment.collected_on=datetime.now()
+						payment.save()
+						journal=Journal()
+						journal.tenant=request.user.tenant
+						journal.date=date
+						journal.journal_type="sales_collection invoice: " + invoice.invoice_id
+						journal.save()
+						i=2
+						while (i>0):
+							entry=journalEntry()
+							entry.tenant=request.user.tenant
+							entry.journal=journal
+							entry.value=current_amount_paid
+							if (i==2):
+								entry.account= accountChart.objects.for_tenant(request.user.tenant).\
+											get(name__exact="Accounts Payable")
+								entry.transaction_type = "Debit"
+							elif (i==1):
+								entry.account= payment_account
+								entry.transaction_type = "Debit"
+							entry.save()						
+							i=i-1						
+						#debit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
+						#credit = journal.journalEntry_journal.filter(transaction_type="Credit").aggregate(Sum('value'))
+						#if (debit != credit):
+						#	raise IntegrityError
+				except:
+					transaction.rollback()
+			jsondata = json.dumps(response_data)
+			return HttpResponse(jsondata)
+		return render(request, 'bill/purchase/purchase_due.html',\
+						{'items': details, 'invoice':invoice, 'payment_modes':payment_mode,\
+						'default':default_mode,})
 
-
+@login_required
+#Lists all customer and payment details.
+def vendor_due(request, type):
+	vendors = Vendor.objects.for_tenant(request.user.tenant).annotate(total=\
+		Sum('purchaseInvoice_purchase_master_vendor__total')\
+		-Sum('purchaseInvoice_purchase_master_vendor__grand_discount')
+		-Sum('purchaseInvoice_purchase_master_vendor__amount_paid'))
+	return render(request, 'bill/purchase/vendor_payment_list.html',\
+		{'vendors':vendors, 'type': type})

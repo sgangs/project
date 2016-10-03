@@ -19,7 +19,11 @@
 			<thead class="thead-inverse header-background">
     			<tr>
       				<th class="text-center">Invoice ID</th>
+              <th class="text-center">Customer</th>
+              <th class="text-center">Warehouse</th>
       				<th class="text-center">Created On</th>
+              <th class="text-center">Invoice Value</th>
+              <th class="text-center">Amount Paid</th>
               {% if type == 'Due'%}
               <th class="text-center">Balance Due</th>
               <th class="text-center"></th>
@@ -30,12 +34,18 @@
   			<tbody>
   				{% for item in items %}
     			<tr align="center">
+            <!-- Invoice list and invoice due, both have the same template, hence this if-else block to regulate
+                 the link -->
             {% if type == 'List' %}
             <td><a href="{{item.get_absolute_url}}">{{item.invoice_id}}</a></td>
             {% else %}
             <td>{{item.invoice_id}}</td>
             {% endif %}
-    				<td>{{item.date|date:'D, d-m-Y'}}</td>
+    				<td>{{item.customer.name}}</td>
+            <td>{{item.warehouse.address}}</td>
+            <td>{{item.date|date:'D, d-m-Y'}}</td>
+            <td>{{item.total}}</td>
+            <td>{{item.amount_paid}}</td>
             {% if type == 'Due'%}
             <td>{{item.balance_due}}</td>
             <td><a href="{{item.get_absolute_url}}due"> Edit Collection Amount</a></td>

@@ -31,10 +31,11 @@
 	<invoicearticle>
 		{% block meta %}	
 
-		<h1><center>Sales Invoice Creation</center></h1>
-				
+		<h1><center>Sales Invoice Creation</center></h1>			
 
-		<input id="customer-code" placeholder="Customer Code" ></input>
+		<textarea id="customer-code" placeholder="Customer Code" ></textarea>
+		<p><textarea id="warehouse-code" >{{warehouse}}</textarea></p>
+		<h6>Please enter the warehouse key to change warehouse</h6>
 
 		<address>
 			<p></p>

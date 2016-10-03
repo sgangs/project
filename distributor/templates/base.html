@@ -6,24 +6,29 @@
 		<meta name=viewport content="width=device-width, initial-scale=1">
 
 		<!-- Latest compiled and minified CSS -->
-
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
 		<!-- Optional theme -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 
-		
-
+		{% block jquery %}
 		<!--jquery-->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 
-		<!-- Latest compiled and minified JavaScript -->
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>  	
+		<!-- Latest compiled and minified JavaScript for Bootstrap-->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+		<!--This ccs link is for the home icon-->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+
+		
+		
+		 {% endblock %}
 
 		{% load staticfiles %}
-		<!-- Base styling -->	
+		<!-- CSS for using the dropdown-->
+		<link rel="stylesheet" href="{% static 'master/base_style.css' %}">	
 		{% block style %}
-		<link rel="stylesheet" href="{% static 'master/base_style.css' %}">
 		{% endblock %}
 
 		{% block title %}
@@ -37,15 +42,16 @@
 			<!-- This div is the top-most navigation class -->
 			<div>
   				<div class="col-md-6">
-					<h1>{{request.user.tenant.name}}</h1>
+					<h2>{{request.user.tenant.name}}</h2>
 				</div>
 				<div class="col-md-6" align="right">
-					<h2> Welcome Mr. {{request.user.first_name}}</h2>
+					<h3> Welcome Mr. {{request.user.first_name}} {{request.user.last_name}}</h3>
 				</div>
 			</div>
 			<ul class="nav nav-tabs"></ul>
 			<ul class="nav nav-pills">
-				<li role="presentation" class="dropdown"><a href="{% url 'master:landing' %}">Home</a></li>
+				<li role="presentation" class="dropdown"><a href="{% url 'master:landing' %}">
+														<i class="fa fa-home fa-lg"></i></a></li>
 	  			<li role="presentation" class="dropdown">
 	  				<a class="dropdown-toggle" data-toggle="dropdown">
 	      				Master <span class="caret"></span>
@@ -78,7 +84,7 @@
 	  		</ul>
 
 	  		
-			<div>
+			<div style="padding:1%">
 				{% block content %}
 				{% endblock %}
 			</div>

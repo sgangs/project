@@ -4,11 +4,7 @@ $(function(){
 //get address of vendor from database
 
 var vendor='';
-
-
 $( "#vendor-code" ).change(function() {
-
-//	alert( "Handler for .change() called." );
 	vendor = $("#vendor-code").val();
 	(function() {
 		$.ajax({
@@ -33,6 +29,37 @@ $( "#vendor-code" ).change(function() {
         	}
     	});
 	}());
+
+});
+
+var warehouse='';
+var change_warehouse=false
+$( "#warehouse-code" ).change(function() {
+    warehouse = $("#warehouse-code").val();
+    change_warehouse=true
+    (function() {
+        $.ajax({
+            url : "", 
+            type : "POST", 
+            data : { warehouse_code: warehouse,
+                     calltype: 'warehouse',
+                     csrfmiddlewaretoken: csrf_token}, // data sent with the post request
+            dataType: 'json',
+
+                    // handle a successful response
+            success : function(jsondata) {
+                $("#warehouse-code").val(jsondata['name']);
+                $("#warehouse-code").attr("disabled","True");
+                console.log(jsondata); // log the returned json to the console
+                console.log("success"); // another sanity check
+            },
+
+                     //handle a non-successful response
+            error : function() {
+                    alert("Warehouse does not exist"); // provide a bit more info about the error to the user
+            }
+        });
+    }());
 
 });
 
@@ -95,8 +122,7 @@ $("#inventory_table").on("blur", ".subitemcode", function(){
     var el = this;   
     item=$(el).closest('tr').find('td:nth-child(1) span').html();
     //var item= ".itemcode".html();
-    if ($(this).data("initialsubID") !== $(this).html() && item !='') {
-              
+    if ($(this).data("initialsubID") !== $(this).html() && item !='') {              
         (function() {
             $.ajax({
                 url : "", 
@@ -132,7 +158,8 @@ $( ".save" ).on("click", function(){
 	//get all itemcode & quantity pair 
 	var items = [];
 	var quantity_identifier = 1;
-
+    warehouse = $("#warehouse-code").val();
+    
 	$("tr.data").each(function() {
 		
 		var code = $(this).find('td:nth-child(1) span').html();
@@ -158,7 +185,7 @@ $( ".save" ).on("click", function(){
 
 
 	//Ajax function sending data to backend if customer is not blank, else request user to enter customer details
-	if (vendor != '' && quantity_identifier != 0){
+	if (vendor != '' && warehouse != '' && quantity_identifier != 0){
 
 		//get other bill details
 		//Step 1: get reference to all balance-id cells
@@ -182,6 +209,8 @@ $( ".save" ).on("click", function(){
         		type: "POST",
     			data:{ bill_details: JSON.stringify(items),
     				vendor: vendor,
+                    warehouse: warehouse,
+                    change_warehouse:change_warehouse,
     				total: total,
     				grand_discount: grand_discount,
     				amount_paid: amount_paid,

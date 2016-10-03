@@ -5,7 +5,7 @@ from django.template.defaultfilters import slugify
 import datetime as dt
 from datetime import datetime
 
-from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit
+from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit, Warehouse
 from distribution_user.models import Tenant
 
 class TenantManager(models.Manager):
@@ -21,7 +21,8 @@ class purchaseInvoice(models.Model):
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
 	date=models.DateTimeField(default=datetime.now, blank=True)
 	vendor_key=models.ForeignKey(Vendor, related_name='purchaseInvoice_purchase_master_vendor')
-	tenant=models.ForeignKey(Tenant,related_name='purchase_purchase_user_tenant')
+	warehouse=models.ForeignKey(Warehouse, related_name='purchaseInvoice_purchase_master_warehouse')
+	tenant=models.ForeignKey(Tenant,related_name='purchaseInvoice_purchase_user_tenant')
 	objects = TenantManager()
 	#vendor_name=models.TextField(blank=True)
 	
@@ -73,3 +74,10 @@ class purchaseLineItem(models.Model):
 	vat_type=models.CharField(max_length =15)
 	vat_percent=models.DecimalField(max_digits=4, decimal_places=2)
 	invoice_no=models.ForeignKey(purchaseInvoice, related_name='purchaseLineItem_purchaseInvoice')
+
+
+#This stores all the individual payments made againt the invoice(s), like a ledger
+class purchasePayment(models.Model):
+	invoice_no=models.ForeignKey(purchaseInvoice, related_name='purchasePayment_purchaseInvoice')
+	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
+	collected_on=models.DateTimeField(null=True)
