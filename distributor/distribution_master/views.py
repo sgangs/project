@@ -1,17 +1,19 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseNotFound
-from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError, transaction
-#from django.db.models import F
-
+from functools import partial, wraps
 import json
 #from datetime import datetime
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
+from django.forms.formsets import formset_factory
+from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import render, get_object_or_404, redirect
+#from django.db.models import F
+from distribution_inventory.models import Inventory, damagedInventory
 from distribution_user.models import Tenant
-from .models import Manufacturer, Unit, Product, subProduct, Zone, Customer, Vendor, Warehouse
+from .models import Manufacturer, Dimension, Unit, Product, subProduct, Zone, Customer, Vendor, Warehouse
 from .forms import ManufacturerForm, UnitForm, ProductForm, subProductForm, ZoneForm, CustomerForm,\
 				VendorForm, WarehouseForm, ManufacturerUpdateForm, ProductUpdateForm, \
 				CustomerUpdateForm, VendorUpdateForm, WarehouseUpdateForm
-from distribution_inventory.models import Inventory
+from .utils import create_inventory
 
 
 @login_required
@@ -78,6 +80,8 @@ def master_list(request, type):
 	#for the list to be displayed	
 	if (type=="Manufacturer"):
 		items = Manufacturer.objects.for_tenant(request.user.tenant).all()
+	elif (type=="Dimension"):
+		items = Dimension.objects.for_tenant(request.user.tenant).all()
 	elif (type=="Unit"):
 		items = Unit.objects.for_tenant(request.user.tenant).all()
 	elif (type=="Product"):
@@ -113,18 +117,23 @@ def master_new(request, type):
 	#elif (type == "Warehouse"):
 	#	importform = WarehouseForm
 	#	name='master:zone_list'
-	form=importform(tenant=request.user.tenant)
+	current_tenant=request.user.tenant
+	form=importform(tenant=current_tenant)
+	#importformset=formset_factory(wraps(importform)(partial(importform, tenant=current_tenant)), extra=3)
+	#formset=importformset()
+	#helper=ManufacturerFormSetHelper()
 	if (request.method == "POST"):
-		form = importform(request.POST, tenant=request.user.tenant)
+		current_tenant=request.user.tenant
+		#form = formset(request.POST, tenant=current_tenant)
+		form = importform(request.POST, tenant=current_tenant)
 		if form.is_valid():
-			item=form.save(commit=False)
-			current_tenant=request.user.tenant
+			item=form.save(commit=False)			
 			item.tenant=current_tenant
 			item.save()
 			return redirect(name)
 	#else:
-	#	form=importform(tenant=request.user.tenant)
-	
+	#	form=importform(tenant=request.user.tenant)	
+	#return render(request, 'master/new.html',{'formset': formset, 'helper': helper, 'item': type})
 	return render(request, 'master/new.html',{'form': form, 'item': type})
 
 @login_required
@@ -143,10 +152,17 @@ def new_warehouse(request, type):
 				try:
 					item.save()	
 					for subproduct in subproducts:
-						inventory=Inventory()
-						inventory.item=subproduct
-						inventory.warehouse=item
-						inventory.save()
+						create_inventory(current_tenant,"new", subproduct, item)
+						create_inventory(current_tenant,"returnable", subproduct, item)
+						create_inventory(current_tenant,"damaged", subproduct, item)
+						# daminventory=damagedInventory()
+						# daminventory.item=subproduct
+						# daminventory.warehouse=item
+						# daminventory.save()
+						# inventory=Inventory()
+						# inventory.item=subproduct
+						# inventory.warehouse=item
+						# inventory.save()
 					return redirect(name)
 				except:
 					transaction.rollback()
@@ -179,17 +195,31 @@ def new_subproduct(request, type):
 		form = subProductForm(request.POST, tenant=request.user.tenant)
 		if form.is_valid():
 			item=form.save(commit=False)
-			#current_tenant=request.user.tenant
-			item.tenant=request.user.tenant
+			current_tenant=request.user.tenant
+			item.tenant=current_tenant
+			#new_user.set_password(userform.cleaned_data['password'])
+			unit=item.unit
+			multiplier=unit.multiplier
+			item.cost_price=round(item.cost_price/multiplier,2)
+			item.discount2=round(item.cost_price/multiplier,2)
+			item.mrp=round(item.mrp/multiplier,2)
+			item.selling_price=round(item.selling_price/multiplier,2)
 			with transaction.atomic():
 				try:
 					item.save()
 					warehouses=Warehouse.objects.for_tenant(request.user.tenant).all()
 					for warehouse in warehouses:
-						inventory=Inventory()
-						inventory.item=item
-						inventory.warehouse=warehouse
-						inventory.save()
+						create_inventory(current_tenant,"new", item, warehouse)
+						create_inventory(current_tenant,"returnable", item, warehouse)
+						create_inventory(current_tenant,"damaged", item, warehouse)
+						# daminventory=damagedInventory()
+						# daminventory.item=item
+						# daminventory.warehouse=warehouse
+						# daminventory.save()
+						# inventory=Inventory()
+						# inventory.item=item
+						# inventory.warehouse=warehouse
+						# inventory.save()
 				except:
 					transaction.rollback()
 

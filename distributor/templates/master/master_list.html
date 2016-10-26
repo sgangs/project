@@ -13,9 +13,9 @@
 
 	{% block heading %}
 	{% if type != 'subProduct' %}
-		<h2>Master List for {{type}}</h2>
+		<h3>Master List for {{type}}</h3>
 	{% else %}
-		<h2>Sales Invoices</h2>
+		<h3>Sales Invoices</h3>
 	{% endif %}	
 	{% endblock %}
 
@@ -25,7 +25,7 @@
 	<!-- This if-else set is used to add the "add new item" button to the top of the list. The details inside script is used for the related jquery file which is used to process the deletion of item -->
 
 	{% if type == 'Manufacturer' %}
-		<a href="#"><button type="button" class="btn btn-primary">
+		<a href="{% url 'master:manufacturer_new' %}"><button type="button" class="btn btn-primary btn-xs">
 			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
 		<script>
  			url_list = '#'; 		
@@ -33,7 +33,7 @@
 		</script>
 
 	{% elif type == 'Product' %}
-		<a href="#"><button type="button" class="btn btn-primary">
+		<a href="{% url 'master:product_new' %}"><button type="button" class="btn btn-primary btn-xs">
 			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
 		<script>
 			url_list = '#';
@@ -41,7 +41,7 @@
 		</script>
 
 	{% elif type == 'Unit' %}
-		<a href="#"><button type="button" class="btn btn-primary">
+		<a href="{% url 'master:unit_new' %}"><button type="button" class="btn btn-primary btn-xs">
 			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
 		<script>
 			url_list = '#'; 		
@@ -49,7 +49,7 @@
 		</script>
 
 	{% elif type == 'Zone' %}
-		<a href="#"><button type="button" class="btn btn-primary">
+		<a href="{% url 'master:zone_new' %}"><button type="button" class="btn btn-primary btn-xs">
 			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
 		<script>
 			url_list = '#'; 		
@@ -57,7 +57,7 @@
 		</script>
 
 	{% elif type == 'Customer' %}
-		<a href="#"><button type="button" class="btn btn-primary">
+		<a href="{% url 'master:customer_new' %}"><button type="button" class="btn btn-primary btn-xs">
 			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
 		<script>
 			url_list = '#'; 		
@@ -65,7 +65,7 @@
 		</script>
 
 	{% elif type == 'Vendor' %}
-		<a href="#"><button type="button" class="btn btn-primary">
+		<a href="{% url 'master:vendor_new' %}"><button type="button" class="btn btn-primary btn-xs">
 			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
 		<script>
 			url_list = '#'; 		

@@ -51,6 +51,7 @@
 				<td colspan="1"><span class="itemcode" >{{item.key}}</span></td>
 				<td colspan="1"><span class="subitemcode" >{{item.sub_key}}</span></td>
 				<td colspan="2"><span>{{item.name}}</span></td>
+				<td colspan="1"><span>{{item.unit}}</span></td>
 				<td colspan="1"><span>{{item.selling_price}}</span></td>
 				<td colspan="1"><span>{{item.quantity}}</span></td>
 				<td colspan="1"><span>{{item.discount1}}</span></td>
@@ -102,11 +103,15 @@
   									{% endfor %}
   					</select></span></td>
 			</tr>
+			<tr class="Cheque_RTGS">
+				<th><span>Cheque/RTGS No</span></th>
+				<td><span></span><span contenteditable id="cheque_no"></span></td>
+			</tr>
 		</table>
 	{% endblock %}
 
 	{% block save %}	
-	<button type="button" class="btn btn-primary btn-xs save">Save</button>
+	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Save</button>
 	{% endblock %}
 
 	{% block scripting%}

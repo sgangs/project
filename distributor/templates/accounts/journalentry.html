@@ -23,8 +23,17 @@
 		<h1><center>New Journal Entry</center></h1>
 				
 
-		<input id="journal-type" placeholder="Journal Type" ></input>
-		<input id="journal-group" placeholder="Journal Group" ></input>
+		<div class="row"><input id="journal-type" placeholder="Journal Type" ></input></div>
+		<!--<input id="journal-group" placeholder="Journal Group"> -->
+		<div class="row" id="journal_group">
+			<select id="group_select" data-live-search="true" data-style="btn-info" data-width="fit">
+				<option disabled selected hidden style='display: none' value>Select Journal Group</option>
+				{% for group in groups %}
+  					<option data-id="{{group.name}}">{{group.name}}</option>
+				{% endfor %}
+  			</select>
+  		</div>
+		<!--</input>-->
 
 		<!--<address>
 			<p></p>
@@ -59,7 +68,7 @@
 						<td colspan="1"><a class="cut">-</a><span class="accountskey" contenteditable></span></td>
 						<td colspan="1"><span></span></td>
 						<td colspan="1"><span>
-							<select>
+							<select id="trn_type">
 								<option disabled selected hidden style='display: none' value>Select An Option</option>
   								<option data-id="Debit">Debit</option>
   								<option data-id="Credit">Credit</option>
@@ -79,7 +88,7 @@
 	{% endblock %}
 
 	{% block save %}	
-	<button type="button" class="btn btn-primary btn-xs save">Save</button>
+	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Save</button>
 	{% endblock %}
 	
 	</invoicearticle>

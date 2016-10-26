@@ -17,17 +17,16 @@
 {% block content%}
 
 <div id="invoice">
-	<invoiceheader>
-		<!--
-		<h1>Invoice</h1>
+	<!--<invoiceheader>
+				<h1>Invoice</h1>
 		<address>
 			<p>Jonathan Neal</p>
 			<p>101 E. Chapman Ave<br>Orange, CA 92866</p>
 			<p>(800) 555-1234</p>
 		</address>
 		<span><img alt="" src="logo.png"><input type="file" accept="image/*"></span>
-	-->
-	</invoiceheader>
+	
+	</invoiceheader>-->
 	<invoicearticle>
 		{% block meta %}	
 
@@ -35,7 +34,7 @@
 
 		<p><textarea id="vendor-code" placeholder="Vendor Code" ></textarea></p>
 		<!--<p><textarea id="warehouse-code" placeholder="Warehouse Code" ></textarea></p>-->
-		<textarea id="warehouse-code">{{default}}</textarea><h6>Please enter warehouse key for changing Warehouse</h6>
+		<textarea id="warehouse-code">{{default}}</textarea>
 
 		<!--<address>
 			<p></p>
@@ -66,6 +65,7 @@
 					<th colspan="1"><span>Item Code</span></th>
 					<th colspan="1"><span>Sub Code</span></th>
 					<th colspan="2"><span>Item Name</span></th>
+					<th colspan="1"><span>Unit</span></th>
 					<th colspan="1"><span>Unit Rate</span></th>
 					<th colspan="1"><span>Quantity</span></th>
 				<!--	<th colspan="1"><span>Discount 1(%)</span></th>
@@ -83,14 +83,13 @@
 						<td colspan="1"><a class="cut">-</a><span class="itemcode" contenteditable></span></td>
 						<td colspan="1"><span class="subitemcode" contenteditable></span></td>
 						<td colspan="2"><span></span></td>
+						<td colspan="1"><span class="unit"></span></td>
+						<td colspan="1"><span></span></td>
 						<td colspan="1"><span contenteditable></span></td>
-						<td colspan="1"><span contenteditable></span></td>
-						<!--<td colspan="1"><span contenteditable></span></td>
-						<td colspan="1"><span contenteditable></span></td>-->
 						<td colspan="1"><span contenteditable>0</span></td>
-						<td colspan="1"><span contenteditable></span></td>
-						<td colspan="1"><span contenteditable></span></td>
-						<td colspan="1"><span contenteditable></span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span></span></td>
+						<td colspan="1"><span></span></td>
 					</tr>
 				{% endblock %}
 			</tbody>
@@ -115,19 +114,19 @@
 				<td><span data-prefix></span><span id="net_total">0.00</span></td>
 			</tr>
 			
-			<tr>
+			<tr hidden>
 				<th><span>Amount Paid</span></th>
 				<td><span data-prefix></span><span contenteditable id="amount_paid">0.00</span></td>
 			</tr>
-			<tr>
+			<tr hidden>
 				<th><span>Balance Due</span></th>
 				<td><span data-prefix></span><span></span></td>
-			</tr>			
+			</tr>
 		</table>
 	{% endblock %}
 
 	{% block save %}	
-	<button type="button" class="btn btn-primary btn-xs save">Save</button>
+	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Save</button>
 	{% endblock %}
 	
 	</invoicearticle>

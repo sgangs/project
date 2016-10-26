@@ -30,4 +30,5 @@ urlpatterns = [
     url(r'^sales/', include('distribution_sales.urls',namespace='sales', app_name='sales')),
     url(r'^inventory/', include('distribution_inventory.urls',namespace='inventory', app_name='inventory')),
     url(r'^accounts/', include('distribution_accounts.urls',namespace='accounts', app_name='accounts')),
+    url(r'^hr/', include('distribution_hr.urls',namespace='hr', app_name='hr')),
 ]

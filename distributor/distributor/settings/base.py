@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'distribution_inventory',
     'distribution_accounts',
     'distribution_accountsdetails',
+    'distribution_hr',
 ]
 
 AUTH_USER_MODEL='distribution_user.User'

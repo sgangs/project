@@ -1,16 +1,17 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseNotFound
+from datetime import datetime
+from decimal import *
+import json
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import F, Sum
-import json
-from datetime import datetime
-from decimal import *
-
-from .models import salesInvoice,salesLineItem, salesPayment
+from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import render
+from distributor.journalentry import journal_entry, new_journal
 from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit, Warehouse
-from distribution_accounts.models import accountChart, Journal, journalEntry, paymentMode
-from distribution_inventory.models import Inventory
+from distribution_accounts.models import accountChart, Journal, journalEntry, paymentMode, journalGroup
+from distribution_inventory.models import Inventory, returnableInventory, damagedInventory
+from .models import salesInvoice,salesLineItem, creditNoteLineItem
+from .utils import new_credit_note, item_call, subitem_call, unit_call, new_sales_payment, new_sales_invoice
 
 
 @login_required
@@ -40,137 +41,142 @@ def salesinvoice(request, type):
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
+		this_tenant=request.user.tenant
 		
 		#getting Customer Data
 		if (calltype == 'customer'):
 			customerkey = request.POST.get('customer_code')
 			response_data['name'] = Customer.objects.for_tenant(request.user.tenant).get(key__iexact=customerkey).name
+
+		#getting Warehouse Data
+		elif (calltype == 'warehouse'):
+			warehousekey = request.POST.get('warehouse_code')
+			response_data['name']=Warehouse.objects.for_tenant(request.user.tenant).get(key__iexact=warehousekey).address
+			#response_data['key'] = warehouse.key
 					
 		#getting item data
 		elif (calltype == 'item'):
 			productkey = request.POST.get('item_code')
-			product=Product.objects.for_tenant(request.user.tenant).get(key__iexact=productkey)
-			response_data['name'] = product.name
-			if(product.vat_type == 'No VAT'):
-				response_data['vat_percent']=0
-			else:
-				response_data['vat_percent'] = float(product.vat_percent)
-			response_data['vat_type']=product.vat_type
-		
+			response_data=item_call(this_tenant, productkey)
+			
+					
 		#getting subitem data
 		elif (calltype == 'subitem'):
 			subitem = request.POST.get('subitem_code')
 			productkey = request.POST.get('item_code')
-			product = Product.objects.for_tenant(request.user.tenant).get(key__iexact=productkey)
-			subproducts=product.subProduct_master_master_product.all()
-			for subproduct in subproducts:
-				if (subitem==subproduct.sub_key):
-					response_data['salesprice'] = float(subproduct.selling_price)
-					response_data['discount1'] = float(subproduct.discount1)
-					response_data['discount2'] = float(subproduct.discount2)	
+			response_data=subitem_call(this_tenant, productkey, subitem)
+			
 
-			#saving the invoice
-		if (calltype == 'save'):
+		#This is used to get data if unit changes
+		elif (calltype == 'unit'):
+			subitem = request.POST.get('subitem_code')
+			productkey = request.POST.get('item_code')
+			unit_entry= request.POST.get('unit')
+			response_data=unit_call(this_tenant, productkey, subitem, unit_entry)
+						
+		#saving the invoice
+		elif (calltype == 'save'):
 			with transaction.atomic():
 				bill_data = json.loads(request.POST.get('bill_details'))
 				proceed=True
 				change_warehouse=request.POST.get('change_warehouse')
 				if (change_warehouse == "true"):
 					warehousekey = request.POST.get('warehouse')
-				warehouse_object = Warehouse.objects.for_tenant(request.user.tenant).get(key__iexact=warehousekey)
+				warehouse_object = Warehouse.objects.for_tenant(this_tenant).get(key__iexact=warehousekey)
+				cogs_value=0
 				#Checking available inventory by warehouse
 				for data in bill_data:
-					invoiceQuantity=int(data['itemQuantity'])
-					item=Product.objects.for_tenant(request.user.tenant).get(key__iexact=data['itemCode'])
+					unit_entry=data['unit']
+					unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
+					multiplier=unit.multiplier
+					invoiceQuantity=(int(data['itemQuantity']) +int(data['itemFree']))*multiplier
+					item=Product.objects.for_tenant(this_tenant).get(key__iexact=data['itemCode'])
 					subitem=item.subProduct_master_master_product.get(sub_key__iexact=data['subitemCode'])
 					productQuantity=subitem.inventory_inventory_master_subproduct.get(warehouse=warehouse_object).quantity
 					if productQuantity < invoiceQuantity:
 						proceed= False
 				if proceed:
 					try:
-						Invoice=salesInvoice()
-						payment=salesPayment()
+						#Invoice=salesInvoice()
 						total= request.POST.get('total')
 						grand_discount=request.POST.get('grand_discount')
-						Invoice.tenant=request.user.tenant
-						customerkey = request.POST.get('customer')	
-						Invoice.customer = Customer.objects.for_tenant(request.user.tenant).get(key__iexact=customerkey)
-						Invoice.warehouse=warehouse_object
-						Invoice.total = total
-						Invoice.grand_discount = grand_discount
-						Invoice.date = date
-						Invoice.save()
-						payment.invoice_no=Invoice
-						payment.amount_paid=0
-						payment.save()
-						journal=Journal()
-						journal.tenant=request.user.tenant
-						journal.date=date
-						journal.journal_type="sales_invoice"
-						journal.key=Invoice.invoice_id
-						journal.save()
-						i=4
-						while (i>0):
-							entry=journalEntry()
-							entry.tenant=request.user.tenant
-							entry.journal=journal
-							entry.value=Decimal(total) - Decimal(grand_discount)
-							if (i==4):
-								entry.account= accountChart.objects.for_tenant(request.user.tenant).\
-											get(name__exact="Accounts Receivable")
-								entry.transaction_type = "Debit"
-							elif (i==3):
-								entry.account= accountChart.objects.for_tenant(request.user.tenant).\
-											get(name__exact="Sales")
-								entry.transaction_type = "Credit"
-							elif (i==2):
-								entry.account= accountChart.objects.for_tenant(request.user.tenant).\
-											get(name__exact="Cost of Goods Sold")
-								entry.transaction_type = "Debit"
-							elif (i==1):
-								entry.account= accountChart.objects.for_tenant(request.user.tenant).\
-											get(name__exact="Inventory")
-								entry.transaction_type = "Credit"
-							entry.save()						
-							i=i-1						
-						debit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
-						credit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
-						if (debit != credit):
-							raise IntegrityError
+						customerkey = request.POST.get('customer')
+						customer = Customer.objects.for_tenant(this_tenant).get(key__iexact=customerkey)
+						Invoice=new_sales_invoice(this_tenant, customer,\
+								 warehouse_object, total, grand_discount, date, amount_paid=0)
+						journal=new_journal(this_tenant, date,"Sales Invoice",Invoice.invoice_id)
+						
 						#saving the salesLineItem and linking them with foreign key to invoice
-						for data in bill_data:
-							LineItem = salesLineItem()
-							LineItem.invoice_no = Invoice
+						for data in bill_data:							
 							itemcode=data['itemCode']
 							subitemcode=data['subitemCode']
-							LineItem.key= itemcode
-							LineItem.sub_key= subitemcode
+							unit_entry=data['unit']
+							unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
 							item=Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemcode)
 							subitem=item.subProduct_master_master_product.get(sub_key__iexact=subitemcode)
+							subitem_unit=subitem.unit
+							multiplier=unit.multiplier
+							invoiceQuantity=int(data['itemQuantity'])*multiplier
+							total_quantity=invoiceQuantity+(int(data['itemFree'])*multiplier)
+							LineItem = salesLineItem()
+							LineItem.invoice_no = Invoice
+							LineItem.key= itemcode
+							LineItem.sub_key= subitemcode							
 							LineItem.name=item.name
-							LineItem.unit=item.unit
+							LineItem.unit=unit.symbol
 							LineItem.discount1=subitem.discount1
 							LineItem.discount2=subitem.discount2
-							LineItem.quantity=int(data['itemQuantity'])
+							LineItem.quantity=invoiceQuantity
 							LineItem.free=int(data['itemFree'])
 							LineItem.manufacturer=item.manufacturer.key
 							LineItem.mrp=subitem.mrp
 							LineItem.selling_price=subitem.selling_price
 							LineItem.vat_type=item.vat_type
 							LineItem.vat_percent=item.vat_percent
+							item_cost=round((subitem.cost_price*invoiceQuantity),2)
 							LineItem.save()
-							inventory=Inventory.objects.filter(warehouse=warehouse_object).get(item=subitem)
-							invoiceQuantity=int(data['itemQuantity'])
-							inventory.quantity=F('quantity') - invoiceQuantity
+							#This is used to calculated to COGS
+							cogs_value=cogs_value+item_cost
+							#This will help reduce the inventory
+							inventory=Inventory.objects.filter(warehouse=warehouse_object).get(item=subitem)							
+							inventory.quantity=F('quantity') - total_quantity
 							inventory.save()
+
+						#This is for journal entry
+						i=4
+						while (i>0):
+							value=Decimal(total) - Decimal(grand_discount)
+							if (i==4):
+								account= accountChart.objects.for_tenant(this_tenant).\
+										get(name__exact="Accounts Receivable")
+								journal_entry(this_tenant, journal, value, account, "Debit")
+							elif (i==3):
+								account= accountChart.objects.for_tenant(this_tenant).\
+										get(name__exact="Sales")
+								journal_entry(this_tenant, journal, value, account, "Credit")
+							elif (i==2):
+								account= accountChart.objects.for_tenant(this_tenant).\
+										get(name__exact="Cost of Goods Sold")
+								journal_entry(this_tenant, journal, cogs_value, account, "Debit")
+							elif (i==1):
+								account= accountChart.objects.for_tenant(this_tenant).\
+										get(name__exact="Inventory")
+								journal_entry(this_tenant, journal, cogs_value, account, "Credit")
+							i=i-1						
+						debit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
+						credit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
+						if (debit != credit):
+							raise IntegrityError
 					except:
 						transaction.rollback()
 				else:
 					response_data['name']= "Sufficient stcok not available"
+		
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render(request, 'bill/sales/sales.html', {'date':date,'type': type, 'warehouse':warehouse})
 
+#Displaying invoice & updating Collection
 @login_required
 def sales_detail(request, type, detail):
 	date=datetime.now()
@@ -182,21 +188,24 @@ def sales_detail(request, type, detail):
 		details=invoice.salesLineItem_sales_sales_salesInvoice.all()
 		return render(request, 'bill/sales/sales_detail.html',{'items': details, 'invoice':invoice})
 	elif (type== 'Due'):
+		this_tenant=request.user.tenant
 		invoice_id=detail.split("-",1)[1]
-		invoice=salesInvoice.objects.for_tenant(request.user.tenant)\
+		invoice=salesInvoice.objects.for_tenant(this_tenant)\
 			.annotate(balance_due=F('total')-F('grand_discount')-F('amount_paid'))\
 			.get(invoice_id__iexact=invoice_id)
 		details=invoice.salesLineItem_sales_sales_salesInvoice.all()
-		payment_mode=paymentMode.objects.for_tenant(request.user.tenant).filter(default="No")
-		default_mode=paymentMode.objects.for_tenant(request.user.tenant).get(default="Yes")
+		payment_mode=paymentMode.objects.for_tenant(this_tenant).filter(default="No")
+		default_mode=paymentMode.objects.for_tenant(this_tenant).get(default="Yes")
 		if request.method == 'POST':
 			response_data = {}
-			calltype = request.POST.get('calltype')
+			#calltype = request.POST.get('calltype')
+			cheque_rtgs_number = request.POST.get('number')
+			this_tenant=request.user.tenant
 			current_amount_paid = Decimal(request.POST.get('amount_paid'))
-			payment_mode=paymentMode.objects.for_tenant(request.user.tenant).\
+			payment_mode=paymentMode.objects.for_tenant(this_tenant).\
 						get(name__exact=request.POST.get('payment_mode'))
 			payment_account=payment_mode.payment_account
-			total_due=invoice.total-invoice.grand_discount-total_payment['paid']
+			total_due=invoice.balance_due
 			with transaction.atomic():
 				try:
 					#I forgor why I used the first filter in if, need to confirm this
@@ -206,30 +215,17 @@ def sales_detail(request, type, detail):
 						amount_already_paid=invoice.amount_paid
 						invoice.amount_paid=amount_already_paid+current_amount_paid
 						invoice.save()
-						payment=salesPayment()
-						payment.invoice_no=invoice
-						payment.amount_paid=current_amount_paid
-						payment.collected_on=datetime.now()
-						payment.save()
-						journal=Journal()
-						journal.tenant=request.user.tenant
-						journal.date=date
-						journal.journal_type="sales_collection invoice: " + invoice.invoice_id
-						journal.save()
+						#payment=salesPayment()
+						payment=new_sales_payment (invoice, current_amount_paid, payment_mode, cheque_rtgs_number)
+						journal=new_journal(this_tenant, date,"Sales Collection",invoice.invoice_id)
 						i=2
 						while (i>0):
-							entry=journalEntry()
-							entry.tenant=request.user.tenant
-							entry.journal=journal
-							entry.value=current_amount_paid
 							if (i==2):
-								entry.account= accountChart.objects.for_tenant(request.user.tenant).\
+								account= accountChart.objects.for_tenant(request.user.tenant).\
 											get(name__exact="Accounts Receivable")
-								entry.transaction_type = "Credit"
+								journal_entry(this_tenant, journal, current_amount_paid, account, "Credit")
 							elif (i==1):
-								entry.account= payment_account
-								entry.transaction_type = "Credit"
-							entry.save()						
+								journal_entry(this_tenant, journal, current_amount_paid, payment_account, "Debit")
 							i=i-1						
 				except:
 					transaction.rollback()
@@ -248,3 +244,144 @@ def customer_due(request, type):
 		-Sum('salesInvoice_sales_master_customer__amount_paid'))
 	return render(request, 'bill/sales/customer_payment_list.html',\
 		{'customers':customers, 'type': type})
+
+@login_required
+#Checks Sales Inventory Return and saves item
+def inventory_return(request):
+	date=datetime.now()
+	warehouse=Warehouse.objects.for_tenant(request.user.tenant).get(default="Yes")
+	warehousekey=warehouse.key
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		this_tenant=request.user.tenant
+		#getting Customer Data
+		if (calltype == 'customer'):
+			customerkey = request.POST.get('customer_code')
+			response_data['name'] = Customer.objects.for_tenant(this_tenant).get(key__iexact=customerkey).name
+
+		#getting Warehouse Data
+		elif (calltype == 'warehouse'):
+			warehousekey = request.POST.get('warehouse_code')
+			response_data['name'] = Warehouse.objects.for_tenant(this_tenant).get(key__iexact=warehousekey).address
+					
+		#getting item data
+		elif (calltype == 'item'):
+			productkey = request.POST.get('item_code')
+			response_data=item_call(this_tenant, productkey)
+					
+		#getting subitem data
+		elif (calltype == 'subitem'):
+			subitem = request.POST.get('subitem_code')
+			productkey = request.POST.get('item_code')
+			response_data=subitem_call(this_tenant, productkey, subitem)			
+
+		#This is used to get data if unit changes
+		elif (calltype == 'unit'):
+			subitem = request.POST.get('subitem_code')
+			productkey = request.POST.get('item_code')
+			unit_entry= request.POST.get('unit')
+			response_data=unit_call(this_tenant, productkey, subitem, unit_entry)
+			
+		#Save Credit Note
+		elif (calltype == 'save'):
+			with transaction.atomic():
+				note_data = json.loads(request.POST.get('note_details'))
+				change_warehouse=request.POST.get('change_warehouse')
+				if (change_warehouse == "true"):
+					warehousekey = request.POST.get('warehouse')
+				warehouse_object = Warehouse.objects.for_tenant(this_tenant).get(key__iexact=warehousekey)
+				cogs_value=0
+				cogs_waste=0
+				try:
+					total= request.POST.get('total')
+					call_details = request.POST.get('call_details')
+					tax_total= request.POST.get('vat_total')
+					credit_note.tenant=this_tenant
+					customerkey = request.POST.get('customer')	
+					customer=Customer.objects.for_tenant(this_tenant).get(key__iexact=customerkey)
+					credit_note=new_credit_note(this_tenant, customer,\
+								warehouse_object, total, tax_total, date, "Goods Return" )
+					#The journal type needs to change to credit note
+					journal=new_journal(this_tenant, date,"Credit Note",credit_note.note_id)
+					
+					#saving the creditnoteLineItem and linking them with foreign key to credit note
+					for data in note_data:
+						itemcode=data['itemCode']
+						subitemcode=data['subitemCode']
+						unit_entry=data['unit']
+						inventory_type=data['inventory_type']
+						item=Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemcode)
+						subitem=item.subProduct_master_master_product.get(sub_key__iexact=subitemcode)
+						unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
+						multiplier=unit.multiplier
+						invoiceQuantity=int(data['itemQuantity'])*multiplier
+						LineItem = creditNoteLineItem()
+						LineItem.creditnote_no = credit_note												
+						LineItem.key= itemcode
+						LineItem.sub_key= subitemcode						
+						LineItem.name=item.name
+						LineItem.unit=unit.symbol					
+						LineItem.quantity=invoiceQuantity
+						LineItem.selling_price=subitem.selling_price
+						LineItem.vat_type=item.vat_type
+						LineItem.vat_percent=item.vat_percent
+						LineItem.inventory_type = inventory_type
+						LineItem.save()
+						#This is used to calculated to COGS
+						item_cost=round((subitem.cost_price*invoiceQuantity),2)
+						if (inventory_type == "Waste"):
+							cogs_waste=cogs_waste+item_cost
+						else:
+							cogs_value=cogs_value+item_cost
+						#This will help reduce the inventory, after selecting which inventory to reduce
+						if (inventory_type == "Reusable"):
+							inventory=Inventory.objects.filter(warehouse=warehouse_object).get(item=subitem)
+						elif (inventory_type == "Returnable"):
+							inventory=returnableInventory.objects.filter(warehouse=warehouse_object).get(item=subitem)
+						elif (inventory_type == "Waste"):
+							inventory=damagedInventory.objects.filter(warehouse=warehouse_object).get(item=subitem)
+						inventory.quantity=F('quantity') + invoiceQuantity
+						inventory.save()
+						#This is for journal entry
+					i=6
+					while (i>0):
+						value=Decimal(total)
+						if (i==6):
+							#Checls if call is from credit or cash refund and acts accordingly
+							if (call_details == "credit"):
+								account= accountChart.objects.for_tenant(this_tenant).\
+									get(name__exact="Accounts Receivable")
+							elif (call_details == "refund"):
+								account= accountChart.objects.for_tenant(this_tenant).\
+									get(name__exact="Cash")
+							journal_entry(this_tenant, journal, value, account, "Credit")
+						elif (i==5):
+							account= accountChart.objects.for_tenant(this_tenant).\
+									get(name__exact="Sales Contra")
+							journal_entry(this_tenant, journal, value, account, "Debit")
+						elif (i==4):
+							account= accountChart.objects.for_tenant(this_tenant).\
+								get(name__exact="Cost of Goods Sold Contra")
+							total_value= cogs_waste+cogs_value
+							journal_entry(this_tenant, journal, total_value, account, "Credit")
+						elif (i==3):
+							if (cogs_value > 0):
+								account= accountChart.objects.for_tenant(this_tenant).\
+									get(name__exact="Inventory")
+								#journal_entry(this_tenant, journal, cogs_value, account, "Debit")
+							if (cogs_waste > 0):
+								account= accountChart.objects.for_tenant(this_tenant).\
+									get(name__exact="Inventory Wastage")
+							journal_entry(this_tenant, journal, cogs_value, account, "Debit")
+						i=i-1						
+					debit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
+					credit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
+					if (debit != credit):
+						raise IntegrityError
+				except:
+					transaction.rollback()
+				
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render(request, 'bill/sales/inventory_return.html', {'warehouse': warehouse})

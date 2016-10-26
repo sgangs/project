@@ -1,24 +1,15 @@
 {% extends "bill/purchase/purchase.html" %}
 
 	{% block title %}
-
 		{% load static from staticfiles %}
-
 			<link rel="stylesheet" href="{% static 'bill/style.css' %}">
-
-		<title>Purchase Invoice Payment</title>
-
+			<title>Purchase Invoice Payment</title>	
 	{% endblock %}
 
-
 	{% block meta %}	
-
 		<h1><center>Purchase Invoice Amount Due</center></h1>
-				
-
 		<p><textarea id="customer-code" disabled>{{invoice.vendor_key.name}}</textarea></p>
 		<textarea id="warehouse-code" disabled>{{invoice.warehouse.address}}</textarea>
-
 		<table class="meta">			
 			<tr>
 				<th><span>Date</span></th>
@@ -27,19 +18,17 @@
 			<tr>
 				<th><span>Amount Due</span></th>
 				<td><span id="prefix">Rs. </span><span></span></td>
-			</tr>
-			
+			</tr>			
 		</table>
-
 	{% endblock %}
 
 	{% block items_tr %}
-
 		{% for item in items %}
 			<tr class="data">
 				<td colspan="1"><span class="itemcode" >{{item.product_key}}</span></td>
 				<td colspan="1"><span class="subitemcode" >{{item.subproduct_key}}</span></td>
 				<td colspan="2"><span>{{item.product_name}}</span></td>
+				<td colspan="1"><span>{{item.unit}}</span></td>
 				<td colspan="1"><span>{{item.cost_price}}</span></td>
 				<td colspan="1"><span>{{item.quantity}}</span></td>
 				<td colspan="1"><span>{{item.free}}</span></td>
@@ -89,11 +78,15 @@
   									{% endfor %}
   					</select></span></td>
 			</tr>
+			<tr class="Cheque_RTGS">
+				<th><span>Cheque/RTGS No</span></th>
+				<td><span></span><span contenteditable id="cheque_no"></span></td>
+			</tr>
 		</table>
 	{% endblock %}
 
 	{% block save %}	
-	<button type="button" class="btn btn-primary btn-xs save">Save</button>
+	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Save</button>
 	{% endblock %}
 
 	{% block scripting%}

@@ -21,14 +21,35 @@
 		<!--This ccs link is for the home icon-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
 
-		
-		
-		 {% endblock %}
+		<!--jQuery Confirmation Plugin CSS for confirmation boxes-->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/2.5.1/jquery-confirm.min.css">
+
+		<!--jQuery Confirmation Plugin JS for confirmation boxes-->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/2.5.1/jquery-confirm.min.js"></script>
+
+		<!--Bootstrap Bootbox Plugin for alert boxes-->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+		<!--Bootstrap SelectBoxIt Plugin for styling HTML Select-->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/css/bootstrap-select.min.css">
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/bootstrap-select.min.js"></script>
+
+
+		{% endblock %}
 
 		{% load staticfiles %}
+
+		<link type ="image/x-icon" href= "{% static 'img/Logo_Favicon.ico' %}" rel="logo icon">
+		
+		<!-- Latest JavaScript for Bootstrap Confirmation JS Plugin-->
+		<script type="text/javascript" src="{% static 'bootstrap-confirmation.js' %}"></script>
+
+		
+		{% block style %}
+		{% load staticfiles %}		
 		<!-- CSS for using the dropdown-->
 		<link rel="stylesheet" href="{% static 'master/base_style.css' %}">	
-		{% block style %}
 		{% endblock %}
 
 		{% block title %}
@@ -57,8 +78,8 @@
 	      				Master <span class="caret"></span>
 	    			</a>
 	    			<ul class="dropdown-menu">
-	      				<li><a href="{% url 'master:list_base' %}">Master List</a></li>
-	    				<li><a href="{% url 'master:new_base' %}">Add New</a></li>
+	      				<li class="extra" title = "This is where all master entries can be seen."><a href="{% url 'master:list_base' %}">Master List</a></li>
+	    				<li class="extra" title = "This is where additional master entries can be made."><a href="{% url 'master:new_base' %}">Add New</a></li>
 	    				<li role="separator" class="divider"></li>
 	    				<li><a href="#">Project Reports</a></li>
 	    			</ul>
@@ -89,9 +110,11 @@
 				{% endblock %}
 			</div>
 		</div>
-
-				
-		
-
+		<script type="text/javascript">
+			$('.extra').tooltip({animation: true});
+		</script>
 	</body>
 </html>
+
+
+

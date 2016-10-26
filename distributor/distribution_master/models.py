@@ -48,12 +48,38 @@ class Manufacturer(models.Model):
 		return self.name
 
 
+#This is the list of dimension, such as length, weight, numbers, etc
+class Dimension(models.Model):
+	name=models.CharField(max_length=10)
+	slug=models.SlugField(max_length=22)
+	details=models.TextField(blank=True)
+	tenant=models.ForeignKey(Tenant,related_name='dimension_master_user_tenant')
+	objects = TenantManager()
+	
+	def get_absolute_url(self):
+		return reverse('master:detail', kwargs={'detail':self.slug})
+
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item="dim"+" "+self.tenant.key+" "+self.name
+			self.slug=slugify(item)
+		super(Dimension, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("name", "tenant"),)
+		#ordering = ('name',)	
+		
+	def __str__(self):
+		return self.name
+
 #This is the list of units
 class Unit(models.Model):
+	dimension=models.ForeignKey(Dimension,related_name='unit_dimension')
 	name=models.CharField(max_length=10)
 	symbol=models.CharField(max_length=10)
 	slug=models.SlugField(max_length=22)
-	details=models.TextField(blank=True)
+	multiplier=models.DecimalField(max_digits=6, decimal_places=2)	
 	tenant=models.ForeignKey(Tenant,related_name='unit_master_user_tenant')
 	objects = TenantManager()
 	
@@ -77,11 +103,12 @@ class Unit(models.Model):
 
 #This is the list of Product
 class Product(models.Model):
-	VAT_choice=(('On MRP','On MRP'),
-				('On Cost Price','On Cost Price'),
-				('No VAT','No VAT'),)
+	VAT_choice=(('No VAT','No VAT'),
+				('On MRP','On MRP'),
+				('On Cost Price','On Cost Price'),)
 	name=models.CharField(max_length =200)
-	unit = models.ForeignKey(Unit,related_name='product_master_master_unit')
+	#unit = models.ForeignKey(Unit,related_name='product_master_master_unit')
+	#dimension=models.ForeignKey(Dimension,related_name='product_dimension')
 	slug=models.SlugField(max_length=32)
 	key=models.CharField('product-id', max_length=20)
 	manufacturer=models.ForeignKey(Manufacturer,related_name='product_master_master_manufacturer')
@@ -110,12 +137,13 @@ class Product(models.Model):
 
 class subProduct(models.Model):
 	product=models.ForeignKey(Product, related_name='subProduct_master_master_product')
+	unit = models.ForeignKey(Unit,related_name='product_master_master_unit')
 	sub_key=models.CharField(max_length=20)
 	batch=models.CharField(max_length=20, blank=True)
 	cost_price=models.DecimalField(max_digits=10, decimal_places=2)
 	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2)
-	discount1=models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, default=0)
-	discount2=models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, default=0)
+	discount1=models.DecimalField("Percent sales discount", max_digits=4, decimal_places=2, null=True, blank=True, default=0)
+	discount2=models.DecimalField("Sales discount in value",max_digits=10, decimal_places=2, null=True, blank=True, default=0)
 	selling_price=models.DecimalField(max_digits=10, decimal_places=2)
 	scheme=models.TextField(blank=True)
 	tenant=models.ForeignKey(Tenant,related_name='subproduct_master_user_tenant')

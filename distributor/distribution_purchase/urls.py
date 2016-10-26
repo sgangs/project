@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^invoice/$', views.purchaseinvoice, {'type': 'New'}, name='invoice_new'),
     url(r'^invoicedue/$', views.purchase_due, {'type': 'Due'}, name='invoice_due'),
     url(r'^vendordue/$', views.vendor_due, {'type': 'Due List'}, name='vendor_due'),
+	url(r'^inventoryreturn/$', views.inventory_return, name='inventory_return'),    
     url(r'^(?P<detail>[-\S]+)/due/$',views.purchase_detail, {'type': 'Due'}, name='invoice_detail_due'),
     url(r'^(?P<detail>[-\S]+)/$',views.purchase_detail, {'type': 'Detail'}, name='invoice_detail'),
     

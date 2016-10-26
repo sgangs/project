@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'^listbase/$', views.master_base, {'type': 'List'},name='list_base'),
     url(r'^newbase/$', views.master_base, {'type': 'New'},name='new_base'),
     url(r'^manufacturerlist/$', views.master_list, {'type': 'Manufacturer'},name='manufacturer_list'),
+    url(r'^dimensionlist/$', views.master_list, {'type': 'Dimension'},name='dimension_list'),
     url(r'^unitlist/$', views.master_list, {'type': 'Unit'},name='unit_list'),
     url(r'^productlist/$', views.master_list, {'type': 'Product'},name='product_list'),
     url(r'^zonelist/$', views.master_list, {'type': 'Zone'},name='zone_list'),

@@ -52,6 +52,7 @@ function generateTableRow() {
 	emptyColumn.innerHTML = '<td><a class="cut">-</a><span class="itemcode" contenteditable></span></td>' +
 		'<td colspan="1"><span class="subitemcode" contenteditable></span></td>' +
 		'<td colspan="2"><span></span></td>' +
+		'<td><span class="unit"></span></td>' +
 		'<td><span></span></td>' +
 		'<td><span contenteditable></span></td>' +
 		'<td><span></span></td>'+
@@ -109,15 +110,17 @@ function updateInvoice() {
 		cells = a[i].querySelectorAll('span:last-child');
 
 		// set price as cell[2] * cell[3]
-		unitrate=parseFloatHTML(cells[3]);
-		quantity=parseFloatHTML(cells[4]);
-		discount1=parseFloatHTML(cells[5]);
-		discount2=parseFloatHTML(cells[6]);
-		free=parseFloatHTML(cells[7]);
-		vat_type=parseFloatHTML(cells[8]);
+		unitrate=parseFloatHTML(cells[4]);
+		quantity=parseFloatHTML(cells[5]);
+		discount1=parseFloatHTML(cells[6]);
+		discount2=parseFloatHTML(cells[7]);
+		free=parseFloatHTML(cells[8]);
+		vat_type=cells[8].innerHTML;
 		vat_percent=parseFloatHTML(cells[9]);
-		if (vat_type == 'on Cost Price'){
+		//console.log(vat_type);
+		if (vat_type == 'On Cost Price'){
 			vat=vat_percent/100*unitrate;
+			console.log(vat);
 		}
 		else{
 			vat=(unitrate*100)/(100+vat_percent)*(vat_percent/100);
@@ -130,7 +133,7 @@ function updateInvoice() {
 		total += price;
 
 		// set row total
-		cells[10].innerHTML = price;
+		cells[11].innerHTML = price;
 	}
 
 	// update balance cells
@@ -237,14 +240,14 @@ function onContentLoad() {
 		document.addEventListener('keydown', updateInvoice);
 		document.addEventListener('keyup', updateInvoice);
 
-		input.addEventListener('focus', onEnterCancel);
-		input.addEventListener('mouseover', onEnterCancel);
-		input.addEventListener('dragover', onEnterCancel);
-		input.addEventListener('dragenter', onEnterCancel);
+		//input.addEventListener('focus', onEnterCancel);
+		//input.addEventListener('mouseover', onEnterCancel);
+		//input.addEventListener('dragover', onEnterCancel);
+		//input.addEventListener('dragenter', onEnterCancel);
 
-		input.addEventListener('blur', onLeaveCancel);
-		input.addEventListener('dragleave', onLeaveCancel);
-		input.addEventListener('mouseout', onLeaveCancel);
+		//input.addEventListener('blur', onLeaveCancel);
+		//input.addEventListener('dragleave', onLeaveCancel);
+		//input.addEventListener('mouseout', onLeaveCancel);
 
 		//input.addEventListener('drop', onFileInput);
 		//input.addEventListener('change', onFileInput);

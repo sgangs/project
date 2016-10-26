@@ -8,12 +8,16 @@
 
 <link rel="stylesheet" href="{% static 'transition.css' %}"> -->
 
-<title>Register</title>
+<title>Assisto - Register</title>
 
 {% endblock %}
 
 {% block content %}
     <p>Please use the following form to register. In case you are already registered,<a href="{% url 'login' %}">click here</a> to login</p>
+
+    {% if error == "Yes" %}
+    <h4> <font color="990033">There are some errors. Please look below</font></h4>
+    {% endif %}
        
     <form action="." method="post">
     <div class="login-form col-md-6 text-left">

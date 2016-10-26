@@ -2,11 +2,12 @@
 
 
 {% block title %}
-
-{% load static from staticfiles %}
+    <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    {% load static from staticfiles %}
     <link rel="stylesheet" href="{% static 'bill/style.css' %}">
 
-    <title>EMR Select</title>
+    <title>Sales Base - Your sales basepoint</title>
 
 {% endblock %}
 
@@ -16,28 +17,29 @@
 
         <div class="row">
 
-            <!--<div class="col-lg-12">
-                <h1 class="page-header">Thumbnail Gallery</h1>
-            </div>-->
-
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+            <div class="col-lg-4 col-md-4 col-xs-9 thumb">
                 <a class="thumbnail" href="{% url 'sales:invoice_list' %}">
-                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Sales Invoice+List" alt="Sales Invoice List">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Sales Invoice+List" alt="Sales Invoice List">
                 </a>
             </div>
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
                 <a class="thumbnail" href="{% url 'sales:invoice_new' %}">
-                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=New+Sales Invoice" alt="New Sales Invoice">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=New+Sales Invoice" alt="New Sales Invoice">
                 </a>
             </div>
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
                 <a class="thumbnail" href="{% url 'sales:invoice_due' %}">
-                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Update Sales Collection" alt="Update Sales Collection">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Update Sales Collection" alt="Update Sales Collection">
                 </a>
             </div>
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
                 <a class="thumbnail" href="{% url 'sales:customer_due' %}">
-                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Customer wise Due Analysis" alt="Customer wise Due Analysis">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Customer wise Due Analysis" alt="Customer wise Due Analysis">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'sales:inventory_return' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Inventory Return - Credit Note" alt="Inventory Return - Credit Note">
                 </a>
             </div>
         </div>

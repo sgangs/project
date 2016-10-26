@@ -53,6 +53,7 @@ function generateTableRow() {
 		'<td colspan="1"><span class="subitemcode" contenteditable></span></td>' +
 		'<td colspan="2"><span></span></td>' +
 		'<td><span></span></td>' +
+		'<td><span></span></td>' +
 		'<td><span contenteditable></span></td>' +
 		'<td><span contenteditable>0</span></td>'+
 		'<td><span></span></td>' +
@@ -113,13 +114,13 @@ function updateInvoice() {
 		cells = a[i].querySelectorAll('span:last-child');
 
 		// set price as cell[2] * cell[3]
-		unitrate=parseFloatHTML(cells[3]);
-		quantity=parseFloatHTML(cells[4]);
+		unitrate=parseFloatHTML(cells[4]);
+		quantity=parseFloatHTML(cells[5]);
 		//discount1=parseFloatHTML(cells[5]);
 		//discount2=parseFloatHTML(cells[6]);
-		free=parseFloatHTML(cells[5]);
-		vat_type=parseFloatHTML(cells[6]);
-		vat_percent=parseFloatHTML(cells[7]);
+		free=parseFloatHTML(cells[6]);
+		vat_type=parseFloatHTML(cells[7]);
+		vat_percent=parseFloatHTML(cells[8]);
 		if (vat_type == 'on Cost Price'){
 			vat=vat_percent/100*unitrate;
 		}
@@ -135,7 +136,7 @@ function updateInvoice() {
 		total += price;
 
 		// set row total
-		cells[8].innerHTML = price;
+		cells[9].innerHTML = price;
 	}
 
 	// update balance cells

@@ -2,11 +2,14 @@
 
 
 {% block title %}
+    
+    <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 
 {% load static from staticfiles %}
     <link rel="stylesheet" href="{% static 'bill/style.css' %}">
 
-    <title>EMR Select</title>
+    <title>Purchase Base - Your purchase basepoint</title>
 
 {% endblock %}
 
@@ -20,26 +23,27 @@
                 <h1 class="page-header">Thumbnail Gallery</h1>
             </div>-->
 
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
                 <a class="thumbnail" href="{% url 'purchase:invoice_list' %}">
-                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Purchase Invoice+List" alt="Purchase Invoice List">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Purchase Invoice+List" alt="Purchase Invoice List">
                 </a>
             </div>
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
                 <a class="thumbnail" href="{% url 'purchase:invoice_new' %}">
-                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=New+Purchase Invoice" alt="New Purchase Invoice">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=New+Purchase Invoice" alt="New Purchase Invoice">
                 </a>
             </div>
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
                 <a class="thumbnail" href="{% url 'purchase:invoice_due' %}">
-                    <img class="img-responsive" src="http://dummyimage.com/600x450/89d0d9/000000&text=Update Purchase Payment" alt="Update Purchase Payment">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Update Purchase Payment" alt="Update Purchase Payment">
                 </a>
             </div>
-            <div class="col-lg-6 col-md-6 col-xs-6 thumb">
-                <a class="thumbnail" href="#">
-                    <img class="img-responsive" src="http://placehold.it/600x450" alt="">
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail" href="{% url 'purchase:inventory_return' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Inventory Return - Debit Note" alt="Inventory Return - Debit Note">
                 </a>
-            </div>            
+            </div>
+
         </div>
 
         <hr>

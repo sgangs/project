@@ -19,6 +19,10 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>  	
 		<!-- Local Styling -->
 		<link rel="stylesheet" href="{% static 'transition.css' %}">
+
+		{% load static from staticfiles %}
+		<link type ="image/x-icon" href= "{% static 'img/Logo_Favicon.ico' %}" rel="logo icon">
+
 		{% block title %}
 		{% endblock %}	
 	</head>
@@ -28,7 +32,7 @@
 			<div>
   				<div class="col-md-12">
 					<h1><center>Welcome</center></h1>
-					<h3><center>Com Sol - Computing Solution for Your Business</center></h3>
+					<h3><center>Assisto - Your Technical Assistant</center></h3>
 				</div>
 				
 			</div>

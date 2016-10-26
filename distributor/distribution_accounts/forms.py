@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Field
 
-from .models import accountingPeriod, accountChart, paymentMode
+from .models import accountingPeriod, accountChart, paymentMode, journalGroup
 
 
 class DateInput(forms.DateInput):
@@ -13,6 +13,7 @@ class DateInput(forms.DateInput):
 #This form is for adding accounting period
 class PeriodForm(forms.ModelForm):
 	def __init__(self, *args, **kwargs):
+		self.tenant=kwargs.pop('tenant',None)
 		super(PeriodForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper(self)
 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
@@ -38,16 +39,66 @@ class ChartForm(forms.ModelForm):
 		model=accountChart
 		exclude =('slug','tenant',)
 	def __init__(self, *args, **kwargs):
+		self.tenant=kwargs.pop('tenant',None)
 		super(ChartForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper(self)
 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-sm-2'
 		self.helper.field_class = 'col-sm-4'
+	def clean(self):
+		cd= super(ChartForm, self).clean()
+		unique_key=cd.get('key')
+		unique_name=cd.get('name')
+		error=[]
+		this_data=""
+		if not unique_key and unique_name:
+			raise forms.ValidationError(error)
+			return cd
+		#else:
+		try:
+			this_data=accountChart.objects.for_tenant(self.tenant).get(key=unique_key)
+			#if (this_data.name==unique_name):
+			self.add_error('key',"Account with same key already exists.")
+			#raise forms.ValidationError(error)
+			#else:
+			#	return cd
+		except:
+			return cd
+		raise forms.ValidationError(error)
+		return cd
+
+class JournalGroupForm(forms.ModelForm):
+	class Meta:
+		model=journalGroup
+		exclude =('slug','tenant',)
+	def __init__(self, *args, **kwargs):
+		self.tenant=kwargs.pop('tenant',None)
+		super(JournalGroupForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper(self)
+		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'
+	def clean(self):
+		cd= super(JournalGroupForm, self).clean()
+		unique_name=cd.get('name')
+		error=[]
+		this_data=""
+		try:
+			this_data=journalGroup.objects.for_tenant(self.tenant).get(name=unique_name)
+			self.add_error('name',"Journal Group/Type with same name already exists.")
+		except:
+			return cd
+		raise forms.ValidationError(error)
+		return cd
 		
 
 #This form is for adding paymnet modes
 class PaymentForm(forms.ModelForm):
+	class Meta:
+		model=paymentMode
+		exclude =('slug','tenant',)
 	def __init__(self,*args,**kwargs):
 		self.tenant=kwargs.pop('tenant',None)
 		super (PaymentForm,self ).__init__(*args,**kwargs) # populates the post
@@ -56,10 +107,7 @@ class PaymentForm(forms.ModelForm):
 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-sm-2'
-		self.helper.field_class = 'col-sm-4'
-	class Meta:
-		model=paymentMode
-		exclude =('slug','tenant',)
+		self.helper.field_class = 'col-sm-4'	
 	def clean(self):
 		cd= super(PaymentForm, self).clean()
 		default=cd.get('default')
