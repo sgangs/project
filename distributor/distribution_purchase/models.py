@@ -127,21 +127,24 @@ class debitNote(models.Model):
 	def __str__(self):
 		return  '%s %s %s' % (self.note_id, self.vendor_name, self.date)
 
-	#def get_absolute_url(self):
-	#	return reverse('purchase:invoice_detail', kwargs={'detail':self.slug})
+	def get_absolute_url(self):
+		return reverse('purchase:invoice_detail', kwargs={'detail':self.slug})
 
 
 #This model is for line items of a debit note for return of goods
 class debitNoteLineItem(models.Model):
+	inventory_type=(('Reusable','Reusable'),
+			('Returnable','Returnable'),)
 	product_name=models.CharField(max_length = 200)
 	product_key=models.CharField(max_length = 20)
 	subproduct_key=models.CharField(max_length=20)
 	unit=models.CharField(max_length=20)
 	quantity=models.PositiveSmallIntegerField(default=0)
 	cost_price=models.DecimalField(max_digits=10, decimal_places=2)
+	vat_type=models.CharField(max_length =30)
 	vat_percent=models.DecimalField(max_digits=4, decimal_places=2)
+	inventory_type=models.CharField(max_length=12,choices=inventory_type)
 	debitnote_no=models.ForeignKey(debitNote, related_name='debitNoteLineItem_debitNote')
-
 
 #This model is for line items of a debit note for excess payment
 class debitNoteLineDetails(models.Model):

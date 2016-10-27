@@ -12,7 +12,7 @@ from distribution_master.models import Manufacturer, Product, Zone, Customer, Ve
 from distribution_inventory.models import Inventory, returnableInventory
 from distribution_accounts.models import accountChart, Journal, journalEntry, paymentMode, journalGroup
 from distribution_user.models import Tenant
-from .models import purchaseInvoice, purchaseLineItem, purchasePayment, debitNoteLineItem
+from .models import purchaseInvoice, purchaseLineItem, purchasePayment, debitNote, debitNoteLineItem
 from .utils import new_purchase_invoice, new_debit_note, item_call, subitem_call, unit_call
 
 #Purchase Invoice Base
@@ -24,8 +24,12 @@ def purchase_base(request):
 @login_required
 #Returns list of all purchase invoices
 def purchase_list(request, type):
-	items = purchaseInvoice.objects.for_tenant(request.user.tenant).all()
-	return render(request, 'master/purchase/purchase_list.html',{'items':items, 'type': type})
+	if (type == "List"):
+		items = purchaseInvoice.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'master/purchase/purchase_list.html',{'items':items, 'type': type})
+	else:
+		items = debitNote.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'master/purchase/debit_note_list.html',{'items':items, 'type': type})
 
 @login_required
 #To display list of purchase invoices with payment pending
@@ -149,10 +153,15 @@ def purchase_detail(request, type, detail):
 	date=datetime.now()
 	this_tenant=request.user.tenant
 	if (type== 'Detail'):
-		invoice_id=detail.split("-",1)[1]
-		invoice=purchaseInvoice.objects.for_tenant(this_tenant).get(invoice_id__iexact=invoice_id)
-		details=invoice.purchaseLineItem_purchaseInvoice.all()
-		return render(request, 'bill/purchase/purchase_detail.html',{'items': details, 'invoice':invoice})
+		call_id=detail.split("-",1)[1]
+		if (call_id[:2] == "pi"):
+			invoice=purchaseInvoice.objects.for_tenant(this_tenant).select_related().get(invoice_id__iexact=call_id)
+			details=invoice.purchaseLineItem_purchaseInvoice.all()
+			return render(request, 'bill/purchase/purchase_detail.html',{'items': details, 'invoice':invoice})
+		elif (call_id[:2] == "dn"):
+			note=debitNote.objects.for_tenant(this_tenant).select_related().get(note_id__iexact=call_id)
+			details=note.debitNoteLineItem_debitNote.all()
+			return render(request, 'bill/purchase/inventory_return_detail.html',{'items': details, 'note':note})
 	elif (type== 'Due'):
 		invoice_id=detail.split("-",1)[1]
 		invoice=purchaseInvoice.objects.for_tenant(this_tenant)\

@@ -130,8 +130,8 @@ class creditNote(models.Model):
 	def __str__(self):
 		return  '%s %s %s' % (self.note_id, self.customer, self.date)
 
-	#def get_absolute_url(self):
-	#	return reverse('purchase:invoice_detail', kwargs={'detail':self.slug})
+	def get_absolute_url(self):
+		return reverse('sales:invoice_detail', kwargs={'detail':self.slug})
 
 
 #This model is for line items of a debit note for return of goods

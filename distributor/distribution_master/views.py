@@ -201,7 +201,7 @@ def new_subproduct(request, type):
 			unit=item.unit
 			multiplier=unit.multiplier
 			item.cost_price=round(item.cost_price/multiplier,2)
-			item.discount2=round(item.cost_price/multiplier,2)
+			item.discount2=round(item.discount2/multiplier,2)
 			item.mrp=round(item.mrp/multiplier,2)
 			item.selling_price=round(item.selling_price/multiplier,2)
 			with transaction.atomic():
@@ -212,14 +212,6 @@ def new_subproduct(request, type):
 						create_inventory(current_tenant,"new", item, warehouse)
 						create_inventory(current_tenant,"returnable", item, warehouse)
 						create_inventory(current_tenant,"damaged", item, warehouse)
-						# daminventory=damagedInventory()
-						# daminventory.item=item
-						# daminventory.warehouse=warehouse
-						# daminventory.save()
-						# inventory=Inventory()
-						# inventory.item=item
-						# inventory.warehouse=warehouse
-						# inventory.save()
 				except:
 					transaction.rollback()
 

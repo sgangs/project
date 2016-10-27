@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     url(r'^base/$', views.purchase_base, name='base'),
     url(r'^invoicelist/$', views.purchase_list, {'type': 'List'}, name='invoice_list'),
+    url(r'^debitnotelist/$', views.purchase_list, {'type': 'Note List'}, name='debitnote_list'),
     url(r'^invoice/$', views.purchaseinvoice, {'type': 'New'}, name='invoice_new'),
     url(r'^invoicedue/$', views.purchase_due, {'type': 'Due'}, name='invoice_due'),
     url(r'^vendordue/$', views.vendor_due, {'type': 'Due List'}, name='vendor_due'),

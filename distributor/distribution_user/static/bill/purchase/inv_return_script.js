@@ -318,7 +318,7 @@ function save_note(call_details){
         cells = document.querySelectorAll('table.balance td:last-child span:last-child');
         //Step 2: get total
         total=Number(cells[0].innerHTML.replace(/[^0-9\.]+/g,""));
-        vat_total = Number(cells[0].innerHTML.replace(/[^0-9\.]+/g,""));
+        vat_total = Number(cells[1].innerHTML.replace(/[^0-9\.]+/g,""));
         
         //Send ajax function to back-end 
         (function() {

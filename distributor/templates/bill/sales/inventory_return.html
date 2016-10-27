@@ -85,7 +85,7 @@
 			</tbody>
 			</form>
 		</table>
-
+	{% block balance_table %}
 		<table class="balance">
 			<tr>
 				<th><span>Total</span></th>
@@ -96,7 +96,7 @@
 				<td><span data-prefix></span><span id="total"></span></td>
 			</tr>
 		</table>
-
+	{% endblock %}
 
 	{%block add%}
 		<div><a class="add">+</a></div>
@@ -114,7 +114,7 @@
 	{% block scripting %}
 	<script type="text/javascript">
 	csrf_token='{{csrf_token}}';	
-	//redirect_url= "{% url 'sales:invoice_list' %}"
+	redirect_url= "{% url 'sales:creditnote_list' %}"
 	</script>
 	{% endblock %}
 

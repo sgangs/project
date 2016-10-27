@@ -10,7 +10,7 @@ from distributor.journalentry import journal_entry, new_journal
 from distribution_master.models import Manufacturer, Product, Zone, Customer, Vendor, Unit, Warehouse
 from distribution_accounts.models import accountChart, Journal, journalEntry, paymentMode, journalGroup
 from distribution_inventory.models import Inventory, returnableInventory, damagedInventory
-from .models import salesInvoice,salesLineItem, creditNoteLineItem
+from .models import salesInvoice,salesLineItem, creditNote, creditNoteLineItem
 from .utils import new_credit_note, item_call, subitem_call, unit_call, new_sales_payment, new_sales_invoice
 
 
@@ -22,8 +22,12 @@ def sales_base(request):
 @login_required
 #Lists all sales invoice
 def sales_list(request, type):
-	items = salesInvoice.objects.for_tenant(request.user.tenant).all()
-	return render(request, 'master/sales/sales_list.html',{'items':items, 'type': type})
+	if (type == "List"):
+		items = salesInvoice.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'master/sales/sales_list.html',{'items':items, 'type': type})
+	else:
+		items = creditNote.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'master/sales/credit_note_list.html',{'items':items, 'type': type})
 
 @login_required
 #Lists sales invoice with pending/due collection
@@ -133,7 +137,7 @@ def salesinvoice(request, type):
 							LineItem.selling_price=subitem.selling_price
 							LineItem.vat_type=item.vat_type
 							LineItem.vat_percent=item.vat_percent
-							item_cost=round((subitem.cost_price*invoiceQuantity),2)
+							item_cost=round((subitem.cost_price*total_quantity),2)
 							LineItem.save()
 							#This is used to calculated to COGS
 							cogs_value=cogs_value+item_cost
@@ -183,10 +187,15 @@ def sales_detail(request, type, detail):
 	#search for the clicked item details then get the item details and get dues from customers
 	#Note this line has an issue as annotate goes over all elements, instead on just the necessary one.
 	if (type== 'Detail'):
-		invoice_id=detail.split("-",1)[1]
-		invoice=salesInvoice.objects.for_tenant(request.user.tenant).get(invoice_id__iexact=invoice_id)
-		details=invoice.salesLineItem_sales_sales_salesInvoice.all()
-		return render(request, 'bill/sales/sales_detail.html',{'items': details, 'invoice':invoice})
+		call_id=detail.split("-",1)[1]
+		if (call_id[:2] == "si"):
+			invoice=salesInvoice.objects.for_tenant(request.user.tenant).select_related().get(invoice_id__iexact=call_id)
+			details=invoice.salesLineItem_sales_sales_salesInvoice.all()
+			return render(request, 'bill/sales/sales_detail.html',{'items': details, 'invoice':invoice})
+		elif (call_id[:2] == "cn"):
+			credit_note=creditNote.objects.for_tenant(request.user.tenant).select_related().get(note_id__iexact=call_id)
+			details=credit_note.creditNoteLineItem_creditNote.all()
+			return render(request, 'bill/sales/inventory_return_detail.html',{'items': details, 'invoice':credit_note})
 	elif (type== 'Due'):
 		this_tenant=request.user.tenant
 		invoice_id=detail.split("-",1)[1]
@@ -297,7 +306,7 @@ def inventory_return(request):
 					total= request.POST.get('total')
 					call_details = request.POST.get('call_details')
 					tax_total= request.POST.get('vat_total')
-					credit_note.tenant=this_tenant
+					#credit_note.tenant=this_tenant
 					customerkey = request.POST.get('customer')	
 					customer=Customer.objects.for_tenant(this_tenant).get(key__iexact=customerkey)
 					credit_note=new_credit_note(this_tenant, customer,\
@@ -355,7 +364,7 @@ def inventory_return(request):
 							elif (call_details == "refund"):
 								account= accountChart.objects.for_tenant(this_tenant).\
 									get(name__exact="Cash")
-							journal_entry(this_tenant, journal, value, account, "Credit")
+							journal_entry(this_tenant, journal, value, account, "Credit")	
 						elif (i==5):
 							account= accountChart.objects.for_tenant(this_tenant).\
 									get(name__exact="Sales Contra")
@@ -385,3 +394,4 @@ def inventory_return(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render(request, 'bill/sales/inventory_return.html', {'warehouse': warehouse})
+

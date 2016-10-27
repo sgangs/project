@@ -5,7 +5,7 @@ from .models import salesInvoice, creditNote, salesPayment
 
 def new_sales_invoice(tenant, customer, warehouse_object,total, grand_discount, date, amount_paid = 0):
 	item=salesInvoice()
-	item.tenant=tenant							
+	item.tenant=tenant
 	item.customer = customer
 	item.warehouse=warehouse_object
 	item.total = total
@@ -16,8 +16,9 @@ def new_sales_invoice(tenant, customer, warehouse_object,total, grand_discount, 
 	return item
 
 
-def new_credit_note(tenant, customer, warehouse_object, total, date, note_type):
+def new_credit_note(tenant, customer, warehouse_object, total, tax_total, date, note_type):
 	credit_note=creditNote()
+	credit_note.tenant=tenant
 	credit_note.customer = customer
 	credit_note.warehouse=warehouse_object
 	credit_note.total = total

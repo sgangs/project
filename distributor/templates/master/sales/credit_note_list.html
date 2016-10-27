@@ -1,0 +1,58 @@
+{% extends "master/list.html" %}
+
+{% block title %}
+<title>
+  Credit Note List
+</title>
+<!-- All this are for Bootstrap datepicker eonasdan-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'bill/list_filter.js' %}"></script>
+
+{% endblock %}
+
+{% block heading %}
+  <h2>Credit Notes</h2>
+{% endblock %}
+
+
+{% block details %}
+</div>
+  </div>
+
+
+	<div class="table-responsive table-details">
+		<table class="table table-striped table-bordered table-hover">
+			<thead class="thead-inverse header-background">
+    			<tr>
+      				<th class="text-center">Credit Note ID</th>
+              <th class="text-center">Customer</th>
+              <th class="text-center">Warehouse</th>
+      				<th class="text-center">Created On</th>
+              <th class="text-center">Credit Note Value</th>
+          </tr>
+  			</thead>
+  			<tbody>
+  				{% for item in items %}
+    			<tr align="center">
+            <!-- Invoice list and invoice due, both have the same template, hence this if-else block to regulate
+                 the link -->
+            <td><a href="{{item.get_absolute_url}}">{{item.note_id}}</a></td>
+            <td>{{item.customer.name}}</td>
+            <td>{{item.warehouse.address}}</td>
+            <td>{{item.date|date:'D, d-m-Y'}}</td>
+            <td>{{item.total}}</td>
+          </tr>
+	    		{% endfor %}
+    		</tbody>
+    	</table> 
+    </div>
+
+  <script type="text/javascript">
+  csrf_token='{{csrf_token}}';  
+  </script>
+
+{% endblock %}

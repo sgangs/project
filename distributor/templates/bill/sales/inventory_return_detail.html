@@ -1,0 +1,65 @@
+{% extends "bill/sales/inventory_return.html" %}
+
+
+	{% block meta %}	
+
+		<h1><center>Credit Note View</center></h1>
+				
+
+		<p><textarea id="customer-code">{{invoice.customer.name}}</textarea></p>
+		<textarea id="warehouse-code"></textarea>
+
+		<table class="meta">			
+			<tr>
+				<th><span>Date</span></th>
+				<td><span id="date">{{invoice.date|date:"d-m-Y"}}</span></td>
+			</tr>
+		</table>
+
+	{% endblock %}
+
+	{% block items_tr %}
+
+		{% for item in items %}
+			<tr class="data">
+				<td colspan="1"><span class="itemcode" >{{item.key}}</span></td>
+				<td colspan="1"><span class="subitemcode" >{{item.sub_key}}</span></td>
+				<td colspan="2"><span>{{item.name}}</span></td>
+				<td colspan="1"><span>{{item.unit}}</span></td>
+				<td colspan="1"><span>{{item.selling_price}}</span></td>
+				<td colspan="1"><span>{{item.quantity}}</span></td>
+				<td colspan="1"><span>{{item.vat_type}}</span></td>
+				<td colspan="1"><span>{{item.vat_percent}}</span></td>
+				<td colspan="1"><span></span></td>
+				<td colspan="2"><span>{{item.inventory_type}}</span></td>
+			</tr>
+		{% endfor %}
+	{% endblock %}
+
+	{%block add%}
+	{% endblock %}
+
+	{% block balance_table %}
+		<table class="balance">
+			<tr>
+				<th><span>Total</span></th>
+				<td><span data-prefix></span><span id="total">{{invoice.total}}</span></td>
+			</tr>
+			<tr>
+				<th><span>Tax Total</span></th>
+				<td><span data-prefix></span><span id="total">{{invoice.tax}}</span></td>
+			</tr>
+						
+		</table>
+
+	<script type="text/javascript">
+		//$("#customer-code").val("{{invoice.customer.name}}");
+        $("#customer-code").attr("disabled","True");
+        $("#warehouse-code").val("{{invoice.warehouse.address}}");
+        $("#warehouse-code").attr("disabled","True");
+	</script>
+	{% endblock %}
+
+	{% block save %}	
+	{% endblock %}
+

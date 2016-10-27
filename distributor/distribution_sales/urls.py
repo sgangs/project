@@ -5,6 +5,7 @@ urlpatterns = [
     url(r'^invoice/$', views.salesinvoice, {'type': 'Sales Invoice'}, name='invoice_new'),
     url(r'^invoicebase/$', views.sales_base, name='base'),
     url(r'^invoicelist/$', views.sales_list, {'type': 'List'}, name='invoice_list'),
+    url(r'^creditnotelist/$', views.sales_list, {'type': 'Note List'}, name='creditnote_list'),
     url(r'^invoicedue/$', views.sales_due, {'type': 'Due'}, name='invoice_due'),
     url(r'^customerdue/$', views.customer_due, {'type': 'Due List'}, name='customer_due'),
     url(r'^inventoryreturn/$', views.inventory_return, name='inventory_return'),
