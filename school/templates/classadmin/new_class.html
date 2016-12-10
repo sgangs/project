@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Daily Attendance Register</title>
+
+{% endblock %} 
+
+{% block content%}
+	
+	<div class="table-responsive">
+		<table class="table table-hover table-striped">
+			<thead class="thead-inverse">
+				<tr>				
+					<th colspan="1"><span>Student ID</span></th>
+					<th colspan="1"><span>First Name</span></th>
+					<th colspan="1"><span>Last Name</span></th>
+					<th colspan="1"><span>Is the Student Present?</span></th>
+				</tr>						
+			<form>
+			<tbody>
+				{% block items_tr %}
+					{% for student in students %}
+					<tr class="data">
+						<td colspan="1"><span class="studentid">{{student.key}}</span></td>
+						<td colspan="1"><span class="studnetname">{{student.first_name}}</span></td>
+						<td colspan="1"><span class="studnetname">{{student.last_name}}</span></td>
+						<td colspan="1"><span contenteditable><input type="checkbox"></span></td>
+					</tr>
+				{% endblock %}
+    
+		</table>
+	</div>
+
+
+
+<!-- <script>
+	$(".select").chosen({
+    	no_results_text: "Oops, nothing found!",
+    	width: "95%"
+  	});
+</script> -->
+{% endblock %}

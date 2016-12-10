@@ -1,6 +1,6 @@
 from .base import *
 from .secret import *
-from .email import *
+#from .email import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = distributor_secret_key
@@ -8,11 +8,11 @@ SECRET_KEY = distributor_secret_key
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-EMAIL_USE_TLS = EMAIL_USE_TLS
-EMAIL_HOST = EMAIL_HOST
-EMAIL_PORT = EMAIL_PORT
-EMAIL_HOST_USER = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
+# EMAIL_USE_TLS = EMAIL_USE_TLS
+# EMAIL_HOST = EMAIL_HOST
+# EMAIL_PORT = EMAIL_PORT
+# EMAIL_HOST_USER = EMAIL_HOST_USER
+# EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
 
 
 DATABASES = {

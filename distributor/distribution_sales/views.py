@@ -11,7 +11,8 @@ from distribution_master.models import Manufacturer, Product, Zone, Customer, Ve
 from distribution_accounts.models import accountChart, Journal, journalEntry, paymentMode, journalGroup
 from distribution_inventory.models import Inventory, returnableInventory, damagedInventory
 from .models import salesInvoice,salesLineItem, creditNote, creditNoteLineItem
-from .utils import new_credit_note, item_call, subitem_call, unit_call, new_sales_payment, new_sales_invoice
+from .utils import new_credit_note, item_call, subitem_call, unit_call, new_sales_payment, new_sales_invoice, \
+					note_new_line_item, invoice_new_line_item
 
 
 @login_required
@@ -122,23 +123,26 @@ def salesinvoice(request, type):
 							multiplier=unit.multiplier
 							invoiceQuantity=int(data['itemQuantity'])*multiplier
 							total_quantity=invoiceQuantity+(int(data['itemFree'])*multiplier)
-							LineItem = salesLineItem()
-							LineItem.invoice_no = Invoice
-							LineItem.key= itemcode
-							LineItem.sub_key= subitemcode							
-							LineItem.name=item.name
-							LineItem.unit=unit.symbol
-							LineItem.discount1=subitem.discount1
-							LineItem.discount2=subitem.discount2
-							LineItem.quantity=invoiceQuantity
-							LineItem.free=int(data['itemFree'])
-							LineItem.manufacturer=item.manufacturer.key
-							LineItem.mrp=subitem.mrp
-							LineItem.selling_price=subitem.selling_price
-							LineItem.vat_type=item.vat_type
-							LineItem.vat_percent=item.vat_percent
 							item_cost=round((subitem.cost_price*total_quantity),2)
-							LineItem.save()
+							free_quantity=int(data['itemFree'])
+							LineItem = invoice_new_line_item (Invoice, itemcode, subitemcode, item, unit.symbol,\
+										subitem, invoiceQuantity, free_quantity)
+							# LineItem = salesLineItem()
+							# LineItem.invoice_no = Invoice
+							# LineItem.key= itemcode
+							# LineItem.sub_key= subitemcode							
+							# LineItem.name=item.name
+							# LineItem.unit=unit.symbol
+							# LineItem.discount1=subitem.discount1
+							# LineItem.discount2=subitem.discount2
+							# LineItem.quantity=invoiceQuantity
+							# LineItem.free=int(data['itemFree'])
+							# LineItem.manufacturer=item.manufacturer.key
+							# LineItem.mrp=subitem.mrp
+							# LineItem.selling_price=subitem.selling_price
+							# LineItem.vat_type=item.vat_type
+							# LineItem.vat_percent=item.vat_percent							
+							# LineItem.save()
 							#This is used to calculated to COGS
 							cogs_value=cogs_value+item_cost
 							#This will help reduce the inventory
@@ -325,18 +329,20 @@ def inventory_return(request):
 						unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
 						multiplier=unit.multiplier
 						invoiceQuantity=int(data['itemQuantity'])*multiplier
-						LineItem = creditNoteLineItem()
-						LineItem.creditnote_no = credit_note												
-						LineItem.key= itemcode
-						LineItem.sub_key= subitemcode						
-						LineItem.name=item.name
-						LineItem.unit=unit.symbol					
-						LineItem.quantity=invoiceQuantity
-						LineItem.selling_price=subitem.selling_price
-						LineItem.vat_type=item.vat_type
-						LineItem.vat_percent=item.vat_percent
-						LineItem.inventory_type = inventory_type
-						LineItem.save()
+						#LineItem = creditNoteLineItem()
+						LineItem = note_new_line_item(credit_note, itemcode, subitemcode, item, unit.symbol,\
+								invoiceQuantity, subitem.selling_price, vat_type, vat_percent, inventory_type)
+						# LineItem.creditnote_no = credit_note												
+						# LineItem.key= itemcode
+						# LineItem.sub_key= subitemcode
+						# LineItem.name=item.name
+						# LineItem.unit=unit.symbol					
+						# LineItem.quantity=invoiceQuantity
+						# LineItem.selling_price=subitem.selling_price
+						# LineItem.vat_type=item.vat_type
+						# LineItem.vat_percent=item.vat_percent
+						# LineItem.inventory_type = inventory_type
+						# LineItem.save()
 						#This is used to calculated to COGS
 						item_cost=round((subitem.cost_price*invoiceQuantity),2)
 						if (inventory_type == "Waste"):

@@ -1,6 +1,6 @@
 from datetime import datetime
 from distribution_master.models import Product, Unit
-from .models import salesInvoice, creditNote, salesPayment
+from .models import salesInvoice, creditNote, salesPayment, creditNoteLineItem, salesLineItem
 
 
 def new_sales_invoice(tenant, customer, warehouse_object,total, grand_discount, date, amount_paid = 0):
@@ -15,7 +15,6 @@ def new_sales_invoice(tenant, customer, warehouse_object,total, grand_discount, 
 	item.save()
 	return item
 
-
 def new_credit_note(tenant, customer, warehouse_object, total, tax_total, date, note_type):
 	credit_note=creditNote()
 	credit_note.tenant=tenant
@@ -28,7 +27,6 @@ def new_credit_note(tenant, customer, warehouse_object, total, tax_total, date, 
 	credit_note.save()
 	return credit_note
 
-
 def new_sales_payment(invoice, current_amount_paid, payment_mode, cheque_rtgs_number ):
 	payment=salesPayment()
 	payment.invoice_no=invoice
@@ -38,8 +36,6 @@ def new_sales_payment(invoice, current_amount_paid, payment_mode, cheque_rtgs_nu
 	payment.cheque_rtgs_number=cheque_rtgs_number
 	payment.save()
 	return payment
-
-
 
 def item_call(tenant, productkey):
 	response_data={}
@@ -74,3 +70,36 @@ def unit_call(tenant, productkey, subitem, unit_entry):
 	response_data['old_multiplier'] = str(initial_multiplier)
 	response_data['new_multiplier'] = str(revised_unit.multiplier)
 	return response_data
+
+def note_new_line_item(credit_note, itemcode, subitemcode, item, symbol, invoiceQuantity, selling_price, inventory_type):
+	LineItem = creditNoteLineItem()
+	LineItem.creditnote_no = credit_note												
+	LineItem.key= itemcode
+	LineItem.sub_key= subitemcode						
+	LineItem.name=item.name
+	LineItem.unit=symbol					
+	LineItem.quantity=invoiceQuantity
+	LineItem.selling_price=subitem.selling_price
+	LineItem.vat_type=item.vat_type
+	LineItem.vat_percent=item.vat_percent
+	LineItem.inventory_type = inventory_type
+	LineItem.save()
+	return LineItem
+
+def invoice_new_line_item(Invoice, itemcode, subitemcode, item, symbol, subitem, invoiceQuantity, free):
+	LineItem = salesLineItem()
+	LineItem.invoice_no = Invoice
+	LineItem.key= itemcode
+	LineItem.sub_key= subitemcode							
+	LineItem.name=item.name
+	LineItem.unit=symbol
+	LineItem.discount1=subitem.discount1
+	LineItem.discount2=subitem.discount2
+	LineItem.quantity=invoiceQuantity
+	LineItem.free=free
+	LineItem.manufacturer=item.manufacturer.key
+	LineItem.mrp=subitem.mrp
+	LineItem.selling_price=subitem.selling_price
+	LineItem.vat_type=item.vat_type
+	LineItem.vat_percent=item.vat_percent							
+	LineItem.save()

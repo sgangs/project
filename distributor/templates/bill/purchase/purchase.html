@@ -5,10 +5,16 @@
 
 {% load static from staticfiles %}
 
+<!--Datepicker CSS and JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+
+
 <script src="{% static 'bill/purchase/purchasescript.js' %}"></script>
 <script src="{% static 'bill/purchase/purchasegeneral.js' %}"></script>
 
 <link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
 
 <title>Purchase Invoice</title>
 
@@ -32,30 +38,30 @@
 
 		<h1><center>Purchase Invoice Creation</center></h1>	
 
-		<p><textarea id="vendor-code" placeholder="Vendor Code" ></textarea></p>
+		<div class = "container">
+		<div class = "col-md-4">
+		<textarea id="vendor-code" placeholder="Vendor Code" ></textarea>
 		<!--<p><textarea id="warehouse-code" placeholder="Warehouse Code" ></textarea></p>-->
 		<textarea id="warehouse-code">{{default}}</textarea>
+		</div>
 
-		<!--<address>
-			<p></p>
-			<p id="companyname"></p>
-			<p id = "companyaddress"></p>
-		</address>-->
-			
-		
-		<table class="meta">			
-			
-			<tr>
-				<th><span>Date</span></th>
-				<td><span id="date"></span></td>
-			</tr>
+		<div class = "col-md-8">
+						
+		<!-- <div class="container pull-right" style="margin-bottom: 1%;">
+			<div class="input-group date pull-right" >
+    			<input class="pull-right" data-provide="date">
+    		</div>
+ 		</div> -->	
 
+
+		<table class="meta">
 			<tr>
 				<th><span>Amount Due</span></th>
 				<td><span id="prefix">Rs. </span><span></span></td>
-			</tr>
-			
+			</tr>			
 		</table>
+		</div>
+		</div>
 
 		{% endblock %}
 
@@ -103,20 +109,20 @@
 		<table class="balance">
 			<tr>
 				<th><span>Total</span></th>
-				<td><span data-prefix></span><span id="total">600.00</span></td>
+				<td><span data-prefix></span><span id="total"></span></td>
 			</tr>
 			<tr>
 				<th><span>Grand Discount</span></th>
-				<td><span data-prefix></span><span contenteditable id="grand_discount">0.00</span></td>
+				<td><span data-prefix></span><span contenteditable id="grand_discount"></span></td>
 			</tr>
 			<tr>
 				<th><span>Net Toal</span></th>
-				<td><span data-prefix></span><span id="net_total">0.00</span></td>
+				<td><span data-prefix></span><span id="net_total"></span></td>
 			</tr>
 			
 			<tr hidden>
 				<th><span>Amount Paid</span></th>
-				<td><span data-prefix></span><span contenteditable id="amount_paid">0.00</span></td>
+				<td><span data-prefix></span><span contenteditable id="amount_paid"></span></td>
 			</tr>
 			<tr hidden>
 				<th><span>Balance Due</span></th>
@@ -137,6 +143,14 @@
 <script type="text/javascript">
 	csrf_token='{{csrf_token}}';
 	redirect_url= "{% url 'purchase:invoice_list' %}"	
+	// $('.date').datepicker({
+	// 	format: 'dd/mm/yyyy',
+	// 	autoclose: true,
+	// 	todayHighlight: true,
+	// });
+	// $('.date').datepicker().on("changeDate", function(e){
+
+	// })
 </script>
 {% endblock %}
 

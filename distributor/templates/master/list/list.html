@@ -1,0 +1,140 @@
+{% extends "master/list/master_list.html" %}
+
+{% block title %}
+<title>
+    Master List
+</title>
+<!-- Datatable CSS-->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<!-- Datatable jQuery-->
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+<!--jQuery & javascript for this html-->
+<!-- {% load static from staticfiles %}
+  <script src="{% static 'master/script.js' %}"></script>
+{% endblock %}
+ -->
+  {% block heading %}
+  <h2>Master List for {{type}}</h2>
+  {% endblock %}
+
+
+
+
+  <!-- This is used to list the items in the front end and also for adding a delete button-->
+
+  
+  
+  {% block table_header %}
+  {% if type == 'Manufacturer' %}
+    <th class="text-center">Name</th>
+    <th class="text-center">Key</th>
+    <th class="text-center">Details</th>
+    <th class="text-center">Email</th>
+    <th class="text-center">Status</th>
+  {% elif type == 'Unit' %}
+    <th class="text-center">Dimension</th>
+    <th class="text-center">Name</th>
+    <th class="text-center">Symbol</th>
+    <th class="text-center">Multiplier</th>
+  {% elif type == 'Product' %}
+    <th class="text-center">Name</th>
+    <th class="text-center">Key</th>
+    <th class="text-center">Manufacturer</th>
+    <th class="text-center">VAT Type</th>
+    <th class="text-center">VAT %</th>
+    <th class="text-center">Sub Product Key</th>
+    <th class="text-center">Cost Price</th>
+    <th class="text-center">MRP</th>
+    <th class="text-center">Discount in %</th>
+    <th class="text-center">Discount in value</th>
+    <th class="text-center">Selling Price</th>
+  {% elif type == 'Zone' %}
+    <th class="text-center">Name</th>
+    <th class="text-center">Key</th>
+    <th class="text-center">Details</th>
+  {% elif type == 'Customer' %}
+    <th class="text-center">Name</th>
+    <th class="text-center">Key</th>
+    <th class="text-center">Address</th>
+    <th class="text-center">Phone No</th>
+    <th class="text-center">Details</th>
+    <th class="text-center">Zone</th>
+    <th class="text-center">CST License</th>
+    <th class="text-center">VAT License</th>
+    <th class="text-center">Status</th>
+  {% elif type == 'Vendor' %}
+    <th class="text-center">Name</th>
+    <th class="text-center">Key</th>
+    <th class="text-center">Address</th>
+    <th class="text-center">Phone No</th>
+    <th class="text-center">Details</th>
+    <th class="text-center">Status</th>
+  {% endif %}
+  {% endblock %}
+
+      
+
+  {% block table_body %}
+  {% if type == 'Manufacturer' %}
+  <tr align="center">
+    <td><a href= "{{item.get_absolute_url}}">{{item.name}}</a></td>
+    <td>{{item.key}}</td>
+    <td>{{item.details}}</td>
+    <td>{{item.email}}</td>
+    <td>{{item.status}}</td>
+  </tr>
+  {% elif type == 'Unit' %}
+  <tr align="center">
+    <td>{{item.dimension.name}}</td>
+    <td>{{item.name}}</td>
+    <td>{{item.symbol}}</td>
+    <td>{{item.multiplier}}</td>
+  </tr>
+  {% elif type == 'Product' %}
+  {% for subproduct in item.subProduct_master_master_product.all %}
+  <tr align="center">
+    <td><a href= "{{item.get_absolute_url}}" >{{item.name}}</a></td>
+    <td>{{item.key}}</td>
+    <td>{{item.manufacturer}}</td>
+    <td>{{item.vat_type}}</td>
+    <td>{{item.vat_percent}}</td>
+    <td>{{subproduct.sub_key}}</td>
+    <td>{{subproduct.cost_price}}</td>
+    <td>{{subproduct.mrp}}</td>
+    <td>{{subproduct.discount1}}</td>
+    <td>{{subproduct.discount2}}</td>
+    <td>{{subproduct.selling_price}}</td>
+  </tr>
+  {% endfor %}
+  {% elif type == 'Zone' %}
+  <tr align="center">
+    <td>{{item.name}}</td>
+    <td>{{item.key}}</td>
+    <td>{{item.details}}</td>
+  </tr>
+  {% elif type == 'Customer' %}
+  <tr align="center">
+    <td><a href= "{{item.get_absolute_url}}" >{{item.name}}</a></td>
+    <td>{{item.key}}</td>
+    <td>{{item.address}}</td>
+    <td>{{item.phone_no}}</td>
+    <td>{{item.details}}</td>
+    <td>{{item.zone.name}}</td>
+    <td>{{item.cst_no}}</td>
+    <td>{{item.vat_no}}</td>
+    <td>{{item.status}}</td>
+  </tr>
+  {% elif type == 'Vendor' %}
+  <tr align="center">
+    <td><a href= "{{item.get_absolute_url}}" >{{item.name}}</a></td>
+    <td>{{item.key}}</td>
+    <td>{{item.address}}</td>
+    <td>{{item.phone_no}}</td>
+    <td>{{item.details}}</td>
+    <td>{{item.status}}</td>
+  </tr>
+  {% endif %}
+  {% endblock %}
+
+  

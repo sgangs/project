@@ -1,0 +1,7 @@
+*.pyc
+local.py
+settings.py
+email.py
+secret.py
+new_simple.html
+manufacturing/**

@@ -3,6 +3,7 @@ import json
 #from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
+from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
@@ -46,21 +47,21 @@ def master_list(request, type):
 		#	response_data['name'] = itemkey
 		#	jsondata = json.dumps(response_data)
 		#	return HttpResponse(jsondata)
-		if (itemtype == 'Unit'):
-			item = Unit.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
-			response_data['name'] = itemkey
-			jsondata = json.dumps(response_data)
-			return HttpResponse(jsondata)
-		elif (itemtype == 'Product'):
-			item = Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
-			response_data['name'] = itemkey
-			jsondata = json.dumps(response_data)
-			return HttpResponse(jsondata)
-		elif (itemtype == 'Zone'):
-			item = Zone.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
-			response_data['name'] = itemkey
-			jsondata = json.dumps(response_data)
-			return HttpResponse(jsondata)
+		# if (itemtype == 'Unit'):
+		# 	item = Unit.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
+		# 	response_data['name'] = itemkey
+		# 	jsondata = json.dumps(response_data)
+		# 	return HttpResponse(jsondata)
+		# elif (itemtype == 'Product'):
+		# 	item = Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
+		# 	response_data['name'] = itemkey
+		# 	jsondata = json.dumps(response_data)
+		# 	return HttpResponse(jsondata)
+		# elif (itemtype == 'Zone'):
+		# 	item = Zone.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
+		# 	response_data['name'] = itemkey
+		# 	jsondata = json.dumps(response_data)
+		# 	return HttpResponse(jsondata)
 		#elif (itemtype == 'Customer'):
 		#	item = Customer.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
 		#	response_data['name'] = itemkey
@@ -71,11 +72,11 @@ def master_list(request, type):
 		#	response_data['name'] = itemkey
 		#	jsondata = json.dumps(response_data)
 		#	return HttpResponse(jsondata)
-		elif (itemtype == 'Warehouse'):
-			item = Warehouse.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
-			response_data['name'] = itemkey
-			jsondata = json.dumps(response_data)
-			return HttpResponse(jsondata)
+		# elif (itemtype == 'Warehouse'):
+		# 	item = Warehouse.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
+		# 	response_data['name'] = itemkey
+		# 	jsondata = json.dumps(response_data)
+		# 	return HttpResponse(jsondata)
 	
 	#for the list to be displayed	
 	if (type=="Manufacturer"):
@@ -85,7 +86,9 @@ def master_list(request, type):
 	elif (type=="Unit"):
 		items = Unit.objects.for_tenant(request.user.tenant).all()
 	elif (type=="Product"):
-		items = Product.objects.for_tenant(request.user.tenant).all()	
+		#items = Product.objects.for_tenant(request.user.tenant).prefetch_related('subProduct_master_master_product').all()	
+		items = Product.objects.for_tenant(request.user.tenant).\
+		prefetch_related(Prefetch('subProduct_master_master_product')).all()
 	elif (type=="Zone"):
 		items = Zone.objects.for_tenant(request.user.tenant).all()
 	elif (type=="Customer"):
@@ -96,7 +99,7 @@ def master_list(request, type):
 		items = Warehouse.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'master/list_table.html',{'items':items, 'type':type})
 
-	return render(request, 'master/master_list.html',{'items':items, 'type':type})
+	return render(request, 'master/list/list.html',{'items':items, 'type':type})
 
 
 @login_required

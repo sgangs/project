@@ -1,0 +1,117 @@
+import datetime as dt
+from datetime import datetime
+from django.db import models
+from django.db.models import signals
+from django.core.urlresolvers import reverse
+from django.template.defaultfilters import slugify
+
+from school_user.models import Tenant
+
+
+class TenantManager(models.Manager):
+	def for_tenant(self, tenant):
+		return self.get_queryset().filter(tenant=tenant)
+
+#This is the branch details
+# class Branch(models.Model):
+# 	name = models.CharField("Name of the branch", max_length=12)
+# 	key=models.CharField(db_index=True, max_length=10)
+# 	slug=models.SlugField(max_length=35)
+# 	address_line_1=models.TextField("Address Line 1",blank=True)
+# 	address_line_2=models.TextField("Address Line 2",blank=True)
+# 	state=models.CharField(blank=True, max_length=30)
+# 	pincode=models.PositiveIntegerField(blank=True)
+# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='branch_genadmin_user_tenant')
+# 	objects=TenantManager()
+	
+# 	# def get_absolute_url(self):
+# 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+# 	def save(self, *args, **kwargs):
+# 		if not self.id:
+# 			item="br"+" "+self.tenant.key+" "+self.key
+# 			self.slug=slugify(item)
+# 		super(Product, self).save(*args, **kwargs)
+
+# 	class Meta:
+# 		verbose_name_plural = "branches"
+# 		unique_together = (("key", "tenant"))
+# 		# ordering = ('name',)
+		
+# 	def __str__(self):
+# 		return self.name
+
+
+#This is the list of subjects to be taught in school, irrespective of branch.
+class Subject(models.Model):
+	name=models.CharField("Subject Name", blank=True, max_length=20)
+	slug=models.SlugField(max_length=50)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='subject_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item="sub"+" "+self.tenant.key+" "+self.name
+			self.slug=slugify(item)
+		super(Subject, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("name", "tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return self.name
+
+
+#This is the class group model. Class has FK to class group and syllabus is assigned to class group
+class class_group(models.Model):
+	name = models.CharField(db_index=True,max_length=15)
+	#branch=models.ForeignKey(Branch,db_index=True,related_name='classGroup_branch')
+	slug=models.SlugField(max_length=50)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classGroup_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item="cl"+" "+self.tenant.key+" "+self.name
+			self.slug=slugify(item)
+		super(class_group, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("name","tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return self.name
+
+
+#This is the house model. House is for each branch separately.
+class House(models.Model):
+	name = models.CharField(db_index=True,max_length=20)
+	house_motto = models.TextField(blank=True)
+	#branch=models.ForeignKey(Branch,db_index=True,related_name='house_branch')
+	slug=models.SlugField(max_length=50)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='house_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item="ho"+" "+self.tenant.key+" "+self.name
+			self.slug=slugify(item)
+		super(House, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("name", "tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return self.name

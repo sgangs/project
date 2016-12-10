@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    System Master 
+</title>
+
+<!-- {% load static from staticfiles %}
+	<script src="{% static 'master/script.js' %}"></script>
+{% endblock %}
+ -->
+{% block content%}
+
+	{% block heading %}
+	{% if type != 'subProduct' %}
+		<h3>Master List for {{type}}</h3>
+	{% else %}
+		<h3>Sales Invoices</h3>
+	{% endif %}	
+	{% endblock %}
+
+
+
+	{%block add %}
+	<!-- This if-else set is used to add the "add new item" button to the top of the list. The details inside script is used for the related jquery file which is used to process the deletion of item -->
+
+	{% if type == 'Manufacturer' %}
+		<a href="{% url 'master:manufacturer_new' %}"><button type="button" class="btn btn-primary btn-xs">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+		<script>
+ 			url_list = '#'; 		
+ 			listtype = 'Manufacturer'
+		</script>
+
+	{% elif type == 'Product' %}
+		<a href="{% url 'master:product_new' %}"><button type="button" class="btn btn-primary btn-xs">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+		<script>
+			url_list = '#';
+			listtype = 'Product' 		
+		</script>
+
+	{% elif type == 'Unit' %}
+		<a href="{% url 'master:unit_new' %}"><button type="button" class="btn btn-primary btn-xs">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+		<script>
+			url_list = '#'; 		
+			listtype = 'Unit'
+		</script>
+
+	{% elif type == 'Zone' %}
+		<a href="{% url 'master:zone_new' %}"><button type="button" class="btn btn-primary btn-xs">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+		<script>
+			url_list = '#'; 		
+			listtype = 'Zone'
+		</script>
+
+	{% elif type == 'Customer' %}
+		<a href="{% url 'master:customer_new' %}"><button type="button" class="btn btn-primary btn-xs">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+		<script>
+			url_list = '#'; 		
+			listtype = 'Customer'
+		</script>
+
+	{% elif type == 'Vendor' %}
+		<a href="{% url 'master:vendor_new' %}"><button type="button" class="btn btn-primary btn-xs">
+			<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+		<script>
+			url_list = '#'; 		
+			listtype = 'Vendor'
+		</script>
+
+
+	{% endif %}
+	{% endblock %}
+
+	<!-- This is used to list the items in the front end and also for adding a delete button-->
+
+	{% block details %}
+
+	<div><p></p></div>	
+	<div class="table-responsive">
+		<table class="table table-striped table-bordered table-hover" id="master_table">
+			<thead class="thead-inverse header-background">
+    			<tr>
+    				{% block table_header %}
+      				<th class="text-center">Key</th>
+              		<th class="text-center">Address</th>
+              		<th class="text-center">Remarks</th>
+      				<th class="text-center">Default</th>
+      				<th class="text-center">Status</th>
+      				{% endblock %}
+    			</tr>
+  			</thead>
+  			{% block table_body_complete %}
+  			<tbody>
+  				{% for item in items %}
+  				{% block table_body %}
+    			<tr align="center">    				
+      				<td>{{item.key}}</td>
+              		<td>{{item.address}}</td>
+      				<td>{{item.remarks}}</td>
+      				<td>{{item.default}}</td>
+      				<td>{{item.status.unit}}</td>
+      				{% endblock %}
+      			</tr>
+	    		{% endfor %}
+    		</tbody>
+    		{% endblock %}
+    	</table> 
+    </div>
+
+
+
+
+
+
+<!--
+	{% for item in items %}
+		<div>
+			<h3><a href= "{{item.get_absolute_url}}" >{{item.name}}</a></h3>
+				<h6 hidden>{{item.key}}</h6>
+				<button type="button" class="btn btn-primary btn-xs delete" data-confirm="Are you sure to delete this item?">
+				<span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+		</div>
+	{% endfor %}
+-->
+	{% endblock %}
+
+	<script type="text/javascript">
+		csrf_token = '{{ csrf_token }}';
+ 		$(document).ready(function(){
+    		$('#master_table').DataTable({
+      			"searching": false
+    		});
+  		});		
+ 	</script>
+	
+{% endblock %}
+
+
+
