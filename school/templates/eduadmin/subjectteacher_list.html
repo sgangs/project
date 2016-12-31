@@ -1,0 +1,40 @@
+{% extends "eduadmin/list_base.html" %}
+
+{% block table %}
+<div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover" id="account">
+      <thead class="thead-inverse header-background">
+        {% block table_header %}
+          <tr>
+            <th class="text-center">Sl. No</th>
+            <th class="text-center">Year</th>
+            <th class="text-center">Class Group</th>
+            <th class="text-center">Class Name</th>
+            <th class="text-center">Subject</th>
+            <th class="text-center">Teacher System Key</th>
+            <th class="text-center">Teacher Local ID</th>
+            <th class="text-center">Teacher Name</th>
+          </tr>
+          {% endblock %}
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr align="center">
+              <td>{{forloop.counter}}</td>
+              <td>{{item.year}}</td>
+              <td>{{item.class_section.classgroup.name}}</td>
+              <td>{{item.class_section.name}}</td>
+              <td>{{item.subject.name}}</td>
+              <td>{{item.teacher.key}}</td>
+              <td>{{item.teacher.school_teacher_id}}</td>
+              <td>{{item.teacher.first_name}} {{item.teacher.last_name}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table> 
+    </div>
+{% endblock %}
+
+
+
+

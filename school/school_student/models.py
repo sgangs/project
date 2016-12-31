@@ -17,10 +17,12 @@ class TenantManager(models.Manager):
 class Student(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
+	dob=models.DateField("Date of Birth")
 	key=models.CharField(db_index=True,max_length=12)
+	#school_student_id=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=32)
 	contact=models.CharField(max_length=13)
-	local_id=models.CharField("Local ID",blank=True,null=True, max_length=50)
+	local_id=models.CharField("School student ID",blank=True,null=True, max_length=50)
 	user=models.ForeignKey(User,blank=True, null=True,db_index=True,related_name='student_student_user_user')
 	address_line_1=models.TextField("Address Line 1",blank=True, null=True)
 	address_line_2=models.TextField("Address Line 2",blank=True, null=True)
@@ -57,7 +59,7 @@ class Student(models.Model):
 		# ordering = ('name',)
 		
 	def __str__(self):
-		return '%s %s' % (self.first_name, self.last_name)
+		return '%s  %s : %s %s' % (self.key, self.local_id, self.first_name, self.last_name)
 
 class student_guardian(models.Model):
 	student=models.ForeignKey(Student,db_index=True,related_name='studentGuardian_student')

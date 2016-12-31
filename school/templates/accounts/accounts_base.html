@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    
+     <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    {% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
+    <title>Accounts Base List</title>
+
+{% endblock %}
+
+{% block content%}
+
+    <div class="container">
+
+        <div class="row">
+
+            <!--<div class="col-lg-12">
+                <h1 class="page-header">Thumbnail Gallery</h1>
+            </div>-->
+
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "View Ledger Group" href="{% url 'accounts:ledger_group_list' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=View Ledger Group" alt="View Ledger Group">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where accounting period - mostly from 1st April to 31st March -  can be viewed" href="{% url 'accounts:period_list' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Accounting Period List" alt="Accounting Period List">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where different accounts can be viewed" href="{% url 'accounts:account_list' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Account List" alt="Account List">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where all journal entries can be viewed." href="{% url 'accounts:journalgroup_list' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Journal List" alt="Journal List">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where all payment modes can be viewed" href="{% url 'accounts:paymentmode_list' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=List of Payment Modes" alt="List of Payment Modes">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where new ledger group (eg: Fees group to have all fees related accounts/ledgers)" href="{% url 'accounts:new_ledgergroup' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Add New Ledger Group" alt="Add New Ledger Group">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where accounting period - mostly from 1st April to 31st March -  can be added" href="{% url 'accounts:new_period' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Add New Accounting Period" alt="Add new accounting period">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where new account can be added" href="{% url 'accounts:new_account' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Add New Account/Ledger" alt="Add New Account/Ledger">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where new journal entry can be added." href="{% url 'accounts:journalentry_new' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Add New Journal Entry" alt="Add new journal entry">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "This is where new payment mode can be added, with each payment mode linked to one account" href="{% url 'accounts:new_paymentmode' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Add New Payment Mode" alt="Add new Payment Mode">
+                </a>
+            </div>
+        </div>
+
+        <hr>
+
+        
+    </div>
+    <!-- /.container -->
+
+{% endblock %}

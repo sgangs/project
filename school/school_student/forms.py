@@ -35,7 +35,7 @@ class StudentForm(forms.ModelForm):
 
 	class Meta:
 		model=Student
-		fields =('first_name', 'last_name', 'contact', 'local_id', 'address_line_1', 'address_line_2','state','pincode' )
+		fields =('first_name', 'last_name', 'dob','contact', 'local_id', 'address_line_1', 'address_line_2','state','pincode' )
 	
 
 class StudentGuardianForm(forms.ModelForm):

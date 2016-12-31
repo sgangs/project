@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
+from django.core.urlresolvers import reverse_lazy
+
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -45,6 +47,9 @@ INSTALLED_APPS = [
     'school_classadmin',
     'school_teacher',
     'school_student',
+    'school_library',
+    'school_account',
+    'school_fees',
 ]
 
 AUTH_USER_MODEL='school_user.User'
@@ -107,6 +112,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+USE_TZ = True
+
 TIME_ZONE = 'Asia/Kolkata'
 
 DATE_INPUT_FORMATS = ('%d-%m-%Y')
@@ -114,8 +121,6 @@ DATE_INPUT_FORMATS = ('%d-%m-%Y')
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -126,5 +131,5 @@ STATIC_ROOT=os.path.join(BASE_DIR, '..', '..','static')
 STATIC_URL = '/static/'
 
 # LOGIN_REDIRECT_URL = reverse_lazy('master:landing')
-# LOGIN_URL = reverse_lazy('login')
-# LOGOUT_URL = reverse_lazy('logout')
+LOGIN_URL = reverse_lazy('login')
+LOGOUT_URL = reverse_lazy('logout')

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    Accounts Master 
+</title>
+<!--jQuery & javascript for this html-->
+{% load static from staticfiles %}
+  <script src="{% static 'master/script.js' %}"></script>
+{% endblock %}
+
+{% block content%}
+
+  {% block heading %}
+  <h3>List for {{type}}</h3>
+  <h1></h1>
+  {% endblock %}
+
+
+
+
+  
+  {% block details %}
+
+  {% for item in items %}
+    {% if type != 'Sales_Invoice' and type != 'Purchase_Invoice' and type != 'Period'%}
+    <div>
+      <h4><a href= "#" >{{item.name}}</a></h4>
+        <h6 hidden>{{item.key}}</h6>
+        
+    </div>
+    {% elif type == 'Period' %}
+    <div>
+      <h5><a href= "#">{{item.start}}</a> <a href= "#">{{item.end}}</a> </h5>
+        <h6 hidden>{{item.key}}</h6>
+        <button type="button" class="btn btn-primary btn-xs delete" data-confirm="Are you sure to delete this item?">
+        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+    </div>
+    {% else %}
+      <h4>
+        <a href= "#">{{item.invoice_id}}</a> <a>{{item.customer_name}}</a> <a>{{item.total}}</a>
+        <!--<h6 hidden> {{item.key}} </h6>
+        <button type="button" class="btn btn-primary btn-xs delete" data-confirm="Are you sure to delete this item?">Delete</button>-->
+      </h4>
+    {% endif %}
+
+  {% endfor %}
+
+  {% endblock %}
+
+  <script>
+    csrf_token = '{{ csrf_token }}';    
+  </script>
+  
+{% endblock %}

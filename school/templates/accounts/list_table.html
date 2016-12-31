@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    System Master 
+</title>
+<!-- Datatable CSS-->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<!-- Datatable jQuery-->
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+{% load static from staticfiles %}
+	
+{% endblock %}
+
+{% block content%}
+
+	{% block heading %}
+	<h3>Master List for {{type}}</h3>
+	{% endblock %}
+
+	<!-- This if-else set is used to add the "add new item" button to the top of the list. -->
+	<a href="#"><button type="button" class="btn btn-primary btn-xs">
+    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>  New {{type}}</button></a>
+	
+	{% block details %}
+	<div><p></p></div>	
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover" id="master_table">
+      <thead class="thead-inverse header-background">
+          <tr>
+              <th class="text-center">Name</th>
+                  <th class="text-center">Account</th>
+                  <th class="text-center">Default</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr align="center">
+              <td>{{item.name}}</td>
+              <td>{{item.payment_account}}</td>
+              <td>{{item.default}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table> 
+  </div>
+
+	{% endblock %}
+
+	<script type="text/javascript">
+		csrf_token = '{{ csrf_token }}';
+ 		$(document).ready(function(){
+    		$('#master_table').DataTable({
+      			"searching": false
+    		});
+  		});		
+ 	</script>
+	
+{% endblock %}
+
+
+

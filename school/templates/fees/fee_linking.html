@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Add Default Fee Structure</title>
+
+<!--Chosen (for searchbox in select box) JS and CSS-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'fees/feelink.js' %}"></script>
+
+{% endblock %} 
+
+{% block content%}
+<h3>Add Default Fee Structure</h3>	
+
+<h6>Select class groups for the given year to link with fee structure</h6>
+
+
+<div class="col-xs-12 col-md-6 form-group new_class row">
+<form>
+
+	<div class="form-group classgroupdiv">
+		<label for="classgroup" class="control-label">Class Group</label>
+		<select class="form-control selectpicker classgroup" multiple data-live-search="true">
+    		{% for group in groups %}
+  				<option data-id="{{group.id}}">{{group.name}}</option>
+			{% endfor %}
+  		</select>
+	</div>
+	<p class="bg-danger classgroup-p" hidden="true">...</p>
+
+	<div class="form-group yeardiv">
+		<label for="classname" class="control-label">Year</label>
+			<input type="text" required="" class="form-control year" min="1980" max="9999" step="1" aria-required="true">
+	</div>
+	<p class="bg-danger year-p" hidden="true">...</p>
+	<div class="form-group monthlyfeediv">
+		<label for="classgroup" class="control-label">Select Monthly Fee (Select Only One)</label>
+		<select class="form-control selectpicker monthlyfee" data-live-search="true">
+    		<option disabled selected hidden style='display: none' value>Select Monthly Fee</option>
+				{% for fee in monthly_fee %}
+  					<option data-id="{{fee.id}}">{{fee.name}}</option>
+				{% endfor %}
+  		</select>
+	</div>
+	<div class="form-group yearlyfeediv">
+		<label for="classgroup" class="control-label" >Select Yearly Fee (Select Multiple)</label>
+		<select class="form-control selectpicker yearlyfee" multiple data-live-search="true">
+    			{% for fee in yearly_fee %}
+  					<option data-id="{{fee.id}}">{{fee.name}}</option>
+				{% endfor %}
+  		</select>
+	</div>
+	<div class="form-group addstudentdiv" hidden=true>
+		<label for="classname" class="control-label">Add fee structure to all students of this class group</label>			
+		<select class="form-control selectpicker addstudent">
+    		<option disabled selected hidden style='display: none' value>Select Yes/No</option>
+				<option data-id="Yes">Yes</option>
+				<option data-id="No">No</option>
+  		</select>
+	</div>
+
+	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Submit</button>
+</form>
+</div>			
+
+<script>
+	
+  	csrf_token='{{csrf_token}}';	
+  	redirect_url= "#" //I'm yet to create some landing details. Those need to be created.
+</script>
+{% endblock %}
+

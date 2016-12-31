@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    General Administration List 
+</title>
+<!-- Datatable CSS-->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<!-- Datatable jQuery-->
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+{% load static from staticfiles %}
+{% endblock %}
+
+{% block content%}
+	<h2>List For {{list_for}}</h2>
+  <h1></h1>
+  {% block table %}
+  {% endblock %}
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#account').DataTable({
+      "searching": false
+    });
+  });
+</script>
+	
+{% endblock %}
+
+
+
+

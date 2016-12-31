@@ -14,23 +14,46 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.min.css">
 
 <title>Calender Events</title>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'genadmin/event_entry.js' %}"></script>
+
 {% endblock %} 
 
 {% block content%}
 	
-	<div id='calendar'></div>
+<div id='calendar'></div>
 
-	<script>
-		$(document).ready(function() {
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Add Event To Annual Calender</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+				<div class="form-group eventnamediv">
+					<label for="classname" class="control-label">Event Name</label>
+					<input type="text" required="" class="form-control eventname" maxlength="15" aria-required="true">
+				</div>
+				<div class="form-group eventnamediv">
+					<label for="classname" class="control-label">Event Date</label>
+					<input type="date" required="" class="form-control date" aria-required="true">
+				</div>
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary submit">Submit</button>
+		    </div>
+	    </div>
+	</div>
+</div>
 
-    		// page is now ready, initialize the calendar...
-
-    		$('#calendar').fullCalendar({
-        		// put your options and callbacks here
-    		})
-
-		});
-	</script>
+<script>
+csrf_token='{{csrf_token}}';
+</script>
 {% endblock %}
 
 

@@ -1,6 +1,8 @@
 from functools import partial, wraps
+from itertools import chain
 import json
 #from datetime import datetime
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
@@ -10,11 +12,18 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 #from django.db.models import F
 
-from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm
+from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm, ClassStudentForm, SubjectTeacherForm
 from .models import class_section, classteacher, classstudent, Syllabus, Exam, Examiner, subject_teacher
 from school_teacher.models import Teacher
 from school_student.models import Student
 from school_genadmin.models import class_group, Subject
+
+
+@login_required
+#This is the base page.
+def base(request):
+	return render (request, 'eduadmin/eduadmin_base.html')
+
 
 @login_required
 #This function helps in creating new class
@@ -68,13 +77,22 @@ def class_new(request):
 def eduadmin_new(request, input_type):
 	if (input_type=="Syllabus"):
 		importform=SyllabusForm
-		name='genadmin:unit_list'
+		name='eduadmin:class_detail'
 	elif (input_type=="Exam"):
 		importform=ExamForm
 		name='genadmin:unit_list'
 	elif (input_type=="ClassTeacher"):
 		importform=ClassTeacherForm
-		name='genadmin:unit_list'
+		name='eduadmin:class_detail'
+	elif (input_type=="ClassStudent"):
+		importform=ClassStudentForm
+		name='eduadmin:class_detail'
+	elif (input_type=="Subject Teacher"):
+		importform=SubjectTeacherForm
+		name='eduadmin:subject_teacher_list'
+	elif (input_type=="Examiner"):
+		importform=ExaminerForm
+		name='eduadmin:examiner_list'
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
 	#importformset=formset_factory(wraps(importform)(partial(importform, tenant=current_tenant)), extra=3)
@@ -87,37 +105,37 @@ def eduadmin_new(request, input_type):
 		if form.is_valid():
 			item=form.save(commit=False)			
 			item.tenant=current_tenant
-			item.save()
+			#item.save()
 			return redirect(name)
 	#else:
 	#	form=importform(tenant=request.user.tenant)	
 	#return render(request, 'master/new.html',{'formset': formset, 'helper': helper, 'item': type})
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
 
-@login_required
-#This viw is used for entering exam invigilators
-def examiner_new(request):
-	name='genadmin:unit_list'
-	current_tenant=request.user.tenant
-	form=ExaminerForm(tenant=current_tenant)
-	if (request.method == "POST"):
-		current_tenant=request.user.tenant
-		form = ExaminerForm(request.POST, tenant=current_tenant)
-		if form.is_valid():
-			item=form.save(commit=False)
-			item.tenant=current_tenant
-			unique_class=cd.get('class_section')
-			unique_exam=cd.get('exam')
-			unique_subject=cd.get('subject')
-			year=Exam.objects.for_tenant(request.user.tenant).get_object_or_404(name=unique_exam).year
-			item.internal_examiner=subject_teacher.filter(class_section=unique_class).filter(subject=unique_subject).\
-									filter(year=year).teacher
-			item.save()
-			return redirect(name)
-	return render(request, 'genadmin/new.html',{'form': form, 'item': "Examiner"})
+# @login_required
+# #This view is used for entering exam invigilators. Nothing is done yet.
+# def examiner_new(request):
+# 	name='genadmin:unit_list'
+# 	current_tenant=request.user.tenant
+# 	form=ExaminerForm(tenant=current_tenant)
+# 	if (request.method == "POST"):
+# 		current_tenant=request.user.tenant
+# 		form = ExaminerForm(request.POST, tenant=current_tenant)
+# 		if form.is_valid():
+# 			item=form.save(commit=False)
+# 			item.tenant=current_tenant
+# 			unique_class=cd.get('class_section')
+# 			unique_exam=cd.get('exam')
+# 			unique_subject=cd.get('subject')
+# 			year=Exam.objects.for_tenant(request.user.tenant).get_object_or_404(name=unique_exam).year
+# 			item.internal_examiner=subject_teacher.filter(class_section=unique_class).filter(subject=unique_subject).\
+# 									filter(year=year).teacher
+# 			item.save()
+# 			return redirect(name)
+# 	return render(request, 'genadmin/new.html',{'form': form, 'item': "Examiner"})
 
 @login_required
-# #This is used to add subject teachers. Select option is based on previous selection
+#This is used to add subject teachers. Nothing is done yet.
 def subject_teacher_new(request):
 	class_section_option=class_section.objects.for_tenant(request.user.tenant)
 	if request.method == 'POST':
@@ -148,4 +166,117 @@ def subject_teacher_new(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-	return render (request, 'eduadmin/new_subjectteacher.html', {'classsection':classsection,})
+	return render (request, 'eduadmin/new_subjectteacher.html', {'classsection':class_section_option,})
+
+@login_required
+#This is used to add students to class. COmplex frontend. Not yet done.
+def class_student_add(request):
+	class_section_option=class_section.objects.for_tenant(request.user.tenant)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		this_tenant=request.user.tenant
+		if (calltype == 'year'):
+			#class_name=request.POST.get('class_name')
+			year=request.POST.get('year')
+			students_excluded=classstudent.objects.for_tenant(request.user.tenant).filter(year=year)
+			students=Student.objects.for_tenant(request.user.tenant).exclude(id__in=students_excluded)
+			#subject_options=Syllabus.objects.for_tenant(request.user.tenant).filter(class_group=classgroup).subject
+			#for student in students:
+			jsondata = serializers.serialize('json', students)
+		return HttpResponse(jsondata)
+
+		#saving the class
+		if (calltype == 'save'):
+			try:
+				class_name=request.POST.get('class_name')
+				#subject_name=request.POST.get('subject')
+				#teacher_key=request.POST.get('teacher')
+				for data in bill_data:
+					itemcode=data['itemCode']
+					subitemcode=data['subitemCode']
+					unit_entry=data['unit']
+					unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
+					item=Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemcode)
+			except:
+				transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	return render (request, 'eduadmin/class_studentadd.html', {'classsections':class_section_option,})
+
+@login_required
+#This is the view to provide list
+def eduadmin_list(request, input_type):
+	#for the delete button to work
+	# if request.method == 'POST':
+	# 	itemtype = request.POST.get('type')
+	# 	itemkey = request.POST.get('itemkey')
+	# 	response_data = {}
+	# 	if (itemtype == 'Period'):
+	# 		item = Period.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
+	# 		response_data['name'] = itemkey
+	# 		jsondata = json.dumps(response_data)
+	# 		return HttpResponse(jsondata)
+	# 	elif (itemtype == 'Chart'):
+	# 		item = accountChart.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
+	# 		response_data['name'] = itemkey
+	# 		jsondata = json.dumps(response_data)
+	# 		return HttpResponse(jsondata)	
+	
+	#for the list to be displayed	
+	if (input_type=="Class"):
+		items = class_section.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes"})
+	elif (input_type=="Subject Teacher"):
+		items = subject_teacher.objects.for_tenant(request.user.tenant).select_related().all()
+		return render(request, 'eduadmin/subjectteacher_list.html',{'items':items, 'list_for':"Subjet Teachers, Year and Class Wise "})
+	elif (input_type=="House"):
+		items = House.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Houses"})
+
+#This function is used for viewing the details of a class.
+def classdetail(request, detail):
+	class_selected=class_section.objects.for_tenant(request.user.tenant).get(slug=detail)
+	class_group=class_selected.classgroup
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		this_tenant=request.user.tenant
+		if (calltype == 'year'):
+			#class_name=request.POST.get('class_name')
+			year=request.POST.get('year')
+			response_data = []
+			try:				
+				#This will help us get the student list
+				students_list=classstudent.objects.for_tenant(request.user.tenant).\
+								filter(class_section=class_selected,year=year).select_related("student")
+				for student in students_list:
+					response_data.append({'data_type':'Student','key':student.student.key, 'local_id': student.student.local_id,\
+						'first_name': student.student.first_name, 'last_name': student.student.last_name})
+				#This will help us get the class teacher
+				class_teacher=classteacher.objects.for_tenant(request.user.tenant).\
+							get(class_section=class_selected,year=year)
+				response_data.append({'data_type':'Teacher','key':class_teacher.class_teacher.key, \
+					'first_name': class_teacher.class_teacher.first_name, 'last_name': class_teacher.class_teacher.last_name})
+				#This will help us get the syllabus and the related subject teacher
+				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
+							filter(class_group=class_group,year=year).select_related("subject")
+				for syllabus in class_syllabus:
+					subject=syllabus.subject
+					try:
+						teacher=subject_teacher.objects.for_tenant(request.user.tenant).\
+							filter(subject=subject, class_section=class_selected).get(year=year).select_related('teacher')
+						response_data.append({'data_type':'Syllabus','subject': syllabus.subject.name,\
+							'topics': syllabus.topics,'teacher':teacher.teacher.name})
+					except:
+						response_data.append({'data_type':'Syllabus','subject': syllabus.subject.name,'topics': syllabus.topics,})		
+					
+			except:
+				pass
+			#combined_json = list(chain(students_list, class_teacher))
+			#jsondata = serializers.serialize('json', class_teacher)
+		jsondata=json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	return render (request, 'eduadmin/class_details.html', {'class_selected':class_selected})
+

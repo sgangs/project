@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
 from school_user.models import Tenant, User
-from school_eduadmin.models import Exam, class_section
+from school_eduadmin.models import Exam, class_section, Examiner
 from school_genadmin.models import Subject
 from school_teacher.models import Teacher
 from school_student.models import Student
@@ -23,6 +23,7 @@ class Attendance(models.Model):
 	student=models.ForeignKey(Student,db_index=True,related_name='attendance_classadmin_student_student')
 	date=models.DateField()#form/datefield option needed as "input_formats=settings.DATE_INPUT_FORMATS"
 	ispresent=models.CharField(db_index=True,max_length=12)
+	remarks=models.TextField()
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='attendance_classadmin_user_tenant')
 	objects=TenantManager()
@@ -32,9 +33,9 @@ class Attendance(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			item="att"+" "+self.tenant.key+" "+self.student.key+" "+self.date
+			item="att"+" "+self.tenant.key+" "+self.student.key+" "+str(self.date)
 			self.slug=slugify(item)
-		super(Syllabus, self).save(*args, **kwargs)
+		super(Attendance, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("student", "date","tenant",))
@@ -49,11 +50,13 @@ class exam_report(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name=\
 									'examReport_classadmin_eduadmin_classSection')
 	exam=models.ForeignKey(Exam,db_index=True,related_name='examReport_classadmin_eduadmin_exam')
-	examInvigilator=models.ForeignKey(Exam,db_index=True,related_name='examReport_classadmin_eduadmin_examInvigilator')
+	examiner =models.ForeignKey(Examiner,blank=True, null=True, related_name='examReport_classadmin_eduadmin_examiner')
 	subject=models.ForeignKey(Subject,db_index=True,related_name='examReport_classadmin_genadmin_subject')
-	student=models.ForeignKey(Student,db_index=True,related_name='examReport_classadmin_student_student')
-	external_score=models.PositiveSmallIntegerField()
+	student=models.ForeignKey(	Student,db_index=True,related_name='examReport_classadmin_student_student')
+	external_score=models.PositiveSmallIntegerField(blank=True, null=True)
 	internal_score=models.PositiveSmallIntegerField()
+	final_score=models.PositiveSmallIntegerField()
+	remarks=models.TextField()
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='examReport_classadmin_user_tenant')
 	objects=TenantManager()

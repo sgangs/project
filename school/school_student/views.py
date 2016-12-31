@@ -19,13 +19,13 @@ from .models import Student, student_guardian, student_education
 def studentprofile_new(request, input_type):
 	if (input_type=="Student"):
 		importform=StudentForm
-		name='genadmin:unit_list'
+		name='student:student_list'
 	elif (input_type=="Guardian"):
 		importform=StudentGuardianForm
-		name='genadmin:unit_list'
+		name='stuent:student_list'
 	elif (input_type=="Education"):
 		importform=StudentEducationForm
-		name='genadmin:unit_list'
+		name='student:student_list'
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
 	if (request.method == "POST"):
@@ -37,3 +37,8 @@ def studentprofile_new(request, input_type):
 			item.save()
 			return redirect(name)
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
+
+def student_list(request):
+	students=Student.objects.for_tenant(request.user.tenant).all()
+	return render(request, 'student/list.html',{'students': students})
+

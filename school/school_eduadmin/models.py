@@ -16,15 +16,15 @@ class TenantManager(models.Manager):
 
 #This is the class model. Each student has a class.
 class class_section(models.Model):
-	name = models.CharField("Class Name with section", blank=True, max_length=15)
+	name = models.CharField("Class Name with section", db_index=True,blank=True, max_length=15)
 	room = models.CharField("Room name/no.",blank=True, max_length=15)
 	classgroup=models.ForeignKey(class_group,db_index=True,related_name='classSection_classadmin_classGroup_genadmin')
 	slug=models.SlugField(max_length=40)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classsection_classadmin_user_tenant')
 	objects=TenantManager()
 	
-	# def get_absolute_url(self):
-	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+	def get_absolute_url(self):
+		return reverse('eduadmin:class_detail', kwargs={'detail':self.slug})
 
 	def save(self, *args, **kwargs):
 		if not self.id:
@@ -42,7 +42,7 @@ class class_section(models.Model):
 class classteacher(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='classteacher_classSection')
 	class_teacher=models.ForeignKey(Teacher,db_index=True,related_name='classteacher_eduadmin_teacher_teacher')
-	year=models.PositiveSmallIntegerField(default=datetime.now().year)
+	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
 	slug=models.SlugField(max_length=42)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classteacher_eduadmin_user_tenant')
 	objects=TenantManager()
@@ -52,7 +52,7 @@ class classteacher(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			item="clt"+" "+self.tenant.key+" "+self.class_section.name+" "+self.year
+			item="clt"+" "+self.tenant.key+" "+self.class_section.name+" "+str(self.year)
 			self.slug=slugify(item)
 		super(classteacher, self).save(*args, **kwargs)
 
@@ -66,7 +66,7 @@ class classteacher(models.Model):
 class classstudent(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='classstudent_classSection')
 	student=models.ForeignKey(Student,db_index=True,related_name='classstudent_eduadmin_student_student')
-	year=models.PositiveSmallIntegerField(default=datetime.now().year)
+	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
 	slug=models.SlugField(max_length=40)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classstudent_eduadmin_user_tenant')
 	objects=TenantManager()
@@ -76,7 +76,7 @@ class classstudent(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			item="cls"+" "+self.tenant.key+" "+self.student.key+" "+self.year
+			item="cls"+" "+self.tenant.key+" "+self.student.key+" "+str(self.year)
 			self.slug=slugify(item)
 		super(classstudent, self).save(*args, **kwargs)
 
@@ -85,7 +85,7 @@ class classstudent(models.Model):
 		# ordering = ('name',)
 		
 	def __str__(self):
-		return '%s %s %s' % (self.class_section, self.student, self.year)
+		return '%s %s - %s' % (self.class_section, self.student, self.year)
 
 
 
@@ -95,7 +95,7 @@ class Syllabus(models.Model):
 	subject = models.ForeignKey(Subject,db_index=True,related_name='syllabus_eduadmin_subject_genadmin')
 	key=models.CharField(db_index=True, max_length=40)
 	topics=models.TextField()
-	year=models.PositiveSmallIntegerField(default=datetime.now().year)
+	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
 	slug=models.SlugField(max_length=65)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='syllabus_eduadmin_user_tenant')
 	objects=TenantManager()
@@ -105,7 +105,7 @@ class Syllabus(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			self.key=self.class_group.name+self.subject.name+self.year
+			self.key=self.class_group.name+self.subject.name+str(self.year)
 			item="syl"+" "+self.tenant.key+" "+self.key
 			self.slug=slugify(item)
 		super(Syllabus, self).save(*args, **kwargs)
@@ -132,10 +132,10 @@ class Exam(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			self.key=self.name+" "+self.year
+			self.key=self.name+" "+str(self.year)
 			item="exm"+" "+self.tenant.key+" "+self.key
 			self.slug=slugify(item)
-		super(Syllabus, self).save(*args, **kwargs)
+		super(Exam, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("key", "tenant"))
@@ -157,10 +157,10 @@ class subject_teacher(models.Model):
 	
 	def save(self, *args, **kwargs):
 		if not self.id:
-			self.key=self.class_section.name+" "+self.subject.name+" "+self.teacher.key+" "+self.year
+			self.key=self.class_section.name+" "+self.subject.name+" "+self.teacher.key+" "+str(self.year)
 			item="suj"+" "+self.tenant.key+" "+self.key
 			self.slug=slugify(item)
-		super(Syllabus, self).save(*args, **kwargs)
+		super(subject_teacher, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("key", "tenant"))

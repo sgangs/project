@@ -62,7 +62,7 @@ class SubjectForm(forms.ModelForm):
 		else:
 			try:
 				data=Subject.objects.for_tenant(self.tenant).get(name=unique_name)
-				self.add_error('name',"Subject with name key already exists.")
+				self.add_error('name',"Subject with name already exists.")
 			except:
 				return cd
 		return cd

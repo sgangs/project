@@ -15,7 +15,6 @@ account=(('Basic','Basic'),
 
 user_type=(('Master','Master'),
 			('Master Account','Master Account'),
-			('Branch Account','Branch Account'),
 			('Teacher','Teacher'),
 			('Student','Student'))
 
@@ -23,17 +22,17 @@ user_type=(('Master','Master'),
 
 #This is the list of manufacturers. Add paid until model and get it to work with decorators
 class Tenant(models.Model):
-	school_name=models.CharField(max_length=50)
+	name=models.CharField(max_length=50)
 	address=models.CharField(max_length=200)
-	#cst=models.CharField("CST",max_length=20, blank=True)
-	#vat=models.CharField("VAT",max_length=20, blank=True)
-	#tin=models.CharField("TIN",max_length=20, blank=True)
+	#cst=models.CharField("CST",max_length=20, blank=True, null=True)
+	#vat=models.CharField("VAT",max_length=20, blank=True, null=True)
+	#tin=models.CharField("TIN",max_length=20, blank=True, null=True)
 	phone=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=20)
 	key=models.CharField("Unique key for School",max_length=20, unique=True)
 	registered_on=models.DateTimeField(null=True, blank=True)
 	#details=models.TextField(blank=True)
-	#email=models.EmailField('e-mail id',blank=True)
+	#email=models.EmailField('e-mail id',blank=True, null=True)
 	account=models.CharField(max_length=12,choices=account,default='Basic')
 	paid=models.BooleanField('Has the tenant paid?')
 	trail=models.BooleanField('Is the tenant under trail?')

@@ -42,7 +42,7 @@ class TenantManager(models.Manager):
 # 		return self.name
 
 
-#This is the list of subjects to be taught in school, irrespective of branch.
+#This is the list of subjects to be taught in school.
 class Subject(models.Model):
 	name=models.CharField("Subject Name", blank=True, max_length=20)
 	slug=models.SlugField(max_length=50)
@@ -91,7 +91,7 @@ class class_group(models.Model):
 		return self.name
 
 
-#This is the house model. House is for each branch separately.
+#This is the house model.
 class House(models.Model):
 	name = models.CharField(db_index=True,max_length=20)
 	house_motto = models.TextField(blank=True)
@@ -115,3 +115,31 @@ class House(models.Model):
 		
 	def __str__(self):
 		return self.name
+
+
+#This is the list of annual events model. 
+class annual_calender(models.Model):
+	date=models.DateTimeField(db_index=True)
+	event=models.CharField(max_length=20)
+	#key=models.CharField(db_index=True,max_length=10)
+	slug=models.SlugField(max_length=75)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualCalender_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			toslug=self.tenant.key+" " +self.event+" "+str(self.date)
+			self.slug=slugify(toslug)
+
+		super(annual_calender, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("slug", "tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return '%s:  %s' % (self.event, self.date)
+	

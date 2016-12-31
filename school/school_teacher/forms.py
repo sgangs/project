@@ -28,6 +28,7 @@ class TeacherForm(forms.ModelForm):
 
 	class Meta:
 		model=Teacher
-		fields =('first_name', 'last_name', 'contact_1', 'contact_2', 'address_line_1', 'address_line_2','state','pincode' )
+		fields =('first_name', 'last_name', 'school_teacher_id',\
+			'contact_1', 'contact_2', 'address_line_1', 'address_line_2','state','pincode' )
 	
 

@@ -17,6 +17,7 @@ class TenantManager(models.Manager):
 class Teacher(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
+	school_teacher_id=models.CharField(max_length=20, blank=True, null=True)
 	key=models.CharField(db_index=True,max_length=12)
 	slug=models.SlugField(max_length=32)
 	contact_1=models.CharField(max_length=13)
