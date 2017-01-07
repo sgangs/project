@@ -23,6 +23,12 @@ from .models import monthly_fee, monthly_fee_list, yearly_fee, yearly_fee_list, 
 from .fee_utils import create_fee_structure
 
 @login_required
+#This is the base page.
+def base(request):
+	return render (request, 'fees/fees_base.html')
+
+
+@login_required
 #For adding new entry for fees structure
 def feestructure_new(request, input_type):
 	accountlist=Account.objects.for_tenant(request.user.tenant).all()
@@ -155,3 +161,49 @@ def fee_view(request, input_type):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render(request, 'fees/fees_view.html',{'fees':fees, 'fee_type':fee_type})
+
+@login_required
+#For viewing student and year wise fees and pay the same.
+def student_payment(request, input_type):
+	classsection=class_section.objects.for_tenant(request.user.tenant).all()
+	if request.method == 'POST':
+		response_data = []
+		calltype=request.POST.get('calltype')
+		if (calltype == 'details'):
+			class_input=request.POST.get('class_selected')
+			year=int(request.POST.get('year'))
+			month=request.POST.get('month')
+			class_selected=classsection.get(id=class_input)
+			group=class_selected.classgroup
+			feelist=group_default_fee.objects.filter(classgroup=group).get(year=year)
+			monthlyfee=feelist.monthly_fee
+			monthlyfeelist=monthly_fee_list.objects.filter(monthly_fee=monthlyfee)
+			yearlyfeedetails=feelist.yearly_fee.filter(month=month).all()
+			try:
+				yearlyfee=yearlyfeelist.filter(month=month)
+			except:
+				yearlyfee=''
+			studentlist=classstudent.objects.filter(class_section=class_selected, year=year).select_related('student')
+			for student in studentlist:
+				response_data.append({'data_type':'Student','id':student.student.id,'first_name':student.student.first_name, \
+						'last_name':student.student.last_name,'key':student.student.key,'local_id':student.student.local_id,})
+			for fee in monthlyfeelist:
+				response_data.append({'data_type':'Monthly','id':fee.id,'name':fee.name, 'account':fee.account.id,\
+					'amount':str(fee.amount)})
+			try:
+				for yearlyfee in yearlyfeedetails:
+					yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
+					for fee in yearlyfeelist:
+						response_data.append({'data_type':'Yearly','id':fee.id,'name':fee.name, 'account':fee.account.id,\
+							'amount':str(fee.amount)})
+			except:
+				pass
+		if (calltype == 'save'):
+			studentid=request.POST.get('studentid')
+			details=json.loads(request.POST.get('details'))
+			student=Student.objects.get(id=studentid)
+			#Add all the relavant data which has to be updated in the models.
+
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render(request, 'fees/student_fee.html',{'classsection':classsection})

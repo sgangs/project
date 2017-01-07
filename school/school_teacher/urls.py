@@ -6,4 +6,6 @@ from . import views
 
 urlpatterns = [
     url(r'^newteacher/$', views.teacherprofile_new, {'input_type': 'Teacher'}, name='new_teacher'),
+    url(r'^base/$', views.teacher_base,name='base'),
+    url(r'^profilebase/$', views.teacher_student_base,name='profile_base'),
 ]

@@ -14,7 +14,8 @@ account=(('Basic','Basic'),
 			('SMS_Active','SMS_Active'))
 
 user_type=(('Master','Master'),
-			('Master Account','Master Account'),
+			('Account','Account'),
+			('Admin','Admin'),
 			('Teacher','Teacher'),
 			('Student','Student'))
 
@@ -30,7 +31,7 @@ class Tenant(models.Model):
 	phone=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=20)
 	key=models.CharField("Unique key for School",max_length=20, unique=True)
-	registered_on=models.DateTimeField(null=True, blank=True)
+	registered_on=models.DateTimeField(default=datetime.now())
 	#details=models.TextField(blank=True)
 	#email=models.EmailField('e-mail id',blank=True, null=True)
 	account=models.CharField(max_length=12,choices=account,default='Basic')
@@ -50,21 +51,20 @@ class Tenant(models.Model):
 			#	next_emr_number='{0:03d}'.format(last_emr_number + 1)
 			#self.emr_id=data + today_string + next_emr_number 
 			self.slug=slugify(self.key)
-			self.registered_on=timezone.now()
 		#else:
 		#	self.edited_on=timezone.now()
 
 		super(Tenant, self).save(*args, **kwargs)
 		
 	def __str__(self):
-		return self.school_name
+		return self.name
 
 
 class User(AbstractUser):
     tenant = models.ForeignKey(Tenant,default=2,related_name='user_tenant')
     #user_id = models.CharField(max_length=30)
-    user_type=models.CharField(max_length=20,choices=user_type,default='Master')
-    registered_on=models.DateTimeField(null=True, blank=True)
+    user_type=models.CharField(max_length=10,choices=user_type)
+    #registered_on=models.DateTimeField(null=True, blank=True)
 
     # def save(self, *args, **kwargs):
     # 	if not self.id:

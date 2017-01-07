@@ -1,20 +1,22 @@
 import json
 import re
-#from datetime import datetime
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.db.models import F, Prefetch, Sum
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
-#from django.db import IntegrityError, transaction
-
+from django.db import IntegrityError, transaction
 from .models import accounting_period, Account, ledger_group, Journal, journal_group, journal_entry, payment_mode
-from .forms import PeriodForm, LedgerGroupForm, AccountForm, JournalGroupForm, PaymentForm
+from .forms import PeriodForm, LedgerGroupForm, AccountForm, JournalGroupForm, PaymentForm, AccountYearForm
 from school_user.models import Tenant
 
 @login_required
 #This is the base page.
-def base(request):
-	return render (request, 'accounts/accounts_base.html')
+def base(request, input_type):
+	if (input_type == 'Generic'):
+		return render (request, 'accounts/generic_base.html')
+	elif (input_type == 'Accounts'):
+		return render (request, 'accounts/accounts_base.html')
 
 @login_required
 #For adding new entry for Aoccunting Period or Chart of Account
@@ -30,6 +32,9 @@ def account_new(request, input_type):
 		name='accounts:account_list'
 	elif (input_type == "Journal Group"):
 		importform = JournalGroupForm
+		name='accounts:journalgroup_list'
+	elif (input_type == "Account Year"):
+		importform = AccountYearForm
 		name='accounts:journalgroup_list'
 	form=importform(tenant=request.user.tenant)
 	if (request.method == "POST"):
@@ -98,3 +103,75 @@ def account_list(request, type):
 		accounts = Account.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'accounts/accountlist.html',{'accounts':accounts})
 	return render(request, 'accounts/list.html',{'items':items, 'type':type})
+
+@login_required
+#For showing the general ledger
+def account_detail(request,detail):
+	key_raw=detail.split("-",1)[1]
+	accountkey=re.sub("-"," ",key_raw)
+	account=Account.objects.for_tenant(request.user.tenant).get(key__exact=accountkey)
+	entries=Account.journalEntry_account.all()
+
+	return render(request, 'accounts/accountledger.html',{'account':account, 'entries':entries})
+
+
+@login_required
+#This view helps in creating & thereafter saving a purchase invoice
+def journalentry(request):
+	date=datetime.now()	
+	grouplist=journal_group.objects.for_tenant(request.user.tenant).all()
+	this_tenant=request.user.tenant
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+
+		#getting Account Name
+		if (calltype == 'account'):
+			accountkey=request.POST.get('account_code')
+			response_data['name']=Account.objects.for_tenant(this_tenant).\
+									get(key__iexact=accountkey).name
+					
+		#saving the transaction
+		if (calltype == 'save'):
+			with transaction.atomic():
+				try:
+					journal_data = json.loads(request.POST.get('details'))
+					journal=Journal()
+					journal.tenant=this_tenant
+					journal.date=request.POST.get('date')
+					journal.remarks=request.POST.get('remarks')
+					# journal.journal_type=request.POST.get('journal_type')
+					groupid = int(request.POST.get('groupid'))
+					journal.group= grouplist.get(id=groupid)
+					journal.save()
+				#saving the journal entries and linking them with foreign key to journal
+					for data in journal_data:
+						entry = journal_entry()
+						entry.tenant=this_tenant
+						entry.journal=journal
+						value=data['value']
+						accountkey=data['code']
+						account=Account.objects.for_tenant(request.user.tenant).get(key__iexact=accountkey)
+						or_value=account.value
+						account.value=or_value+value
+						account.save()
+						entry.value=value
+						entry.account=account
+						entry.transaction_type=data['transaction_type']
+						# transaction_type= data['transaction_type']
+						# if (transaction_type == "Debit"):
+						# 	entry.transaction_type = "Debit"
+						# elif (transaction_type == "Credit"):
+						# 	entry.transaction_type = "Credit"
+						entry.save()
+					debit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
+					credit = journal.journalEntry_journal.filter(transaction_type="Credit").aggregate(Sum('value'))
+					if (debit != credit):
+						raise IntegrityError
+				except:
+					transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	#return render(request, 'bill/purchaseinvoice.html', {'date':date,'type': type})
+	return render(request, 'accounts/journal_entry.html', {'date':date,'type': type, 'groups':grouplist})

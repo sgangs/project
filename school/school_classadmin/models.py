@@ -56,7 +56,7 @@ class exam_report(models.Model):
 	external_score=models.PositiveSmallIntegerField(blank=True, null=True)
 	internal_score=models.PositiveSmallIntegerField()
 	final_score=models.PositiveSmallIntegerField()
-	remarks=models.TextField()
+	remarks=models.TextField(blank=True, null=True)
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='examReport_classadmin_user_tenant')
 	objects=TenantManager()
@@ -68,7 +68,7 @@ class exam_report(models.Model):
 		if not self.id:
 			item="exr"+" "+self.tenant.key+" "+self.student.key+" "+self.exam.key
 			self.slug=slugify(item)
-		super(Syllabus, self).save(*args, **kwargs)
+		super(exam_report, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("student","exam","subject","tenant",))
@@ -116,3 +116,4 @@ class Homework(models.Model):
 		
 	def __str__(self):
 		return '%s %s %s' % (self.class_section, self.subject, self.date)
+

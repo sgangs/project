@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Add New Details</title>
+
+<!--Chosen (for searchbox in select box) JS and CSS-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'eduadmin/class_new.js' %}"></script>
+
+{% endblock %} 
+
+{% block content%}
+	
+
+
+<div class="col-xs-12 col-md-6 form-group new_class row">
+<form>
+	<div class="form-group classgroupdiv">
+		<label for="classgroup" class="control-label">Class Group *</label>
+		<select class="form-control select classgroup">
+    		<option disabled selected hidden style='display: none' value>Select Class Group</option>
+				{% for group in groups %}
+  					<option data-id="{{group.name}}">{{group.name}}</option>
+				{% endfor %}
+  		</select>
+	</div>
+	<p class="bg-danger classgroup-p" hidden="true">...</p>
+
+	<div class="form-group classnamediv">
+		<label for="classname" class="control-label">Class Name *</label>
+			<input type="text" required="" class="form-control classname" maxlength="15" name="" disabled aria-required="true">
+	</div>
+	<p class="bg-danger classname-p" hidden="true">...</p>
+	<div class="form-group">
+		<label for="roomnumber" class="control-label room">Room Number</label>
+		<input type="text" class="form-control" name="" maxlength="15" id="">
+	</div>
+	<p class="bg-danger roomnumber-p" hidden="true">...</p>
+	<div>
+		<h4>Add class teacher for the year (Leave black to enter later)</h4>
+	</div>
+	<div class="form-group">
+		<label for="classteacher" class="control-label">Class Teacher</label>
+		<select class="form-control select classteacher">
+			<option disabled selected hidden style='display: none' value>Select Class Teacher</option>
+				{% for teacher in teachers %}
+  					<option data-id="{{teacher.key}}">{{teacher.key}}: {{teacher.first_name}} {{teacher.last_name}}</option>
+				{% endfor %}
+  		</select>
+		</select>
+	</div>
+	<p class="bg-danger classteacher-p" hidden="true">...</p>
+	<div class="form-group">
+		<label for="year" class="control-label">Year</label>
+		<input type="number" min="1980" max="9999" step="1" class="form-control year" placeholder="If teacher is selected, year must also be entered">
+	</div>
+	<p class="bg-danger year-p" hidden="true">...</p>
+	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Submit</button>
+	<button type="button" class="btn btn-primary btn-xs saveadd" data-toggle="confirmation">Submit and add another class</button>
+</form>
+</div>			
+
+<script>
+	$(".select").chosen({
+    	no_results_text: "Oops, nothing found!",
+    	width: "95%"
+  	});
+  	csrf_token='{{csrf_token}}';	
+  	redirect_url= "#" //I'm yet to create some landing details. Those need to be created.
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

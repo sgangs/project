@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    
+     <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    {% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
+    <title>Fees Base</title>
+
+{% endblock %}
+
+{% block content%}
+
+    <div class="container">
+
+        <div class="row">
+
+            <!--<div class="col-lg-12">
+                <h1 class="page-header">Thumbnail Gallery</h1>
+            </div>-->
+
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" href="{% url 'fees:new_monthly_fee' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Create Monthly Fee Structure" alt="Create Monthly Fee Structure">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" href="{% url 'fees:new_yearly_fee' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Create Yearly Fee Structure" alt="Create Yearly Fee Structure">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" href="{% url 'fees:group_fee_linking' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Link Class Group To Fee Structure" alt="Link Class Group To Fee Structure">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" href="{% url 'fees:monthly_fee_view' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=View Monthly Fee Structure" alt="View Monthly Fee Structure">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" href="{% url 'fees:yearly_fee_view' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=View Yearly Fee Structure" alt="View Yearly Fee Structure">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" href="{% url 'fees:student_payment' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Student Fee Payment" alt="Student Fee Payment">
+                </a>
+            </div>
+        </div>
+
+        <hr>
+
+        
+    </div>
+    <!-- /.container -->
+
+{% endblock %}

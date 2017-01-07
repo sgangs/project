@@ -1,3 +1,5 @@
+from django.core.validators import MinValueValidator
+from decimal import Decimal
 from django.db import models
 from django.db.models import signals
 from django.core.urlresolvers import reverse
@@ -37,7 +39,8 @@ class accounting_period(models.Model):
 		ordering = ('start',)
 
 	def __str__(self):
-		return self.start
+		return '%s-%s' % (self.start.year, self.end.year)
+		# return self.start
 
 
 
@@ -70,8 +73,10 @@ account_type_general=(('Current Assets','Current Assets'),
 				('Long Term Liabilities','Long Term Liabilities'),
 				('Equity','Equity'),
 				('Revenue','Revenue'),
+				('Fees','Fees'),
 				('Indirect Revenue','Indirect Revenue'),
-				('Direct Expense','Indirect Expense'),
+				('Direct Expense','Direct Expense'),
+				('Salary','Salary'),
 				('Direct Expense','Indirect Expense'),
 				('Equity','Equity'),)
 
@@ -81,7 +86,11 @@ class Account(models.Model):
 	ledger_group=models.ForeignKey(ledger_group,related_name='account_ledgerGroup')
 	name=models.CharField(db_index=True, max_length =100)
 	remarks=models.TextField(blank=True)
-	account_type=models.CharField('Account type', max_length=12,choices=account_type_general)
+	account_type=models.CharField('Account type', max_length=30,choices=account_type_general)
+	#opening_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	#opening_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	current_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	slug=models.SlugField(max_length=50)
 	key=models.CharField(db_index=True, max_length=20)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='account_account_user_tenant')
@@ -102,6 +111,19 @@ class Account(models.Model):
 
 	def __str__(self):
 		return self.name
+
+class account_year(models.Model):
+	account=models.ForeignKey(Account,db_index=True, related_name='accountYear_account')
+	opening_debit=models.DecimalField("Opening Debit Balance", max_digits=12, decimal_places=2, default=0)
+	opening_credit=models.DecimalField("Opening Credit Balance", max_digits=12, decimal_places=2, default=0)
+	closing_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	closing_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='accountYear_accountingPeriod')
+	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountYear_account_user_tenant')
+	objects = TenantManager()
+
+	class Meta:
+		unique_together = (("account","accounting_period", "tenant"))
 
 
 #This is to have each journal as group
@@ -126,14 +148,13 @@ class journal_group(models.Model):
 	def __str__(self):
 		return self.name
 
-#This is a list of journals
+#This is a list of journal entry
 class Journal(models.Model):
 	date=models.DateTimeField(default=datetime.now)
-	journal_type=models.TextField(blank=True, null=True)
 	group=models.ForeignKey(journal_group,related_name='journal_journalGroup')
+	remarks=models.CharField(max_length=100, blank=True, null=True)
 	slug=models.SlugField(max_length=20)
 	key=models.CharField(db_index=True, max_length=20)
-	local_key=models.CharField("Unique local voucher number, can be left blank.", db_index=True, max_length=20, blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journal_account_user_tenant')
 	objects = TenantManager()
 
@@ -165,14 +186,14 @@ class Journal(models.Model):
 	def __str__(self):
 		return self.name
 
-#This is to link journal entry for each journal
+#This is to link to journal entry line items
 class journal_entry(models.Model):
 	transaction_type=(('Credit','Credit'),
 				('Debit','Debit'))	
 	journal=models.ForeignKey(Journal,db_index=True, related_name='journalEntry_journal')
 	account=models.ForeignKey(Account,related_name='journalEntry_account')
 	transaction_type=models.CharField('Transaction type', max_length=6,choices=transaction_type)
-	value=models.DecimalField(max_digits=12, decimal_places=2)
+	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalEntry_account_user_tenant')
 	objects = TenantManager()
 	

@@ -14,6 +14,17 @@ from school_user.models import Tenant
 from .forms import TeacherForm
 from .models import Teacher
 
+
+@login_required
+#This is the base page.
+def teacher_student_base(request):
+	return render (request, 'teacher/teacher_student_base.html')
+
+@login_required
+#This is the base page.
+def teacher_base(request):
+	return render (request, 'teacher/teacher_base.html')
+
 @login_required
 #This function helps in addidng new syllabus and exams
 def teacherprofile_new(request, input_type):

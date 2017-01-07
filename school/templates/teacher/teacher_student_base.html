@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    
+     <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    {% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
+    <title>Accounts Base List</title>
+
+{% endblock %}
+
+{% block content%}
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "Go To Teachers' Base" href="{% url 'teacher:base' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Go To Teachers' Base" alt="Go To Teachers' Base">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "Go To Students' Base" href="{% url 'student:base' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Go To Students' Base" alt="Go To Students' Base">
+                </a>
+            </div>            
+        </div>
+
+        <hr>
+
+        
+    </div>
+    <!-- /.container -->
+
+{% endblock %}

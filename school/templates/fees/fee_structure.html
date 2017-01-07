@@ -18,28 +18,28 @@
 <h3>{{fee_type}} Fee Structure Creation</h3>
 <h1></h1>
 <div class="row">
-	<div class="form-group col-xs-4 col-md-3">
+	<div class="form-group col-xs-6 col-md-4">
 		<label class="control-label">Fee Structure Name</label>
 		<input type="text" required="" class="form-control feename"  placeholder="Please input name of fee structure."> 
 	</div>
-</div>
-<div class="row">
-	<div class="form-group col-xs-4 col-md-3 monthdiv">
-	<label class="control-label">Select Month when the yearly fees would be repeated</label>
-		<select class='form-control select month'>
-      		<option disabled selected hidden style='display: none' value>Select Month</option>
-      		<option data-id="Jan">January</option>
-			<option data-id="Feb">February</option>
-			<option data-id="Mar">March</option>
-			<option data-id="Apr">April</option>
-			<option data-id="May">May</option>
-			<option data-id="Jun">June</option>
-			<option data-id="Jul">July</option>
-			<option data-id="Aug">August</option>
-			<option data-id="Sep">September</option>
-			<option data-id="Oct">October</option>
-			<option data-id="Nov">November</option>
-			<option data-id="Dec">December</option>
+<!-- </div>
+<div class="row"> -->
+
+	<div class="form-group col-xs-6 col-md-4 monthdiv" hidden='true'>
+	<label class="control-label">Select Month when the fee would be repeated </label>
+		<select class='form-control selectpicker month'>
+      		<option data-id="Jan" title="Jan">January</option>
+			<option data-id="Feb" title="Feb">February</option>
+			<option data-id="Mar" title="Mar">March</option>
+			<option data-id="Apr" title="Apr">April</option>
+			<option data-id="May" title="May">May</option>
+			<option data-id="Jun" title="Jun">June</option>
+			<option data-id="Jul" title="Jul">July</option>
+			<option data-id="Aug" title="Aug">August</option>
+			<option data-id="Sep" title="Sep">September</option>
+			<option data-id="Oct" title="Oct">October</option>
+			<option data-id="Nov" title="Nov">November</option>
+			<option data-id="Dec" title="Dec">December</option>
     	</select>
 	</div>
 </div>
@@ -49,7 +49,7 @@
 		<thead class="bg-primary">
 	  		<tr>
 	  			<th style="text-align: center" class="header" title="Select the rows and press delete to delete the entry.">Select</th>
-	  			<th style="text-align: center" class="header" title = "This is the linked account for the fee structure.">Select Account</th>
+	  			<th style="text-align: center" class="header" title = "This is the linked account (under ledger group Fees) for the fee structure.">Select Account (under Ledger Group: Fees)</th>
 		    	<th style="text-align: center" class="header">Amount</th>
 	    	</tr>
 		</thead>
@@ -81,14 +81,14 @@
 	// 	no_results_text: "Oops, nothing found!",
 	// 	width: "95%"
 	// });
-	if ('{{fee_type}}' == 'Monthly'){
-		$(".monthdiv").prop('hidden',true);
+	fee_type="{{fee_type}}";
+	if (fee_type == "Monthly"){
 		redirect_url="{% url 'fees:monthly_fee_view' %}";
 	}
-	else{
-		redirect_url="{% url 'fees:yearly_fee_view' %}";	
+	if (fee_type == "Yearly"){
+		redirect_url="{% url 'fees:yearly_fee_view' %}";
+		$('.monthdiv').attr('hidden', false);
 	}
-	//redirect_url='#'
 	csrf_token='{{csrf_token}}';
 	var accounts=JSON.parse('{{accounts |escapejs}}');
 	//console.log(accounts);

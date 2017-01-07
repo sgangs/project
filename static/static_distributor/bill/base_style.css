@@ -1,0 +1,18 @@
+html,body{
+   min-height:100.1%;
+}
+
+.table {
+  table-layout:fixed;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.header-background{
+	background-color:#b3ccff;
+}

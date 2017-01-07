@@ -65,6 +65,7 @@ class classteacher(models.Model):
 
 class classstudent(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='classstudent_classSection')
+	roll_no=models.CharField(max_length=10)
 	student=models.ForeignKey(Student,db_index=True,related_name='classstudent_eduadmin_student_student')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
 	slug=models.SlugField(max_length=40)
@@ -81,7 +82,7 @@ class classstudent(models.Model):
 		super(classstudent, self).save(*args, **kwargs)
 
 	class Meta:
-		unique_together = (("class_section","student","year", "tenant"))
+		unique_together = (("class_section","student","year", "tenant"), ("class_section", "roll_no", "tenant"))
 		# ordering = ('name',)
 		
 	def __str__(self):
@@ -215,3 +216,42 @@ class student_house(models.Model):
 		
 	def __str__(self):
 		return '%s %s %s' % (self.house, self.student, self.year)
+
+class total_period(models.Model):
+	number_period=models.PositiveSmallIntegerField("Number of Periods in a day",db_index=True)
+	tenant=models.OneToOneField(Tenant, db_index=True,related_name='totalPeriod_eduadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	#class Meta:
+		#unique_together = ("tenant")
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return self.number_periods
+
+class period(models.Model):
+	day=models.CharField(max_length=9)
+	period=models.PositiveSmallIntegerField()
+	year=models.PositiveSmallIntegerField()
+	slug=models.SlugField(max_length=42)
+	class_section=models.ForeignKey(class_section,db_index=True,related_name='period_classSection')
+	subject=models.ForeignKey(Subject,db_index=True, related_name='period_eduadmin_subject_genadmin')
+	teacher=models.ForeignKey(Teacher,db_index=True, related_name='period_eduadmin_teacher_teacher')
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='period_eduadmin_user_tenant')
+	objects=TenantManager()
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item="pe"+""+self.tenant.key+" "+self.day+" "+self.period+" "+self.year
+			self.slug=slugify(item)
+		super(period, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("day","period","year", "tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return '%s %s %s' % (self.day, self.period)

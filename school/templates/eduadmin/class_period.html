@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Add Students to Class</title>
+
+<!--Chosen (for searchbox in select box) JS and CSS-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'eduadmin/class_routine.js' %}"></script>
+
+{% endblock %} 
+
+{% block content%}
+	
+<h3>{{class_selected.name}}</h3>
+  {% if period %}
+    <h4>Total number of period: {{period}}</h4>
+  {% else %}
+    <h4>Total  number of period is yet to be entered. Click <a href="{% url 'eduadmin:total_period_entry' %}">here</a> to enter total number of periods in a day</h4>
+  {% endif %}
+<div class="row">
+	<div class="form-group col-xs-5 col-md-3"">
+		<label for="classname" class="control-label">Academic Year</label>
+		<input type="number" required="" class="form-control year"  min="1960" max="2050" placeholder="Please enter the academic year.">
+	</div>
+</div>
+<div class="row">
+  <div class="classteacherdiv" hidden="true">
+    <h5><b>Class Teacher: </b></h5>
+    <p class="classteacher"></p>
+  </div>
+
+  <div class="classsubjectdiv" hidden="true">
+    <table cellspacing="0" id="subject_table" class="table table-striped table-bordered">
+    <thead class="bg-primary">
+      <tr>
+        <th class="header">Subject Name</th>
+        <th class="header">Topics</th>
+      </tr>
+     </thead>
+     <tbody></tbody>
+     </table>
+  </div>
+</div>
+
+<button type="button" class="btn btn-primary btn-xs addperiod" disabled='true'>Add Subject/Class to Period</button>
+<h1></h1>
+
+<!-- Modal to Add Period -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="myModalLabel">Add Subject/Class to Period</h4>
+        </div>
+      <div class="modal-body">
+        {% if period %}
+        <form action="" method="post">
+        <div class="form-group daydiv">
+          <label for="classname" class="control-label">Day</label>
+          <select class="form-control select classgroup">
+            <option disabled selected hidden style='display: none' value>Select Day</option>
+            <option data-id="Mon">Monday</option>
+            <option data-id="Tue">Tuesday</option>
+            <option data-id="Wed">Wednesday</option>
+            <option data-id="Thu">Thursday</option>
+            <option data-id="Fri">Friday</option>
+            <option data-id="Sat">Saturday</option>
+            <option data-id="Sun">Sunday</option>
+          </select>
+        </div>
+        <div class="form-group perioddiv">
+          <label for="classname" class="control-label">Period</label>
+          <select class="form-control select classgroup">
+          <option disabled selected hidden style='display: none' value>Select Period</option>
+          {% for i in range %}            
+            <option data-id="{{i|add:'1'}}">Period: {{i|add:"1"}}</option>
+          {% endfor %}
+          </select>
+        </div>
+        <div class="form-group subjectdiv">
+          <label for="classname" class="control-label">Select Subject</label>
+          <select class="form-control select selectsubject">
+          <option disabled selected hidden style='display: none' value>Select Subject</option>
+          </select>
+        </div>
+      </form>    
+      {% else %}
+      <h4>Please add total number of periods in a day before continuing/adding routine</h4>
+      {% endif %}
+      </div>     
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary submit">Submit</button>
+        </div>
+      </div>
+  </div>
+</div>
+
+{% if period %}
+<div class="table-responsive">
+  <table class="table table-striped table-bordered table-hover" id="period">
+    <thead class="thead-inverse header-background bg-success">
+      <tr>
+        <th></th>
+        <th>Monday</th>
+        <th>Tuesday</th>
+        <th>Wednesday</th>
+        <th>Thrusday</th>
+        <th>Friday</th>
+        <th>Saturday</th>
+        <th>Sunday</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for i in range %}
+      <tr>
+        <th>Period: {{i|add:"1"}}</th>
+        
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+
+  </table>  
+</div>
+{% endif %}
+
+<script>
+csrf_token='{{csrf_token}}';
+$('.addperiod').attr('data-toggle',"modal")
+$('.addperiod').attr('data-target',"#myModal")
+</script>
+{% endblock %}
+

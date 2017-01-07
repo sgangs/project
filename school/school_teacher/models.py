@@ -7,27 +7,46 @@ from django.template.defaultfilters import slugify
 
 from school_user.models import Tenant, User
 #from school_genadmin.models import Branch
-from school_genadmin.models import Subject
+from school_genadmin.models import Subject, class_group
 
 class TenantManager(models.Manager):
 	def for_tenant(self, tenant):
 		return self.get_queryset().filter(tenant=tenant)
+
+gender_list=(('M','Male'),
+				('F','Female'),
+				('O','Other'),)
+
+blood_list=(('A+','A Positive'),
+				('B+','B Positive'),
+				('O+','O Positive'),
+				('AB+','AB Positive'),
+				('A-','A Negative'),
+				('B-','B Negative'),
+				('O-','O Negative'),
+				('AB-','AB Negative'),
+				('O','Other'),)
 
 #This is the branch details
 class Teacher(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
 	school_teacher_id=models.CharField(max_length=20, blank=True, null=True)
+	joining_date=models.DateField(blank=True, null=True)
 	key=models.CharField(db_index=True,max_length=12)
+	gender=models.CharField(max_length=1,choices=gender_list)
+	blood_group=models.CharField('Blood Group', max_length=3,choices=blood_list, blank=True, null=True)
 	slug=models.SlugField(max_length=32)
-	contact_1=models.CharField(max_length=13)
-	contact_2=models.CharField(max_length=13, blank=True, null=True)
+	contact=models.CharField('Phone Number',max_length=13,blank=True, null=True)
+	#contact_2=models.CharField(max_length=13, blank=True, null=True)
+	email_id=models.EmailField(blank=True, null=True)
 	user=models.ForeignKey(User,db_index=True,blank=True, null=True,related_name='teacher_teacher_user_user')
 	address_line_1=models.TextField("Address Line 1",blank=True, null=True)
 	address_line_2=models.TextField("Address Line 2",blank=True, null=True)
 	state=models.CharField(blank=True, null=True,max_length=30)
 	pincode=models.PositiveIntegerField(blank=True, null=True)
 	subject = models.ManyToManyField(Subject)
+	class_group = models.ManyToManyField(class_group)
 	#branch=models.ForeignKey(Branch,db_index=True,related_name='teacher_schoolTeacher_genadmin_branch')
 	tenant=models.ForeignKey(Tenant,db_index=True,null=True,related_name='teacher_teacher_user_tenant')
 	objects=TenantManager()
@@ -45,7 +64,7 @@ class Teacher(models.Model):
 			last_teacher=type(self).objects.filter(tenant=self.tenant).\
 						filter(key__contains=today_string).order_by('key').last()
 			if last_teacher:
-				last_teacher_number=int(last_teacher.key_id[8:])
+				last_teacher_number=int(last_teacher.key[8:])
 				next_teacher_number='{0:03d}'.format(last_teacher_number + 1)
 			self.key=data+today_string+next_teacher_number
 			toslug=tenant+" " +self.key

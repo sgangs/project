@@ -10,6 +10,8 @@ from crispy_forms.bootstrap import (
 #from school_teacher.models import Teacher
 from .models import Teacher
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 class TeacherForm(forms.ModelForm):
 	def __init__(self,*args,**kwargs):
@@ -28,7 +30,10 @@ class TeacherForm(forms.ModelForm):
 
 	class Meta:
 		model=Teacher
-		fields =('first_name', 'last_name', 'school_teacher_id',\
-			'contact_1', 'contact_2', 'address_line_1', 'address_line_2','state','pincode' )
+		fields =('first_name', 'last_name', 'gender', 'blood_group','joining_date', 'school_teacher_id', 'contact',\
+		 			'email_id', 'address_line_1', 'address_line_2','state','pincode' )
+		widgets = {
+            'joining_date': DateInput(),
+        }
 	
 

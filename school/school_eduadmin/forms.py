@@ -9,7 +9,7 @@ from crispy_forms.bootstrap import (
 from school_genadmin.models import Subject, class_group
 from school_teacher.models import Teacher
 from school_student.models import Student
-from .models import Syllabus, Exam, class_section, classteacher, Examiner, classstudent, subject_teacher
+from .models import Syllabus, Exam, class_section, classteacher, Examiner, classstudent, subject_teacher, total_period
 
 
 class SyllabusForm(forms.ModelForm):
@@ -209,7 +209,7 @@ class ClassStudentForm(forms.ModelForm):
 
 	class Meta:
 		model=classstudent
-		fields = ('class_section', 'student', 'year',)
+		fields = ('class_section', 'roll_no','student', 'year',)
 	def clean(self):
 		cd= super(ClassStudentForm, self).clean()
 		unique_class=cd.get('class_section')
@@ -226,6 +226,36 @@ class ClassStudentForm(forms.ModelForm):
 				data=classstudent.objects.for_tenant(self.tenant).filter(year=unique_year).get(student=student)
 				self.add_error('student',"Student for the same year already has a class.")
 				self.add_error('year',"Student for the same year already has a class.")
+			except:
+				return cd
+		return cd
+
+
+#This for is to taking input of number of periods in class
+class TotalPeriodForm(forms.ModelForm):
+	class Meta:
+		model=total_period
+		fields = ('number_period',)
+	def __init__(self, *args, **kwargs):
+		self.tenant=kwargs.pop('tenant',None)
+		super(TotalPeriodForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper(self)
+		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'
+	def clean(self):
+		cd= super(TotalPeriodForm, self).clean()
+		unique_number=cd.get('number_period')
+		error=[]
+		data=""
+		if not unique_number:
+			raise forms.ValidationError(error)
+			return cd
+		else:
+			try:
+				data=total_period.objects.get(tenant=self.tenant)
+				self.add_error('number_period',"Total number of periods already entered.")
 			except:
 				return cd
 		return cd

@@ -19,12 +19,12 @@ from .models import Subject, class_group, House, annual_calender
 
 
 @login_required
-#This page has to be edited. A lot has to be dine on this.
+#This is the base page.
 def base(request):
 	return render (request, 'genadmin/genadmin_base.html')
 
 @login_required
-#For adding new entry for Manufacturer, Unit, Zone, Vendor & Account
+#For adding new entry for Genadmin models
 def genadmin_new(request, input_type):
 	if (input_type == "Subject"):
 		importform = SubjectForm
@@ -36,8 +36,9 @@ def genadmin_new(request, input_type):
 		importform = HouseForm
 		name='genadmin:house_list'
 	# elif (input_type == "Unit"):
-	# 	importform = UnitForm
+	# 	importform = TotalPeriodForm
 	# 	name='master:unit_list'
+	
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
 	#importformset=formset_factory(wraps(importform)(partial(importform, tenant=current_tenant)), extra=3)

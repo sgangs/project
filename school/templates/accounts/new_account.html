@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Add New Account</title>
+
+<!--Chosen (for searchbox in select box) JS and CSS-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'eduadmin/class_new.js' %}"></script>
+
+{% endblock %} 
+
+{% block content%}
+	
+
+<h3>Add New Account</h3>
+
+<div class="col-xs-12 col-md-6 form-group new_class row">
+<form>
+	<div class="form-group ledgergroupdiv">
+		<label for="classgroup" class="control-label">Ledger Group *</label>
+		<select class="form-control select ledgergroup">
+    		<option disabled selected hidden style='display: none' value>Select Ledger Group</option>
+				{% for group in groups %}
+  					<option data-id="{{group.id}}">{{group.name}}</option>
+				{% endfor %}
+  		</select>
+	</div>
+	<p class="bg-danger ledgergroup-p" hidden="true">...</p>
+
+	<div class="form-group accountnamediv">
+		<label for="classname" class="control-label">Account Name *</label>
+			<input type="text" required="" class="form-control accountname" maxlength="15" name="" disabled aria-required="true">
+	</div>
+	<p class="bg-danger accountname-p" hidden="true">...</p>
+	<div class="form-group remarksdiv">
+		<label for="classname" class="control-label">Remarks/Narration for account</label>
+			<input type="text" required="" class="form-control remarks" maxlength="15" name="" disabled aria-required="true">
+	</div>
+	<div class="form-group keydiv">
+		<label for="roomnumber" class="control-label room">Key *</label>
+		<input type="text" class="form-control" name="" maxlength="15" placeholder="This is a short name/key/code for the account">
+	</div>
+	<p class="bg-danger keydiv-p" hidden="true">...</p>
+	<div class="form-group accounttypediv">
+		<label for="roomnumber" class="control-label room">Select Account Type *</label>
+		<select class="form-control select ledgergroup">
+    		<option disabled selected hidden style='display: none' value>Select Account Type</option>
+			<option data-id="Current Assets">Current Assets</option>
+			<option data-id="Long Term Assets">Long Term Assets</option>
+			<option data-id="Current Liabilities">Current Liabilities</option>
+			<option data-id="Long Term Liabilities">Long Term Liabilities</option>
+			<option data-id="Equity">Equity</option>
+			<option data-id="Revenue">Revenue</option>
+			<option data-id="Indirect Revenue">Indirect Revenue</option>
+			<option data-id="Direct Expense">Direct Expense</option>
+			<option data-id="Indirect Expense">Indirect Expense</option>
+		</select>
+	</div>
+	<p class="bg-danger keydiv-p" hidden="true">...</p>
+	<div>
+		<h4>Opening Balance is specific for accounting period.</h4>
+	</div>
+	<div class="form-group accountingperioddiv">
+		<label for="classgroup" class="control-label">Accounting Period *</label>
+		<select class="form-control select accountingperiod">
+    		<option disabled selected hidden style='display: none' value>Select Accounting Period</option>
+				{% for period in periods %}
+  					<option data-id="{{period.id}}">{{period}}</option>
+				{% endfor %}
+  		</select>
+	</div>
+	<p class="bg-danger accountingperiod-p" hidden="true">...</p>
+	<div class="form-group balancetypediv">
+		<label class="control-label">Opening Balance Type</label>
+		<select class="form-control select balancetype">
+			<option data-id="Credit">Credit balance</option>
+			<option data-id="Debit">Debit balance</option>
+		</select>
+		</select>
+	</div>
+	<p class="bg-danger balancetype-p" hidden="true">...</p>
+	<div class="form-group balancediv">
+		<label for="year" class="control-label">Opening Balance</label>
+		<input type="number" min="0" step="0.01" class="form-control balance" placeholder="Enter the opening balance for the selected accounting period">
+	</div>
+	<p class="bg-danger year-p" hidden="true">...</p>
+	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Submit</button>
+	<button type="button" class="btn btn-primary btn-xs saveadd" data-toggle="confirmation">Submit and add another class</button>
+</form>
+</div>			
+
+<script>
+	csrf_token='{{csrf_token}}';
+  	redirect_url= "{% url 'eduadmin:class_list' %}" //I'm yet to create some landing details. Those need to be created.
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

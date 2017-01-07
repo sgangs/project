@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    
+     <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    {% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'bill/style.css' %}">
+
+    <title>Accounts Base List</title>
+
+{% endblock %}
+
+{% block content%}
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "Create New Student" href="{% url 'student:new_student' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Create New Student" alt="Create New Student">
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "" href="{% url 'student:new_guardian' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Add Guardian to Student Profile " alt="Add Guardian to Student Profile">
+                </a>
+            </div>            
+            <div class="col-lg-4 col-md-4 col-xs-6 thumb">
+                <a class="thumbnail extra" title = "" href="{% url 'student:new_education' %}">
+                    <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Add Previous Education to Student Profile " alt="Add Previous Education to Student Profile">
+                </a>
+            </div>
+        </div>
+
+        <hr>
+
+        
+    </div>
+    <!-- /.container -->
+
+{% endblock %}

@@ -20,7 +20,7 @@
     <link href= "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="/static/css/stylish-portfolio.css" rel="stylesheet">
+    <link href="{% static 'css/stylish-portfolio.css' %}" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
@@ -70,10 +70,53 @@
             <!--<h1>Assisto</h1>
             <h3>Your technical assistant</h3>-->
             <br>
-            <a href="{% url 'register' %}" class="button btn btn-dark btn-lg">Register Now</a>
-            <a href="{% url 'login' %}" class="button btn btn-dark btn-lg">Login if registered</a>
+            <a href="{% url 'register' %}" class="button btn btn-dark btn-lg">Register (School)</a>
+            <a href="{% url 'login' %}" class="button btn btn-dark btn-lg">Login (School)</a>
+            <!-- <button type="button" class="btn btn-dark btn-lg" id="register" data-toggle="modal" data-target="#regModal">Register</button>
+            <button type="button" class="btn btn-dark btn-lg" id="register" data-toggle="modal" data-target="#logModal">Login</button> -->
         </div>
     </header>
+
+
+    <!-- Register Modal -->
+    <div class="modal fade regmodal" id="regModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Register As:</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <a href="{% url 'register' %}"><button type="button" class="btn btn-primary distributor">School</button></a>
+                    <button type="button" class="btn btn-primary school">Distributor</button>
+                    
+                </div>
+                <div class="modal-footer">
+                    <!-- <button type="button" class="btn btn-primary distributor">Distributor</button>
+                    <button type="button" class="btn btn-primary school">School</button> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Login Modal -->
+    <div class="modal fade regmodal" id="logModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Login As:</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <a href="{% url 'login' %}"><button type="button" class="btn btn-primary distributor">School</button></a>
+                    <button type="button" class="btn btn-primary school">Distributor</button>
+                    
+                </div>
+                <div class="modal-footer">
+                    <!-- <button type="button" class="btn btn-primary distributor">Distributor</button>
+                    <button type="button" class="btn btn-primary school">School</button> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- About -->
     <section id="about" class="about">
@@ -288,8 +331,8 @@
     });
 
     // Scrolls to the selected menu item on the page
-    $(function() {
         $('a[href*=#]:not([href=#])').click(function() {
+    $(function() {
             if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') || location.hostname == this.hostname) {
 
                 var target = $(this.hash);

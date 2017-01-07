@@ -13,12 +13,13 @@ class UserRegistrationForm(forms.ModelForm):
 	class Meta:
 		model = User
 		fields = ('username', 'first_name', 'last_name', 'email',)
-		#widgets = {
-		#'username': forms.TextInput(attrs = {'placeholder' : 'This will be your login username & cannot be changed'}),
-		#'email': forms.TextInput(attrs = {'placeholder' : 'This is required to activate your account'})
-		#}
+		# widgets = {
+		# 'username': forms.TextInput(attrs = {'placeholder' : 'This will be your login username & cannot be changed'}),
+		# 'email': forms.TextInput(attrs = {'placeholder' : 'This is required to activate your account'})
+		# }
 		help_texts = {
 		'email':  'This is required to activate your account and your company will be linked to this email address',
+		'username': 'This will be your login username & cannot be changed. Username should be 30 characters or fewer. Letters, digits and @/./+/-/_ only.',
 		}
 
 	def clean_password2(self):
@@ -36,6 +37,6 @@ class CustomerRegistrationForm(forms.ModelForm):
 		#'name':  'Name of your company',
 		'address':  'Address of your company',
 		#'cst':  'CST license number of your company',
-		'phone':  'Official phone number of your company. This is required to activate the account.',
+		'phone':  'Official phone number of your company.',
 		'key':  'This is an alphanumeric code (upto 20 digits) that will represent your company',
 		}

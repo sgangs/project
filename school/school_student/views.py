@@ -15,6 +15,12 @@ from .forms import StudentForm, StudentGuardianForm, StudentEducationForm
 from .models import Student, student_guardian, student_education
 
 @login_required
+#This is students' base
+def base(request):
+	return render(request, 'student/student_base.html')
+
+
+@login_required
 #This function helps in addidng new syllabus and exams
 def studentprofile_new(request, input_type):
 	if (input_type=="Student"):

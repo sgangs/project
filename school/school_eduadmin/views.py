@@ -12,8 +12,8 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 #from django.db.models import F
 
-from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm, ClassStudentForm, SubjectTeacherForm
-from .models import class_section, classteacher, classstudent, Syllabus, Exam, Examiner, subject_teacher
+from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm, ClassStudentForm, SubjectTeacherForm, TotalPeriodForm
+from .models import class_section, classteacher, classstudent, Syllabus, Exam, Examiner, subject_teacher, total_period
 from school_teacher.models import Teacher
 from school_student.models import Student
 from school_genadmin.models import class_group, Subject
@@ -39,7 +39,7 @@ def class_new(request):
 		if (calltype == 'classname'):
 			classname = request.POST.get('classname')
 			try:
-				objecgt_sucess = class_section.objects.for_tenant(this_tenant).get(name__exact=classname)
+				objecgt_sucess = class_section.objects.for_tenant(this_tenant).get(name__iexact=classname)
 				response_data['name'] = "Class Exist"
 			except:
 				ObjectDoesNotExist
@@ -63,9 +63,13 @@ def class_new(request):
 						teacher=classteacher()
 						teacher.class_section=section
 						teacher.class_teacher=Teacher.objects.for_tenant(request.user.tenant).get(key__exact=teacher_key)
+
 						teacher.year=year
 						teacher.tenant=this_tenant
 						teacher.save()
+				# except IntegrityError:
+				# 	transaction.rollback()
+				# 	response_data['name']='Name exists'
 				except:
 					transaction.rollback()
 		jsondata = json.dumps(response_data)
@@ -77,22 +81,25 @@ def class_new(request):
 def eduadmin_new(request, input_type):
 	if (input_type=="Syllabus"):
 		importform=SyllabusForm
-		name='eduadmin:class_detail'
+		name='eduadmin:class_list'
 	elif (input_type=="Exam"):
 		importform=ExamForm
-		name='genadmin:unit_list'
+		name='eduadmin:class_list'
 	elif (input_type=="ClassTeacher"):
 		importform=ClassTeacherForm
-		name='eduadmin:class_detail'
+		name='eduadmin:class_list'
 	elif (input_type=="ClassStudent"):
 		importform=ClassStudentForm
-		name='eduadmin:class_detail'
+		name='eduadmin:class_list'
 	elif (input_type=="Subject Teacher"):
 		importform=SubjectTeacherForm
 		name='eduadmin:subject_teacher_list'
 	elif (input_type=="Examiner"):
 		importform=ExaminerForm
 		name='eduadmin:examiner_list'
+	elif (input_type=="Total Period"):
+		importform=TotalPeriodForm
+		name='eduadmin:class_list'
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
 	#importformset=formset_factory(wraps(importform)(partial(importform, tenant=current_tenant)), extra=3)
@@ -105,7 +112,7 @@ def eduadmin_new(request, input_type):
 		if form.is_valid():
 			item=form.save(commit=False)			
 			item.tenant=current_tenant
-			#item.save()
+			item.save()
 			return redirect(name)
 	#else:
 	#	form=importform(tenant=request.user.tenant)	
@@ -226,8 +233,13 @@ def eduadmin_list(request, input_type):
 	
 	#for the list to be displayed	
 	if (input_type=="Class"):
-		items = class_section.objects.for_tenant(request.user.tenant).all()
-		return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes"})
+		this_tenant=request.user.tenant
+		items = class_section.objects.for_tenant(this_tenant).all()
+		try:			
+			period=total_period.objects.get(tenant=this_tenant).number_period
+			return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes", 'period':period})
+		except:
+			return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes"})
 	elif (input_type=="Subject Teacher"):
 		items = subject_teacher.objects.for_tenant(request.user.tenant).select_related().all()
 		return render(request, 'eduadmin/subjectteacher_list.html',{'items':items, 'list_for':"Subjet Teachers, Year and Class Wise "})
@@ -235,6 +247,7 @@ def eduadmin_list(request, input_type):
 		items = House.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Houses"})
 
+@login_required
 #This function is used for viewing the details of a class.
 def classdetail(request, detail):
 	class_selected=class_section.objects.for_tenant(request.user.tenant).get(slug=detail)
@@ -280,3 +293,41 @@ def classdetail(request, detail):
 
 	return render (request, 'eduadmin/class_details.html', {'class_selected':class_selected})
 
+
+@login_required
+#This function is used for viewing period. Adding period has to be done shortly.
+def period(request, detail):
+	this_tenant=request.user.tenant
+	class_selected=class_section.objects.for_tenant(this_tenant).get(slug=detail)
+	class_group=class_selected.classgroup
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		if (calltype == 'year'):
+			year=request.POST.get('year')
+			response_data = []
+			try:
+				try:
+					#This will help us get the class teacher
+					class_teacher=classteacher.objects.for_tenant(request.user.tenant).\
+							get(class_section=class_selected,year=year)
+					response_data.append({'data_type':'Teacher','key':class_teacher.class_teacher.key, \
+						'first_name': class_teacher.class_teacher.first_name, 'last_name': class_teacher.class_teacher.last_name})
+				except:
+					response_data.append({'data_type':'Error','message': 'Class Teacher not added to class'})
+				#This will help us get the syllabus
+				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
+							filter(class_group=class_group,year=year).select_related("subject")
+				for syllabus in class_syllabus:
+					subject=syllabus.subject
+					response_data.append({'data_type':'Syllabus','subject': subject.name,\
+						'topics': syllabus.topics, 'id': subject.id})					
+			except:
+				pass
+		jsondata=json.dumps(response_data)
+		return HttpResponse(jsondata)
+	try:			
+		period=total_period.objects.get(tenant=this_tenant).number_period
+		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'period': period, 'range':range(period)})
+	except:
+		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected})
+	

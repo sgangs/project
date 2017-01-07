@@ -90,19 +90,21 @@ def new_exam_report(request):
 	#For the next line, do remember django does lazy querying.
 	classes = class_section.objects.for_tenant(request.user.tenant)
 	exams = Exam.objects.for_tenant(request.user.tenant)
-	#students=classstudent.objects.for_tenant(request.user.tenant).filter(year__exact=year).student
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
 		this_tenant=request.user.tenant
-		#Getting student details based on selection
+		#Getting subject details based on selection
 		if (calltype == 'details'):
 			called_for='Exam'
+			response_data=get_subject_data(request, called_for, classes)
+		#Getting student details based on selection
+		if (calltype == 'subject'):
+			called_for='Exam'
 			response_data=get_student_data(request, called_for, classes)
-			#response_data=["Ram"]
-		#saving the class
-		if (calltype == 'save'):
-			classid=request.POST.get('classid')
+		#saving the exam report
+		elif (calltype == 'save'):
+			classid=int(request.POST.get('classid'))
 			examid=request.POST.get('examid')
 			subjectid=request.POST.get('subjectid')
 			class_final=classes.get(id__exact=classid)
@@ -120,7 +122,7 @@ def new_exam_report(request):
 				#Better still if we could check if student is in that said class for data integrity
 				student=Student.objects.get(id=student_id)
 				exam_report_entry=exam_report()
-				exam_report.class_section=class_final
+				exam_report_entry.class_section=class_final
 				exam_report_entry.exam=exam
 				exam_report_entry.subject=subject
 				exam_report_entry.student=student				
@@ -129,8 +131,79 @@ def new_exam_report(request):
 				exam_report_entry.final_score=final_score
 				exam_report_entry.remarks=remarks
 				exam_report_entry.tenant=this_tenant
-				#exam_report_entry.save()
+				exam_report_entry.save()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
 	return render (request, 'classadmin/new_examreport.html', {'items':classes, 'exams':exams})
+
+#Exam Report View
+def exam_report_view(request):
+	from school_eduadmin.models import class_section
+	#For the next line, do remember django does lazy querying.
+	classes = class_section.objects.for_tenant(request.user.tenant)
+	exams = Exam.objects.for_tenant(request.user.tenant)
+	#students=classstudent.objects.for_tenant(request.user.tenant).filter(year__exact=year).student
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = []
+		this_tenant=request.user.tenant
+		#Getting student details based on selection
+		if (calltype == 'details'):
+			called_for='Exam'
+			response_data=get_subject_data(request, called_for, classes)
+		elif (calltype == 'subject'):
+			called_for='Exam'
+			response_data=get_exam_report(request, called_for, classes)
+			#response_data=["Ram"]
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	return render (request, 'classadmin/view_examreport.html', {'items':classes, 'exams':exams})
+
+@login_required
+#This function helps in addidng new attendance. Error 1- Why do we need to import class section for each function??
+def attendance_edit(request):
+	from school_eduadmin.models import class_section
+	#For the next line, do remember django does lazy querying.
+	classes = class_section.objects.for_tenant(request.user.tenant)
+	#students=classstudent.objects.for_tenant(request.user.tenant).filter(year__exact=year).student
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = []
+		this_tenant=request.user.tenant
+
+		#Getting student details based on selection
+		if (calltype == 'details'):
+			called_for='Attendance'
+			response_data=get_student_data(request, called_for, classes)
+		#Getting student details based on selection
+		elif (calltype == 'attendance'):
+			called_for='Attendance'
+			response_data=get_studentattendance_data(request, called_for, classes)
+		#saving the class
+		if (calltype == 'save'):
+			classid=request.POST.get('classid')
+			year=request.POST.get('year')
+			date=request.POST.get('date')
+			class_final=classes.get(id__exact=classid)
+			student_list=classstudent.objects.for_tenant(request.user.tenant).filter(class_section=class_final,year=year)
+			attendance_data = json.loads(request.POST.get('details'))
+			for data in attendance_data:
+				student_id=data['student_id']
+				ispresent=data['is_present']
+				remarks=data['remarks']
+				#Better still if we could check if student is in that said class for data integrity
+				student=Student.objects.get(id=student_id)
+				attendance=Attendance()
+				attendance.class_section=class_final
+				attendance.student=student
+				attendance.date=date
+				attendance.ispresent=ispresent
+				attendance.remarks=remarks
+				attendance.tenant=this_tenant
+				attendance.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	return render (request, 'classadmin/class_attendance_edit.html', {'items':classes})

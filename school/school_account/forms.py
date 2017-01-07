@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Field
 
-from .models import accounting_period, ledger_group, Account, payment_mode, journal_group
+from .models import accounting_period, ledger_group, Account, payment_mode, journal_group, account_year
 
 
 class DateInput(forms.DateInput):
@@ -167,5 +167,45 @@ class PaymentForm(forms.ModelForm):
 		raise forms.ValidationError(error)
 		return account
 
+#Add new accounting year. This should not be live in production.
+class AccountYearForm(forms.ModelForm):
+	class Meta:
+		model=account_year
+		fields =('account','opening_debit','opening_credit','accounting_period')
+	def __init__(self, *args, **kwargs):
+		self.tenant=kwargs.pop('tenant',None)
+		super(AccountYearForm, self).__init__(*args, **kwargs)
+		self.fields['account'].queryset = Account.objects.for_tenant(self.tenant).all()
+		self.fields['accounting_period'].queryset = accounting_period.objects.for_tenant(self.tenant).all()
+		self.helper = FormHelper(self)
+		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'
+	# def clean(self):
+	# 	cd= super(AccountForm, self).clean()
+	# 	unique_key=cd.get('account')
+	# 	unique_name=cd.get('accounting_period')
+	# 	#print (unique_name)
+	# 	#ledger=cd.get('ledger_group')
+	# 	error=[]
+	# 	#this_data_key=""
+	# 	#this_data_name=""		
+	# 	# if not (unique_key or unique_name or ledger):
+	# 	# 	raise forms.ValidationError(error)
+	# 	# else:
+	# 	try:
+	# 		print ("Inside Try 1")
+	# 		this_data_key=Account.objects.for_tenant(self.tenant).get(key=unique_key)
+	# 		self.add_error('key',"Account with same key already exists.")
+	# 	except:
+	# 		pass
+	# 	try:
+	# 		print ("Inside Try 2")
+	# 		this_data_name=Account.objects.for_tenant(self.tenant).get(name=unique_name)
+	# 		self.add_error('name',"Account with same name already exists.")
+	# 	except:
+	# 		return cd
 
-		
+	# 	raise forms.ValidationError(error)
+	# 	return cd

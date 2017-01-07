@@ -91,6 +91,30 @@ class class_group(models.Model):
 		return self.name
 
 
+class Batch(models.Model):
+	name=models.CharField(db_index=True,max_length=20)
+	class_group=models.ForeignKey(class_group,db_index=True,related_name='batch_classGroup')
+	slug=models.SlugField(max_length=45)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='batch_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item="ba"+" "+self.tenant.key+" "+self.name
+			self.slug=slugify(item)
+		super(Batch, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("name","tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return self.name
+
+
 #This is the house model.
 class House(models.Model):
 	name = models.CharField(db_index=True,max_length=20)

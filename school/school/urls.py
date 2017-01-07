@@ -18,4 +18,5 @@ urlpatterns = [
     url(r'^student/', include('school_student.urls',namespace='student', app_name='student')),
     url(r'^teacher/', include('school_teacher.urls',namespace='teacher', app_name='teacher')),
     url(r'^fees/', include('school_fees.urls',namespace='fees', app_name='fees')),
+    url(r'^library/', include('school_library.urls',namespace='library', app_name='library')),
 ]

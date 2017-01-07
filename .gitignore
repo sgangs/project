@@ -5,3 +5,6 @@ email.py
 secret.py
 new_simple.html
 manufacturing/**
+distributor/distributor_user/static/**
+school/school_user/static/**
+school/school_user/Delete Migration/**

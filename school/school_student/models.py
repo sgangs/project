@@ -7,28 +7,45 @@ from django.template.defaultfilters import slugify
 
 from school_user.models import Tenant, User
 #from school_genadmin.models import Branch
-from school_genadmin.models import Subject
+from school_genadmin.models import Subject, Batch
 
 class TenantManager(models.Manager):
 	def for_tenant(self, tenant):
 		return self.get_queryset().filter(tenant=tenant)
 
+gender_list=(('M','Male'),
+				('F','Female'),
+				('O','Other'),)
+
+blood_list=(('A+','A Positive'),
+				('B+','B Positive'),
+				('O+','O Positive'),
+				('AB+','AB Positive'),
+				('A-','A Negative'),
+				('B-','B Negative'),
+				('O-','O Negative'),
+				('AB-','AB Negative'),
+				('O','Other'),)
+
 #This is the branch details
 class Student(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
-	dob=models.DateField("Date of Birth")
+	dob=models.DateField("Date of Birth", blank=True, null=True)
 	key=models.CharField(db_index=True,max_length=12)
+	gender=models.CharField(max_length=1,choices=gender_list)
+	blood_group=models.CharField('Blood Group', max_length=3,choices=blood_list, blank=True, null=True)
 	#school_student_id=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=32)
-	contact=models.CharField(max_length=13)
+	contact=models.CharField('Phone Number',max_length=13, blank=True, null=True)
+	email_id=models.EmailField(blank=True, null=True)
 	local_id=models.CharField("School student ID",blank=True,null=True, max_length=50)
 	user=models.ForeignKey(User,blank=True, null=True,db_index=True,related_name='student_student_user_user')
-	address_line_1=models.TextField("Address Line 1",blank=True, null=True)
-	address_line_2=models.TextField("Address Line 2",blank=True, null=True)
+	address_line_1=models.CharField("Address Line 1",max_length=100, blank=True, null=True)
+	address_line_2=models.CharField("Address Line 2",max_length=100, blank=True, null=True)
 	state=models.CharField(blank=True, null=True, max_length=30)
 	pincode=models.PositiveIntegerField(blank=True, null=True)
-	#subject = models.ManyToManyField(Subject)
+	batch=models.ForeignKey(Batch,db_index=True,related_name='student_student_genadmin_batch')
 	#branch=models.ForeignKey(Branch,db_index=True,related_name='teacher_schoolTeacher_genadmin_branch')
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='student_student_user_tenant')
 	objects=TenantManager()
@@ -46,7 +63,7 @@ class Student(models.Model):
 			last_student=type(self).objects.filter(tenant=self.tenant).\
 						filter(key__contains=today_string).order_by('key').last()
 			if last_student:
-				last_student_number=int(last_student.key_id[8:])
+				last_student_number=int(last_student.key[8:])
 				next_student_number='{0:03d}'.format(last_student_number + 1)
 			self.key=data+today_string+next_student_number
 			toslug=tenant+" " +self.key

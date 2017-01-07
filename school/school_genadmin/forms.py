@@ -6,7 +6,7 @@ from crispy_forms.layout import Submit, Layout, Field
 from crispy_forms.bootstrap import (
     PrependedText, AppendedText)
 
-from .models import Subject, class_group, House
+from .models import Subject, class_group, House, Batch
 
 # #This for is to adding new branch
 # class BranchForm(forms.ModelForm):
@@ -62,6 +62,35 @@ class SubjectForm(forms.ModelForm):
 		else:
 			try:
 				data=Subject.objects.for_tenant(self.tenant).get(name=unique_name)
+				self.add_error('name',"Subject with name already exists.")
+			except:
+				return cd
+		return cd
+
+#This for is to adding new batch
+class BatchForm(forms.ModelForm):
+	class Meta:
+		model=Batch
+		fields = ('name',)
+	def __init__(self, *args, **kwargs):
+		self.tenant=kwargs.pop('tenant',None)
+		super(SubjectForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper(self)
+		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'
+	def clean(self):
+		cd= super(BatchForm, self).clean()
+		unique_name=cd.get('name')
+		error=[]
+		data=""
+		if not unique_name:
+			raise forms.ValidationError(error)
+			return cd
+		else:
+			try:
+				data=Batch.objects.for_tenant(self.tenant).get(name=unique_name)
 				self.add_error('name',"Subject with name already exists.")
 			except:
 				return cd

@@ -7,8 +7,10 @@ from . import views
 urlpatterns = [
     url(r'^base/$', views.base, name='base'),
     url(r'^dailyattendance/$', views.attendance_new, name='dailyattendance_entry'),
+    url(r'^editattendance/$', views.attendance_edit, name='editattendance_entry'),
     url(r'^newexamreport/$', views.new_exam_report, name='new_exam_report'),
     url(r'^attendanceview/$', views.attendance_view, name='attendance_view'),
+    url(r'^viewexamreport/$', views.exam_report_view, name='exam_report_view'),
     #url(r'^classdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
     #url(r'^calender/$', views.calender, name='calender'),
 ]

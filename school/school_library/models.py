@@ -68,7 +68,7 @@ class Librarian(models.Model):
 class issue_period(models.Model):
 	period=models.PositiveSmallIntegerField("No of days book will be issued",default=7)
 	slug=models.SlugField(max_length=30)
-	tenant=models.ForeignKey(Tenant,db_index=True,related_name='issuePeriod_library_user_tenant')
+	tenant=models.OneToOneField(Tenant, db_index=True,related_name='issuePeriod_library_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
@@ -80,9 +80,9 @@ class issue_period(models.Model):
 			self.slug=slugify(item)
 		super(Library, self).save(*args, **kwargs)
 
-	class Meta:
-		unique_together = (("period", "tenant"))
-		# ordering = ('name',)
+	# class Meta:
+	# 	unique_together = (("period", "tenant"))
+	# 	# ordering = ('name',)
 		
 	def __str__(self):
 		return '%s: %s %s' % (self.key, self.name, self.author)
@@ -91,17 +91,18 @@ class issue_period(models.Model):
 #This is the books model.
 class Book(models.Model):
 	name=models.TextField(db_index=True)
-	author=models.TextField(db_index=True,blank=True, null=True)
-	publisher=models.TextField(blank=True, null=True)
+	author=models.CharField(max_length=100,blank=True, null=True)
+	publisher=models.CharField(max_length=100,blank=True, null=True)
 	edition=models.CharField(max_length=40,blank=True, null=True)
-	isbn=models.CharField(max_length=18,db_index=True,blank=True, null=True)
+	isbn=models.CharField("ISBN",max_length=18,db_index=True,blank=True, null=True)
 	remark=models.TextField(blank=True, null=True)
 	subject=models.ForeignKey(Subject,db_index=True,related_name='book_library_genadmin_subject')
 	library=models.ForeignKey(Library, related_name='book_library')
 	location=models.CharField("Rack location",max_length=30,blank=True, null=True)
-	purchased_on=models.DateField()
-	price=models.DecimalField(max_digits=7, decimal_places=2)
-	school_book_code=models.CharField("Internal Book Code",max_length=40,blank=True, null=True)
+	purchased_on=models.DateField(blank=True, null=True)
+	price=models.DecimalField(blank=True, null=True, max_digits=7, decimal_places=2)
+	school_book_code=models.CharField("School Book Code/Key",max_length=40,blank=True, null=True)
+	book_issued=models.BooleanField()
 	key=models.CharField(max_length=12)
 	slug=models.SlugField(max_length=35)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='book_library_user_tenant')
@@ -141,9 +142,10 @@ class book_issue(models.Model):
 	issued_on=models.DateField()
 	issued_by=models.ForeignKey(Librarian, related_name='bookIssue_librarian')
 	issued_to=models.ForeignKey(Student,db_index=True,related_name='bookIssue_library_student_student')
-	issue_period=models.ForeignKey(issue_period,db_index=True,related_name='bookIssue_issuePeriod')
+	issue_period=models.ForeignKey(issue_period,db_index=True, blank=True, null=True, related_name='bookIssue_issuePeriod')
 	remark=models.TextField(blank=True, null=True)
 	#issue_code=models.CharField(max_length=12)
+	is_late=models.NullBooleanField()
 	key=models.CharField(max_length=12)
 	returned=models.BooleanField()
 	slug=models.SlugField(max_length=35)
@@ -186,7 +188,7 @@ class book_return(models.Model):
 	maximum_return_date=models.DateField()
 	return_entry_by=models.ForeignKey(Librarian, related_name='bookReturn_librarian')
 	remark=models.TextField(blank=True, null=True)
-	is_late=models.BooleanField
+	is_late=models.NullBooleanField()
 	#return_code=models.CharField(max_length=12)
 	#slug=models.SlugField(max_length=35)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='bookReturn_library_user_tenant')

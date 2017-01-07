@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>New Journal Entry</title>
+
+<!--Chosen (for searchbox in select box) JS and CSS-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'accounts/journal_entry.js' %}"></script>
+
+{% endblock %} 
+
+{% block content%}
+	
+<h3>New Journal Entry</h3>
+
+<div class="row">
+  <div class="form-group col-xs-6 col-md-4">
+  	<select class="form-control selectpicker journalgroup" data-live-search='true'>
+      	<option disabled selected hidden style='display: none' value>Select Journal Group</option>
+  			{% for group in groups %}
+            <option data-id="{{group.id}}">{{group.name}}</option>
+        {% endfor %}
+    	</select>
+  </div>
+</div>
+<div class="row">
+<div class="form-group col-xs-5 col-md-3"">
+	<label for="classname" class="control-label">Remarks/Narration</label>
+	<input type="text"  class="form-control remarks"  placeholder="Max length: 100 characters">
+</div>
+<div class="form-group col-xs-5 col-md-3"">
+  <label class="control-label">Date</label>
+  <input type="date" class="form-control date" id="date">
+</div>
+</div>
+
+<!-- <form id='students' method='post' name='journal' action=''> -->
+<table id="journal_table" class="journal table table-striped table-bordered">
+<thead class="bg-primary">
+  <tr>
+    <th class="header" title="Select Row(s) to delete.">Select</th>
+    <th class="header" title="Select Transaction Type (Debit/Credit).">Transaction Type</th>
+    <th class="header" title="">Account Key</th>
+    <th class="header">Account Name</th>
+    <th>Debit Value</th>
+    <th>Credit Value</th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr class='data'>
+    <td><input type='checkbox' class='case'/></td>
+    <td>
+      <select class='form-control selectpicker' id="trn_type" data-live-search="true" >
+        <option disabled selected hidden style='display: none' value>Debit/Credit</option>
+        <option data-id="Debit">Debit</option>
+        <option data-id="Credit">Credit</option>
+      </select>
+    </td>
+    <td><input type="text"  class="form-control accts_key"></td>
+    <td class='accountname'>
+      <!-- <select class='form-control selectpicker' id='account' data-live-search="true">
+        <option disabled selected hidden style='display: none' value>Select Account</option>
+      </select> -->
+    </td>
+    <td><input type="value" min="0" class="form-control debit" disabled="true"></td>
+    <td><input type="value" min="0" class="form-control credit" disabled="true"></td>
+   </tr>
+ </tbody>
+</table>
+
+<button type="button" class='delete btn btn-danger btn-xs' >- Delete</button>
+<button type="button" class='addmore btn btn-success btn-xs' >+ Add More</button>
+<h1></h1>
+
+<!-- <input type='submit' name='submit' value='Submit' class='header but btn btn-primary btn-xs' title="Click submit to add students to class."/>
+</form> -->
+
+<button type="button" class='submit btn btn-primary btn-xs'>Submit</button>
+<button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
+
+<script>
+$('.header').tooltip({animation: true, container: 'body'});
+csrf_token='{{csrf_token}}';
+$('.reset').click(function(){location.reload(true)})
+redirect_url= "#"
+// var accounts=JSON.parse('{{accounts | escapejs}}');
+// $.each(accounts, function(){
+//   $('.journal').find('#account').append($('<option>',{
+//   //$('.account').append($('<option>',{
+//     'data-id': this.id,
+//     'text': this.name
+//   }));
+// });
+// $('#account').selectpicker('refresh');
+// console.log(accounts);
+// n =  new Date();
+// y = n.getFullYear();
+// m = n.getMonth() + 1;
+// d = n.getDate();
+// console.log(new Date().toLocaleDateString());
+// $('#date').valueAsDate = new Date().toISOString().substring(0, 10);
+
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

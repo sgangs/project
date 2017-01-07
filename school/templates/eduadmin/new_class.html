@@ -72,8 +72,8 @@
     	no_results_text: "Oops, nothing found!",
     	width: "95%"
   	});
-  	csrf_token='{{csrf_token}}';	
-  	redirect_url= "#" //I'm yet to create some landing details. Those need to be created.
+  	csrf_token='{{csrf_token}}';
+  	redirect_url= "{% url 'eduadmin:class_list' %}" //I'm yet to create some landing details. Those need to be created.
 </script>
 {% endblock %}
 
