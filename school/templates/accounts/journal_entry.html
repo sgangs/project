@@ -4,7 +4,7 @@
 
 
 {%block title%}
-<title>New Journal Entry</title>
+<title>Journal Entry</title>
 
 <!--Chosen (for searchbox in select box) JS and CSS-->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
@@ -17,27 +17,42 @@
 {% endblock %} 
 
 {% block content%}
-	
+{% if callfrom == "detail" %}	
+<h3>Journal: {{journal.key}}</h3>
+{% else %}
 <h3>New Journal Entry</h3>
+{% endif %}
 
 <div class="row">
   <div class="form-group col-xs-6 col-md-4">
-  	<select class="form-control selectpicker journalgroup" data-live-search='true'>
+  	<select class="form-control selectpicker journalgroup">
+      {% if callfrom == "detail" %}
+      <option value="{{journal.group.name}}">{{journal.group.name}}</option>
+      {% else %}
       	<option disabled selected hidden style='display: none' value>Select Journal Group</option>
   			{% for group in groups %}
             <option data-id="{{group.id}}">{{group.name}}</option>
         {% endfor %}
+      {% endif %}
     	</select>
   </div>
 </div>
 <div class="row">
 <div class="form-group col-xs-5 col-md-3"">
 	<label for="classname" class="control-label">Remarks/Narration</label>
-	<input type="text"  class="form-control remarks"  placeholder="Max length: 100 characters">
+  {% if callfrom == "detail" %}
+	<input type="text"  class="form-control remarks" value="{{journal.remarks}}" disabled>
+  {% else %}
+  <input type="text"  class="form-control remarks"  placeholder="Max length: 100 characters">
+  {% endif %}
 </div>
 <div class="form-group col-xs-5 col-md-3"">
   <label class="control-label">Date</label>
+  {% if callfrom == "detail" %}
+  <input type="date" class="form-control date" id="date" value={{journal.date|date:"Y-m-d"}} disabled>
+  {% else %}
   <input type="date" class="form-control date" id="date">
+  {% endif %}
 </div>
 </div>
 
@@ -45,8 +60,10 @@
 <table id="journal_table" class="journal table table-striped table-bordered">
 <thead class="bg-primary">
   <tr>
+    {% if callfrom != "detail" %}
     <th class="header" title="Select Row(s) to delete.">Select</th>
     <th class="header" title="Select Transaction Type (Debit/Credit).">Transaction Type</th>
+    {% endif %}
     <th class="header" title="">Account Key</th>
     <th class="header">Account Name</th>
     <th>Debit Value</th>
@@ -54,7 +71,28 @@
   </tr>
  </thead>
  <tbody>
+ {% if callfrom == "detail" %}
+ {% for entry in entries %}
   <tr class='data'>
+    <!-- <td><input type="text"  class="form-control accts_key" value="{{entry.account.key}}" disabled></td> -->
+    <td>{{entry.account.key}}</td>
+    <td class='accountname'>
+    <a href="{{entry.account.get_absolute_url}}">{{entry.account.name}}</a>
+      <!-- <select class='form-control selectpicker' id='account' data-live-search="true">
+        <option disabled selected hidden style='display: none' value>Select Account</option>
+      </select> -->
+    </td>
+    {% if entry.transaction_type == 'Debit' %}
+      <td><input type="value" min="0" class="form-control debit" disabled="true" value="{{entry.value}}"></td>
+      <td></td>
+    {% else %}
+    <td></td>
+    <td><input type="value" min="0" class="form-control credit" disabled="true" value="{{entry.value}}"></td>
+    {% endif %}
+   </tr>
+   {% endfor %}
+   {% else %}
+   <tr class='data'>
     <td><input type='checkbox' class='case'/></td>
     <td>
       <select class='form-control selectpicker' id="trn_type" data-live-search="true" >
@@ -72,19 +110,22 @@
     <td><input type="value" min="0" class="form-control debit" disabled="true"></td>
     <td><input type="value" min="0" class="form-control credit" disabled="true"></td>
    </tr>
+   {% endif %}
  </tbody>
 </table>
 
+{% if callfrom != 'detail' %}
 <button type="button" class='delete btn btn-danger btn-xs' >- Delete</button>
 <button type="button" class='addmore btn btn-success btn-xs' >+ Add More</button>
 <h1></h1>
+{% endif %}
 
 <!-- <input type='submit' name='submit' value='Submit' class='header but btn btn-primary btn-xs' title="Click submit to add students to class."/>
 </form> -->
-
+{% if callfrom != 'detail' %}
 <button type="button" class='submit btn btn-primary btn-xs'>Submit</button>
 <button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
-
+{% endif %}
 <script>
 $('.header').tooltip({animation: true, container: 'body'});
 csrf_token='{{csrf_token}}';

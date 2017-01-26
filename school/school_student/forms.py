@@ -61,6 +61,19 @@ class StudentGuardianForm(forms.ModelForm):
 		model=student_guardian
 		fields =('student', 'relation', 'first_name','last_name', 'contact', 'address', 'qualification', 'profession')
 
+
+class UploadFileForm(forms.Form):
+	file = forms.FileField()
+	def __init__(self,*args,**kwargs):
+		super (UploadFileForm,self ).__init__(*args,**kwargs) # populates the post
+		self.helper = FormHelper(self)
+		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'
+
+	
+
 class StudentEducationForm(forms.ModelForm):
 	def __init__(self,*args,**kwargs):
 		self.tenant=kwargs.pop('tenant',None)

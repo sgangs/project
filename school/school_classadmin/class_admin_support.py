@@ -52,7 +52,8 @@ def get_student_data(request, called_for, classes ):
 
     for student in students_list:
     	response_data.append({'data_type':'Student','id':student.student.id,'key':student.student.key,\
-    			'local_id': student.student.local_id,'first_name': student.student.first_name, 'last_name': student.student.last_name})
+    		  'local_id': student.student.local_id,'roll_no': student.roll_no,'first_name': student.student.first_name,\
+              'last_name': student.student.last_name})
     return response_data
     # except:
    	# 	pass
@@ -73,32 +74,53 @@ def get_attendance_data(request):
     except:
         pass
 
+# def get_exam_report(request, called_for, classes ):
+#     classid=int(request.POST.get('classid'))
+#     examid=int(request.POST.get('examid'))
+#     subjectid=int(request.POST.get('subjectid'))
+#     exam=Exam.objects.for_tenant(request.user.tenant).get(id__exact=examid)
+#     class_selected=classes.get(id__exact=classid)
+#     subject=Subject.objects.get(id=subjectid)
+#     exam_report_details=exam_report.objects.filter(exam=exam, class_section=class_selected, subject=subject).\
+#                         select_related('student').all()
+#     average=exam_report_details.aggregate(Avg('final_score'))
+#     average_external=exam_report_details.aggregate(Avg('external_score'))
+#     try:
+#         average=round(average['final_score__avg'],2)
+#         response_data=[]
+#         if (average_external['external_score__avg'] != None):
+#             for report in exam_report_details:
+#                 response_data.append({'data_type':'Report w ext','score': report.final_score,'internal': report.internal_score,\
+#                 'average':average,'external':report.external_score,\
+#                 'first_name': report.student.first_name, 'last_name': report.student.last_name})
+#         else:
+#             for report in exam_report_details:
+#                 response_data.append({'data_type':'Report w.o. ext','score': report.final_score,'internal': report.internal_score,\
+#                 'average':average,'first_name': report.student.first_name, 'last_name': report.student.last_name})
+#         return response_data
+#     except:
+#         pass
+
+
 def get_exam_report(request, called_for, classes ):
-    classid=int(request.POST.get('classid'))
+    # classid=int(request.POST.get('classid'))
     examid=int(request.POST.get('examid'))
-    subjectid=int(request.POST.get('subjectid'))
+    # subjectid=int(request.POST.get('subjectid'))
     exam=Exam.objects.for_tenant(request.user.tenant).get(id__exact=examid)
-    class_selected=classes.get(id__exact=classid)
-    subject=Subject.objects.get(id=subjectid)
-    exam_report_details=exam_report.objects.filter(exam=exam, class_section=class_selected, subject=subject).\
-                        select_related('student').all()
-    average=exam_report_details.aggregate(Avg('final_score'))
-    average_external=exam_report_details.aggregate(Avg('external_score'))
-    try:
-        average=round(average['final_score__avg'],2)
-        response_data=[]
-        if (average_external['external_score__avg'] != None):
-            for report in exam_report_details:
-                response_data.append({'data_type':'Report w ext','score': report.final_score,'internal': report.internal_score,\
-                'average':average,'external':report.external_score,\
-                'first_name': report.student.first_name, 'last_name': report.student.last_name})
-        else:
-            for report in exam_report_details:
-                response_data.append({'data_type':'Report w.o. ext','score': report.final_score,'internal': report.internal_score,\
-                'average':average,'first_name': report.student.first_name, 'last_name': report.student.last_name})
-        return response_data
-    except:
-        pass
+    # class_selected=classes.get(id__exact=classid)
+    # subject=Subject.objects.get(id=subjectid)
+    exam_report_details=exam_report.objects.filter(exam=exam).\
+                        select_related('student','subject','class_section').all()
+    # try:
+    response_data=[]
+        # if (average_external['external_score__avg'] != None):
+    for report in exam_report_details:
+        response_data.append({'data_type':'Report w ext','marks': report.final_score,'subject': report.subject.name,\
+            'student_id':str(report.student.id) + " "+report.student.first_name+ " "+report.student.last_name,\
+            'class':report.class_section.name})
+    return response_data
+    # except:
+    #     pass
 
 #This function is used to provide individual student's data for attendance
 def get_studentattendance_data(request, called_for, classes):

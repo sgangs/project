@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Exam Report</title>
+
+<!--Chart.js (for graph)-->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script> -->
+
+<!-- D3, Dc and Crossfilter.js -->
+<script type="text/javascript" src="http://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+<script type="text/javascript" src="http://dc-js.github.io/dc.js/js/d3.js"></script>
+<script type="text/javascript" src="http://dc-js.github.io/dc.js/js/dc.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/reductio/0.6.3/reductio.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'classadmin/exam_report_view_crossfilter.js' %}"></script>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Exam Report View</h3>
+<h1></h1>
+<!-- <div class="row">
+	<div class="form-group col-xs-4 col-md-3">
+		<select class="form-control classsection">
+    		<option disabled selected hidden style='display: none' value>Select Class</option>
+			{% for item in items %}
+  				<option data-id="{{item.id}}">{{item.name}}</option>
+			{% endfor %}
+  	</select> 
+	</div>
+</div> -->
+<div class="row">
+	<div class="form-group col-xs-4 col-md-3"">
+		<select class="form-control exam" >
+    		<option disabled selected hidden style='display: none' value>Select Exam</option>
+			{% for exam in exams %}
+  				<option data-id="{{exam.id}}">{{exam.name}}</option>
+			{% endfor %}
+  	</select>
+	</div>
+	<!-- <div class="form-group col-xs-4 col-md-3 subjectdiv" hidden='true'>
+		<select class="form-control subject">
+    		<option selected hidden style='display: none' value>Select Subject</option>			
+  		</select> 
+	</div> -->
+</div>
+<div class='row'>
+	<canvas id="myChart" width="400" height="100"></canvas>
+</div>
+
+<div class ="graphs" hidden=true>
+	<div class = "row">
+		<div id="subject-chart" class="col-xs-6 col-md-4"><span>Subject wise score</span></div>
+		<div id="class-chart" class="col-xs-6 col-md-4"><span>Class wise score</span></div>
+		<div id="marks-chart" class="col-xs-6 col-md-4"></div>
+	</div>
+	
+	<div id="student-chart"><span>Individual student's data</span></div>
+	<div class='row-fluid'>
+		<div class='span12 table-graph'>
+			<h4>Data Table for Students' Marks</h4>
+			<table class='table table-hover dc-data-table' id='table-graph'>
+			<thead>
+			<tr class='header'>
+				<th>Name</th>
+				<th>Class</th>
+				<th>Subject</th>
+				<th>Marks</th>
+			</tr>
+			</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- <button type="button" class='submit btn btn-primary btn-xs' disabled="true" title="Click submit to record class atendance.">Submit</button> -->
+
+<!-- <button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
+ -->
+
+<script>
+	redirect_url="{% url 'classadmin:attendance_view' %}"
+	csrf_token='{{csrf_token}}';
+	var ctx = document.getElementById("myChart");
+
+</script>
+{% endblock %}

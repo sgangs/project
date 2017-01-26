@@ -1,5 +1,4 @@
 import datetime as dt
-from datetime import datetime
 from django.db import models
 #from django.db.models import signals
 from django.core.urlresolvers import reverse
@@ -88,7 +87,7 @@ class monthly_fee_list(abstract_fee):
 class yearly_fee(models.Model):
 	#subject=models.ForeignKey(Subject,db_index=True,related_name='Homework_classadmin_genadmin_subject')
 	name=models.TextField()
-	month=models.CharField(max_length=9)
+	month=models.CharField(max_length=3)
 	key=models.CharField(db_index=True,max_length=12)
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='yearlyFee_fees_user_tenant')
@@ -140,7 +139,7 @@ class yearly_fee_list(abstract_fee):
 	def __str__(self):
 		return '%s' % (self.name)
 
-#This would be the model for yearly fee
+#This would be the model for fee structure
 # class fee_structure(models.Model):
 # 	#subject=models.ForeignKey(Subject,db_index=True,related_name='Homework_classadmin_genadmin_subject')
 # 	name=models.TextField()
@@ -210,7 +209,7 @@ class yearly_fee_list(abstract_fee):
 # 		return '%s' % (self.name)
 
 
-#This model will link student to monhtly and yearly fee.
+#This model will link class group to monthly and yearly fee for default fee structure.
 class group_default_fee(models.Model):
 	classgroup=models.ForeignKey(class_group,db_index=True,related_name='groupDefaultFee_fees_genadmin_classGroup')
 	yearly_fee=models.ManyToManyField(yearly_fee,db_index=True,related_name='groupDefaultFee_yearlyFee')
@@ -238,7 +237,7 @@ class group_default_fee(models.Model):
 	def __str__(self):
 		return '%s' % (self.name)
 
-#This model will link student to monhtly and yearly fee. 
+#This model will link student to monthly and yearly fee for default fee structure.
 class student_fee(models.Model):
 	student=models.ForeignKey(Student,db_index=True,related_name='studentFee_fees_student_student')
 	#fee_structure=models.ManyToManyField(fee_structure,db_index=True,related_name='studentFee_feeStructure')
@@ -264,4 +263,57 @@ class student_fee(models.Model):
 		# ordering = ('name',)
 		
 	def __str__(self):
-		return '%s' % (self.name)
+		return '%s' % (self.student)
+
+class student_fee_payment(models.Model):
+	student=models.ForeignKey(Student,db_index=True,related_name='studentFeePayment_fees_student_student')
+	month=models.CharField(db_index=True,max_length=3)
+	year=models.PositiveSmallIntegerField(db_index=True)
+	paid_on=models.DateField()
+	amount=models.DecimalField(max_digits=7, decimal_places=2)
+	slug=models.SlugField(max_length=56)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='studentFeePayment_fees_user_tenant')
+	objects=TenantManager()
+
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item=self.tenant.key+" "+self.student.key+" "+self.monthly_fee.key
+			self.slug=slugify(item)
+
+		super(student_fee, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("student","year","tenant",))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return '%s' % (self.student)
+
+# #Late fee model
+# class student_late_fee(models.Model):
+# 	student=models.ForeignKey(Student,db_index=True,related_name='studentLateFee_fees_student_student')
+# 	month=models.PositiveSmallIntegerField(db_index=True)
+# 	year=models.PositiveSmallIntegerField(db_index=True)
+# 	# slug=models.SlugField(max_length=56)
+# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='studentLateFee_fees_user_tenant')
+# 	objects=TenantManager()
+
+# 	# def get_absolute_url(self):
+# 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+# 	# def save(self, *args, **kwargs):
+# 	# 	if not self.id:
+# 	# 		item=self.tenant.key+" "+self.student.key+" "+self.monthly_fee.key
+# 	# 		self.slug=slugify(item)
+
+# 		# super(student_fee, self).save(*args, **kwargs)
+
+# 	# class Meta:
+# 	# 	unique_together = (("student","month","year","tenant",))
+# 	# 	ordering = ('name',)
+		
+# 	def __str__(self):
+# 		return '%s' % (self.name)

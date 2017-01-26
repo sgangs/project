@@ -16,5 +16,7 @@ urlpatterns = [
     url(r'^subjectlist/$', views.master_list, {'input_type': 'Subject'}, name='subject_list'),
     url(r'^classgrouplist/$', views.master_list, {'input_type': 'Class Group'}, name='class_group_list'),
     url(r'^houselist/$', views.master_list, {'input_type': 'House'}, name='house_list'),
+    url(r'^eventlist/$', views.calender_list, name='event_list'),
+    # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
     #url(r'^housedetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
 ]

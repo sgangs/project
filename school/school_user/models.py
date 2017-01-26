@@ -17,14 +17,14 @@ user_type=(('Master','Master'),
 			('Account','Account'),
 			('Admin','Admin'),
 			('Teacher','Teacher'),
-			('Student','Student'))
+			('Student','Student'),
+			('Parent','Parent'))
 
-
-
-#This is the list of manufacturers. Add paid until model and get it to work with decorators
+#This is the list of schools. Add paid until model and get it to work with decorators
 class Tenant(models.Model):
 	name=models.CharField(max_length=50)
 	address=models.CharField(max_length=200)
+	email=models.EmailField(unique=True)
 	#cst=models.CharField("CST",max_length=20, blank=True, null=True)
 	#vat=models.CharField("VAT",max_length=20, blank=True, null=True)
 	#tin=models.CharField("TIN",max_length=20, blank=True, null=True)
@@ -59,7 +59,7 @@ class Tenant(models.Model):
 	def __str__(self):
 		return self.name
 
-
+#This is the individual user module
 class User(AbstractUser):
     tenant = models.ForeignKey(Tenant,default=2,related_name='user_tenant')
     #user_id = models.CharField(max_length=30)

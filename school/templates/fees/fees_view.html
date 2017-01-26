@@ -24,7 +24,7 @@
 			{% for item in fees %}
 			{% if fee_type == "Yearly" %}
   				<option data-id="{{item.id}}">{{item.name}}, Recurring: {{item.month}}</option>
-  			{% else if fee_type == "Monthly" %}
+  			{% elif fee_type == "Monthly" %}
   				<option data-id="{{item.id}}">{{item.name}}, Recurring: Every Month</option>
 			{% endif %}
 			{% endfor %}

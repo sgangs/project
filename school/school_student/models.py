@@ -1,5 +1,6 @@
 import datetime as dt
 from datetime import datetime
+from django.core.validators import validate_email
 from django.db import models
 from django.db.models import signals
 from django.core.urlresolvers import reverse
@@ -38,15 +39,16 @@ class Student(models.Model):
 	#school_student_id=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=32)
 	contact=models.CharField('Phone Number',max_length=13, blank=True, null=True)
-	email_id=models.EmailField(blank=True, null=True)
-	local_id=models.CharField("School student ID",blank=True,null=True, max_length=50)
+	email_id=models.EmailField(blank=True, null=True, validators=[validate_email,])
+	local_id=models.CharField("School student ID",blank=True,null=True, max_length=20)
 	user=models.ForeignKey(User,blank=True, null=True,db_index=True,related_name='student_student_user_user')
 	address_line_1=models.CharField("Address Line 1",max_length=100, blank=True, null=True)
 	address_line_2=models.CharField("Address Line 2",max_length=100, blank=True, null=True)
 	state=models.CharField(blank=True, null=True, max_length=30)
 	pincode=models.PositiveIntegerField(blank=True, null=True)
-	batch=models.ForeignKey(Batch,db_index=True,related_name='student_student_genadmin_batch')
+	batch=models.ForeignKey(Batch,blank=True, null=True,db_index=True,related_name='student_student_genadmin_batch')
 	#branch=models.ForeignKey(Branch,db_index=True,related_name='teacher_schoolTeacher_genadmin_branch')
+	isactive=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='student_student_user_tenant')
 	objects=TenantManager()
 

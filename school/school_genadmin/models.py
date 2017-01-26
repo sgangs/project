@@ -65,6 +65,31 @@ class Subject(models.Model):
 	def __str__(self):
 		return self.name
 
+class academic_year(models.Model):
+	year=models.PositiveSmallIntegerField("Academic Year: If year is 2016-17, enter 2016")
+	start=models.DateField()
+	end=models.DateField()
+	slug=models.SlugField(max_length=50)
+	current_academic_year=models.BooleanField()
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='academicYear_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+			item="aca"+" "+self.tenant.key+" "+str(self.year)
+			self.slug=slugify(item)
+		super(academic_year, self).save(*args, **kwargs)
+
+	class Meta:
+		unique_together = (("year", "tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return self.year
+
 
 #This is the class group model. Class has FK to class group and syllabus is assigned to class group
 class class_group(models.Model):
@@ -141,12 +166,33 @@ class House(models.Model):
 		return self.name
 
 
-#This is the list of annual events model. 
+
+# #This is the model for event type. 
+# class event_type(models.Model):
+# 	name=models.CharField(max_length=20)
+# 	#key=models.CharField(db_index=True,max_length=10)
+# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='eventType_genadmin_user_tenant')
+# 	objects=TenantManager()
+	
+# 	class Meta:
+# 		unique_together = (("name", "tenant"))
+# 		# ordering = ('name',)
+		
+# 	def __str__(self):
+# 		return self.name
+
+event_type=(('E','Exam'),
+			('H','Holiday'),
+			('O','Other'),)
+
+
+#This is the list of annual events model.
 class annual_calender(models.Model):
 	date=models.DateTimeField(db_index=True)
 	event=models.CharField(max_length=20)
+	event_type=models.CharField('Event type', max_length=1,choices=event_type, default='H')
 	#key=models.CharField(db_index=True,max_length=10)
-	slug=models.SlugField(max_length=75)
+	slug=models.SlugField(db_index=True, max_length=75)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualCalender_genadmin_user_tenant')
 	objects=TenantManager()
 	

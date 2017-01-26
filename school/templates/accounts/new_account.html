@@ -12,7 +12,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'eduadmin/class_new.js' %}"></script>
+<script src="{% static 'accounts/new_account.js' %}"></script>
 
 {% endblock %} 
 
@@ -23,6 +23,10 @@
 
 <div class="col-xs-12 col-md-6 form-group new_class row">
 <form>
+	<div class="alert alert-danger" role="alert" hidden='true'>
+		
+	</div>
+
 	<div class="form-group ledgergroupdiv">
 		<label for="classgroup" class="control-label">Ledger Group *</label>
 		<select class="form-control select ledgergroup">
@@ -32,25 +36,25 @@
 				{% endfor %}
   		</select>
 	</div>
-	<p class="bg-danger ledgergroup-p" hidden="true">...</p>
-
+	
 	<div class="form-group accountnamediv">
 		<label for="classname" class="control-label">Account Name *</label>
-			<input type="text" required="" class="form-control accountname" maxlength="15" name="" disabled aria-required="true">
+			<input type="text" required="" class="form-control accountname" maxlength="100" aria-required="true">
 	</div>
-	<p class="bg-danger accountname-p" hidden="true">...</p>
+	
 	<div class="form-group remarksdiv">
 		<label for="classname" class="control-label">Remarks/Narration for account</label>
-			<input type="text" required="" class="form-control remarks" maxlength="15" name="" disabled aria-required="true">
+			<input type="text" required="" class="form-control remarks" aria-required="true">
 	</div>
+	
 	<div class="form-group keydiv">
 		<label for="roomnumber" class="control-label room">Key *</label>
-		<input type="text" class="form-control" name="" maxlength="15" placeholder="This is a short name/key/code for the account">
+		<input type="text" class="form-control key" maxlength="20" placeholder="This is a short name/key/code for the account">
 	</div>
-	<p class="bg-danger keydiv-p" hidden="true">...</p>
+	
 	<div class="form-group accounttypediv">
 		<label for="roomnumber" class="control-label room">Select Account Type *</label>
-		<select class="form-control select ledgergroup">
+		<select class="form-control select accounttype">
     		<option disabled selected hidden style='display: none' value>Select Account Type</option>
 			<option data-id="Current Assets">Current Assets</option>
 			<option data-id="Long Term Assets">Long Term Assets</option>
@@ -63,7 +67,7 @@
 			<option data-id="Indirect Expense">Indirect Expense</option>
 		</select>
 	</div>
-	<p class="bg-danger keydiv-p" hidden="true">...</p>
+	
 	<div>
 		<h4>Opening Balance is specific for accounting period.</h4>
 	</div>
@@ -76,29 +80,58 @@
 				{% endfor %}
   		</select>
 	</div>
-	<p class="bg-danger accountingperiod-p" hidden="true">...</p>
+	
 	<div class="form-group balancetypediv">
-		<label class="control-label">Opening Balance Type</label>
-		<select class="form-control select balancetype">
-			<option data-id="Credit">Credit balance</option>
-			<option data-id="Debit">Debit balance</option>
-		</select>
+		<label class="control-label" title = "Assets & Expense Accounts Have Debit Balance. Liability, Equity & Revenue Have Credit Balance">Opening Balance Type</label>
+		<select class="form-control select balancetype" title = "Assets & Expense Accounts Have Debit Balance. Liability, Equity & Revenue Have Credit Balance">
+			<option disabled selected hidden style='display: none' value>Select Balance Type</option>
+			<option data-id="Credit" value="Credit balance">Credit balance</option>
+			<option data-id="Debit" value="Debit balance">Debit balance</option>
 		</select>
 	</div>
-	<p class="bg-danger balancetype-p" hidden="true">...</p>
-	<div class="form-group balancediv">
-		<label for="year" class="control-label">Opening Balance</label>
-		<input type="number" min="0" step="0.01" class="form-control balance" placeholder="Enter the opening balance for the selected accounting period">
+	
+	<div class="form-group balancediv" title="Enter the opening balance for the selected accounting period. Default is zero.">
+		<label for="year" class="control-label">Opening Balance (Only postive number shall be taken as input)</label>
+		<input type="number" min="0" step="0.01" value="0" class="form-control balance">
 	</div>
-	<p class="bg-danger year-p" hidden="true">...</p>
-	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Submit</button>
-	<button type="button" class="btn btn-primary btn-xs saveadd" data-toggle="confirmation">Submit and add another class</button>
+	
+	<button type="button" class="btn btn-primary btn-xs submit" data-toggle="confirmation">Submit</button>
+
 </form>
-</div>			
+</div>
+<div class="col-xs-12 col-md-1 form-group new_class row">
+</div>
+<div class="col-xs-12 col-md-5 offset-md-1 form-group new_class row">
+	<h3>List of existing accounts</h3>
+	{% if accounts %}
+	<div class="table-responsive">
+		<table class="table table-striped table-bordered table-hover" id="master_table">
+			<thead class="thead-inverse header-background bg-info">
+				<tr>
+	              	<th class="text-center">Account Name</th>
+	                <th class="text-center">Current Debit Value</th>
+	                <th class="text-center">Current Credit Value</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for account in accounts %}
+				<tr align="center">
+	              <td>{{account.name}}</td>
+	              <td>{{account.current_debit}}</td>
+	              <td>{{account.current_credit}}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% else %}
+		<p>You don't have any account registered. Once you have accounts, its urrent balance would be visible here.</p>
+		{% endif %}
+	</div>
+</div>		
 
 <script>
 	csrf_token='{{csrf_token}}';
-  	redirect_url= "{% url 'eduadmin:class_list' %}" //I'm yet to create some landing details. Those need to be created.
+	redirect_url= "{% url 'accounts:account_list' %}" //I'm yet to create some landing details. Those need to be created.
 </script>
 {% endblock %}
 

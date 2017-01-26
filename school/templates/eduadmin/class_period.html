@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-{% load crispy_forms_tags %}
+{% extends extension %}
 
 
 {%block title%}
@@ -19,8 +17,8 @@
 {% block content%}
 	
 <h3>{{class_selected.name}}</h3>
-  {% if period %}
-    <h4>Total number of period: {{period}}</h4>
+  {% if totalperiod %}
+    <h4>Total number of period: {{totalperiod}}</h4>
   {% else %}
     <h4>Total  number of period is yet to be entered. Click <a href="{% url 'eduadmin:total_period_entry' %}">here</a> to enter total number of periods in a day</h4>
   {% endif %}
@@ -60,7 +58,7 @@
           <h4 class="modal-title" id="myModalLabel">Add Subject/Class to Period</h4>
         </div>
       <div class="modal-body">
-        {% if period %}
+        {% if totalperiod %}
         <form action="" method="post">
         <div class="form-group daydiv">
           <label for="classname" class="control-label">Day</label>
@@ -102,7 +100,7 @@
   </div>
 </div>
 
-{% if period %}
+{% if totalperiod %}
 <div class="table-responsive">
   <table class="table table-striped table-bordered table-hover" id="period">
     <thead class="thead-inverse header-background bg-success">

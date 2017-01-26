@@ -64,6 +64,7 @@ $( ".classname" ).change(function() {
 $( ".room" ).change(function() {
     room=$(".room").val();
 });
+
 $( ".classteacher" ).change(function() {
     classteacher=$(".classteacher").find(':selected').data('id');
     if (classteacher != ''){
@@ -71,6 +72,7 @@ $( ".classteacher" ).change(function() {
     }
     
 });
+
 $( ".year" ).change(function() {
     year=$(".year").val();
 });

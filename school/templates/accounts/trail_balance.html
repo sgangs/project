@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    Trail Balance
+</title>
+<!-- Datatable CSS-->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<!-- Datatable jQuery-->
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+{% load static from staticfiles %}
+	
+{% endblock %}
+
+{% block content%}
+
+	{% block heading %}
+	<h3>Trail Balance from {{start|date:"d-M-Y"}} till {{date|date:"d-M-Y"}}</h3>
+	{% endblock %}	
+	
+	{% block details %}
+	<div></div>
+  <h1></h1>	
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover" id="trail_balance">
+      <thead class="thead-inverse header-background">
+          <tr>
+              <th class="text-center">Account Type</th>
+                  <th class="text-center">Account Name</th>
+                  <th class="text-center">Debit Value</th>
+                  <th class="text-center">Credit Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- {% for item in items %}
+          <tr align="center">
+              <td>{{item.account}}</td>
+              <td>{{item.account_type}}</td>
+              <td>{{item.debit}}</td>
+              <td>{{item.credit}}</td>
+            </tr>
+          {% endfor %} -->
+        </tbody>
+    </table> 
+  </div>
+
+	{% endblock %}
+
+	<script type="text/javascript">
+		csrf_token = '{{ csrf_token }}';
+ 		// $(document).ready(function(){
+   //  	$('#trail_balance').DataTable({
+   //    		"searching": false
+   //  	});
+  	// });
+    accounts=JSON.parse('{{accounts |escapejs}}');
+    console.log (accounts);
+    for (i in accounts){
+      console.log("Inside If" + accounts[i]);
+      if (accounts[i].data_type=='journal'){
+        $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+        "<td >"+accounts[i].account_type+"</td>"+
+        "<td>"+accounts[i].account+"</td>"+
+        "<td>"+parseFloat(accounts[i].debit)+"</td>"+
+        "<td>"+parseFloat(accounts[i].credit)+"</td>"+
+        "</tr>");                    
+      }
+      else{
+        $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+        "<td><b>Total</b></td>"+
+        "<td></td>"+
+        "<td><b>"+parseFloat(accounts[i].debit)+"</b></td>"+
+        "<td><b>"+parseFloat(accounts[i].credit)+"</b></td>"+
+        "</tr>");
+      }
+    }
+ 	</script>
+	
+{% endblock %}
+
+
+

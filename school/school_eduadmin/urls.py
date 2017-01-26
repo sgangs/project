@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^newclassteacher/$', views.eduadmin_new, {'input_type': 'ClassTeacher'}, name='new_classteacher'),
     url(r'^newsubjectteacher/$', views.eduadmin_new, {'input_type': 'Subject Teacher'}, name='new_subject_teacher'),
     url(r'^newclassstudent/$', views.eduadmin_new, {'input_type': 'ClassStudent'}, name='new_class_student'),
+    # url(r'^newclassstudent/$', views.class_student_add, name='new_class_student'),
     url(r'^newexaminer/$', views.eduadmin_new, {'input_type': 'Examiner'}, name='new_examiner'),
     url(r'^totalperiodentry/$', views.eduadmin_new, {'input_type': 'Total Period'}, name='total_period_entry'),
     url(r'^classlist/$', views.eduadmin_list, {'input_type': 'Class'}, name='class_list'),

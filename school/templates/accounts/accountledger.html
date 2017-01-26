@@ -30,7 +30,7 @@
   				{% for item in entries %}
             <tr align="center">
       			  <td>{{item.journal.date|date:'d-m-Y'}}</td>
-              <td>{{item.journal.key}}</td>
+              <td><a href="{{item.journal.get_absolute_url}}">{{item.journal.key}}</a></td>
               {% if item.transaction_type == "Debit" %}
       				  <td align="left">Debit</td>
       				  <td align="left">{{item.value}}</td>

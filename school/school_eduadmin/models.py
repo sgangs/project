@@ -82,7 +82,7 @@ class classstudent(models.Model):
 		super(classstudent, self).save(*args, **kwargs)
 
 	class Meta:
-		unique_together = (("class_section","student","year", "tenant"), ("class_section", "roll_no", "tenant"))
+		unique_together = (("class_section","student","year", "tenant"), ("class_section", "roll_no","year", "tenant"))
 		# ordering = ('name',)
 		
 	def __str__(self):
@@ -92,8 +92,8 @@ class classstudent(models.Model):
 
 #This is for the syllabus class group wise. 
 class Syllabus(models.Model):
-	class_group = models.ForeignKey(class_group,db_index=True,related_name='syllabus_eduadmin_classGroup_genadmin')
-	subject = models.ForeignKey(Subject,db_index=True,related_name='syllabus_eduadmin_subject_genadmin')
+	class_group=models.ForeignKey(class_group,db_index=True,related_name='syllabus_eduadmin_classGroup_genadmin')
+	subject=models.ForeignKey(Subject,db_index=True,related_name='syllabus_eduadmin_subject_genadmin')
 	key=models.CharField(db_index=True, max_length=40)
 	topics=models.TextField()
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
@@ -145,7 +145,7 @@ class Exam(models.Model):
 	def __str__(self):
 		return '%s %s' % (self.name, self.year)
 
-#This is for subject teacher for each subject
+#This is for subject teacher for each subject. Lets create a FK to syllabus, so as to ease in rendering views.
 class subject_teacher(models.Model):
 	subject=models.ForeignKey(Subject,db_index=True,related_name='subjectTeacher_eduadmin_subject_genadmin')
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='subjectTeacher_classSection')

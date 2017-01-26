@@ -21,6 +21,7 @@ class accounting_period(models.Model):
 	end=models.DateField(db_index=True, auto_now=False)
 	#key=models.CharField(db_index=True, max_length=10)
 	current_period=models.BooleanField('Current Accounting Period?')
+	finalized=models.BooleanField(default=False)
 	slug=models.SlugField(max_length=45)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountingPeriod_account_user_tenant')
 	objects = TenantManager()
@@ -41,6 +42,33 @@ class accounting_period(models.Model):
 	def __str__(self):
 		return '%s-%s' % (self.start.year, self.end.year)
 		# return self.start
+
+#This creates an accounting period
+# class quarterly_accounting(models.Model):
+# 	start=models.DateField(db_index=True,auto_now=False)
+# 	end=models.DateField(db_index=True, auto_now=False)
+# 	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='quarterlyAccounting_accountingPeriod')
+# 	finalized=models.NullBooleanField()
+# 	slug=models.SlugField(max_length=45)
+# 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='quarterlyAccounting_account_user_tenant')
+# 	objects = TenantManager()
+	
+# 	#def get_absolute_url(self):
+# 	#	return reverse('master_detail', kwargs={'detail':self.slug})
+
+# 	def save(self, *args, **kwargs):
+# 		if not self.id:
+# 			item="qa "+self.tenant.key+" "+str(self.start)+" "+str(self.end)
+# 			self.slug=slugify(item)
+# 		super(accounting_period, self).save(*args, **kwargs)
+	
+# 	class Meta:
+# 		unique_together = (("start","end", "tenant"))
+# 		ordering = ('start',)
+
+# 	def __str__(self):
+# 		return '%s-%s' % (self.start.year, self.end.year)
+# 		# return self.start
 
 
 
@@ -69,15 +97,16 @@ class ledger_group(models.Model):
 
 account_type_general=(('Current Assets','Current Assets'),
 				('Long Term Assets','Long Term Assets'),
+				('Depreciation','Depreciation'),
 				('Current Liabilities','Current Liabilities'),
 				('Long Term Liabilities','Long Term Liabilities'),
-				('Equity','Equity'),
+				# ('Equity','Equity'),
 				('Revenue','Revenue'),
 				('Fees','Fees'),
 				('Indirect Revenue','Indirect Revenue'),
 				('Direct Expense','Direct Expense'),
 				('Salary','Salary'),
-				('Direct Expense','Indirect Expense'),
+				('Indirect Expense','Indirect Expense'),
 				('Equity','Equity'),)
 
 
@@ -96,8 +125,8 @@ class Account(models.Model):
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='account_account_user_tenant')
 	objects = TenantManager()
 	
-	# def get_absolute_url(self):
-	# 	return reverse('accounts:account_detail', kwargs={'detail':self.slug})
+	def get_absolute_url(self):
+		return reverse('accounts:account_detail', kwargs={'detail':self.slug})
 
 	def save(self, *args, **kwargs):
 		if not self.id:
@@ -158,8 +187,8 @@ class Journal(models.Model):
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journal_account_user_tenant')
 	objects = TenantManager()
 
-	#def get_absolute_url(self):
-	#	return reverse('master_detail', kwargs={'detail':self.slug})
+	def get_absolute_url(self):
+		return reverse('accounts:journal_detail', kwargs={'detail':self.slug})
 
 	def save(self, *args, **kwargs):
 		if not self.id:
@@ -184,7 +213,7 @@ class Journal(models.Model):
 		ordering = ('date','group',)
 
 	def __str__(self):
-		return self.name
+		return str(self.date)
 
 #This is to link to journal entry line items
 class journal_entry(models.Model):
@@ -211,9 +240,7 @@ class journal_entry(models.Model):
 		ordering = ('journal','-transaction_type',)
 
 	def __str__(self):
-		return self.name
-
-
+		return self.account.name
 
 
 #This model is for modes of payment
@@ -239,3 +266,5 @@ class payment_mode(models.Model):
 		
 	def __str__(self):
 		return self.name
+
+#Should we create balance sheet?

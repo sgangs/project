@@ -30,13 +30,7 @@ def teacher_base(request):
 def teacherprofile_new(request, input_type):
 	if (input_type=="Teacher"):
 		importform=TeacherForm
-		name='genadmin:unit_list'
-	# elif (input_type=="Guardian"):
-	# 	importform=StudentGuardianForm
-	# 	name='genadmin:unit_list'
-	# elif (input_type=="Education"):
-	# 	importform=StudentEducationForm
-	# 	name='genadmin:unit_list'
+		name='teacher:teacher_list'
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
 	if (request.method == "POST"):
@@ -48,3 +42,7 @@ def teacherprofile_new(request, input_type):
 			item.save()
 			return redirect(name)
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
+
+def teacher_list(request):
+	teachers=Teacher.objects.for_tenant(request.user.tenant).all()
+	return render(request, 'teacher/list.html',{'items': teachers})

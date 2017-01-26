@@ -17,9 +17,4 @@ class Migration(migrations.Migration):
             model_name='user',
             name='registered_on',
         ),
-        migrations.AlterField(
-            model_name='tenant',
-            name='registered_on',
-            field=models.DateTimeField(default=datetime.datetime(2017, 1, 6, 17, 29, 35, 2196)),
-        ),
     ]

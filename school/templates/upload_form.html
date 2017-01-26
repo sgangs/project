@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Add New Details</title>
+{% endblock %} 
+
+{% block content%}
+	<div>
+		<div><h2>Bulk Upload Students List</h2></div>
+		{% if messages %}
+			<ul class="messages">
+			    {% for message in messages %}
+			    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+			    {% endfor %}
+			</ul>
+		{% endif %}
+		<!--<form method="POST">
+				{% csrf_token %}-->
+			{% crispy form form.helper %}
+			<!--	<button type="submit">Save</button>
+			</form> -->		
+	</div>
+
+<!--<script>
+	var $j = jQuery.noConflict();
+	$j( ".datepicker" ).datepicker({
+      // You can put more options here.
+
+    });
+</script>
+-->
+{% endblock %}
+
+
+

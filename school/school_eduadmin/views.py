@@ -112,7 +112,24 @@ def eduadmin_new(request, input_type):
 		if form.is_valid():
 			item=form.save(commit=False)			
 			item.tenant=current_tenant
-			item.save()
+			if (input_type=="ClassStudent"):
+				with transaction.atomic():
+					try:
+						item.save()
+						fee=student_fee()
+						fee.student=item.student
+						class_section=item.class_section
+						classgroup=class_section.classgroup
+						year=item.year
+						fee_group=group_default_fees.filter(classgroup=classgroup,year=year)
+						yearly_fee=fee_group.yearly_fee
+						monthly_fee=fee_group.monthly_fee
+						fee.monthly_fee=monthly_fee
+						fee.save()
+						for data in yearly_fee:
+							fee.yearly_fee.add(yearlyfee)
+					except:
+						transaction.rollback()		
 			return redirect(name)
 	#else:
 	#	form=importform(tenant=request.user.tenant)	
@@ -176,20 +193,22 @@ def subject_teacher_new(request):
 	return render (request, 'eduadmin/new_subjectteacher.html', {'classsection':class_section_option,})
 
 @login_required
-#This is used to add students to class. COmplex frontend. Not yet done.
+#This is used to add students to class. Complex frontend. Not yet done.
 def class_student_add(request):
 	class_section_option=class_section.objects.for_tenant(request.user.tenant)
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
+		students_excluded = []
 		this_tenant=request.user.tenant
 		if (calltype == 'year'):
 			#class_name=request.POST.get('class_name')
 			year=request.POST.get('year')
-			students_excluded=classstudent.objects.for_tenant(request.user.tenant).filter(year=year)
+			students_excluded_list=classstudent.objects.for_tenant(request.user.tenant).filter(year=year)
+			for item in students_excluded_list:
+				students_excluded.append(item.student.id)
+
 			students=Student.objects.for_tenant(request.user.tenant).exclude(id__in=students_excluded)
-			#subject_options=Syllabus.objects.for_tenant(request.user.tenant).filter(class_group=classgroup).subject
-			#for student in students:
 			jsondata = serializers.serialize('json', students)
 		return HttpResponse(jsondata)
 
@@ -209,7 +228,6 @@ def class_student_add(request):
 				transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-
 	return render (request, 'eduadmin/class_studentadd.html', {'classsections':class_section_option,})
 
 @login_required
@@ -236,8 +254,8 @@ def eduadmin_list(request, input_type):
 		this_tenant=request.user.tenant
 		items = class_section.objects.for_tenant(this_tenant).all()
 		try:			
-			period=total_period.objects.get(tenant=this_tenant).number_period
-			return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes", 'period':period})
+			totalperiod=total_period.objects.get(tenant=this_tenant).number_period
+			return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes", 'period':totalperiod})
 		except:
 			return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes"})
 	elif (input_type=="Subject Teacher"):
@@ -296,7 +314,9 @@ def classdetail(request, detail):
 
 @login_required
 #This function is used for viewing period. Adding period has to be done shortly.
+#Student view is separeted out. From student view, prents view will be created.
 def period(request, detail):
+	extension="base.html"
 	this_tenant=request.user.tenant
 	class_selected=class_section.objects.for_tenant(this_tenant).get(slug=detail)
 	class_group=class_selected.classgroup
@@ -325,9 +345,10 @@ def period(request, detail):
 				pass
 		jsondata=json.dumps(response_data)
 		return HttpResponse(jsondata)
-	try:			
-		period=total_period.objects.get(tenant=this_tenant).number_period
-		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'period': period, 'range':range(period)})
-	except:
-		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected})
+	# try:			
+	totalperiod=total_period.objects.get(tenant=this_tenant).number_period
+	return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'totalperiod': totalperiod,\
+		 'range':range(totalperiod), 'extension':extension})
+	# except:
+	# 	return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'extension':extension})
 	

@@ -6,9 +6,10 @@ from django.db.models import F, Prefetch, Sum
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import IntegrityError, transaction
-from .models import accounting_period, Account, ledger_group, Journal, journal_group, journal_entry, payment_mode
+from .models import accounting_period, Account, ledger_group, Journal, journal_group, journal_entry, payment_mode, account_year
 from .forms import PeriodForm, LedgerGroupForm, AccountForm, JournalGroupForm, PaymentForm, AccountYearForm
 from school_user.models import Tenant
+from .account_support import *
 
 @login_required
 #This is the base page.
@@ -99,7 +100,7 @@ def account_list(request, type):
 		return render(request, 'accounts/list_table.html',{'items':items, 'type':type})
 	elif (type=="Journal Group"):
 		items = journal_group.objects.for_tenant(request.user.tenant).all()
-	elif (type=="Chart"):
+	elif (type=="Account"):
 		accounts = Account.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'accounts/accountlist.html',{'accounts':accounts})
 	return render(request, 'accounts/list.html',{'items':items, 'type':type})
@@ -107,12 +108,20 @@ def account_list(request, type):
 @login_required
 #For showing the general ledger
 def account_detail(request,detail):
-	key_raw=detail.split("-",1)[1]
-	accountkey=re.sub("-"," ",key_raw)
-	account=Account.objects.for_tenant(request.user.tenant).get(key__exact=accountkey)
-	entries=Account.journalEntry_account.all()
+	account=Account.objects.for_tenant(request.user.tenant).get(slug__exact=detail)
+	# entries=Account.journalEntry_account.all()
+	entries=journal_entry.objects.filter(account=account).prefetch_related('journal').all()
 
 	return render(request, 'accounts/accountledger.html',{'account':account, 'entries':entries})
+
+@login_required
+#For showing the general ledger
+def journal_detail(request,detail):
+	journal=Journal.objects.for_tenant(request.user.tenant).get(slug__exact=detail)
+	entries=journal_entry.objects.filter(journal=journal).prefetch_related('journal').select_related('account').all()
+	print (journal.slug)
+
+	return render(request, 'accounts/journal_entry.html',{'journal':journal,'entries':entries, 'callfrom':'detail'})
 
 
 @login_required
@@ -152,8 +161,8 @@ def journalentry(request):
 						value=data['value']
 						accountkey=data['code']
 						account=Account.objects.for_tenant(request.user.tenant).get(key__iexact=accountkey)
-						or_value=account.value
-						account.value=or_value+value
+						#or_value=account.value
+						#account.value=or_value+value
 						account.save()
 						entry.value=value
 						entry.account=account
@@ -175,3 +184,100 @@ def journalentry(request):
 
 	#return render(request, 'bill/purchaseinvoice.html', {'date':date,'type': type})
 	return render(request, 'accounts/journal_entry.html', {'date':date,'type': type, 'groups':grouplist})
+
+#This view is to help create new account
+def new_account(request):
+	#date=datetime.now()	
+	periods=accounting_period.objects.for_tenant(request.user.tenant).all()
+	groups=ledger_group.objects.for_tenant(request.user.tenant).all()
+	accounts=Account.objects.for_tenant(request.user.tenant).all()
+	this_tenant=request.user.tenant
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		#getting Account Name
+		if (calltype == 'account'):
+			account=request.POST.get('account_name')
+			try:
+				acct_copy=Account.objects.for_tenant(this_tenant).\
+									get(name__iexact=account)
+				response_data['error'] = "Account with same name already exist."
+			except:
+				response_data['valid'] = "Account does not exist."
+		elif (calltype == 'key'):
+			key=request.POST.get('key')
+			try:
+				key_copy=Account.objects.for_tenant(this_tenant).\
+									get(key__iexact=key)
+				response_data['error'] = "Account with same key already exist."
+			except:
+				response_data['valid'] = "Account does not exist."
+		#saving the transaction
+		elif (calltype == 'save'):
+			with transaction.atomic():
+				try:
+					ledgerid=request.POST.get('ledgerid')
+					name=request.POST.get('name')
+					remarks=request.POST.get('remarks')
+					key=request.POST.get('key')
+					acct_type=request.POST.get('acct_type')
+					periodid=request.POST.get('periodid')
+					balance_type=request.POST.get('balance_type')
+					balance=float(request.POST.get('balance'))
+					ledger=ledger_group.objects.get(id=ledgerid)
+					period=accounting_period.objects.get(id=periodid)
+					account=Account()
+					account.ledger_group=ledger
+					account.name=name
+					account.remarks=remarks
+					account.key=key
+					account.account_type=acct_type
+					account.tenant=this_tenant
+					account.save()
+					year=account_year()
+					year.account=account
+					year.accounting_period=period
+					if (balance_type=="Debit"):
+						year.opening_debit=balance
+					elif (balance_type=="Credit"):
+						year.opening_credit=balance
+					year.tenant=this_tenant
+					year.save()
+				except:
+					transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	#return render(request, 'bill/purchaseinvoice.html', {'date':date,'type': type})
+	return render(request, 'accounts/new_account.html', {'periods':periods, 'groups':groups, 'accounts':accounts})
+
+
+#This view is for trail balance
+def trail_balance(request):
+	date=datetime.now()
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	response_data=get_trail_balance(request, start, end)
+	jsondata = json.dumps(response_data)
+	return render(request, 'accounts/trail_balance.html', {'accounts':jsondata, "start":start, "date":date})
+
+#This view is for profit and loss
+def profit_loss(request):
+	date=datetime.now()
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	response_data=get_profit_loss(request, start, end)
+	jsondata = json.dumps(response_data)
+	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":"p-l"})
+
+def balance_sheet(request):
+	date=datetime.now()
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	response_data=get_balance_sheet(request, start, end)
+	jsondata = json.dumps(response_data)
+	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s'})
+

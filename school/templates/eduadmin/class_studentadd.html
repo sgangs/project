@@ -12,7 +12,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'eduadmin/student_add.js' %}"></script>
+<script src="{% static 'eduadmin/student_add_class.js' %}"></script>
 
 {% endblock %} 
 
@@ -37,7 +37,7 @@
 	</div>
 </div>
 
-<div class="table-responsive" id='container'>
+<!-- <div class="table-responsive" id='container'> -->
 <form id='students' method='post' name='students' action=''>
 
 <table cellspacing="0" id="student_table" class="table table-striped table-bordered">
@@ -64,7 +64,7 @@
    </tr>
  </tbody>
 </table>
-</div>
+<!-- </div> -->
 
 <button type="button" class='delete btn btn-danger btn-xs' disabled="true">- Delete</button>
 <button type="button" class='addmore btn btn-success btn-xs' disabled="true">+ Add More</button>

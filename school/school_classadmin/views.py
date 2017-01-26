@@ -26,6 +26,24 @@ def base(request):
 
 
 @login_required
+#This function helps in getting list of students in school
+def class_students_list(request):
+	from school_eduadmin.models import class_section
+	classes = class_section.objects.for_tenant(request.user.tenant)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = []
+		this_tenant=request.user.tenant
+		#Getting student details based on selection
+		if (calltype == 'details'):
+			called_for='Attendance'
+			response_data=get_student_data(request, called_for, classes)
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	return render (request, 'classadmin/students_list.html', {'items':classes})
+
+@login_required
 #This function helps in addidng new attendance. Error 1- Why do we need to import class section for each function??
 def attendance_new(request):
 	from school_eduadmin.models import class_section
@@ -137,6 +155,7 @@ def new_exam_report(request):
 
 	return render (request, 'classadmin/new_examreport.html', {'items':classes, 'exams':exams})
 
+@login_required
 #Exam Report View
 def exam_report_view(request):
 	from school_eduadmin.models import class_section
@@ -159,7 +178,7 @@ def exam_report_view(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-	return render (request, 'classadmin/view_examreport.html', {'items':classes, 'exams':exams})
+	return render (request, 'classadmin/view_examreport_crossfilter.html', {'items':classes, 'exams':exams})
 
 @login_required
 #This function helps in addidng new attendance. Error 1- Why do we need to import class section for each function??

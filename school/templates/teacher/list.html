@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    Teachers List 
+</title>
+<!-- Datatable CSS-->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<!-- Datatable jQuery-->
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+{% load static from staticfiles %}
+{% endblock %}
+
+{% block content%}
+	<h2>Teachers List</h2>
+  <h1></h1>
+  <!-- {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endfor %}          
+      </ul>
+  {% endif %} -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover" id="account">
+      <thead class="thead-inverse bg-primary">
+        {% block table_header %}
+          <tr>
+            <th class="text-center">Sl. No</th>
+            <th class="text-center">System Key</th>
+            <th class="text-center">School Key</th>
+            <th class="text-center">First Name</th>
+            <th class="text-center">Last Name</th>
+            <th class="text-center">Date of Birth</th>
+            <th class="text-center">Date of Joining</th>
+          </tr>
+        {% endblock %}
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr align="center">
+            <td>{{forloop.counter}}</td>
+            <td><a href="#">{{item.key}}</a></td>
+            <td>{{item.local_id}}</a></td>
+            <td>{{item.first_name}}</td>
+            <td>{{item.last_name}}</td>
+            <td>{{item.dob}}</td>
+            <td>{{item.joining_date}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table> 
+  </div>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#account').DataTable({
+      "searching": false
+    });
+  });
+</script>
+	
+{% endblock %}
+
+
+
+

@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='tenant',
-            name='registered_on',
-            field=models.DateTimeField(default=datetime.datetime(2017, 1, 4, 10, 19, 49, 102309)),
-        ),
+        # migrations.AlterField(
+        #     model_name='tenant',
+        #     name='registered_on',
+        #     field=models.DateTimeField(default=datetime.datetime(2017, 1, 4, 10, 19, 49, 102309)),
+        # ),
          migrations.AlterField(
             model_name='user',
             name='user_type',

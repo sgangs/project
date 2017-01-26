@@ -113,3 +113,19 @@ def calender(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'genadmin/calendar.html')
+
+@login_required
+#This is a event list view.
+def calender_list(request):
+	events = annual_calender.objects.for_tenant(request.user.tenant).all()
+	# if request.method == 'POST':
+	# 	itemtype = request.POST.get('type')
+	# 	itemkey = request.POST.get('itemkey')
+	# 	response_data = {}
+
+	# 	if (itemtype == 'Manufacturer'):
+	# 		item = Manufacturer.objects.get(key__iexact=itemkey).delete()
+	# 		response_data['name'] = itemkey
+	# 		jsondata = json.dumps(response_data)
+	# 		return HttpResponse(jsondata)
+	return render (request, 'genadmin/event_list.html',{'items':events, 'list_for':'Events'})

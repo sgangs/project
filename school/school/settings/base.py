@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'schedule',
     'school_user',
     'school_genadmin',
     'school_eduadmin',
@@ -49,7 +50,7 @@ INSTALLED_APPS = [
     'school_student',
     'school_library',
     'school_account',
-    'school_fees',
+    'school_fees',    
 ]
 
 AUTH_USER_MODEL='school_user.User'
@@ -86,6 +87,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'school.wsgi.application'
 
+#This is for django-excel
+FILE_UPLOAD_HANDLERS = ("django_excel.ExcelMemoryFileUploadHandler",
+                        "django_excel.TemporaryExcelFileUploadHandler")
 
 
 # Password validation
@@ -126,7 +130,7 @@ USE_L10N = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_ROOT=os.path.join(BASE_DIR, '..', '..','static','static_school')
+#STATIC_ROOT=os.path.join(BASE_DIR, '..', '..','static','static_school')
 
 STATIC_URL = '/staticschool/'
 
