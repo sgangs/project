@@ -4,7 +4,7 @@ from .base import *
 from .secret import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = school_secret_key
+SECRET_KEY = landing_secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

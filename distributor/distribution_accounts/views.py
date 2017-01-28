@@ -113,7 +113,7 @@ def account_detail(request,detail):
 	return render(request, 'accounts/accountledger.html',{'account':account, 'entries':entries})
 
 @login_required
-#For showing the general ledger.
+#For showing the trail balance.
 #This is not yet done. It has to be taken care of with separate summation for debit and credit
 def income_statement(request,):
 	period=accountingPeriod.objects.for_tenant(request.user.tenant).get(current_period="Yes")

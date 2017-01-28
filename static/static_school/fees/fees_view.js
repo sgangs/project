@@ -30,7 +30,8 @@ $( ".check" ).click(function() {
                 dataType: 'json',
                 // handle a successful response
                 success : function(jsondata){
-                    console.log(jsondata);
+                    // console.log(jsondata);
+                    $("#student_table .data").remove(); 
                     $.each(jsondata, function(){
                         $('#student_table').append("<tr class='data'>"+
                         "<td class='account'>"+this.account+"</td>"+
@@ -39,6 +40,7 @@ $( ".check" ).click(function() {
                 },
                 // handle a non-successful response
                 error : function() {
+                    $("#student_table .data").remove(); 
                     bootbox.alert({
                         message: "Monthly Fee doesn't have any details./Error getting data.", 
                         onEscape: true }); // provide a bit more info about the error to the user

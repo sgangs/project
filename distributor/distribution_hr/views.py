@@ -8,9 +8,6 @@ from distribution_hr.forms import UserRegistrationForm
 
 
 # Create your views here.
-
-
-
 def registerUser(request):
     if request.method == 'POST':
         #customerform = CustomerRegistrationForm(request.POST)
