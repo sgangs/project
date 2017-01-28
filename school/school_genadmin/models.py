@@ -181,16 +181,21 @@ class House(models.Model):
 # 	def __str__(self):
 # 		return self.name
 
-event_type=(('E','Exam'),
-			('H','Holiday'),
-			('O','Other'),)
+event_type=((1,'Holiday'),
+			(2,'Exam'),
+			(3,'Excption'),
+			(4,'Others'))
+
+attendance_type=((1,'Working Day'),
+			(2,'Non working day'),)
 
 
 #This is the list of annual events model.
 class annual_calender(models.Model):
 	date=models.DateTimeField(db_index=True)
 	event=models.CharField(max_length=20)
-	event_type=models.CharField('Event type', max_length=1,choices=event_type, default='H')
+	event_type=models.PositiveSmallIntegerField('Event type', choices=event_type, default='1')
+	attendance_type=models.PositiveSmallIntegerField('Attendance type', choices=attendance_type, default='1')
 	#key=models.CharField(db_index=True,max_length=10)
 	slug=models.SlugField(db_index=True, max_length=75)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualCalender_genadmin_user_tenant')
@@ -199,17 +204,28 @@ class annual_calender(models.Model):
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
+#Annual Calendar Holiday Rules
+class annual_holiday_rules(models.Model):
+	title=models.CharField(max_length=25)
+	week=models.PositiveSmallIntegerField()
+	day=models.CharField(db_index=True, max_length=2)
+	slug=models.SlugField(max_length=80)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualHolidayRules_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
 	def save(self, *args, **kwargs):
 		if not self.id:
-			toslug=self.tenant.key+" " +self.event+" "+str(self.date)
+			toslug=self.tenant.key+" " +self.title
 			self.slug=slugify(toslug)
-
-		super(annual_calender, self).save(*args, **kwargs)
+		super(annual_holiday_rules, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("slug", "tenant"))
 		# ordering = ('name',)
 		
 	def __str__(self):
-		return '%s:  %s' % (self.event, self.date)
+		return '%s' % (self.ttile)
 	

@@ -1,8 +1,10 @@
+import json
 #from django.conf import settings
-#from django.http import HttpResponse, Http404
+
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import login
+from django.contrib.auth.views import login, password_reset
 from django.db import IntegrityError, transaction
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.generic import TemplateView
@@ -14,16 +16,30 @@ from school_account.models import payment_mode
 from school_genadmin.models import academic_year
 # from distribution_master.models import Warehouse
 from .user_util import *
+from .forms import revisedPasswordResetForm
 
 #landing page
 class HomeView(TemplateView):
     template_name = "index.html"
 
+#Redirect authenticated users to landing page
 def custom_login(request):
     if request.user.is_authenticated():
         return redirect(landing)
     else:
         return login(request)
+
+#Add one more level of authentication for forgot password. Then send the mail.
+def custom_password_reset(request, from_email, subject_template_name, password_reset_form):
+    form = revisedPasswordResetForm()
+    if request.method == 'POST':
+        form = revisedPasswordResetForm(request.POST)
+        if form.is_valid():
+            return password_reset(request, subject_template_name,)
+            # return HttpResponse("Wow")
+    else:
+        form = revisedPasswordResetForm()        
+    return render(request,'registration/password_reset_form.html', {'form': form})
     
 #registration page
 def RegisterView(request):
@@ -107,4 +123,15 @@ def landing(request):
     year=academic_year.objects.for_tenant(request.user.tenant).get(current_academic_year=True).year
     paid=fee_paid(request, year)
     total=month_fee(request, year)
-    return render (request, 'landing.html', {"paid":paid,"total":total})
+    income_expense=yearly_pl(request)
+    i_e_json = json.dumps(income_expense)
+    return render (request, 'landing.html', {"paid":paid,"total":total, 'i_e':i_e_json})
+
+
+
+#This is just randomly checking mail
+    #subject = "Jou Jagat Bandhu"
+    #message = "Joy Jagat Bandhu. /n This is my first mail."
+    #from_email = settings.EMAIL_HOST_USER
+    #to_list = ['sayantangangs.91@gmail.com']
+    #send_mail(subject, message, from_email, to_list)

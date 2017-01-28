@@ -9,88 +9,127 @@ function clearmodal(){
 // page is now ready, initialize the calendar...
 $('#calendar').fullCalendar({
 // put your options and callbacks here
-    customButtons: {
-        myCustomButton: {
-            text: 'Add Event  ',
-                // click: function() {
-                //  alert('clicked the add event buton!');
-                // }
-        }
-    },
     header: {
         left: 'myCustomButton',
         center: 'title',
         right: 'prev,next today'
     },
+    events: function(start,end, timezone, callback){
+        $.ajax({
+            url: "",
+            type: "POST",
+            data: {csrfmiddlewaretoken: csrf_token,
+                calltype: 'event',
+                start:start.format(),
+                end:end.format()},
+            success: function(jsondata){
+                events=[]
+                var source={}
+                $.each(JSON.parse(jsondata), function(){
+                    events.push({           
+                            title: this.title,
+                            start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
+                            end: moment(this.start).format('YYYY/MM/DD hh:mm'),
+                            allDay: true,})
+                });
+                var source={events};
+                callback(events)
+            }
+        });
+    }
     
 })
-$.ajax({
-        url: "",
-        type: "POST",
-        data: {csrfmiddlewaretoken: csrf_token,
-            calltype: 'event'},
-        success: function(jsondata){
-            console.log (jsondata)
-            var events=[]
-            $.each(JSON.parse(jsondata), function(){
-                events.push({           
-                        title: this.title,
-                        start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
-                        allDay: true,})
-            });
-            // var source = { events: [
-            //     $.each(JSON.parse(jsondata), function(){
-            //         console.log("Running")
-            //         // events.push({
-            //         //     title: "Christmas",
-            //         //     start: "2016-12-25 00:00:00", // will be parsed
-            //         //     allDay: true,
-            //         // });
-            //         title: "Christmas",
-            //         start: "2016-12-25 00:00:00",
-            //     })
-            // ]};
-            var source={events};
-            console.log (source);
-            $('#calendar').fullCalendar( 'addEventSource', source );
-        }
-});
-$('.fc-myCustomButton-button').append('<i class="glyphicon glyphicon-plus"</i>')
-$('.fc-myCustomButton-button').attr('data-toggle',"modal")
-$('.fc-myCustomButton-button').attr('data-target',"#myModal")
+
+// $('.fc-myCustomButton-button').append('<i class="glyphicon glyphicon-plus"</i>')
+$('.event').attr('data-toggle',"modal")
+$('.event').attr('data-target',"#event")
+
+$('.annualrule').attr('data-toggle',"modal")
+$('.annualrule').attr('data-target',"#annualrule")
 
 //This variable will store the student list added via json
 
-$( ".submit" ).confirm({
-    title: 'Confirm!',
-    icon: 'fa fa-spinner fa-spin',
-    theme: 'black',
-    backgroundDismiss: true,
-    content: 'Are you sure to record the event?',
-    confirmButton: 'Yes!',
-    cancelButton: 'No!',
-    autoClose: 'cancel|6000',
-    confirmButtonClass: 'btn-success',
-    cancelButtonClass: 'btn-danger',
-    animation: 'rotateY',
-    closeAnimation: 'rotateXR',
-    animationSpeed: 750,
-    confirm: function(){
+// $( ".submitevent" ).confirm({
+//     title: 'Confirm!',
+//     icon: 'fa fa-spinner fa-spin',
+//     theme: 'black',
+//     backgroundDismiss: true,
+//     content: 'Are you sure to record the event?',
+//     confirmButton: 'Yes!',
+//     cancelButton: 'No!',
+//     autoClose: 'cancel|6000',
+//     confirmButtonClass: 'btn-success',
+//     cancelButtonClass: 'btn-danger',
+//     animation: 'rotateY',
+//     closeAnimation: 'rotateXR',
+//     animationSpeed: 750,
+//     confirm: });
+
+
+$('.submitevent').click(function(e) {
+    swal({
+        title: "Add Event?",
+        text: "Are you sure you want to add the event!",
+        type: "info",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, add event!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        // swal("Deleted!",
+        // "Your imaginary file has been deleted.",
+        // "success");
+        if (isConfirm){
+            setTimeout(function(){eventadd()},600)
             
+        }
+    })
+});
+
+$('.submitrule').click(function(e) {
+    swal({
+        title: "Add Rule?",
+        text: "Are you sure you want to add the rule!",
+        type: "info",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, add rule!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        // swal("Deleted!",
+        // "Your imaginary file has been deleted.",
+        // "success");
+        if (isConfirm){
+            setTimeout(function(){ruleadd()},600)
+            
+        }
+    })
+});
+
+
+
+function eventadd(){            
     //get all itemcode & quantity pair 
-        var eventname=$(".eventname").val();
-        var date=$(".date").val();
-        //console.log ("Event: "+eventname+" Date:"+date );
-        if (eventname=="" || date=="" ){
-            bootbox.alert({
-                size: "small",
-                message: "Event name or date cannot be blank.",
-                onEscape: true });
-            clearmodal();
+    var eventname = "",
+        date = "",
+        eventtype="",
+        atttype = ""
+
+    eventname=$(".eventname").val();
+    date=$(".date").val();
+    eventtype=$(".eventtype").find(':selected').data('id');
+    console.log(eventtype);
+    atttype=$("#attendance").find(':selected').data('id');
+        console.log (atttype);
+    if (eventname=="" || date=="" || atttype == "" || eventtype =="" || eventname==undefined 
+            || date==undefined || atttype == undefined || eventtype ==undefined ){
+            swal("Uhhh..", "All the four inputs shall be filled!", "error");
         }
         else{
-                       
-        
         //Send ajax function to back-end 
             (function() {
                 $.ajax({
@@ -98,29 +137,76 @@ $( ".submit" ).confirm({
                     type: "POST",
                     data:{ eventname: eventname,
                         date: date,
-                        calltype: 'save',
+                        eventtype: eventtype,
+                        atttype: atttype,
+                        calltype: 'eventsave',
                         csrfmiddlewaretoken: csrf_token},
                         dataType: 'json',               
                         // handle a successful response
                     success : function(jsondata) {
-                        alert("Event registered successfully");
+                        setTimeout(function(){swal("Hooray..", "Event added successfully!", "success")},1000);
                         location.reload();
                         //location.href = redirect_url;
                         //console.log(jsondata);
                     },
                         // handle a non-successful response
                     error : function() {
-                        bootbox.alert({
-                            size: "medium",
-                            message: "Event entry failed", 
-                            onEscape: true });
-                        clearmodal();
+                        swal("Oops..", "There were some errors!", "error");
                     }
                 });
+
             })();
         }        
-    }, //bracket for confirm closing
+}// close of function eventadd
 
-});
+
+
+
+function ruleadd(){            
+    //get all itemcode & quantity pair 
+    var title = "",
+        weekdata = [],
+        day ="",
+    
+    title=$(".title").val();
+    $.each($(".week option:selected"), function(){
+        weekid=$(this).data('id')
+        weekdata.push(weekid);
+    });
+    day=$(".day").find(':selected').data('id');
+    console.log(day)
+    console.log(weekdata)
+    console.log(title)
+    
+    if (title=="" || weekdata.length == 0 || day == "" || title==undefined || weekdata==undefined || day == undefined){
+            swal("Uhhh..", "All the three inputs shall be filled!", "error");
+    }
+    else{
+        //Send ajax function to back-end 
+            (function() {
+                $.ajax({
+                    url : "", 
+                    type: "POST",
+                    data:{ title: title,
+                        week: JSON.stringify(weekdata),
+                        day: day,
+                        calltype: 'rulesave',
+                        csrfmiddlewaretoken: csrf_token},
+                        dataType: 'json',               
+                        // handle a successful response
+                    success : function(jsondata) {
+                        setTimeout(function(){swal("Hooray..", "Rule added successfully!", "success")},1000);
+                        location.reload();
+                    },
+                        // handle a non-successful response
+                    error : function() {
+                        swal("Oops..", "There were some errors!", "error");
+                    }
+                });
+
+            })();
+    }        
+}// close of function eventadd
+
 
 });

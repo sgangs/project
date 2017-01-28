@@ -160,18 +160,19 @@ def journalentry(request):
 						entry.journal=journal
 						value=data['value']
 						accountkey=data['code']
+						trn_type=data['transaction_type']
 						account=Account.objects.for_tenant(request.user.tenant).get(key__iexact=accountkey)
-						#or_value=account.value
-						#account.value=or_value+value
+						if (trn_type == "Debit"):
+							account.current_debit=account.current_debit+value
+						elif (trn_type == "Credit"):
+							account.current_credit=account.current_credit+value
+						else:
+							transaction.rollback()
+							raise IntegrityError
 						account.save()
 						entry.value=value
 						entry.account=account
-						entry.transaction_type=data['transaction_type']
-						# transaction_type= data['transaction_type']
-						# if (transaction_type == "Debit"):
-						# 	entry.transaction_type = "Debit"
-						# elif (transaction_type == "Credit"):
-						# 	entry.transaction_type = "Credit"
+						entry.transaction_type=trn_type
 						entry.save()
 					debit = journal.journalEntry_journal.filter(transaction_type="Debit").aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type="Credit").aggregate(Sum('value'))

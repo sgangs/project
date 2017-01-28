@@ -19,24 +19,11 @@
 			{% endif %}
 		{%endif%}
 		
-			<!--<form method="POST">
-				{% csrf_token %}-->
-				{% crispy form form.helper %}
-			<!--	<button type="submit">Save</button>
-			</form> -->
-
+			{% crispy form %}
 			
 		
 	</div>
 
-<!--<script>
-	var $j = jQuery.noConflict();
-	$j( ".datepicker" ).datepicker({
-      // You can put more options here.
-
-    });
-</script>
--->
 {% endblock %}
 
 

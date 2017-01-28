@@ -1,7 +1,7 @@
 import datetime
 from django.db.models import Sum
 from school_user.models import User, Tenant
-from school_account.models import Account, journal_group, ledger_group
+from school_account.models import accounting_period, Account, journal_group, journal_entry, ledger_group
 from school_fees.models import student_fee_payment, student_fee,monthly_fee_list, yearly_fee_list
 #from distribution_master.models import Dimension, Unit
  
@@ -57,3 +57,64 @@ def month_fee(request, year):
 	return monthly_fee_total+yearly_fee_total
 
 
+def yearly_pl(request):
+    account_list=Account.objects.for_tenant(request.user.tenant).filter(account_type__in=('Revenue','Fees',\
+                    'Indirect Revenue','Direct Expense', 'Salary','Indirect Expense'))
+    response_data=[]
+    income=0
+    expense=0
+    other_income=0
+    other_expense=0
+    profit=0
+    period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+    start=period.start
+    end=period.end
+    # for item in account_list:
+    #     total=0
+    #     journals=journal_entry.objects.for_tenant(request.user.tenant).\
+    #         filter(journal__date__range=(start,end), account=item)
+    #     journal_debit=journals.filter(transaction_type="Debit").aggregate(Sum('value'))
+    #     journal_credit=journals.filter(transaction_type="Credit").aggregate(Sum('value'))
+    #     if (journal_debit['value__sum'] == None):
+    #         journal_debit['value__sum'] = 0
+    #     if (journal_credit['value__sum'] == None):
+    #         journal_credit['value__sum'] = 0
+    #     if (item.account_type in ('Revenue','Fees','Indirect Revenue')):
+    #         total-=journal_debit['value__sum']
+    #         total+=journal_credit['value__sum']
+    #         if(item.account_type in ('Revenue','Fees')):
+    #             income+=total
+    #         else:
+    #             other_income+=total
+    #     elif (item.account_type in ('Direct Expense', 'Salary','Indirect Expense')):
+    #         total+=journal_debit['value__sum']
+    #         total-=journal_credit['value__sum']
+    #         if(item.account_type in ('Direct Expense', 'Salary')):
+    #             expense+=total
+    #         else:
+    #             other_expense+=total
+    for item in account_list:
+    	total=0
+    	if (item.account_type in ('Revenue','Fees','Indirect Revenue')):
+    		total-=item.current_debit
+    		total+=item.current_credit
+    		if(item.account_type in ('Revenue','Fees')):
+    			income+=total
+    		else:
+    			other_income+=total
+    	elif (item.account_type in ('Direct Expense', 'Salary','Indirect Expense')):
+    		total+=item.current_debit
+    		total-=item.current_credit
+    		if(item.account_type in ('Direct Expense', 'Salary')):
+    			expense+=total
+    		else:
+    			other_expense+=total
+
+    profit=(income-expense)+other_income-other_expense
+    response_data.append({'data_type':'other_income','amount':str(other_income)})
+    response_data.append({'data_type':'other_expense','amount':str(other_expense)})
+    response_data.append({'data_type':'income','amount':str(income)})
+    response_data.append({'data_type':'expense','amount':str(expense)})
+    response_data.append({'data_type':'profit','amount':str(profit)})
+    return response_data
+    

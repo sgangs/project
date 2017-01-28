@@ -175,6 +175,8 @@ def exam_report_view(request):
 			called_for='Exam'
 			response_data=get_exam_report(request, called_for, classes)
 			#response_data=["Ram"]
+			#This is just randomly checking mail
+			
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 

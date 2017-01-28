@@ -15,7 +15,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from school_user.models import Tenant
 from .forms import SubjectForm, classGroupForm, HouseForm
-from .models import Subject, class_group, House, annual_calender
+from .models import Subject, class_group, House, annual_calender, annual_holiday_rules
 
 
 @login_required
@@ -95,21 +95,46 @@ def calender(request):
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
-		if (calltype == 'save'):
+		if (calltype == 'eventsave'):
 			eventname=request.POST.get('eventname')
 			date=request.POST.get('date')
-			calender_event=annual_calender()
-			calender_event.event=eventname
+			eventtype=int(request.POST.get('eventtype'))
+			attendance_type=int(request.POST.get('atttype'))
+			calendar_event=annual_calender()
+			calendar_event.event=eventname
 			date_formatted=datetime.strptime(date, "%Y-%m-%d").date()
 			datetime_final=datetime.combine(date_formatted, datetime.min.time())
-			calender_event.date=timezone.make_aware(datetime_final, timezone.get_current_timezone())
-			calender_event.tenant=request.user.tenant	
-			calender_event.save()
-		if (calltype == 'event'):
-			events = annual_calender.objects.for_tenant(request.user.tenant).all()
+			calendar_event.date=timezone.make_aware(datetime_final, timezone.get_current_timezone())
+			calendar_event.tenant=request.user.tenant
+			calendar_event.eventtype=eventtype
+			if (eventtype == 1):
+				calendar_event.attendance_type=2
+			elif (eventtype == 3):
+				calendar_event.attendance_type=1
+			else:
+				calendar_event.attendance_type=attendance_type			
+			calendar_event.save()
+		elif (calltype == 'rulesave'):
+			title=request.POST.get('title')
+			week=json.loads(request.POST.get('week'))
+			day=request.POST.get('day')
+			week.sort()
+			# print(type(week[0]))
+			week=map(str,week)
+			week=''.join(week)
+			rule=annual_holiday_rules()
+			rule.title=title
+			rule.day=day			
+			rule.week=int(week)
+			rule.tenant=request.user.tenant
+			rule.save()
+		elif (calltype == 'event'):
+			start=datetime.strptime(request.POST.get('start'),"%Y-%m-%d").date()
+			end=datetime.strptime(request.POST.get('end'),"%Y-%m-%d").date()
+			events = annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
 			for event in events:
- 				response_data.append({'title':event.event, 'start': localtime(event.date).isoformat(), 'allDay':True})
- 				#print (localtime(event.date).isoformat())
+				response_data.append({'title':event.event, 'start': localtime(event.date).isoformat(), 'allDay':True})
+
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'genadmin/calendar.html')
@@ -118,14 +143,4 @@ def calender(request):
 #This is a event list view.
 def calender_list(request):
 	events = annual_calender.objects.for_tenant(request.user.tenant).all()
-	# if request.method == 'POST':
-	# 	itemtype = request.POST.get('type')
-	# 	itemkey = request.POST.get('itemkey')
-	# 	response_data = {}
-
-	# 	if (itemtype == 'Manufacturer'):
-	# 		item = Manufacturer.objects.get(key__iexact=itemkey).delete()
-	# 		response_data['name'] = itemkey
-	# 		jsondata = json.dumps(response_data)
-	# 		return HttpResponse(jsondata)
 	return render (request, 'genadmin/event_list.html',{'items':events, 'list_for':'Events'})

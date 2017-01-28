@@ -25,22 +25,6 @@ $( ".year" ).change(function() {
 // });
 
 
-// $( ".save" ).confirm({
-//     title: 'Confirm!',
-//     icon: 'fa fa-spinner fa-spin',
-//     theme: 'black',
-//     backgroundDismiss: true,
-//     content: 'Are you sure to link the class to fee structure?',
-//     confirmButton: 'Yes!',
-//     cancelButton: 'No!',
-//     autoClose: 'cancel|6000',
-//     confirmButtonClass: 'btn-success',
-//     cancelButtonClass: 'btn-danger',
-//     animation: 'rotateY',
-//     closeAnimation: 'rotateXR',
-//     animationSpeed: 750,
-//     confirm: save_data() });
-
 
 $('.save').click(function(e) {
     swal({

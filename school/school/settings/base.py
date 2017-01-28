@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.0', '127.0.0.1', '139.59.27.34', 'techassisto.com', 'www.techassisto.com']
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
@@ -116,6 +116,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+#Number grouping to group numbers in a format. Turned off for now.
+#NUMBER_GROUPING = (3, 2, 0)
+
 USE_TZ = True
 
 TIME_ZONE = 'Asia/Kolkata'
@@ -130,7 +133,7 @@ USE_L10N = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-#STATIC_ROOT=os.path.join(BASE_DIR, '..', '..','static','static_school')
+STATIC_ROOT=os.path.join(BASE_DIR, '..', '..','static','static_school')
 
 STATIC_URL = '/staticschool/'
 
@@ -141,3 +144,20 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 LOGIN_REDIRECT_URL = reverse_lazy('landing')
 LOGIN_URL = reverse_lazy('login')
 LOGOUT_URL = reverse_lazy('logout')
+
+#Security
+SECURE_BROWSER_XSS_FILTER=True
+
+
+#This is another security feature, helping to check passwords for validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
