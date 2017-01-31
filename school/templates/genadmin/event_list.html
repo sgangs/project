@@ -8,6 +8,7 @@
           <tr>
             <th class="text-center">Date</th>
             <th class="text-center">Event Name</th>
+            <th class="text-center">Event Type</th>
           </tr>
           {% endblock %}
         </thead>
@@ -15,7 +16,16 @@
           {% for item in items %}
             <tr align="center">
               <td><a href="#">{{item.date|date:"d-m-Y"}}</a></td>
-              <td>{{item.event}}</a></td>
+              <td>{{item.event}}</td>
+              {% if item.event_type == 1 %}
+              <td>Holiday</td>
+              {% elif item.event_type == 2 %}
+              <td>Exam</td>
+              {% elif item.event_type == 3 %}
+              <td>Exception to Holiday Rule</td>
+              {% elif item.event_type == 4 %}
+              <td>Other Event</td>
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody>

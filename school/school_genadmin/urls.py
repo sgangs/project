@@ -10,6 +10,7 @@ urlpatterns = [
     #url(r'^newbranch/$', views.genadmin_new, {'input_type': 'Branch'}, name='new_branch'),
     url(r'^base/$', views.base, name='base'),
     url(r'^newsubject/$', views.genadmin_new, {'input_type': 'Subject'}, name='new_subject'),
+    url(r'^newacademicyear/$', views.genadmin_new, {'input_type': 'academic_year'}, name='new_academic_year'),
     url(r'^newclassgroup/$', views.genadmin_new, {'input_type': 'class_group'}, name='new_class_group'),
     url(r'^newhouse/$', views.genadmin_new, {'input_type': 'House'}, name='new_house'),
     url(r'^calender/$', views.calender, name='calender'),

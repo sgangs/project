@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
-    'schedule',
     'school_user',
     'school_genadmin',
     'school_eduadmin',
@@ -149,15 +148,3 @@ LOGOUT_URL = reverse_lazy('logout')
 SECURE_BROWSER_XSS_FILTER=True
 
 
-#This is another security feature, helping to check passwords for validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]

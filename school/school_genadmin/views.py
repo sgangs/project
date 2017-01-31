@@ -1,4 +1,6 @@
 from datetime import date, datetime
+from dateutil.rrule import *
+from dateutil.parser import *
 from django.utils import timezone
 from django.utils.timezone import localtime
 from functools import partial, wraps
@@ -14,8 +16,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 
 from school_user.models import Tenant
-from .forms import SubjectForm, classGroupForm, HouseForm
-from .models import Subject, class_group, House, annual_calender, annual_holiday_rules
+from .forms import SubjectForm, classGroupForm, HouseForm, academicYearForm
+from .models import Subject, class_group, House, annual_calender, annual_holiday_rules, academic_year
+from .genadmin_util import *
 
 
 @login_required
@@ -35,9 +38,9 @@ def genadmin_new(request, input_type):
 	elif (input_type == "House"):
 		importform = HouseForm
 		name='genadmin:house_list'
-	# elif (input_type == "Unit"):
-	# 	importform = TotalPeriodForm
-	# 	name='master:unit_list'
+	elif (input_type == "academic_year"):
+		importform = academicYearForm
+		name='landing'
 	
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
@@ -49,15 +52,25 @@ def genadmin_new(request, input_type):
 		#form = formset(request.POST, tenant=current_tenant)
 		form = importform(request.POST, tenant=current_tenant)
 		if form.is_valid():
-			item=form.save(commit=False)			
-			item.tenant=current_tenant
-			item.save()
-			return redirect(name)
-	#else:
-	#	form=importform(tenant=request.user.tenant)	
-	#return render(request, 'master/new.html',{'formset': formset, 'helper': helper, 'item': type})
+			with transaction.atomic():
+				try:
+					if (input_type == "academic_year"):
+						data=form.cleaned_data
+						current=data['current_academic_year']
+						try:
+							if current:
+								ay=academic_year.objects.for_tenant(current_tenant).get(current_academic_year=True)
+								ay.current_academic_year=False
+								ay.save()
+						except:
+							pass
+					item=form.save(commit=False)			
+					item.tenant=current_tenant
+					item.save()
+					return redirect(name)
+				except:
+					transaction.rollback()			
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
-
 
 @login_required
 #This is the view to provide list
@@ -117,7 +130,7 @@ def calender(request):
 		elif (calltype == 'rulesave'):
 			title=request.POST.get('title')
 			week=json.loads(request.POST.get('week'))
-			day=request.POST.get('day')
+			day=int(request.POST.get('day'))
 			week.sort()
 			# print(type(week[0]))
 			week=map(str,week)
@@ -131,9 +144,27 @@ def calender(request):
 		elif (calltype == 'event'):
 			start=datetime.strptime(request.POST.get('start'),"%Y-%m-%d").date()
 			end=datetime.strptime(request.POST.get('end'),"%Y-%m-%d").date()
-			events = annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
+			#Appends all events
+			events= annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
 			for event in events:
 				response_data.append({'title':event.event, 'start': localtime(event.date).isoformat(), 'allDay':True})
+			rules=annual_holiday_rules.objects.for_tenant(request.user.tenant)
+			hol=[] #To store all holidays here.
+			for rule in rules:
+				week_in_rule=list(map(int,str(rule.week)))
+				#Finds out holidays acc to rule
+				x=list(rrule(MONTHLY, byweekday=(rule.day), bysetpos=(week_in_rule), dtstart=start,until=end))  
+				hol=hol+x				
+			#Holidays calculated by: 
+			#1. Creating total holiday list 2. Creating total working event list. 3. Delete overlapping 2 from 1
+			events_work = events.filter(attendance_type=1)
+			work=[]
+			for event in events_work:
+				work.append(datetime.strptime(datetime.strftime(localtime(event.date),'%Y %m %d'), '%Y %m %d'))
+			hol=list(set(hol)-set(work))
+			#Appends working holidays
+			for i in hol:
+				response_data.append({'title':"Weekly Holiday", 'start': i.isoformat(), 'allDay':True})
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
@@ -142,5 +173,8 @@ def calender(request):
 @login_required
 #This is a event list view.
 def calender_list(request):
-	events = annual_calender.objects.for_tenant(request.user.tenant).all()
+	this_tenant=request.user.tenant
+	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+	events = annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(period.start,period.end))
 	return render (request, 'genadmin/event_list.html',{'items':events, 'list_for':'Events'})
+

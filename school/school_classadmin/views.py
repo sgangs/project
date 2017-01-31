@@ -1,5 +1,7 @@
 from datetime import date, datetime
 import json
+from dateutil.rrule import *
+from dateutil.parser import *
 from django.core import serializers
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
@@ -15,7 +17,8 @@ from .class_admin_support import *
 from school_teacher.models import Teacher
 from school_student.models import Student
 from school_eduadmin.models import classstudent, Exam
-from school_genadmin.models import class_group, Subject
+from school_genadmin.models import class_group, Subject, annual_calender
+from school_genadmin.genadmin_util import holiday_calculator
 
 
 
@@ -228,3 +231,41 @@ def attendance_edit(request):
 		return HttpResponse(jsondata)
 
 	return render (request, 'classadmin/class_attendance_edit.html', {'items':classes})
+
+@login_required
+#Trying the sample with students
+def view_student_attendance(request):
+	this_tenant=request.user.tenant
+	students=Student.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		response_data = []
+		studentid=request.POST.get('studentid')
+		start=datetime.strptime(request.POST.get('start'),"%Y-%m-%d").date()
+		end=datetime.strptime(request.POST.get('end'),"%Y-%m-%d").date()
+		student=students.get(id=studentid)
+		attendance=Attendance.objects.filter(student=student, date__range=(start,end))
+		attendace_dates=[]
+		for i in attendance:
+			attendace_dates.append(datetime.strptime(datetime.strftime(i.date,'%Y %m %d'), '%Y %m %d'))
+		total=list(rrule(DAILY, dtstart=start, until=end))
+		events= annual_calender.objects.filter(date__range=(start,end))
+		events_hol=events.filter(attendance_type=2)
+		hol=[]
+		for event in events_hol:
+			hol.append(datetime.strptime(datetime.strftime(event.date,'%Y %m %d'), '%Y %m %d'))
+		hol=holiday_calculator(start, end, events, hol)
+		total_working=list(set(total) -set(hol))
+		no_rep=list(set(total_working)-set(attendace_dates))
+		hol.sort();
+		no_rep.sort();
+		for i in attendance:
+			response_data.append({'data_type':'Report','is_present':i.ispresent, \
+				'date': datetime.strftime(i.date, '%d -%m -%Y'), 'remarks':i.remarks})
+		for i in no_rep:
+			response_data.append({'data_type':'No Report','date': datetime.strftime(i, '%d -%m -%Y')})
+		for i in hol:
+			response_data.append({'data_type':'Holiday','date': datetime.strftime(i, '%d -%m -%Y')})		
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	return render (request, 'classadmin/attendance_view_student.html',{'items':students})

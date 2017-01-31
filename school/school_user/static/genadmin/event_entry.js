@@ -12,8 +12,11 @@ $('#calendar').fullCalendar({
     header: {
         left: 'myCustomButton',
         center: 'title',
-        right: 'prev,next today'
+        right: 'prev,next, month, agendaWeek, today'
     },
+
+    height:400,
+
     events: function(start,end, timezone, callback){
         $.ajax({
             url: "",
@@ -30,14 +33,15 @@ $('#calendar').fullCalendar({
                             title: this.title,
                             start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
                             end: moment(this.start).format('YYYY/MM/DD hh:mm'),
-                            allDay: true,})
+                            allDay: true,
+                            })
                 });
                 var source={events};
+
                 callback(events)
             }
         });
-    }
-    
+    },    
 })
 
 // $('.fc-myCustomButton-button').append('<i class="glyphicon glyphicon-plus"</i>')
@@ -166,7 +170,7 @@ function ruleadd(){
     //get all itemcode & quantity pair 
     var title = "",
         weekdata = [],
-        day ="",
+        day =8,
     
     title=$(".title").val();
     $.each($(".week option:selected"), function(){
@@ -174,11 +178,8 @@ function ruleadd(){
         weekdata.push(weekid);
     });
     day=$(".day").find(':selected').data('id');
-    console.log(day)
-    console.log(weekdata)
-    console.log(title)
     
-    if (title=="" || weekdata.length == 0 || day == "" || title==undefined || weekdata==undefined || day == undefined){
+    if (title=="" || weekdata.length == 0 || day >6 || title==undefined || weekdata==undefined || day == undefined){
             swal("Uhhh..", "All the three inputs shall be filled!", "error");
     }
     else{

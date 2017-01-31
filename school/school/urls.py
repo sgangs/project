@@ -1,7 +1,6 @@
 from django.conf.urls import include,url
 from django.contrib import admin
 from django.contrib.auth.views import logout, password_reset, password_reset_done, password_reset_confirm, password_reset_complete
-from dashing.utils import router
 #from distributor.views import HomeView
 from school import views
 from .forms import revisedPasswordResetForm

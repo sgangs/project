@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Daily Attendance Register</title>
+
+<!--Moment js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+<!--Daterange picker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'classadmin/attendance_view_student.js' %}"></script>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>View Attendance Register</h3>
+<h1></h1>
+<div class="row">
+	<div class="form-group col-xs-4 col-md-3"">
+		<select class="form-control student">
+    	<option disabled selected hidden style='display: none' value>Select Student</option>
+			{% for item in items %}
+  				<option data-id="{{item.id}}">{{item.id}}</option>
+			{% endfor %}
+  	</select> 
+	</div>
+	<div class="form-group col-xs-4 col-md-3"">
+		<label for="date" class="control-label">Select date range</label> 
+		<input type="text" name="daterange" class='daterange'>
+	</div>
+</div>
+<button type="button" class='check btn btn-primary btn-sm'>Check for attendance</button>
+<h1></h1>
+
+<div class="table-responsive col-xs-12 col-md-12 student_table" hidden>	
+	<table id="student_table" class="table table-striped table-bordered">
+		<thead class="bg-primary">
+	  		<tr>
+	  			<th class="header" hidden=true>Student</th>
+	  			<th class="header" title="This is the system generated code/key for student.">Date</th>
+		    	<th class="header" title = "This is the internal school maintianed  code/key for student.">Attendance</th>
+		    	<th>Reason for absence</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+
+</div>
+
+<div class="table-responsive col-xs-6 col-md-6 no_report" hidden>
+	<table id="no_report" class="table table-striped table-bordered ">
+		<thead class="bg-warning">
+			<tr>
+				<th class="header">Attendance Unavailable On:</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+</div>
+
+<div class="table-responsive col-xs-6 col-md-6 holiday" hidden>
+	<table id="holiday" class="table table-striped table-bordered ">
+		<thead class="bg-danger">
+			<tr>
+				<th class="header">List of Holidays in between</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+</div>
+
+
+<script>
+var startdate = '',enddate = '';
+	$('input[name="daterange"]').daterangepicker({
+		locale: {
+            format: 'DD/MM/YYYY'
+        },
+        maxDate: moment()
+	},
+	function(start, end, label) {
+    	startdate=start.format('YYYY-MM-DD');
+    	enddate=end.format('YYYY-MM-DD');
+    	console.log(startdate);
+	});
+
+	csrf_token='{{csrf_token}}';
+</script>
+{% endblock %}

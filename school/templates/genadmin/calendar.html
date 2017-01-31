@@ -13,7 +13,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.min.css">
 
-<title>Calender Events</title>
+<title>Calendar Events</title>
 
 {% load static from staticfiles %}
 
@@ -24,17 +24,18 @@
 {% block content%}
 	
 <div>
-	<button type="submit" class="btn btn-primary event"><i class="glyphicon glyphicon-pushpin"></i> Add Events</button>
-	<button type="button" class="btn btn-primary annualrule" title= "Add rules like holiday on Sundays & alternate Saturdays"><i class="glyphicon glyphicon-pushpin"></i> Add Annual Holiday Rules</button>
+	<a href="{% url 'genadmin:event_list' %}"><button type="submit" class="btn btn-link list"><i class="fa fa-list"></i> View Events as list</button></a>
+	<button type="submit" class="btn btn-primary btn-sm event"><i class="fa fa-star"></i> Add Events</button>
+	<button type="button" class="btn btn-primary btn-sm annualrule" title= "Add rules like holiday on Sundays & alternate Saturdays"><i class="glyphicon glyphicon-pushpin"></i> Add Annual Holiday Rules</button>
 </div>
-<div id='calendar'></div>
+<div id='calendar' style='height: 150px'></div>
 
 <!-- Modal -->
 <div class="modal fade" id="event" tabindex="-1" role="dialog" aria-labelledby="eventLabel" aria-hidden="true">
 	<div class="modal-dialog" role="document">
 	    <div class="modal-content">
 		    <div class="modal-header">
-		    	<h4 class="modal-title" id="myModalLabel">Add Event To Annual Calender</h4>
+		    	<h4 class="modal-title" id="myModalLabel">Add Event To Annual Calendar</h4>
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
@@ -90,13 +91,13 @@
 				<div class="form-group daydiv">
 					<label  class="control-label">Select Day</label>
 					<select class="selectpicker day" title="Choose one of the following...">
-						<option data-id="MO">Monday</option>
-						<option data-id="TU">Tuesday</option>
-						<option data-id="WE">Wednesday</option>
-						<option data-id="TH">Thursday</option>
-						<option data-id="FR">Friday</option>
-						<option data-id="SA">Saturday</option>
-						<option data-id="SU">Sunday</option>
+						<option data-id=0>Monday</option>
+						<option data-id=1>Tuesday</option>
+						<option data-id=2>Wednesday</option>
+						<option data-id=3>Thursday</option>
+						<option data-id=4>Friday</option>
+						<option data-id=5>Saturday</option>
+						<option data-id=6>Sunday</option>
 					</select>
 				</div>
 				<div>
@@ -127,6 +128,14 @@
 
 <script>
 csrf_token='{{csrf_token}}';
+$(function(){
+	if (!Modernizr.inputtypes.date) {
+		$('input[type=date]').datepicker({
+			dateFormat : 'yy-mm-dd'
+		}
+		);
+	}
+});
 </script>
 {% endblock %}
 

@@ -195,7 +195,7 @@ class annual_calender(models.Model):
 	date=models.DateTimeField(db_index=True)
 	event=models.CharField(max_length=20)
 	event_type=models.PositiveSmallIntegerField('Event type', choices=event_type, default='1')
-	attendance_type=models.PositiveSmallIntegerField('Attendance type', choices=attendance_type, default='1')
+	attendance_type=models.PositiveSmallIntegerField('Attendance type', choices=attendance_type, default='2')
 	#key=models.CharField(db_index=True,max_length=10)
 	slug=models.SlugField(db_index=True, max_length=75)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualCalender_genadmin_user_tenant')
@@ -208,7 +208,7 @@ class annual_calender(models.Model):
 class annual_holiday_rules(models.Model):
 	title=models.CharField(max_length=25)
 	week=models.PositiveSmallIntegerField()
-	day=models.CharField(db_index=True, max_length=2)
+	day=models.PositiveSmallIntegerField(db_index=True, default=5)
 	slug=models.SlugField(max_length=80)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualHolidayRules_genadmin_user_tenant')
 	objects=TenantManager()

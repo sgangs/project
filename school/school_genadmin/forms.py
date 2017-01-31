@@ -6,36 +6,11 @@ from crispy_forms.layout import Submit, Layout, Field
 from crispy_forms.bootstrap import (
     PrependedText, AppendedText)
 
-from .models import Subject, class_group, House, Batch
+from .models import Subject, class_group, House, Batch, academic_year
 
-# #This for is to adding new branch
-# class BranchForm(forms.ModelForm):
-# 	class Meta:
-# 		model=Branch
-# 		fields = ('name', 'key', 'address_line_1', 'address_line_2', 'state','pincode',)
-# 	def __init__(self, *args, **kwargs):
-# 		self.tenant=kwargs.pop('tenant',None)
-# 		super(BranchForm, self).__init__(*args, **kwargs)
-# 		self.helper = FormHelper(self)
-# 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
-# 		self.helper.form_class = 'form-horizontal'
-# 		self.helper.label_class = 'col-sm-2'
-# 		self.helper.field_class = 'col-sm-4'
-# 	def clean(self):
-# 		cd= super(BranchForm, self).clean()
-# 		unique_key=cd.get('key')
-# 		error=[]
-# 		data=""
-# 		if not unique_key:
-# 			raise forms.ValidationError(error)
-# 			return cd
-# 		else:
-# 			try:
-# 				data=Branch.objects.for_tenant(self.tenant).get(key=unique_key)
-# 				self.add_error('key',"Branch with same key already exists.")
-# 			except:
-# 				return cd
-# 		return cd
+#This is for using date widget
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 
 #This for is to adding new subject
@@ -63,6 +38,51 @@ class SubjectForm(forms.ModelForm):
 			try:
 				data=Subject.objects.for_tenant(self.tenant).get(name=unique_name)
 				self.add_error('name',"Subject with name already exists.")
+			except:
+				return cd
+		return cd
+
+#This for is to adding new subject
+class academicYearForm (forms.ModelForm):
+	class Meta:
+		model=academic_year
+		fields = ('year','start','end','current_academic_year')
+		widgets = {
+            'start': DateInput(),
+            'end': DateInput(),
+        }
+	def __init__(self, *args, **kwargs):
+		self.tenant=kwargs.pop('tenant',None)
+		super(academicYearForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper(self)
+		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'
+	def clean(self):
+		cd= super(academicYearForm, self).clean()
+		year=cd.get('year')
+		start=cd.get('start')
+		end=cd.get('end')
+		error=[]
+		data=""
+		if not year:
+			raise forms.ValidationError(error)
+			return cd
+		else:
+			try:
+				data=academic_year.objects.for_tenant(self.tenant).get(year=year)
+				self.add_error('year',"Academin Session with same data already exist")
+			except:
+				return cd
+			try:
+				start=academic_year.objects.for_tenant(self.tenant).get(start=start)
+				self.add_error('start',"Academin Session with same data already exist")
+			except:
+				return cd
+			try:
+				data=academic_year.objects.for_tenant(self.tenant).get(end=end)
+				self.add_error('end',"Academin Session with same data already exist")
 			except:
 				return cd
 		return cd
