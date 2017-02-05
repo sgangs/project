@@ -39,7 +39,7 @@ def fee_paid(request,year):
     now=datetime.date.today()
     month=now.strftime("%b").lower()
     total_paid=student_fee_payment.objects.for_tenant(request.user.tenant).\
-    			filter(year=year,month=month).aggregate(Sum('amount'))['amount__sum']
+    			filter(year=year,month__iexact=month).aggregate(Sum('amount'))['amount__sum']
     return total_paid
 
 def month_fee(request, year):
@@ -96,12 +96,12 @@ def yearly_pl(request):
     for item in account_list:
     	total=0
     	if (item.account_type in ('Revenue','Fees','Indirect Revenue')):
-    		total-=item.current_debit
-    		total+=item.current_credit
-    		if(item.account_type in ('Revenue','Fees')):
-    			income+=total
-    		else:
-    			other_income+=total
+            total-=item.current_debit
+            total+=item.current_credit
+            if(item.account_type in ('Revenue','Fees')):
+                income+=total
+            else:
+                other_income+=total
     	elif (item.account_type in ('Direct Expense', 'Salary','Indirect Expense')):
     		total+=item.current_debit
     		total-=item.current_credit

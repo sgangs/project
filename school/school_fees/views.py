@@ -171,10 +171,13 @@ def student_payment(request, input_type):
 			response_data=view_student(request)
 		elif (calltype == 'details'):
 			response_data=view_fee_details(request)
+		elif (calltype == 'payment_history'):
+			response_data=view_payment_details(request)
 		elif (calltype == 'save'):
+			print ("Save Called")
 			response_data=save_student_payment(request)
 			#Add all the relavant data which has to be updated in the models.
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-	return render(request, 'fees/student_fee.html',{'classsection':classsection, 'extension':extension})
+	return render(request, 'fees/student_fee.html',{'input_type':input_type,'classsection':classsection, 'extension':extension})

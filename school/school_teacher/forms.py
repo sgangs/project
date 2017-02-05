@@ -30,10 +30,19 @@ class TeacherForm(forms.ModelForm):
 
 	class Meta:
 		model=Teacher
-		fields =('first_name', 'last_name', 'gender', 'blood_group','dob','joining_date', 'school_teacher_id', 'contact',\
+		fields =('first_name', 'last_name', 'gender', 'blood_group','dob','joining_date', 'local_id', 'contact',\
 		 			'email_id', 'address_line_1', 'address_line_2','state','pincode' )
 		widgets = {
             'joining_date': DateInput(),
         }
 	
 
+class UploadFileForm(forms.Form):
+	file = forms.FileField()
+	def __init__(self,*args,**kwargs):
+		super (UploadFileForm,self ).__init__(*args,**kwargs) # populates the post
+		self.helper = FormHelper(self)
+		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'

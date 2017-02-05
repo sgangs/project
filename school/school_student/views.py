@@ -1,14 +1,10 @@
-#from functools import partial, wraps
 import datetime as dt
 import django_excel as excel
 import json
-#from datetime import datetime
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-#from django.db.models import Prefetch
-#from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -22,9 +18,6 @@ from .student_support import *
 def base(request):
 	return render(request, 'student/student_base.html')
 
-
-# class UploadFileForm(forms.Form):
-#     file = forms.FileField()
 
 @login_required
 #This function helps in addidng new syllabus and exams

@@ -118,7 +118,7 @@ class class_group(models.Model):
 
 class Batch(models.Model):
 	name=models.CharField(db_index=True,max_length=20)
-	class_group=models.ForeignKey(class_group,db_index=True,related_name='batch_classGroup')
+	# class_group=models.ForeignKey(class_group,db_index=True,related_name='batch_classGroup')
 	slug=models.SlugField(max_length=45)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='batch_genadmin_user_tenant')
 	objects=TenantManager()

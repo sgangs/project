@@ -16,7 +16,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 
 from school_user.models import Tenant
-from .forms import SubjectForm, classGroupForm, HouseForm, academicYearForm
+from school_account.models import accounting_period
+from .forms import SubjectForm, classGroupForm, HouseForm, academicYearForm, BatchForm
 from .models import Subject, class_group, House, annual_calender, annual_holiday_rules, academic_year
 from .genadmin_util import *
 
@@ -41,6 +42,9 @@ def genadmin_new(request, input_type):
 	elif (input_type == "academic_year"):
 		importform = academicYearForm
 		name='landing'
+	elif (input_type == "Batch"):
+		importform = BatchForm
+		name='genadmin:base'
 	
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
@@ -104,7 +108,7 @@ def master_list(request, input_type):
 
 @login_required
 #This is a calander and event add view.
-def calender(request):
+def calendar(request):
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
@@ -150,18 +154,7 @@ def calender(request):
 				response_data.append({'title':event.event, 'start': localtime(event.date).isoformat(), 'allDay':True})
 			rules=annual_holiday_rules.objects.for_tenant(request.user.tenant)
 			hol=[] #To store all holidays here.
-			for rule in rules:
-				week_in_rule=list(map(int,str(rule.week)))
-				#Finds out holidays acc to rule
-				x=list(rrule(MONTHLY, byweekday=(rule.day), bysetpos=(week_in_rule), dtstart=start,until=end))  
-				hol=hol+x				
-			#Holidays calculated by: 
-			#1. Creating total holiday list 2. Creating total working event list. 3. Delete overlapping 2 from 1
-			events_work = events.filter(attendance_type=1)
-			work=[]
-			for event in events_work:
-				work.append(datetime.strptime(datetime.strftime(localtime(event.date),'%Y %m %d'), '%Y %m %d'))
-			hol=list(set(hol)-set(work))
+			hol=holiday_calculator(start, end, events, hol)			
 			#Appends working holidays
 			for i in hol:
 				response_data.append({'title':"Weekly Holiday", 'start': i.isoformat(), 'allDay':True})
@@ -172,7 +165,7 @@ def calender(request):
 
 @login_required
 #This is a event list view.
-def calender_list(request):
+def calendar_list(request):
 	this_tenant=request.user.tenant
 	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
 	events = annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(period.start,period.end))

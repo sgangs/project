@@ -106,6 +106,19 @@ def account_list(request, type):
 	return render(request, 'accounts/list.html',{'items':items, 'type':type})
 
 @login_required
+#Download Accounts List in Excel
+def account_export(request):
+	# if 'excel' in request.POST:
+	response = HttpResponse(content_type='application/vnd.ms-excel')
+	name=request.user.tenant.name
+	response['Content-Disposition'] = 'attachment; filename=Accounts List-'+name+'.xlsx'
+	data_type="Account List"
+	accounts = Account.objects.for_tenant(request.user.tenant).all()
+	xlsx_data = WriteToExcel(accounts, data_type)
+	response.write(xlsx_data)
+	return response
+
+@login_required
 #For showing the general ledger
 def account_detail(request,detail):
 	account=Account.objects.for_tenant(request.user.tenant).get(slug__exact=detail)
@@ -259,7 +272,10 @@ def trail_balance(request):
 	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
 	start=period.start
 	end=period.end
-	response_data=get_trail_balance(request, start, end)
+	try:
+		response_data=get_trail_balance(request, start, end)
+	except:
+		response_data=[]
 	jsondata = json.dumps(response_data)
 	return render(request, 'accounts/trail_balance.html', {'accounts':jsondata, "start":start, "date":date})
 
@@ -269,7 +285,10 @@ def profit_loss(request):
 	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
 	start=period.start
 	end=period.end
-	response_data=get_profit_loss(request, start, end)
+	try:
+		response_data=get_profit_loss(request, start, end)
+	except:
+		response_data=[]
 	jsondata = json.dumps(response_data)
 	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":"p-l"})
 
@@ -278,7 +297,10 @@ def balance_sheet(request):
 	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
 	start=period.start
 	end=period.end
-	response_data=get_balance_sheet(request, start, end)
+	try:
+		response_data=get_balance_sheet(request, start, end)
+	except:
+		response_data=[]
 	jsondata = json.dumps(response_data)
 	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s'})
 

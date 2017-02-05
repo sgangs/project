@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'school_student',
     'school_library',
     'school_account',
-    'school_fees',    
+    'school_fees',
+    'school_hr',    
 ]
 
 AUTH_USER_MODEL='school_user.User'

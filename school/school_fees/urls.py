@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^monthlyfeeview/$', views.fee_view, {'input_type': 'Monthly Fees'}, name='monthly_fee_view'),
     url(r'^yearlyfeeview/$', views.fee_view,  {'input_type': 'Yearly Fees'}, name='yearly_fee_view'),
     url(r'^studentfeepayment/$', views.student_payment, {'input_type': 'Payment'}, name='student_payment'),
+    url(r'^studentfeepaymentview/$', views.student_payment, {'input_type': 'View'}, name='student_payment_view'),
     #url(r'^(?P<detail>[-\S]+)/$',views.purchase_detail, {'type': 'Detail'}, name='invoice_detail'),
 ]
 

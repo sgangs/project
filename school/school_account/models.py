@@ -136,7 +136,7 @@ class Account(models.Model):
 	
 	class Meta:
 		unique_together = (("key", "tenant"),("name", "tenant"))
-		#ordering = ['account_type','name',]
+		ordering = ['account_type','name',]
 
 	def __str__(self):
 		return self.name

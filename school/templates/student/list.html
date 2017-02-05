@@ -32,6 +32,7 @@
             <th class="text-center">First Name</th>
             <th class="text-center">Last Name</th>
             <th class="text-center">Date of Birth</th>
+            <th class="text-center"></th>
           </tr>
         {% endblock %}
       </thead>
@@ -40,10 +41,11 @@
           <tr align="center">
             <td>{{forloop.counter}}</td>
             <td><a href="#">{{student.key}}</a></td>
-            <td><a href="#">{{student.local_id}}</a></td>
+            <td>{{student.local_id}}</td>
             <td>{{student.first_name}}</td>
             <td>{{student.last_name}}</td>
             <td>{{student.dob}}</td>
+            <td><a href="{{student.get_absolute_url}}edit">Edit Profile</a></td>
           </tr>
         {% endfor %}
       </tbody>

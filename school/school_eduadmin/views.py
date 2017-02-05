@@ -12,11 +12,13 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 #from django.db.models import F
 
-from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm, ClassStudentForm, SubjectTeacherForm, TotalPeriodForm
-from .models import class_section, classteacher, classstudent, Syllabus, Exam, Examiner, subject_teacher, total_period
 from school_teacher.models import Teacher
 from school_student.models import Student
 from school_genadmin.models import class_group, Subject
+from school_fees.models import student_fee, group_default_fee
+from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm, ClassStudentForm, SubjectTeacherForm, TotalPeriodForm
+from .models import class_section, classteacher, classstudent, Syllabus, Exam, Examiner, subject_teacher, total_period
+from .eduadmin_util import *
 
 
 @login_required
@@ -114,22 +116,29 @@ def eduadmin_new(request, input_type):
 			item.tenant=current_tenant
 			if (input_type=="ClassStudent"):
 				with transaction.atomic():
-					try:
-						item.save()
-						fee=student_fee()
-						fee.student=item.student
-						class_section=item.class_section
-						classgroup=class_section.classgroup
-						year=item.year
-						fee_group=group_default_fees.filter(classgroup=classgroup,year=year)
-						yearly_fee=fee_group.yearly_fee
-						monthly_fee=fee_group.monthly_fee
-						fee.monthly_fee=monthly_fee
-						fee.save()
-						for data in yearly_fee:
-							fee.yearly_fee.add(yearlyfee)
-					except:
-						transaction.rollback()		
+					# try:
+					item.save()
+						# try:
+					fee=student_fee()
+					fee.student=item.student
+					class_section=item.class_section
+					classgroup=class_section.classgroup
+					year=item.year
+					fee_group=group_default_fee.objects.get(classgroup=classgroup,year=year)
+					yearly_fee=fee_group.yearly_fee.all()
+					monthly_fee=fee_group.monthly_fee
+					fee.monthly_fee=monthly_fee
+					fee.year=year
+					fee.tenant=current_tenant
+					fee.save()
+					for data in yearly_fee:
+						fee.yearly_fee.add(data)
+					# 	except:
+					# 		pass
+					# except:
+					# 	transaction.rollback()
+			else:
+				item.save()
 			return redirect(name)
 	#else:
 	#	form=importform(tenant=request.user.tenant)	
@@ -315,40 +324,49 @@ def classdetail(request, detail):
 @login_required
 #This function is used for viewing period. Adding period has to be done shortly.
 #Student view is separeted out. From student view, prents view will be created.
-def period(request, detail):
+def view_add_period(request, detail):
 	extension="base.html"
 	this_tenant=request.user.tenant
 	class_selected=class_section.objects.for_tenant(this_tenant).get(slug=detail)
 	class_group=class_selected.classgroup
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
+		response_data = []
 		if (calltype == 'year'):
 			year=request.POST.get('year')
-			response_data = []
 			try:
 				try:
 					#This will help us get the class teacher
 					class_teacher=classteacher.objects.for_tenant(request.user.tenant).\
-							get(class_section=class_selected,year=year)
+								get(class_section=class_selected,year=year)
 					response_data.append({'data_type':'Teacher','key':class_teacher.class_teacher.key, \
-						'first_name': class_teacher.class_teacher.first_name, 'last_name': class_teacher.class_teacher.last_name})
+							'first_name': class_teacher.class_teacher.first_name, 'last_name': class_teacher.class_teacher.last_name})
 				except:
 					response_data.append({'data_type':'Error','message': 'Class Teacher not added to class'})
 				#This will help us get the syllabus
 				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
-							filter(class_group=class_group,year=year).select_related("subject")
+								filter(class_group=class_group,year=year).select_related("subject")
 				for syllabus in class_syllabus:
 					subject=syllabus.subject
 					response_data.append({'data_type':'Syllabus','subject': subject.name,\
-						'topics': syllabus.topics, 'id': subject.id})					
+							'topics': syllabus.topics, 'id': subject.id})
+				try:
+					periods=period.objects.filter(year=year,class_section=class_selected).select_related('subject', 'teacher')
+					for item in periods:
+						response_data.append({'data_type':'Period','day': item.day,'period': item.period,\
+							'subject': item.subject.name, 'teacher':item.teacher.first_name+" "+item.teacher.last_name})					
+				except:
+					pass
 			except:
 				pass
+		elif (calltype == 'save'):
+			response_data=period_add(request, class_selected)
 		jsondata=json.dumps(response_data)
 		return HttpResponse(jsondata)
-	# try:			
-	totalperiod=total_period.objects.get(tenant=this_tenant).number_period
-	return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'totalperiod': totalperiod,\
-		 'range':range(totalperiod), 'extension':extension})
-	# except:
-	# 	return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'extension':extension})
+	try:			
+		totalperiod=total_period.objects.get(tenant=this_tenant).number_period
+		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'totalperiod': totalperiod,\
+			'range':range(totalperiod), 'extension':extension})
+	except:
+		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'extension':extension})
 	

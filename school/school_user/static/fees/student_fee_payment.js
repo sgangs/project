@@ -1,6 +1,6 @@
 $(function(){
 
-//This variable will store the student list added via json
+$( ".fee-pay" ).prop('hidden', false);
 
 //This will help to remove the error modal.
 function clearmodal(){
@@ -13,6 +13,7 @@ var class_selected="";
 var year="";
 var month="";
 var fee_total=0.00;
+var fee_paid=0.00;
 var studentid="";
 var paid=0;
 
@@ -99,6 +100,8 @@ $( ".details" ).click(function() {
                                 // handle a successful response
                     success : function(jsondata) {
                         fee_total=0;
+                        fee_paid=0;
+                        var value=0;
                         // console.log(jsondata);
                         // $( ".class" ).prop('disabled', true);
                         // $( ".month" ).prop('disabled', true);
@@ -121,20 +124,30 @@ $( ".details" ).click(function() {
                                 fee_total=fee_total+parseFloat(this.amount)
                             }
                             else if (this.data_type=="Paid"){
-                                var value = parseFloat(this.amount)
-                                fee_total=fee_total-value
+                                value = parseFloat(this.amount)
+                                // fee_total=fee_total-value
+                                fee_paid+=value;
                                 if (value>0){
-                                    $('.alreadypaiddiv').attr(hidden,false);
+                                    $('.alreadypaiddiv').attr('hidden',false);
                                     $('.alreadypaid').val(value)
                                 }
                             }
                         });
+                        if (fee_paid > 0){
+                            $('.alreadypaiddiv').attr('hidden', false);
+                            $('.alreadypaid').val(value)
+                        }
+                        else{
+                            $('.alreadypaiddiv').attr('hidden', true);
+                            $('.alreadypaid').val(value)
+                        }
+                        fee_total=fee_total-fee_paid;
                         if (fee_total >0){
                             $( ".submit" ).prop('disabled', false);
                         }
                         $('.feetable').append("<tr class='data total'>"+
                             "<td hidden='true'></td>"+
-                            "<th>" + "Total Fee" + "</th>"+
+                            "<th>" + "Total Fee Paid" + "</th>"+
                             "<th>" + parseFloat(fee_total).toFixed(2) + "</th></tr>");
                         },
                     // handle a non-successful response
@@ -263,6 +276,7 @@ function save_data(){
                         month:month,
                         year:year,
                         amount:paid,
+                        calltype: 'save',
                         csrfmiddlewaretoken: csrf_token},
                     dataType: 'json',               
                                 // handle a successful response

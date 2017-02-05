@@ -94,7 +94,7 @@ class BatchForm(forms.ModelForm):
 		fields = ('name',)
 	def __init__(self, *args, **kwargs):
 		self.tenant=kwargs.pop('tenant',None)
-		super(SubjectForm, self).__init__(*args, **kwargs)
+		super(BatchForm, self).__init__(*args, **kwargs)
 		self.helper = FormHelper(self)
 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
 		self.helper.form_class = 'form-horizontal'

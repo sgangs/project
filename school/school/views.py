@@ -68,7 +68,7 @@ def RegisterView(request):
                     new_user.save()
                     i=4
                     while (i>0):
-                        if (i==3):
+                        if (i==4):
                             create_ledger_group(new_tenant, "Stationary")
                         elif (i==3):
                             create_ledger_group(new_tenant,"Fees")

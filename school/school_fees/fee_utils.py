@@ -5,7 +5,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Sum
 from django.utils import timezone
 from school_user.models import Tenant
-from school_account.models import Account, Journal, journal_entry
+from school_account.models import Account, Journal, journal_entry, journal_group
 from school_eduadmin.models import class_section, classstudent
 from school_fees.models import student_fee, student_fee_payment
 from school_student.models import Student
@@ -66,18 +66,23 @@ def view_fee_details(request):
         yearlyfeedetails=''
     if (paid['amount__sum'] != None):
         if (paid['amount__sum'] > 0):
-            response_data.append({'data_type':'Paid', 'amount':paid['amount__sum']})
+            response_data.append({'data_type':'Paid', 'amount':str(paid['amount__sum'])})
     for fee in monthlyfeelist:
         response_data.append({'data_type':'Monthly','id':fee.id,'name':fee.name, 'account':fee.account.id,\
             'amount':str(fee.amount)})
-    # try:
-    for yearlyfee in yearlyfeedetails:
-        yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
-        for fee in yearlyfeelist:
-            response_data.append({'data_type':'Yearly','id':fee.id,'name':fee.name, 'account':fee.account.id,\
+    try:
+        for yearlyfee in yearlyfeedetails:
+            yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
+            for fee in yearlyfeelist:
+                response_data.append({'data_type':'Yearly','id':fee.id,'name':fee.name, 'account':fee.account.id,\
                     'amount':str(fee.amount)})
+    except:
+        pass
+    # try:
+    #     fee_paid=student_fee_payment.objects.get(student=student,month=month, year=year).amount
     # except:
-    #     pass
+    #     fee_paid=0
+    # response_data.append({'data_type':'Paid','amount':str(fee_paid)})
     return response_data
 
 
@@ -99,55 +104,67 @@ def save_student_payment(request):
     studentid=request.POST.get('studentid')
     year=int(request.POST.get('year'))
     month=request.POST.get('month')
-    amount=Decimal(request.POST.get('paid'))
+    amount=Decimal(int(request.POST.get('amount')))
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     student_name=student.first_name + " " + student.last_name
-    feelist=student_fee.objects.for_tenant(this_tenant).get(student=student,year=year,month=month)
+    feelist=student_fee.objects.for_tenant(this_tenant).get(student=student,year=year)
     monthlyfee=feelist.monthly_fee
     monthlyfeelist=monthly_fee_list.objects.filter(monthly_fee=monthlyfee)
     now=datetime.date.today()
     tz_unaware_now=datetime.datetime.strptime(str(now), "%Y-%m-%d")
     tz_aware_now=timezone.make_aware(tz_unaware_now, timezone.get_current_timezone())
     amount_paid=0
+    fee_paid=0
+    try:
+        fee_paid=student_fee_payment.objects.for_tenant(this_tenant).filter(student=student,year=year,month=month)\
+            .aggregate(Sum('amount'))        
+    except:
+        pass
     try:
         yearlyfeedetails=feelist.yearly_fee.filter(month=month).all()
     except:
         yearlyfeedetails=''
     with transaction.atomic():
-        try:
-            for fee in monthlyfeelist:
+        # try:
+        for fee in monthlyfeelist:
+            account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
+            this_amount=fee.amount
+            amount_paid+=this_amount
+            new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
+        for yearlyfee in yearlyfeedetails:
+            yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
+            for fee in yearlyfeelist:
                 account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
-                amount=fee.amount
-                amount_paid+=amount
-                new_journal_entry(account,amount,this_tenant,student_name)
-            for yearlyfee in yearlyfeedetails:
-                yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
-                for fee in yearlyfeelist:
-                    account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
-                    amount=fee.amount
-                    amount_paid+=amount
-                    new_journal_entry(account,amount,this_tenant,student_name)
-            fee_payment=student_fee_payment()
-            fee_payment.student=student
-            fee_payment.month=month
-            fee_payment.year=year
-            fee_payment.paid_on=tz_aware_now
-            fee_payment.amount=amount_paid
-            fee_payment.tenant=this_tenant
-            fee_payment.save()
-        except:
+                this_amount=fee.amount
+                amount_paid+=this_amount
+                new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
+        if (amount_paid != amount):
+            raise IntegrityError
             transaction.rollback()
-
+        if (amount == fee_paid):
+            raise IntegrityError
+            transaction.rollback()
+        fee_payment=student_fee_payment()
+        fee_payment.student=student
+        fee_payment.month=month
+        fee_payment.year=year
+        fee_payment.paid_on=tz_aware_now
+        fee_payment.amount=amount_paid
+        fee_payment.tenant=this_tenant
+        fee_payment.save()
+        # except:
+        #     transaction.rollback()
 
 
 def new_journal_entry(account, amount, this_tenant,name,tz_aware_now):
     journal=Journal()
     journal.date=tz_aware_now
-    group=journal_group.for_tenant(this_tenant).get(name="General")
+    group=journal_group.objects.for_tenant(this_tenant).get(name="General")
     journal.group=group
     journal.remarks="Fees for: "+name
     journal.tenant=this_tenant
     journal.save()
+    account=account
     i=1
     while (i<3):
         entry=journal_entry()
@@ -155,13 +172,29 @@ def new_journal_entry(account, amount, this_tenant,name,tz_aware_now):
         if (i==1):
             entry.account=account
             entry.transaction_type="Credit"
+            account.current_credit=account.current_credit+amount
+            account.save()
         else:
-            entry.account=Account.objects.for_tenant(this_tenant).get(key='cash')
+            account=Account.objects.for_tenant(this_tenant).get(key='cash')
+            entry.account=account
+            account.current_debit=account.current_debit+amount
+            account.save()
             entry.transaction_type="Debit"
-        journal.value=amount
+        entry.value=amount
         entry.tenant=this_tenant
         entry.save()
         i+=1
 
-
-
+def view_payment_details (request):
+    this_tenant=request.user.tenant
+    response_data = []
+    studentid=request.POST.get('studentid')
+    year=int(request.POST.get('year'))
+    print (year)
+    # month=request.POST.get('month')
+    student=Student.objects.for_tenant(this_tenant).get(id=studentid)
+    fee_paid=student_fee_payment.objects.for_tenant(this_tenant).filter(student=student,year=year)
+    print (fee_paid)
+    for fee in fee_paid:
+        response_data.append({'data_type':'payment','month':fee.month, 'amount':str(fee.amount),'paid_on':fee.paid_on.isoformat()})
+    return response_data

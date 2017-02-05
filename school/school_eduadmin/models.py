@@ -151,20 +151,20 @@ class subject_teacher(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='subjectTeacher_classSection')
 	teacher=models.ForeignKey(Teacher,db_index=True,related_name='subjectTeacher_eduadmin_teacher_teacher')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
-	key=models.CharField(db_index=True,max_length=60)
+	# key=models.CharField(db_index=True,max_length=60)
 	slug=models.SlugField(max_length=85)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='subjectTeacher_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	def save(self, *args, **kwargs):
 		if not self.id:
-			self.key=self.class_section.name+" "+self.subject.name+" "+self.teacher.key+" "+str(self.year)
-			item="suj"+" "+self.tenant.key+" "+self.key
+			# self.key=self.class_section.name+" "+self.subject.name+" "+self.teacher.key+" "+str(self.year)
+			item="suj"+" "+self.tenant.key+" "+self.class_section.name+" "+self.subject.name+" "+self.teacher.key+" "+str(self.year)
 			self.slug=slugify(item)
 		super(subject_teacher, self).save(*args, **kwargs)
 
 	class Meta:
-		unique_together = (("key", "tenant"))
+		unique_together = (("slug", "tenant"))
 
 	def __str__(self):
 		return '%s %s %s' % (self.class_section.name, self.subject.name, self.teacher.key)
@@ -233,7 +233,7 @@ class total_period(models.Model):
 		return self.number_periods
 
 class period(models.Model):
-	day=models.CharField(max_length=9)
+	day=models.PositiveSmallIntegerField()
 	period=models.PositiveSmallIntegerField()
 	year=models.PositiveSmallIntegerField()
 	slug=models.SlugField(max_length=42)
@@ -245,7 +245,7 @@ class period(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			item="pe"+""+self.tenant.key+" "+self.day+" "+self.period+" "+self.year
+			item="pe"+""+self.tenant.key+" "+str(self.day)+" "+str(self.period)+" "+str(self.year)
 			self.slug=slugify(item)
 		super(period, self).save(*args, **kwargs)
 
@@ -254,4 +254,4 @@ class period(models.Model):
 		# ordering = ('name',)
 		
 	def __str__(self):
-		return '%s %s %s' % (self.day, self.period)
+		return '%s %s' % (self.day, self.period)

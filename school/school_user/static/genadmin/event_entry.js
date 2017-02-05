@@ -126,9 +126,7 @@ function eventadd(){
     eventname=$(".eventname").val();
     date=$(".date").val();
     eventtype=$(".eventtype").find(':selected').data('id');
-    console.log(eventtype);
     atttype=$("#attendance").find(':selected').data('id');
-        console.log (atttype);
     if (eventname=="" || date=="" || atttype == "" || eventtype =="" || eventname==undefined 
             || date==undefined || atttype == undefined || eventtype ==undefined ){
             swal("Uhhh..", "All the four inputs shall be filled!", "error");

@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
 from school_user.models import Tenant
-from school_teacher import Teacher
+from school_teacher.models import Teacher
 
 
 class TenantManager(models.Manager):
@@ -15,7 +15,7 @@ class TenantManager(models.Manager):
 
 #Leave type to be decided by HR
 class leave_type(models.Model):
-	name=models.TextField()
+	name=models.CharField(max_length=40)
 	key=models.CharField(max_length=5)
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='leaveType_hr_user_tenant')
@@ -28,7 +28,7 @@ class leave_type(models.Model):
 		if not self.id:
 			item="lt"+" "+self.tenant.key+" "+self.key
 			self.slug=slugify(item)
-		super(Attendance, self).save(*args, **kwargs)
+		super(leave_type, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("name","tenant",),("key","tenant",))
@@ -46,7 +46,7 @@ class Attendance(models.Model):
 	date=models.DateField()#form/datefield option needed as "input_formats=settings.DATE_INPUT_FORMATS"
 	ispresent=models.CharField(db_index=True,max_length=12)
 	remarks=models.TextField()
-	slug=models.SlugField(max_length=50)	
+	slug=models.SlugField(max_length=50)
 
 	class Meta:
 		abstract = True
@@ -55,7 +55,7 @@ class Attendance(models.Model):
 #This is the daily attendance report for teachers
 class teacher_attendance(Attendance):
 	teacher=models.ForeignKey(Teacher,db_index=True,related_name='teacherAttendance_hr_teacher_teacher')
-	leave_type=models.ForeignKey(leave_type,db_index=True,related_name='teacherAttendance_leaveType')
+	leave_type=models.ForeignKey(leave_type, blank=True, related_name='teacherAttendance_leaveType')
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='teacherAttendance_hr_user_tenant')
 	objects=TenantManager()
 

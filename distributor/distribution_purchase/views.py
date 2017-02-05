@@ -34,7 +34,7 @@ def purchase_list(request, type):
 @login_required
 #To display list of purchase invoices with payment pending
 def purchase_due(request, type):
-	invoices=purchaseInvoice.objects.for_tenant(request.user.tenant)\
+	invoices=purchaseInvoice.objects.for_tenant(request.user.tenant)
 		.annotate(balance_due=F('total')-F('grand_discount')-F('amount_paid'))
 	items=invoices.exclude(balance_due=0)
 	return render(request, 'master/purchase/purchase_list.html',{'items':items, 'type': type})

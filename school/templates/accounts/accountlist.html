@@ -14,6 +14,8 @@
 {% block content%}
 	<h2>Account List</h2>
   <h1></h1>
+  <a href="{% url 'accounts:download_accounts_excel' %}"><button type="button" class='download btn btn-primary btn-xs'><i class="fa fa-download"></i> Download List</button></a>
+  <h1></h1>
   <div class="table-responsive">
 		<table class="table table-striped table-bordered table-hover" id="account">
 			<thead class="thead-inverse header-background">

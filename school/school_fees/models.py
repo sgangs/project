@@ -280,10 +280,10 @@ class student_fee_payment(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			item=self.tenant.key+" "+self.student.key+" "+self.monthly_fee.key
+			item=self.tenant.key+" "+self.student.key+" "+str(self.year)+" "+self.month
 			self.slug=slugify(item)
 
-		super(student_fee, self).save(*args, **kwargs)
+		super(student_fee_payment, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("student","year","tenant",))

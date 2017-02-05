@@ -53,7 +53,7 @@
 		{% endblock %}	
     <style type="text/css">
       body{
-        background-color: #f9f1f6;
+        background-color: #f2f5f7;
       }
     </style>
 
@@ -77,6 +77,7 @@
 	  			<li role="presentation" class="dropdown extra" title="Click here for education related administration"><a href="{% url 'eduadmin:base' %}">Educational Administration</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here to manage daily class administrtion"><a href="{% url 'classadmin:base' %}">Class Administration</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here for Staff/Student Profiles"><a href="{% url 'teacher:profile_base' %}"> Profiles</a></li>
+          <li role="presentation" class="dropdown extra" title="Click here for HR Details"><a href="{% url 'hr:base' %}"> HR</a></li>
 	  			<li role="presentation" class="dropdown extra"><a href="#">Others</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here for accounting, finance, fees, salary etc"><a href="{% url 'accounts:base' %}">Accounts</a></li>
 	  			<li role="presentation" class="navbar-right"> </li>
