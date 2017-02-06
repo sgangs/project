@@ -1,7 +1,8 @@
 from django.conf.urls import include,url
+from django.conf.urls import (handler400, handler403, handler404, handler500)
 from django.contrib import admin
 from django.contrib.auth.views import logout, password_reset, password_reset_done, password_reset_confirm, password_reset_complete
-#from distributor.views import HomeView
+
 from school import views
 from .forms import revisedPasswordResetForm
 
@@ -37,3 +38,9 @@ urlpatterns = [
     url(r'^hr/', include('school_hr.urls',namespace='hr', app_name='hr')),
     # url(r'^studentview/', include('school_student_view.urls',namespace='student_view', app_name='student_view')),
 ]
+
+#Error Handlers
+handler400 = 'school.views.bad_request'
+handler403 = 'school.views.permission_denied'
+handler404 = 'school.views.page_not_found'
+handler500 = 'school.views.server_error'

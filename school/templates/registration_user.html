@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-    <p>Please use the following form to register. In case you are already registered,<a href="{% url 'login' %}">click here</a> to login</p>
+    <p>Please use the following form to register. In case you are already registered,<a href="{% url 'login' %}" style="color:#6bd4fa;">click here</a> to login</p>
 
     {% if error == "Yes" %}
     <h4> <font color="990033">There are some error. Please look below</font></h4>

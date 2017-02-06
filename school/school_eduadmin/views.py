@@ -338,14 +338,14 @@ def view_add_period(request, detail):
 				try:
 					#This will help us get the class teacher
 					class_teacher=classteacher.objects.for_tenant(request.user.tenant).\
-								get(class_section=class_selected,year=year)
+							get(class_section=class_selected,year=year)
 					response_data.append({'data_type':'Teacher','key':class_teacher.class_teacher.key, \
 							'first_name': class_teacher.class_teacher.first_name, 'last_name': class_teacher.class_teacher.last_name})
 				except:
 					response_data.append({'data_type':'Error','message': 'Class Teacher not added to class'})
 				#This will help us get the syllabus
 				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
-								filter(class_group=class_group,year=year).select_related("subject")
+							filter(class_group=class_group,year=year).select_related("subject")
 				for syllabus in class_syllabus:
 					subject=syllabus.subject
 					response_data.append({'data_type':'Syllabus','subject': subject.name,\

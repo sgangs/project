@@ -7,16 +7,14 @@ if (total == null || total == undefined || paid == "None"){
     total=0
 }
 
-console.log("Paid: "+paid)
-
 var ctx=$("#salary-chart");
 var myChart = new Chart(ctx, {
     type: 'pie',
     data: {
-        labels: ["Total", "Collected"],
+        labels: ["Remaining", "Collected"],
         datasets: [{
             label: '# of Votes',
-            data: [total, paid],
+            data: [(total-paid), paid],
             backgroundColor: [
                 'rgba(0,255,0,0.2)',
                 'rgba(75, 192, 192, 0.2)',

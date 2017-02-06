@@ -6,24 +6,26 @@
 
 <!--<link rel="stylesheet" href="{% static 'bill/loggingstyle.css' %}">-->
 
-<link rel="stylesheet" href="{% static 'bill/style.css' %}">
 
 <title>Log-in</title>
-
+<style type="text/css">
+    p.id{
+        text-transform: capitalize;
+    }
+</style>    
 {% endblock %}
-
 {% block content %}
-    <h1>Log-in</h1>
     {% if form.errors %}
         <p>Your username and password didn't match. Please try again.</p>
     {% else %}
-        <p>Please, use the following form to log-in. If you don't have an account,<a href='{% url 'register' %}'>click here</a> to register your firm</p>
+        <h1></h1>
+        <p>If you don't have an account,<a style="color:#6bd4fa;" href='{% url 'register' %}'>click here</a> to register your firm</p>
     {% endif %}
 
 
        
-
-    <div class="login-form">
+<div class="row">
+    <div class="login-form col-md-6">
         <form action="{% url "login" %}" method="post">
             {% for field in form %}
                     <fieldset class="form-group">
@@ -46,12 +48,10 @@
         <p><a href="{% url 'password_reset' %}">Forgotten your password?</a></p>
         <!--<p><a href="#">Register Here</a></p>-->
     </div>
-
-<style type="text/css">
-    p.id{
-        text-transform: capitalize;
-    }
-</style>    
+    <div class="col-md-6 text-center">
+        <p><img src="{% static 'gif/welcome.gif' %}" alt="Welcome!!"></p>
+    </div>
+</div>
 
 {% endblock %}
 

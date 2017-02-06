@@ -133,11 +133,18 @@ def landing(request):
     i_e_json = json.dumps(income_expense)
     return render (request, 'landing.html', {"paid":paid,"total":total, 'i_e':i_e_json})
 
+#400 error
+def bad_request(request):
+    return render (request, 'error/400.html')
 
+#403 error
+def permission_denied(request):
+    return render (request, 'error/403.html')
 
-#This is just randomly checking mail
-    #subject = "Jou Jagat Bandhu"
-    #message = "Joy Jagat Bandhu. /n This is my first mail."
-    #from_email = settings.EMAIL_HOST_USER
-    #to_list = ['sayantangangs.91@gmail.com']
-    #send_mail(subject, message, from_email, to_list)
+#404 error
+def page_not_found(request):
+    return render (request, 'error/404.html')
+
+#500 error
+def server_error(request):
+    return render (request, 'error/500.html')
