@@ -1,13 +1,22 @@
 from django import forms
-from school_user.models import User, Tenant
-from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm
+
+from django.contrib.auth import (authenticate, get_user_model, password_validation,)
+from captcha.fields import ReCaptchaField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Field
 from crispy_forms.bootstrap import (PrependedText, AppendedText)
 
+from school_user.models import User, Tenant
+
+class LoginForm(AuthenticationForm):
+	captcha = ReCaptchaField()
+	
+
 class revisedPasswordResetForm(PasswordResetForm):
 	username= forms.CharField(label= ("Username"), max_length=50)
 	email= forms.EmailField(label= ("Email"), max_length=254)
+	captcha = ReCaptchaField()
 	def __init__(self,*args,**kwargs):
 		super (PasswordResetForm,self ).__init__(*args,**kwargs) # populates the post
 		self.helper = FormHelper(self)
@@ -31,6 +40,9 @@ class revisedPasswordResetForm(PasswordResetForm):
 			self.add_error('email',"Username or email does not exist.")
 		
 		return cd
+
+
+
 
 
 

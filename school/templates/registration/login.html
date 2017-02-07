@@ -4,8 +4,7 @@
 
 {% load static from staticfiles %}
 
-<!--<link rel="stylesheet" href="{% static 'bill/loggingstyle.css' %}">-->
-
+<!-- {% load crispy_forms_tags %} -->
 
 <title>Log-in</title>
 <style type="text/css">
@@ -16,30 +15,19 @@
 {% endblock %}
 {% block content %}
     {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
+        <!-- <p>Your username and password didn't match. Please try again.</p> -->
+        <p></p>
     {% else %}
         <h1></h1>
-        <p>If you don't have an account,<a style="color:#6bd4fa;" href='{% url 'register' %}'>click here</a> to register your firm</p>
+        <p>If you don't have an account, <a style="color:#6bd4fa;" href='{% url 'register' %}'>click here</a> to register your firm</p>
     {% endif %}
 
 
        
 <div class="row">
-    <div class="login-form col-md-6">
-        <form action="{% url "login" %}" method="post">
-            {% for field in form %}
-                    <fieldset class="form-group">
-                    <div class="input-group">
-                        <span style="background-color:#b77b48; color:white"></span>
-                        <p class="id">{{ field.html_name }}</p>
-                        {% if field.html_name == "password" %}
-                            <input type ="password" class="form-control" id="{{ field.id_for_label }}" maxlength="30" name="{{ field.html_name }}" placeholder="{{ field.html_name }}" type="text" />                         
-                        {% else %}
-                            <input class="form-control" id="{{ field.id_for_label }}" maxlength="30" name="{{ field.html_name }}" placeholder="{{ field.html_name }}" type="text" />
-                        {% endif %}
-                    </div>
-                    </fieldset>
-            {% endfor %}
+    <div class="login-form col-md-5">
+        <form action="{% url 'login' %}" method="post">
+            {{ form|crispy }}
             {% csrf_token %}
             <p><input type="submit" class="btn btn-primary" value="Log-in"></p>
             <input type="hidden" name="next" value="{% url "landing" %}" />
@@ -48,7 +36,7 @@
         <p><a href="{% url 'password_reset' %}">Forgotten your password?</a></p>
         <!--<p><a href="#">Register Here</a></p>-->
     </div>
-    <div class="col-md-6 text-center">
+    <div class="col-md-7 text-center">
         <p><img src="{% static 'gif/welcome.gif' %}" alt="Welcome!!"></p>
     </div>
 </div>

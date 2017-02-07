@@ -17,7 +17,7 @@ from school_account.models import payment_mode, accounting_period
 from school_genadmin.models import academic_year, annual_calender
 from school_teacher.models import Teacher
 from .user_util import *
-from .forms import revisedPasswordResetForm
+from .forms import revisedPasswordResetForm, LoginForm
 
 #landing page
 class HomeView(TemplateView):
@@ -28,15 +28,14 @@ def custom_login(request):
     if request.user.is_authenticated():
         return redirect(landing)
     else:
-        return login(request)
-
+        return login(request, authentication_form=LoginForm)
+        
 #Add one more level of authentication for forgot password. Then send the mail.
 def custom_password_reset(request, from_email, subject_template_name, password_reset_form):
     form = revisedPasswordResetForm()
     if request.method == 'POST':
         form = revisedPasswordResetForm(request.POST)
         if form.is_valid():
-            print (from_email)
             return password_reset(request)
             # return HttpResponse("Wow")
     else:
