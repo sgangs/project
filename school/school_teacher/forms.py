@@ -33,6 +33,7 @@ class TeacherForm(forms.ModelForm):
 		fields =('first_name', 'last_name', 'gender', 'blood_group','dob','joining_date', 'local_id', 'contact',\
 		 			'email_id', 'address_line_1', 'address_line_2','state','pincode' )
 		widgets = {
+            'dob': DateInput(),
             'joining_date': DateInput(),
         }
 	

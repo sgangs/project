@@ -197,12 +197,15 @@ class annual_calender(models.Model):
 	event_type=models.PositiveSmallIntegerField('Event type', choices=event_type, default='1')
 	attendance_type=models.PositiveSmallIntegerField('Attendance type', choices=attendance_type, default='2')
 	#key=models.CharField(db_index=True,max_length=10)
-	slug=models.SlugField(db_index=True, max_length=75)
+	# slug=models.SlugField(db_index=True, max_length=75)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualCalender_genadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	class Meta:
+		ordering = ('date',)
 
 #Annual Calendar Holiday Rules
 class annual_holiday_rules(models.Model):

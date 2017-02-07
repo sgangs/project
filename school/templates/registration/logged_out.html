@@ -1,4 +1,5 @@
 {% extends "landingbase.html" %}
+{% load static from staticfiles %}
 
 {% block title %}
 <title>
@@ -8,6 +9,13 @@
 
 
 {% block content %}
-    <h1>Logged out</h1>
-    <p>You have been successfully logged out. You can <a href="{% url 'login' %}" style="color:#6bd4fa;">log-in again</a>.</p>
+	<div class="row">
+		<div class="col-md-6">
+		    <h1>Logged out</h1>
+		    <p>You have been successfully logged out. You can <a href="{% url 'login' %}" style="color:#6bd4fa;">log-in again</a>.</p>
+		</div>
+		<div class="col-md-6">
+		<p><img src="{% static 'gif/logout.gif' %}" alt="Welcome!!"></p>
+		</div>
+    </div>
 {% endblock %}

@@ -174,9 +174,8 @@ function save_student(){
                         }
                     },
                     // handle a non-successful response
-                    error : function() {
-                        console.log("Some error");
-                        // swal("Oops...", "There was some error in form creation!", "error");
+                    error : function() {                        
+                        swal("Oops...", "There was some errors!", "error");
                     }
                 });
             }());

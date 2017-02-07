@@ -21,6 +21,9 @@
 		<!--This ccs link is for the home icon-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
 
+    <!--This is for modernizer-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js">
+
 		<!--jQuery Confirmation Plugin CSS for confirmation boxes-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/2.5.1/jquery-confirm.min.css">
 
@@ -32,7 +35,6 @@
 
 		<!--Bootstrap SelectBoxIt Plugin for styling HTML Select-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/css/bootstrap-select.min.css">
-
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/bootstrap-select.min.js"></script>
 
 
@@ -72,22 +74,32 @@
 			</div>
 			<ul class="nav nav-tabs"></ul>
 			<ul class="nav nav-pills navbar-light">
-				<li role="presentation" class="dropdown extra" title="Click to go back to Home"><a href="{% url 'landing' %}"><i class="fa fa-home fa-lg"></i></a></li>
-	  			<li role="presentation" class="dropdown extra" title="Click here for items related to general administration"><a href="{% url 'genadmin:base' %}">General Administration</a></li>
+        <li role="presentation" class="navbar-left"> </li>
+				<li role="presentation" class="navbar-light" title="Click to go to Dashboard"><a href="{% url 'landing' %}"><i class="fa fa-home fa-2x"></i></a></li>
+        	<!-- <li role="presentation" class="dropdown extra" title="Click here for items related to general administration"><a href="{% url 'genadmin:base' %}">General Administration</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here for education related administration"><a href="{% url 'eduadmin:base' %}">Educational Administration</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here to manage daily class administrtion"><a href="{% url 'classadmin:base' %}">Class Administration</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here for Staff/Student Profiles"><a href="{% url 'teacher:profile_base' %}"> Profiles</a></li>
           <li role="presentation" class="dropdown extra" title="Click here for HR Details"><a href="{% url 'hr:base' %}"> HR</a></li>
 	  			<li role="presentation" class="dropdown extra"><a href="#">Others</a></li>
-	  			<li role="presentation" class="dropdown extra" title="Click here for accounting, finance, fees, salary etc"><a href="{% url 'accounts:base' %}">Accounts</a></li>
+	  			<li role="presentation" class="dropdown extra" title="Click here for accounting, finance, fees, salary etc"><a href="{% url 'accounts:base' %}">Accounts</a></li> -->
 	  			<li role="presentation" class="navbar-right"> </li>
-	  			<li role="presentation" class="navbar-right"><a href="{% url 'logout' %}">Logout</a></li>
+	  			<li role="presentation" class="navbar-right"><a href="{% url 'logout' %}" title="Click to logout"><i class="fa fa-sign-out fa-2x"></i></a></li>
 	  	</ul>
 
-<!-- <nav id="primary-navigation"> -->
+<nav id="primary-navigation">
+    <!-- Academic Year -->
+    <ul class="Acad Year">
+      <li><a href="#" title="Nav"><span><i class="fa fa-calendar-o"></i></span>Academic Year</a>
+        <ul>
+          <li><a href="{% url 'genadmin:new_academic_year' %}" title="Sub Nav"><i class="fa fa-plus"></i> Add Academic Year</a></li>
+          <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> View Academic Year</a></li>
+        </ul>
+      </li>
+    </ul>
     <!-- Profile -->
-<!--     <ul class="Profile">
-      <li><a href="#" title="Nav"><span><i class="fa fa-user-plus"></i></span>Create User Profile</a>
+    <ul class="Profile">
+      <li><a href="#" title="Nav"><span><i class="fa fa-user-plus"></i></span>Create Batch/Profile</a>
         <div class="sub-wrapper">
           <ul>
             <li><a href="#" title="Sub Nav"><i class="fa fa-user"></i> Principal</a>
@@ -98,244 +110,245 @@
                 </ul>
               </div>
             </li>
+            <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> Batch</a>
+              <div>
+                <ul>
+                  <li><a href="{% url 'genadmin:new_batch' %}" title="Sub Nav 2">New Batch</a></li>
+                  <li><a href="#" title="Sub Nav 2">View Batch List</a></li>
+                </ul>
+              </div>
+            </li>
             <li><a href="#" title="Sub Nav"><i class="fa fa-user-secret"></i> Teacher</a>
               <div>
                 <ul>
-                  <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                    <ul>
-                      <li><a href="#" title="Sub Nav 3">Link</a></li>
-                    </ul>
-                  </li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
-                  <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                    <ul>
-                      <li><a href="#" title="Sub Nav 3">Link</a></li>
-                    </ul>
-                  </li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
+                  <li><a href="{% url 'teacher:new_teacher' %}" title="Sub Nav 2">New Teacher</a></li>
+                  <li><a href="#" title="Sub Nav 2">Previous Experience</a></li>                  
+                  <li><a href="{% url 'teacher:teacher_list' %}" title="Sub Nav 2">Teacher List</a></li>
                 </ul>
               </div>
             </li>
             <li><a href="#" title="Sub Nav"><i class="fa fa-graduation-cap"></i> Student</a>
               <div>
                 <ul>
-                  <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                    <ul>
-                      <li><a href="#" title="Sub Nav 3">Link</a></li>
-                    </ul>
-                  </li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
+                  <li><a href="{% url 'student:new_student' %}" title="Sub Nav 2">New Student</a></li>
+                  <li><a href="{% url 'student:new_education' %}" title="Sub Nav 2">PRevious Education</a></li>
+                  <li><a href="#" title="Sub Nav 2">Add Guardian/Parents</a></li>
+                  <li><a href="{% url 'student:student_list' %}" title="Sub Nav 2">Students List</a></li>
                 </ul>
               </div>
             </li>
-            <li><a href="#" title="Sub Nav"><i class="fa fa-user-md"></i> New Admininstrator</a>
+            <li><a href="#" title="Sub Nav"><i class="fa fa-user-md"></i> Admininstrator</a>
               <div>
                 <ul>
-                  <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                    <ul>
-                      <li><a href="#" title="Sub Nav 3">Link</a></li>
-                    </ul>
-                  </li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
-                  <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                    <ul>
-                      <li><a href="#" title="Sub Nav 3">Link</a></li>
-                    </ul>
-                  </li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
+                  <li><a href="#" title="Sub Nav 2">New Administratior</a></li>
+                  <li><a href="#" title="Sub Nav 2">Previous Experience</a></li>
                 </ul>
               </div>
             </li>
           </ul>
         </div>
       </li>
-    </ul> -->
+    </ul>
       <!-- <li><a href="#" title="Nav">Link</a></li> -->
+    <!-- Login Profile -->
+    <ul class="Login Profile">
+      <li><a href="#" title="Nav"><span><i class="fa fa-sign-in"></i></span>Create Login Profile</a>
+        <ul>
+          <li><a href="#" title="Sub Nav"> Principal Login Profile</a></li>
+          <li><a href="#" title="Sub Nav"> Administration Login Profile</a></li>
+          <li><a href="#" title="Sub Nav"> Accounts Login Profile</a></li>
+          <li><a href="#" title="Sub Nav"> Fee Collector Login Profile</a></li>
+          <li><a href="#" title="Sub Nav"> Student Login Profile</a></li>
+          <li><a href="#" title="Sub Nav"> Teacher Login Profile</a></li>
+        </ul>
+      </li>
+    </ul>
+    <!-- HR -->
+    <ul class="HR">
+      <li><a href="#" title="Nav"><span><i class="fa fa-pied-piper-alt"></i></span>HR</a>
+        <ul>
+          <li><a href="{% url 'hr:new_leave_type' %}" title="Sub Nav">Create Leave Type</a></li>
+          <li><a href="#" title="Sub Nav">Link Leave to Staff</a></li>
+          <li><a href="{% url 'hr:new_teacher_attendance' %}" title="Sub Nav">Note Teacher Attendance</a></li>
+        </ul>
+      </li>
+    </ul>
       <!-- Class -->
-    <!-- <ul class="Class">
+    <ul class="Class">
       <li><a href="#" title="Nav"><span><i class="fa fa-group"></i></span>Class</a>
         <div class="sub-wrapper">
           <ul>
             <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Class</a>
               <div>
                 <ul>
-                  <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                    <ul>
-                      <li><a href="#" title="Sub Nav 3">Link</a></li>
-                    </ul>
-                  </li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
+                  <li><a href="{% url 'genadmin:new_class_group' %}" title="Sub Nav 2">Add New Class Group</a></li>
+                  <li><a href="{% url 'eduadmin:new_class' %}" title="Sub Nav 2">Add New Class (Section)</a></li>
+                  <li><a href="{% url 'eduadmin:new_classteacher' %}" title="Sub Nav 2">Add Class Teacher</a></li>
+                  <li><a href="{% url 'eduadmin:new_subject_teacher' %}" title="Sub Nav 2">Add Subject Teacher</a></li>
+                  <li><a href="{% url 'eduadmin:new_class_student' %}" title="Sub Nav 2">Add Student To Class</a></li>
                 </ul>
               </div>
             </li>
             <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> Class List</a>
               <div>
                 <ul>
-                  <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                    <ul>
-                      <li><a href="#" title="Sub Nav 3">Link</a></li>
-                    </ul>
-                  </li>
-                  <li><a href="#" title="Sub Nav 2">Link</a></li>
+                  <li><a href="{% url 'genadmin:class_group_list' %}" title="Sub Nav 2">View Class Group List</a></li>
+                  <li><a href="{% url 'eduadmin:class_list' %}" title="Sub Nav 2">View Class (Section) List</a></li>
+                  <li><a href="{% url 'eduadmin:subject_teacher_list' %}" title="Sub Nav 2">View List of Subject Teachers</a></li>
                 </ul>
               </div>
             </li>
           </ul>
         </div>
       </li>      
-    </ul> -->
+    </ul>
     <!-- Subject & Syllabus -->
-    <!-- <ul class="sub n syl">
+    <ul class="sub n syl">
       <li><a href="#" title="Nav"><span><i class="fa fa-language"></i></span>Subject</a>
         <ul>
           <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Subject</a>
             <ul>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
+              <li><a href="{% url 'genadmin:new_subject' %}" title="Sub Nav 2">Add Subject</a></li>
+              <li><a href="{% url 'eduadmin:new_syllabus' %}" title="Sub Nav 2">Add Syllabus</a></li>
             </ul>
           </li>
           <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> Subject List</a>
             <div>
               <ul>
-                <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                  <ul>
-                    <li><a href="#" title="Sub Nav 3">Link</a></li>
-                  </ul>
-                </li>
-                <li><a href="#" title="Sub Nav 2">Link</a></li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-      </li>
-    </ul> -->
-    <!-- House -->
-    <!-- <ul class="house n club">
-      <li><a href="#" title="Nav"><span><i class="fa fa-building"></i></span>House and Club</a>
-        <ul>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To House/Club</a>
-            <ul>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
-            </ul>
-          </li>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> House/Club List</a>
-            <ul>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-  </ul> -->
-  <!-- Exam -->
-    <!-- <ul class="exam">
-      <li><a href="#" title="Nav"><span><i class="fa fa-pencil-square-o"></i></span>Exam</a>
-        <ul>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Exam</a>
-            <ul>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
-              <li><a href="#" title="Sub Nav 2">Link</a></li>
-            </ul>
-          </li>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> Exam List</a>
-            <div>
-              <ul>
-                <li><a href="#" title="Sub Nav 2"><strong>Open Sab nav</strong></a>
-                  <ul>
-                    <li><a href="#" title="Sub Nav 3">Link</a></li>
-                  </ul>
-                </li>
-                <li><a href="#" title="Sub Nav 2">Link</a></li>
+                <li><a href="{% url 'genadmin:subject_list' %}" title="Sub Nav 2">View Subject List</a></li>
+                <li><a href="#" title="Sub Nav 2">View Syllabus</a></li>
               </ul>
             </div>
           </li>
         </ul>
       </li>
     </ul>
- -->    <!-- Calendar -->
-<!--     <ul class="calendar">
-      <li><a href="#" title="Nav"><span><i class="fa fa-calendar"></i></span>Events</a>
+    <!-- House -->
+    <ul class="house n club">
+      <li><a href="#" title="Nav"><span><i class="fa fa-building"></i></span>House and Club</a>
         <ul>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-calendar-plus-o"></i> Add Events</a></li>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-calendar-o"></i> View Calendar</a></li>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> View Event List</a></li>
+          <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To House/Club</a>
+            <ul>
+              <li><a href="{% url 'genadmin:new_house' %}" title="Sub Nav 2">Add House</a></li>
+              <li><a href="#" title="Sub Nav 2">Add Club</a></li>
+              <li><a href="#" title="Sub Nav 2">Add Student to House</a></li>
+              <li><a href="#" title="Sub Nav 2">Add Student to Class</a></li>
+            </ul>
+          </li>
+          <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> House/Club List</a>
+            <ul>
+              <li><a href="#" title="Sub Nav 2">List of Houses</a></li>
+              <li><a href="#" title="Sub Nav 2">List of Club</a></li>
+              <li><a href="#" title="Sub Nav 2">Student-House List</a></li>
+              <li><a href="#" title="Sub Nav 2">Student-CLub List</a></li>
+            </ul>
+          </li>
         </ul>
       </li>
-    </ul> -->
+  </ul>
+  <!-- Exam -->
+    <ul class="exam">
+      <li><a href="#" title="Nav"><span><i class="fa fa-pencil-square-o"></i></span>Exam</a>
+        <ul>
+          <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Exam</a>
+            <ul>
+              <li><a href="#" title="Sub Nav 2">Add New Exam</a></li>
+              <li><a href="#" title="Sub Nav 2">Prepare Exam Report</a></li>
+            </ul>
+          </li>
+          <li><a href="#" title="Sub Nav"><i class="fa fa-bar-chart"></i> Exam List</a>
+            <div>
+              <ul>
+                <li><a href="#" title="Sub Nav 2">List of Exam</a></li>
+                <li><a href="#" title="Sub Nav 2">Exam Analysis</a></li>
+                <li><a href="#" title="Sub Nav 2">Student Report</a></li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <!-- Calendar -->
+    <ul class="calendar">
+      <li><a href="#" title="Nav"><span><i class="fa fa-calendar"></i></span>Events</a>
+        <ul>
+          <li><a href="{% url 'genadmin:calendar' %}" title="Sub Nav"><i class="fa fa-calendar-o"></i> View Calendar</a></li>
+          <li><a href="{% url 'genadmin:event_list' %}" title="Sub Nav"><i class="fa fa-list"></i> View Event List</a></li>
+        </ul>
+      </li>
+    </ul>
     <!-- Period and time table -->
-<!--     <ul class="peirod">
+    <ul class="peirod">
       <li><a href="#" title="Nav"><span><i class="fa fa-table"></i></span>Period and Time Table</a>
         <ul>
           <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Period</a>
             <ul>
-              <li><a href="#" title="Sub Nav 2">Add Total Number of Periods</a></li>
-              <li><a href="#" title="Sub Nav 2">Add Class Schedule</a></li>
+              <li><a href="{% url 'eduadmin:total_period_entry' %}" title="Sub Nav 2">Add Total Number of Periods</a></li>
+              <li><a href="{% url 'eduadmin:class_list' %}" title="Sub Nav 2">Add Class Schedule</a></li>
             </ul>
           </li>
           <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> View Period</a>
             <ul>
-              <li><a href="#" title="Sub Nav 2">View class wise period</a></li>
+              <li><a href="{% url 'eduadmin:class_list' %}" title="Sub Nav 2">View class wise period</a></li>
               <li><a href="#" title="Sub Nav 2">View teacher wise period</a></li>
             </ul>
           </li>
         </ul>
       </li>
-    </ul> -->
+    </ul>
     <!-- Class Management -->
-<!--     <ul class="peirod">
-      <li><a href="#" title="Nav"><span><i class="fa fa-black-tie"></i></span> Class Management</a>
+    <ul class="management">
+      <li><a href="#" title="Nav"><i class="fa fa-black-tie"></i> Class Management</a>
         <ul>
+          <li><a href="{% url 'classadmin:student_list' %}" title="Sub Nav 2"><i class="fa fa-list"></i>Student List</a></li>
           <li><a href="#" title="Sub Nav"><i class="fa fa-calendar-check-o"></i> Attendance</a>
             <ul>
-              <li><a href="#" title="Sub Nav 2">Take/Note Attendance</a></li>
+              <li><a href="{% url 'classadmin:dailyattendance_entry' %}" title="Sub Nav 2">Take/Note Attendance</a></li>
               <li><a href="#" title="Sub Nav 2">Student Leave Approval</a></li>
-              <li><a href="#" title="Sub Nav 2">View Attendance Report</a></li>
+              <li><a href="{% url 'classadmin:attendance_view' %}" title="Sub Nav 2">Class Attendance Report</a></li>
+              <li><a href="{% url 'classadmin:student_attendance' %}" title="Sub Nav 2">Student Attendance Report</a></li>
             </ul>
           </li>
           <li><a href="#" title="Sub Nav"><i class="fa fa-pencil-square-o"></i> Exam</a>
             <ul>
-              <li><a href="#" title="Sub Nav 2">Add Exam</a></li>
               <li><a href="#" title="Sub Nav 2">Create Student Exam Report</a></li>
-              <li><a href="#" title="Sub Nav 2">View Exam Report</a></li>
+              <li><a href="#" title="Sub Nav 2">Exam Report Analysis</a></li>
+              <li><a href="#" title="Sub Nav 2">Student Exam Report</a></li>
             </ul>
           </li>
         </ul>
       </li>
-    </ul> -->
+    </ul>
     <!-- Accounts -->
-<!--     <ul class="peirod">
+    <ul class="accounts">
       <li><a href="#" title="Nav"><span><i class="fa fa-rupee"></i></span> Accounts</a>
         <ul>
           <li><a href="#" title="Sub Nav"><i class="fa fa-money"></i> Accounting</a>
             <ul>
               <li><a href="#" title="Sub Nav 2"><i class="fa fa-plus"></i> Add to accounts</a>
                 <ul>
-                  <li><a href="#" title="Sub Nav 3">Add accounting period</a></li>
-                  <li><a href="#" title="Sub Nav 3">Add ledger group</a></li>
-                  <li><a href="#" title="Sub Nav 3">Add account</a></li>
-                  <li><a href="#" title="Sub Nav 3">Record Journal Entry</a></li>
-                  <li><a href="#" title="Sub Nav 3">Add payment mode</a></li>
+                  <li><a href="{% url 'accounts:new_period' %}" title="Sub Nav 3">Add accounting period</a></li>
+                  <li><a href="{% url 'accounts:new_ledgergroup' %}" title="Sub Nav 3">Add ledger group</a></li>
+                  <li><a href="{% url 'accounts:new_account' %}" title="Sub Nav 3">Add account</a></li>
+                  <li><a href="{% url 'accounts:new_journalgroup' %}" title="Sub Nav 3">Add Journal Group</a></li>
+                  <li><a href="{% url 'accounts:journalentry_new' %}" title="Sub Nav 3">Record Journal Entry</a></li>
+                  <li><a href="{% url 'accounts:new_paymentmode' %}" title="Sub Nav 3">Add payment mode</a></li>
                 </ul>
               </li>
               <li><a href="#" title="Sub Nav 2"><i class="fa fa-list"></i> View Records</a>
                 <ul>
-                  <li><a href="#" title="Sub Nav 3">Accouting Period List</a></li>
+                  <li><a href="{% url 'accounts:period_list' %}" title="Sub Nav 3">Accouting Period List</a></li>
                   <li><a href="#" title="Sub Nav 3">Ledger group</a></li>
-                  <li><a href="#" title="Sub Nav 3">Account List</a></li>
-                  <li><a href="#" title="Sub Nav 3">List of Journal Entry</a></li>
-                  <li><a href="#" title="Sub Nav 3">List of payment mode</a></li>
+                  <li><a href="{% url 'accounts:account_list' %}" title="Sub Nav 3">Account List</a></li>
+                  <li><a href="{% url 'accounts:journalgroup_list' %}" title="Sub Nav 3">Journal Group List</a></li>
+                  <li><a href="{% url 'accounts:paymentmode_list' %}" title="Sub Nav 3">List of payment mode</a></li>
                 </ul>
               </li>
               <li><a href="#" title="Sub Nav 2"><i class="fa fa-bar-chart"></i> Reports, Compliances</a>
                 <ul>
-                  <li><a href="#" title="Sub Nav 3">Trail Balance</a></li>
-                  <li><a href="#" title="Sub Nav 3">Balance Sheet</a></li>
-                  <li><a href="#" title="Sub Nav 3">Income-Expenditure Statement</a></li>
+                  <li><a href="{% url 'accounts:view_trail_balance' %}" title="Sub Nav 3">Trail Balance</a></li>
+                  <li><a href="{% url 'accounts:view_balance_sheet' %}" title="Sub Nav 3">Balance Sheet</a></li>
+                  <li><a href="{% url 'accounts:view_income_expenditure' %}" title="Sub Nav 3">Income-Expenditure Statement</a></li>
                   <li></li>
                   <li><a href="#" title="Sub Nav 3">Finalize Accounting Period</a></li>
                   <li></li>
@@ -352,15 +365,18 @@
             <ul>
               <li><a href="#" title="Sub Nav 2"><i class="fa fa-plus"></i> Add Data</a>
                 <ul>
-                  <li><a href="#" title="Sub Nav 3">Monthly Fee Structure</a></li>
-                  <li><a href="#" title="Sub Nav 3">Yearly Fee Structure</a></li>
-                  <li><a href="#" title="Sub Nav 3">Link Class Group To Fees</a></li>
+                  <li><a href="{% url 'fees:new_monthly_fee' %}" title="Sub Nav 3">Monthly Fee Structure</a></li>
+                  <li><a href="{% url 'fees:new_yearly_fee' %}" title="Sub Nav 3">Yearly Fee Structure</a></li>
+                  <li><a href="{% url 'fees:group_fee_linking' %}" title="Sub Nav 3">Link Class Group To Fees</a></li>
                   <li><a href="#" title="Sub Nav 3">Student-Fee Linking</a></li>
                 </ul>
               </li>
               <li><a href="#" title="Sub Nav 2"><i class="fa fa-list"></i> Record Details</a>
                 <ul>
-                  <li><a href="#" title="Sub Nav 2">Record Fee Payment</a></li>
+                  <li><a href="{% url 'fees:student_payment' %}" title="Sub Nav 2">Record Fee Payment</a></li>
+                  <li><a href="{% url 'fees:monthly_fee_view' %}" title="Sub Nav 2">View Monthly Fee List</a></li>
+                  <li><a href="{% url 'fees:yearly_fee_view' %}" title="Sub Nav 2">View Yearly Fee List</a></li>
+                  <li><a href="{% url 'fees:student_payment_view' %}" title="Sub Nav 2">View Student Fee Payment Details</a></li>
                 </ul>
               </li>
               <li><a href="#" title="Sub Nav 2"><i class="fa fa-bar-chart"></i> Report</a>
@@ -375,8 +391,8 @@
           </li>
         </ul>
       </li>
-    </ul> -->
-<!-- </nav>     -->
+    </ul>
+</nav>    
 	  		
 			<div style="padding:1%">
 				{% block content %}
@@ -394,6 +410,9 @@
 
         });
 		</script>
+    <!-- This is for text color-->
+    <link rel="stylesheet" href="{% static 'text_color.css' %}">
+
 	</body>
 </html>
 

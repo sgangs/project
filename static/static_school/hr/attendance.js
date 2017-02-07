@@ -1,16 +1,5 @@
 $(function(){
 
-
-
-//This is used to remove the alert modal
-// function clearmodal(){
-//     window.setTimeout(function(){
-//         bootbox.hideAll();
-//     }, 2500);
-// }
-
-
-//get address of customer from database
 var repeat_change=0;
 var profileid='';
 var email='';
@@ -127,7 +116,7 @@ $( ".password" ).change(function() {
 $('.submit').click(function(e) {
     swal({
         title: "Are you sure?",
-        text: "You cannot undo profile crreation!",
+        text: "You cannot undo attendance recording!",
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
@@ -140,57 +129,50 @@ $('.submit').click(function(e) {
         // "Your imaginary file has been deleted.",
         // "success");
         if (isConfirm){
-            save_student()
+            save_data()
         }
     })
 });
 
-function save_student(){
-    if (profileid != "" && user!="" && email != "" && pass != "" && repeat != ""){
-    //Send ajax function to back-end 
-            (function() {
-                $.ajax({
-                    url : "", 
-                    type: "POST",
-                    data:{ profileid: profileid,
-                        user: user,
-                        email:email,
-                        pass: pass,
-                        repeat: repeat,
-                        calltype: 'save',
-                        csrfmiddlewaretoken: csrf_token},
-                    dataType: 'json',               
-                    // handle a successful response
-                    success : function(jsondata) {
-                        if (jsondata['error'] == undefined){
-                            swal("Hooray", "Profile login created successfully!", "success");
-                            setTimeout(function(){
-                                location.href = redirect_url;
-                            },3000);
-                            
-                        }
-                        else{
-                            swal("Oops...", "Recheck your inputs. There were some errors!", "error");
-                        }
-                    },
-                    // handle a non-successful response
-                    error : function() {                        
-                        swal("Oops...", "There was some errors!", "error");
-                    }
-                });
-            }());
-    }
-    else if (profileid == ""){
-        swal("Oops...", "Please select profile!", "error");
-    }
-    else if (user == ""){
-        swal("Oops...", "Please fill username!", "error");
-    }
-    else if (email == ""){
-        swal("Oops...", "Please fill email!", "error");
+function save_data(){
+    var items = [];
+    var proceed = true;
+    var info=false;
+    $("tr.data").each(function() {       
+        var id = $(this).find('td:nth-child(1)').html();
+        var ispresent = $(this).find('td:nth-child(5) input').is(":checked");
+        var absenttype = $(this).find('td:nth-child(6)').find(':selected').data('id');
+        var remarks = $(this).find('td:nth-child(7) input').val();
+        if (ispresent == undefined || ispresent=='' || ispresent == false){
+            if (absenttype == undefined || absenttype==''){
+                proceed=false;
+            }
+        }
+        else{
+            if (absenttype != undefined && absenttype !=''){
+                info=true;
+            }   
+        }
+
+        var item = {
+            teacherid : id,
+            ispresent: ispresent,
+            absenttype: absenttype,
+            remarks : remarks,    
+        };
+        items.push(item);        
+    });
+    console.log(items)
+    if (proceed){
+        if (info){
+            swal("Umm...", "In case teacher is present, reason for absent will be ignored", "info");
+        }
+        else{
+            swal("Hooray..", "Teacher attendance recorded successfully", "success");
+        }
     }
     else{
-        swal("Oops...", "Please check your password field!", "error");
+        swal("Oops...", "Select type of absence.", "error");
     }
         
 };

@@ -5,7 +5,7 @@
 
 {% load static from staticfiles %}
 
-<!-- <script src="{% static 'classadmin/attendance.js' %}"></script> -->
+
 
 {% endblock %}
 
@@ -58,7 +58,7 @@
 <!-- Sweetalert JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
-
+<script src="{% static 'hr/attendance.js' %}"></script>
 <script>
 	$('.tooltip').tooltip({animation: true, container: 'body'});
 	redirect_url="{% url 'hr:base' %}"

@@ -1,9 +1,8 @@
 import json
 from datetime import datetime as dt
 import datetime
-
+from calendar import monthrange
 #from django.conf import settings
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login, password_reset
 from django.db import IntegrityError, transaction
@@ -15,8 +14,8 @@ from django.views.generic import TemplateView
 from school_user.forms import UserRegistrationForm,CustomerRegistrationForm
 from school_user.models import User, Tenant
 from school_account.models import payment_mode, accounting_period
-from school_genadmin.models import academic_year
-# from distribution_master.models import Warehouse
+from school_genadmin.models import academic_year, annual_calender
+from school_teacher.models import Teacher
 from .user_util import *
 from .forms import revisedPasswordResetForm
 
@@ -125,13 +124,18 @@ def landing(request):
         year=academic_year.objects.for_tenant(request.user.tenant).get(current_academic_year=True).year
         paid=fee_paid(request, year)
         total=month_fee(request, year)
+        current_day=datetime.datetime.now()
+        start=dt(year=current_day.year, month=current_day.month, day=1)
+        end=dt(year=current_day.year, month=current_day.month, day=(monthrange(current_day.year,current_day.month)[1]))
+        events=annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
+        teachers=Teacher.objects.for_tenant(request.user.tenant).filter(dob__month=current_day.month,dob__day=current_day.day)
     except:
         paid=0
         total=0
         return redirect('genadmin:new_academic_year')
     income_expense=yearly_pl(request)
     i_e_json = json.dumps(income_expense)
-    return render (request, 'landing.html', {"paid":paid,"total":total, 'i_e':i_e_json})
+    return render (request, 'landing.html', {"paid":paid,"events":events,"teachers":teachers,"total":total, 'i_e':i_e_json})
 
 #400 error
 def bad_request(request):

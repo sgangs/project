@@ -10,6 +10,11 @@
 
 <!-- This is for the animation to work -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+<!-- Google Fonts Load Pangolin-->
+<link href="https://fonts.googleapis.com/css?family=Pangolin" rel="stylesheet">
+<!-- Google Fonts Load Righteous-->
+<link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
 {% endblock %}
 
 
@@ -25,21 +30,35 @@
             <div class="col-lg-8 col-md-8 col-xs-12 ">
                 
                 <div >
-                    <label style="color:#0585B3;">Annual Financials
+                    <label style="color:#0585B3; ">Annual Financials
                         <div id="waterfall" ></div>
                     </label>
                 </div>
                 
                 
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
-                    <a class="thumbnail" href="#">
-                        <img class="img-responsive animated zoomIn" src="http://dummyimage.com/800x600/89d0d9/000000&text=Important Bulletin" alt="Important Bulletin">
-                    </a>
+                    <h4 style="font-size: 30px; font-family: 'Righteous', cursive;">Events For The Month:</h4>
+                    <ul>
+                        {% for i in events %}
+                        <li style="font-size: 20px; font-family: 'Pangolin', cursive;">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
+                        {% endfor %}
+                    </ul>                    
                 </div>
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
-                    <a class="thumbnail" href="#">
-                        <img class="img-responsive animated zoomIn" src="http://dummyimage.com/800x600/89d0d9/000000&text=Calendar/Task" alt="Calendar/Task">
-                    </a>
+                    <h4 style="font-size: 30px; font-family: 'Righteous', cursive;">News Bulletin:</h4>
+                    <ul>
+                        {% for i in news %}
+                        <li style="font-size: 20px; font-family: 'Pangolin', cursive;">{{i.date|date:"d-m-Y"}}: {{i.title}}</li>
+                        {% endfor %}
+                    </ul>                    
+                </div>
+                <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+                    <h4 style="font-size: 30px; font-family: 'Righteous', cursive;">Today's Birthday:</h4>
+                    <ul>
+                    {% for i in teachers %}
+                    <li style="font-size: 20px; font-family: 'Pangolin', cursive;">{{i.first_name}} {{i.last_name}}</li>
+                    {% endfor %}
+                </ul>
                 </div>
             </div>            
             <div class="col-lg-4 col-md-4 col-xs-12 ">

@@ -33,13 +33,13 @@ def genadmin_new(request, input_type):
 	if (input_type == "Subject"):
 		importform = SubjectForm
 		name='genadmin:subject_list'
-	elif (input_type == "class_group"):
+	elif (input_type == "Class Group"):
 		importform = classGroupForm
 		name='genadmin:class_group_list'
 	elif (input_type == "House"):
 		importform = HouseForm
 		name='genadmin:house_list'
-	elif (input_type == "academic_year"):
+	elif (input_type == "Academic Year"):
 		importform = academicYearForm
 		name='landing'
 	elif (input_type == "Batch"):
@@ -105,6 +105,9 @@ def master_list(request, input_type):
 	elif (input_type=="House"):
 		items = House.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Houses"})
+	elif (input_type=="Batch"):
+		items = Batch.objects.for_tenant(request.user.tenant).all()
+		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Batch"})
 
 @login_required
 #This is a calander and event add view.

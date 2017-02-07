@@ -173,10 +173,6 @@ def attendance_employee(request, input_type):
 	# 		classgroup=class_section.get_object_or_404(name=class_name).classgroup
 	# 		subject_options=Syllabus.objects.for_tenant(request.user.tenant).filter(class_group=classgroup).subject
 	# 		response_data['subjects'] = subject_options
-	# 	elif (calltype == 'subject_selection'):
-	# 		subject_name=request.POST.get('subject')
-	# 		teachers=Teacher.objects.for_tenant(request.user.tenant).filter(subject=subject_name)
-	# 		response_data['teachers']=teachers
 	# 	#saving the class
 	# 	elif (calltype == 'save'):
 	# 		#class_name=request.POST.get('class_name')
