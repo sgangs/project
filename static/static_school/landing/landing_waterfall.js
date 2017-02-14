@@ -23,7 +23,8 @@ $(function(){
     // be able to contain the data required or the results will be incorrect.
     // Also the "bar" elements must have the correct value (sum of previous "bar"
     // + intervening "var" elements)
-    var yMax = (Math.max((expense+other_expense)*(-1),income+other_income))+500,
+    // Thhs ymax check max of income/expense. Then adds 500 to it and rounds up the number to nearest 1000
+    var yMax = Math.ceil(((Math.max((expense+other_expense)*(-1),income+other_income))+500)/1000)*1000,
         yMin =  yMax*(-1),
         xLabel = "Income & Expense",
         yLabel = "Amount";
@@ -34,7 +35,7 @@ $(function(){
       { "label":"Indirect Expense", "value":other_expense, "type":"var" },
       { "label":"Profit", "value":profit, "type":"bar" },
       ];
-
+      console.log(yMax);
     // Create the svg as usual
     var svg = dimple.newSvg("#waterfall", 600, 300);
     // The waterfall requires some data manipulation in a similar
@@ -70,7 +71,7 @@ $(function(){
 
     // Create the chart from the updated data
     var myChart = new dimple.chart(svg, waterfallData);
-    myChart.setBounds(60, 30, 510, 250)
+    myChart.setBounds(60, 30, 400, 250)
     var x = myChart.addCategoryAxis("x", "x");
 
     // By default bar charts are ordered by value, this forces the ordering by

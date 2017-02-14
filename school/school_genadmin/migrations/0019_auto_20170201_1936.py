@@ -17,4 +17,8 @@ class Migration(migrations.Migration):
             name='attendance_type',
             field=models.PositiveSmallIntegerField(choices=[(1, 'Working Day'), (2, 'Non working day')], default='2', verbose_name='Attendance type'),
         ),
+        migrations.RemoveField(
+            model_name='batch',
+            name='class_group',
+        ),
     ]

@@ -10,7 +10,8 @@ from crispy_forms.bootstrap import (PrependedText, AppendedText)
 from school_user.models import User, Tenant
 
 class LoginForm(AuthenticationForm):
-	captcha = ReCaptchaField()
+	# captcha = ReCaptchaField()
+	pass
 	
 
 class revisedPasswordResetForm(PasswordResetForm):

@@ -14,8 +14,10 @@ from django.views.generic import TemplateView
 from school_user.forms import UserRegistrationForm,CustomerRegistrationForm
 from school_user.models import User, Tenant
 from school_account.models import payment_mode, accounting_period
+from school_classadmin.models import Attendance
 from school_genadmin.models import academic_year, annual_calender
 from school_teacher.models import Teacher
+from school_student.models import Student
 from .user_util import *
 from .forms import revisedPasswordResetForm, LoginForm
 
@@ -28,6 +30,7 @@ def custom_login(request):
     if request.user.is_authenticated():
         return redirect(landing)
     else:
+        # print (request.SESSION['login_tries'])
         return login(request, authentication_form=LoginForm)
         
 #Add one more level of authentication for forgot password. Then send the mail.
@@ -120,21 +123,34 @@ def landing(request):
     elif (request.user.user_type == "Teacher"):
         return render (request, 'landing_teacher.html')
     try:
-        year=academic_year.objects.for_tenant(request.user.tenant).get(current_academic_year=True).year
+        this_tenant=request.user.tenant
+        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
         paid=fee_paid(request, year)
         total=month_fee(request, year)
         current_day=datetime.datetime.now()
         start=dt(year=current_day.year, month=current_day.month, day=1)
         end=dt(year=current_day.year, month=current_day.month, day=(monthrange(current_day.year,current_day.month)[1]))
-        events=annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
-        teachers=Teacher.objects.for_tenant(request.user.tenant).filter(dob__month=current_day.month,dob__day=current_day.day)
+        events=annual_calender.objects.for_tenant(this_tenant).filter(date__range=(start,end))
+        teachers_list=Teacher.objects.for_tenant(this_tenant).all()
+        student_list=Student.objects.for_tenant(this_tenant).all()
+        teachers=teachers_list.filter(dob__month=current_day.month,dob__day=current_day.day)
+        today=datetime.date.today()
+        try:
+            students_present=Attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
+        except:
+            students_present=0
+        total_teachers=teachers_list.count()
+        total_students=student_list.count()
+        percent_student=round(students_present/total_students*100)
     except:
         paid=0
         total=0
         return redirect('genadmin:new_academic_year')
     income_expense=yearly_pl(request)
     i_e_json = json.dumps(income_expense)
-    return render (request, 'landing.html', {"paid":paid,"events":events,"teachers":teachers,"total":total, 'i_e':i_e_json})
+    return render (request, 'landing.html', {"paid":paid,"events":events,"teachers":teachers,"total":total, 'i_e':i_e_json, \
+        'total_teachers': total_teachers, 'total_students':total_students, 'students_present':students_present, \
+        'percent_student':percent_student})
 
 #400 error
 def bad_request(request):

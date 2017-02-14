@@ -6,7 +6,7 @@ from django.utils.timezone import localtime
 from functools import partial, wraps
 import json
 #from datetime import datetime
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import IntegrityError, transaction
 from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
@@ -15,11 +15,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 #from django.db.models import F
 
 
+from school.user_util import user_passes_test_custom
 from school_user.models import Tenant
 from school_account.models import accounting_period
 from .forms import SubjectForm, classGroupForm, HouseForm, academicYearForm, BatchForm
 from .models import Subject, class_group, House, annual_calender, annual_holiday_rules, academic_year
 from .genadmin_util import *
+from .genadmin_view_control import *
 
 
 @login_required
@@ -28,6 +30,7 @@ def base(request):
 	return render (request, 'genadmin/genadmin_base.html')
 
 @login_required
+@user_passes_test_custom(allow_gemadmin, redirect_namespace='permission_denied')
 #For adding new entry for Genadmin models
 def genadmin_new(request, input_type):
 	if (input_type == "Subject"):

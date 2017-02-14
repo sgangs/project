@@ -286,7 +286,7 @@ class student_fee_payment(models.Model):
 		super(student_fee_payment, self).save(*args, **kwargs)
 
 	class Meta:
-		unique_together = (("student","year","tenant",))
+		unique_together = (("student","month", "year","tenant",))
 		# ordering = ('name',)
 		
 	def __str__(self):

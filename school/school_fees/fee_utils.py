@@ -4,6 +4,21 @@ import json
 from django.db import IntegrityError, transaction
 from django.db.models import Sum
 from django.utils import timezone
+from django.utils.timezone import localtime
+from num2words import num2words
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+from reportlab.lib.pagesizes import A6, A5, A4
+from reportlab.lib.units import mm
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageTemplate, Frame
+from reportlab.lib.units import cm
+from reportlab.graphics.shapes import Line
+
+from school.settings.base import STATIC_ROOT
 from school_user.models import Tenant
 from school_account.models import Account, Journal, journal_entry, journal_group
 from school_eduadmin.models import class_section, classstudent
@@ -55,6 +70,8 @@ def view_fee_details(request):
     studentid=request.POST.get('studentid')
     year=int(request.POST.get('year'))
     month=request.POST.get('month')
+    class_input=request.POST.get('class_selected')
+    class_selected=class_section.objects.for_tenant(request.user.tenant).get(id=class_input)
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     feelist=student_fee.objects.filter(student=student).get(year=year)
     monthlyfee=feelist.monthly_fee
@@ -64,6 +81,8 @@ def view_fee_details(request):
         yearlyfeedetails=feelist.yearly_fee.filter(month=month).all()
     except:
         yearlyfeedetails=''
+    response_data.append({'data_type':'Student', 'name':student.first_name+" "+student.last_name, \
+        'class_selected': class_selected.name})
     if (paid['amount__sum'] != None):
         if (paid['amount__sum'] > 0):
             response_data.append({'data_type':'Paid', 'amount':str(paid['amount__sum'])})
@@ -125,35 +144,37 @@ def save_student_payment(request):
     except:
         yearlyfeedetails=''
     with transaction.atomic():
-        # try:
-        for fee in monthlyfeelist:
-            account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
-            this_amount=fee.amount
-            amount_paid+=this_amount
-            new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
-        for yearlyfee in yearlyfeedetails:
-            yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
-            for fee in yearlyfeelist:
+        try:
+            for fee in monthlyfeelist:
                 account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
                 this_amount=fee.amount
                 amount_paid+=this_amount
                 new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
-        if (amount_paid != amount):
-            raise IntegrityError
+            for yearlyfee in yearlyfeedetails:
+                yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
+                for fee in yearlyfeelist:
+                    account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
+                    this_amount=fee.amount
+                    amount_paid+=this_amount
+                    new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
+            if (amount_paid != amount):
+                raise IntegrityError
+                transaction.rollback()
+            if (amount == fee_paid):
+                raise IntegrityError
+                transaction.rollback()
+            fee_payment=student_fee_payment()
+            fee_payment.student=student
+            fee_payment.month=month
+            fee_payment.year=year
+            fee_payment.paid_on=tz_aware_now
+            fee_payment.amount=amount_paid
+            fee_payment.tenant=this_tenant
+            fee_payment.save()
+            return tz_aware_now
+        except:
             transaction.rollback()
-        if (amount == fee_paid):
-            raise IntegrityError
-            transaction.rollback()
-        fee_payment=student_fee_payment()
-        fee_payment.student=student
-        fee_payment.month=month
-        fee_payment.year=year
-        fee_payment.paid_on=tz_aware_now
-        fee_payment.amount=amount_paid
-        fee_payment.tenant=this_tenant
-        fee_payment.save()
-        # except:
-        #     transaction.rollback()
+
 
 
 def new_journal_entry(account, amount, this_tenant,name,tz_aware_now):
@@ -198,3 +219,96 @@ def view_payment_details (request):
     for fee in fee_paid:
         response_data.append({'data_type':'payment','month':fee.month, 'amount':str(fee.amount),'paid_on':fee.paid_on.isoformat()})
     return response_data
+
+# pdfmetrics.registerFont(TTFont('OpenSans-Regular', STATIC_ROOT + '/fonts/OpenSans-Regular.ttf'))
+# pdfmetrics.registerFont(TTFont('OpenSans-Light', STATIC_ROOT + '/fonts/OpenSans-Light.ttf'))
+# pdfmetrics.registerFont(TTFont('OpenSans-Bold', STATIC_ROOT + '/fonts/OpenSans-Bold.ttf'))
+
+# pdfmetrics.registerFontFamily('FansyFont', normal='OpenSans-Regular', bold='OpenSans-Bold', italic='OpenSans-Light',)
+
+class PdfPrint:
+    def __init__(self, buffer, pageSize):
+        self.buffer = buffer
+        self.pageSize = A4
+        self.width, self.height = self.pageSize
+
+    def pageNumber(self, canvas, doc):
+        number = canvas.getPageNumber()
+        now=datetime.datetime.now()
+        tz_aware_now=timezone.make_aware(now, timezone.get_current_timezone())
+        timestring= tz_aware_now.strftime('%Y-%m-%d at %H:%M:%S hrs')
+        footer="Printed on: "+timestring
+        canvas.drawCentredString(100*mm, 15*mm, str(number))
+        canvas.drawCentredString(50*mm, 15*mm, str(footer))
+
+    
+
+    def report(self, request, paid_on, response_data, title):
+        doc = SimpleDocTemplate(self.buffer,rightMargin=72,leftMargin=72,topMargin=30,bottomMargin=72,pagesize=self.pageSize)
+        # doc = SimpleDocTemplate(self.buffer,pagesize=self.pageSize)
+        # a collection of styles offer by the library
+        styles = getSampleStyleSheet()
+        styles.wordWrap = 'CJK'
+        # add custom paragraph style - The issue is with custom fonts
+        # styles.add(ParagraphStyle(name="TableHeader", fontSize=11, alignment=TA_CENTER,fontName="OpenSans-Bold"))
+        # styles.add(ParagraphStyle(name="ParagraphTitle", fontSize=14, alignment=TA_JUSTIFY,fontName="OpenSans-Bold"))
+        # styles.add(ParagraphStyle(name="ParagraphName", fontSize=10, alignment=TA_JUSTIFY,fontName="OpenSans-Bold"))
+        # styles.add(ParagraphStyle(name="Justify", alignment=TA_JUSTIFY, fontName="OpenSans-Regular"))
+        styles.add(ParagraphStyle(name="TableHeader", fontSize=11, alignment=TA_CENTER))        
+        styles.add(ParagraphStyle(name="Small", fontSize=8, alignment=TA_CENTER))
+        styles.add(ParagraphStyle(name="TableData", fontSize=9, alignment=TA_CENTER))
+        styles.add(ParagraphStyle(name='Justify', fontSize=10, alignment=TA_JUSTIFY, leading=20))
+        styles.add(ParagraphStyle(name='Summary', fontSize=10, alignment=TA_JUSTIFY, \
+            leading=20, borderPadding = 25,backColor=colors.gray ))
+        # list used for elements added into document
+        data = []
+        data.append(Paragraph(request.user.tenant.name, styles['Title']))
+        data.append(Paragraph(request.user.tenant.address, styles['Small']))
+        line_data=[" "]
+        line_table = Table(line_data, colWidths=doc.width)        
+        line_table.setStyle(TableStyle([("LINEBELOW", (0,0), (-1,-1), 1, colors.black)]))
+        data.append(line_table)
+        year=int(request.POST.get('year'))
+        month=request.POST.get('month')
+        data.append(Paragraph("Fee for the month of: " + month+ ", Academic year (start): "+ str(year), \
+                styles['Justify']))
+        data.append(Paragraph(" ", styles['Justify']))
+        for rd in response_data:
+            if (rd['data_type'] == 'Student'):
+                data.append(Paragraph('Name: '+rd['name'], styles['Justify'],))
+                data.append(Paragraph('Class: '+rd['class_selected'], styles['Justify'],))
+        # insert a blank space
+        data.append(Spacer(1, 12))
+        table_data = []
+
+        # table header
+        table_data.append([Paragraph('Fee Structure', styles['TableHeader']), Paragraph('Amount', styles['TableHeader'])])
+        total=0.00
+        for rd in response_data:
+            if (rd['data_type'] == 'Monthly' or rd['data_type']=='Yearly'):
+                # data.append(Paragraph(wh.observations, styles['Justify']))
+                # data.append(Spacer(1, 24))
+                # add a row to table
+                table_data.append(
+                    [Paragraph(rd['name'], styles['TableData']),
+                    Paragraph(rd['amount'], styles['TableData'])])
+                total+=float(rd['amount'])
+        table_data.append([Paragraph('Total Fees:', styles['TableHeader']), Paragraph(str(total), styles['TableHeader'])])
+        # create table
+        fee_table = Table(table_data, colWidths=[doc.width/2.0]*2)
+        fee_table.hAlign = 'LEFT'
+        fee_table.setStyle(TableStyle(
+            [('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+             ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+             ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+             ('BACKGROUND', (0, 0), (-1, 0), colors.gray)]))
+        data.append(fee_table)
+        data.append(Spacer(1, 48))
+        details=[['Amount Paid: ', 'Rs. '+str(format(total, '.2f')), '(in words - Rupees '+num2words(total,lang='en_IN').title() +')'],
+                    ['Paid On: ', paid_on.strftime('%Y-%m-%d')]]
+        payment=Table(details, hAlign='LEFT')
+        data.append (payment)
+        doc.build(data, onFirstPage=self.pageNumber, onLaterPages=self.pageNumber)
+        pdf = self.buffer.getvalue()
+        self.buffer.close()
+        return pdf

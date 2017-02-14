@@ -17,6 +17,14 @@ gender_list=(('M','Male'),
 				('F','Female'),
 				('O','Other'),)
 
+staff_type=(('T','Teacher'),
+				('A','Admin'),
+				('P','Principal'),
+				('P','Principal'),
+				('P','Principal'),
+				('C','Accounts'),
+				('F','Fee Collector'),)
+
 blood_list=(('A+','A Positive'),
 				('B+','B Positive'),
 				('O+','O Positive'),
@@ -31,8 +39,8 @@ blood_list=(('A+','A Positive'),
 class Teacher(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
-	#school_teacher_id=models.CharField(max_length=20, blank=True, null=True)
 	dob=models.DateField("Date of Birth", blank=True, null=True)
+	# staff_type=models.CharField(max_length=2,choices=staff_type, default='T')
 	joining_date=models.DateField(blank=True, null=True)
 	key=models.CharField(db_index=True,max_length=12)
 	gender=models.CharField(max_length=1,choices=gender_list)

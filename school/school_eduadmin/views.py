@@ -14,7 +14,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from school_teacher.models import Teacher
 from school_student.models import Student
-from school_genadmin.models import class_group, Subject
+from school_genadmin.models import class_group, Subject, Batch
 from school_fees.models import student_fee, group_default_fee
 from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm, ClassStudentForm, SubjectTeacherForm, TotalPeriodForm
 from .models import class_section, classteacher, classstudent, Syllabus, Exam, Examiner, subject_teacher, total_period
@@ -31,12 +31,12 @@ def base(request):
 #This function helps in creating new class
 def class_new(request):
 	#date=datetime.now()
-	group=class_group.objects.for_tenant(request.user.tenant)
-	class_teacher=Teacher.objects.for_tenant(request.user.tenant)
+	this_tenant=request.user.tenant
+	group=class_group.objects.for_tenant(this_tenant)
+	class_teacher=Teacher.objects.for_tenant(this_tenant)
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
-		this_tenant=request.user.tenant
 		#saving the class
 		if (calltype == 'classname'):
 			classname = request.POST.get('classname')
@@ -65,13 +65,9 @@ def class_new(request):
 						teacher=classteacher()
 						teacher.class_section=section
 						teacher.class_teacher=Teacher.objects.for_tenant(request.user.tenant).get(key__exact=teacher_key)
-
 						teacher.year=year
 						teacher.tenant=this_tenant
 						teacher.save()
-				# except IntegrityError:
-				# 	transaction.rollback()
-				# 	response_data['name']='Name exists'
 				except:
 					transaction.rollback()
 		jsondata = json.dumps(response_data)
@@ -93,6 +89,7 @@ def eduadmin_new(request, input_type):
 	elif (input_type=="ClassStudent"):
 		importform=ClassStudentForm
 		name='eduadmin:class_list'
+		input_type="Student (one at a time) To Class"
 	elif (input_type=="Subject Teacher"):
 		importform=SubjectTeacherForm
 		name='eduadmin:subject_teacher_list'
@@ -182,7 +179,7 @@ def subject_teacher_new(request):
 			response_data['subjects'] = subject_options
 		elif (calltype == 'subject_selection'):
 			subject_name=request.POST.get('subject')
-			teachers=Teacher.objects.for_tenant(request.user.tenant).filter(subject=subject_name)
+			teachers=Teacher.objects.for_tenant(request.user.tenant).all()
 			response_data['teachers']=teachers
 		#saving the class
 		elif (calltype == 'save'):
@@ -204,40 +201,34 @@ def subject_teacher_new(request):
 @login_required
 #This is used to add students to class. Complex frontend. Not yet done.
 def class_student_add(request):
-	class_section_option=class_section.objects.for_tenant(request.user.tenant)
+	this_tenant=request.user.tenant
+	batch=Batch.objects.for_tenant(this_tenant)
+	class_sections=class_section.objects.for_tenant(this_tenant)
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
 		students_excluded = []
-		this_tenant=request.user.tenant
-		if (calltype == 'year'):
+		if (calltype == 'student'):
 			#class_name=request.POST.get('class_name')
-			year=request.POST.get('year')
-			students_excluded_list=classstudent.objects.for_tenant(request.user.tenant).filter(year=year)
-			for item in students_excluded_list:
-				students_excluded.append(item.student.id)
-
-			students=Student.objects.for_tenant(request.user.tenant).exclude(id__in=students_excluded)
-			jsondata = serializers.serialize('json', students)
-		return HttpResponse(jsondata)
-
-		#saving the class
+			response_data=get_student_list(request,batch,class_sections)
 		if (calltype == 'save'):
-			try:
-				class_name=request.POST.get('class_name')
-				#subject_name=request.POST.get('subject')
-				#teacher_key=request.POST.get('teacher')
-				for data in bill_data:
-					itemcode=data['itemCode']
-					subitemcode=data['subitemCode']
-					unit_entry=data['unit']
-					unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
-					item=Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemcode)
-			except:
-				transaction.rollback()
+			with transaction.atomic():
+				try:
+					class_name=request.POST.get('class_name')
+					#subject_name=request.POST.get('subject')
+					#teacher_key=request.POST.get('teacher')
+					for data in bill_data:
+						itemcode=data['itemCode']
+						subitemcode=data['subitemCode']
+						unit_entry=data['unit']
+						unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
+						item=Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemcode)
+				except:
+					transaction.rollback()
+		
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-	return render (request, 'eduadmin/class_studentadd.html', {'classsections':class_section_option,})
+	return render (request, 'eduadmin/class_studentadd.html', {'batch':batch,'classsection':class_sections})
 
 @login_required
 #This is the view to provide list
@@ -370,3 +361,83 @@ def view_add_period(request, detail):
 	except:
 		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'extension':extension})
 	
+
+#View a teacher's period. This is step 1 in absent teacher subsitution
+def view_teacher_period(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	teachers=Teacher.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = []
+		if (calltype == 'year'):
+			year=request.POST.get('year')
+			teacherid=request.POST.get('teacherid')
+			teacher=teachers.get(id=teacherid)
+			try:
+				periods=period.objects.filter(year=year,teacher=teacher).select_related('subject', 'class_section')
+				for item in periods:
+					response_data.append({'data_type':'Period','day': item.day,'period': item.period,\
+							'subject': item.subject.name, 'class_section':item.class_section.name})					
+			except:
+				pass
+		jsondata=json.dumps(response_data)
+		return HttpResponse(jsondata)
+	try:			
+		totalperiod=total_period.objects.get(tenant=this_tenant).number_period
+		return render (request, 'eduadmin/teacher_period.html', {'totalperiod': totalperiod, 'range':range(totalperiod),\
+			'extension':extension, 'teachers':teachers})
+	except:
+		return render (request, 'eduadmin/teacher_period.html', { 'extension':extension, 'teachers':teachers})
+
+#View to promote students
+def promote_student(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	class_section_options=class_section.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data=[]
+		if (calltype == 'students'):
+			from_classid=request.POST.get('from_classid')
+			from_year=int(request.POST.get('from_year'))
+			class_selected=class_section_options.get(id=from_classid)
+			students=classstudent.objects.filter(class_section=class_selected, year=from_year)
+			response_data=list(Student.objects.filter(classstudent_eduadmin_student_student__in=students).values('id','first_name',\
+					'last_name','key','local_id'))
+			#jsonify django querysets
+		elif (calltype == 'promote'):
+			from_class=request.POST.get('from_classid')
+			to_class=request.POST.get('to_class')
+			from_year=int(request.POST.get('from_year'))
+			to_year=int(request.POST.get('to_year'))
+			from_class_selected=class_section_options.get(id=from_class)
+			to_class_selected=class_section_options.get(id=to_class)
+			#Getting set of student ids for validation
+			list_student=classstudent.objects.for_tenant(request.user.tenant).\
+					filter(class_section=from_class_selected,year=from_year)
+			students_final=list(Student.objects.filter(classstudent_eduadmin_student_student__in=list_student).values('id'))
+			students_set=set()
+			students_data=json.loads(request.POST.get('students_data'))
+			with transaction.atomic():
+				try:
+					for data in students_data:
+						student_id=data['studentid']
+						roll_no=data['rollno']
+						#Doing a validation, if student is actually in class
+						if (student_id in students_set):
+							student=Student.objects.for_tenant(this_tenant).get(id=student_id)
+							new_classstudent=classstudent()
+							new_classstudent.class_section=to_class
+							new_classstudent.student=student
+							new_classstudent.roll_no=roll_no
+							new_classstudent.year=year
+							new_classstudent.tenant=this_tenant
+							new_classstudent.save()
+						else:
+							raise IntegrityError
+				except:
+					transaction.rollback()
+		jsondata=json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'eduadmin/class_promote_student.html', { 'extension':extension, 'class_section':class_section_options})

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Promote Students</title>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'eduadmin/student_promote.js' %}"></script>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Promote Students</h3>
+<h1></h1>
+<div class="row old">
+	<div class="form-group col-xs-4 col-md-4 class1div">
+		<label class="control-label">Select Old Class</label>
+		<select class='form-control selectpicker class1' data-live-search="true">
+			<option disabled selected hidden style='display: none' value>Select Old Class</option>
+			{% for i in class_section %}
+      		<option data-id="{{i.id}}">{{i.name}}</option>
+      		{% endfor %}
+    	</select>		
+	</div>
+
+	<div class="form-group col-xs-4 col-md-4 year1div">
+		<label class="control-label">Enter Previous Academic Year </label>
+		<input type="text" required="" class="form-control year1"  placeholder="Enter previous academic year"> 		
+	</div>
+
+	<div class="form-group col-xs-4 col-md-4 hint1" hidden>
+		<label class="control-label">How To: </label>
+		<p>Select the class (section) and enter the current (old) academic year of the students</p>
+	</div>
+</div>
+
+<button type="button" class='fetch btn btn-primary btn-xs'>Fetch Students</button>
+<h1></h1>
+
+<div class="row new" hidden='true'>
+	<div class="form-group col-xs-4 col-md-4 class2div">
+		<label class="control-label">Select New Class To Add</label>
+		<select class='form-control selectpicker class2' data-live-search="true">
+			<option disabled selected hidden style='display: none' value>Select New Class To Add</option>
+			{% for i in classsection %}
+      		<option data-id="{{i.id}}">{{i.name}}</option>			
+      		{% endfor %}
+    	</select>
+	</div>
+
+	<div class="form-group col-xs-4 col-md-4 year2div">
+		<label class="control-label">Enter Academic Year </label>
+		<input type="text" required="" class="form-control year2"  placeholder="Input academic year."> 		
+	</div>
+
+	<div class="form-group col-xs-12 col-md-4 helpdiv hint2">
+		<label>How To:</label>
+		<p>Select the new class (section) and enter the start year of the academic year  where the students will be promoted. 
+		Then select the students who shall have to be promoted.</p>
+	</div>
+</div>
+
+
+
+<h1></h1>
+<div class="table-responsive" hidden>	
+	<h4>Select Student(s)</h4>
+	<table id="student_table" class="table table-striped table-bordered">
+		<thead class="bg-primary">
+	  		<tr>
+	  			<th style="text-align: center" class="header" hidden=""></th>
+	  			<th style="text-align: center" class="header">Student System Key</th>
+	  			<th style="text-align: center" class="header">Student School Key</th>
+	  			<th style="text-align: center" class="header">Student Name</th>
+		    	<th style="text-align: center" class="header"> Select to promote</th>
+	    	</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+
+	<!-- <button type="button" class='delete btn btn-danger btn-xs'>- Delete</button>
+	<button type="button" class='addmore btn btn-success btn-xs'>+ Add More</button> -->
+
+	<button type="button" class='submit btn btn-primary btn-xs'>Submit</button>
+</div>
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<script>
+	csrf_token='{{csrf_token}}';		
+</script>
+{% endblock %}

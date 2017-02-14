@@ -2,6 +2,7 @@ from datetime import date, datetime
 from django.utils import timezone
 from django.utils.timezone import localtime
 from functools import partial, wraps
+from io import BytesIO
 import json
 #from datetime import datetime
 from django.contrib.auth.decorators import login_required
@@ -105,30 +106,6 @@ def group_fee_linking(request):
 		return HttpResponse(jsondata)
 	return render(request, 'fees/fee_linking.html',{'groups':group, 'monthly_fee':monthly, 'yearly_fee':yearly})
 
-# @login_required
-# #For adding new entry for fees structure
-# def student_fee_linking(request):
-# 	monthly=monthly_fee.objects.for_tenant(request.user.tenant).all()
-# 	yearly=yearly_fee.objects.for_tenant(request.user.tenant).all()
-# 	if request.method == 'POST':
-# 		response_data = []
-# 		feeid=request.POST.get('feeid')
-# 		calltype =request.POST.get('calltype')
-# 		if (calltype == 'Monthly'):
-# 			fee_target=monthly_fee.objects.get(id=feeid)
-# 			fee_list=monthly_fee_list.objects.filter(monthly_fee=fee_target).select_related('account')
-# 			for fee in fee_list:
-# 				response_data.append({'data_type':'Monthly Fee','account':fee.account.name,\
-# 					'amount': str(fee.amount),})
-# 		else:
-# 			fee_target=yearly_fee.objects.get(id=feeid)
-# 			fee_list=yearly_fee_list.objects.filter(yearly_fee=fee_target).select_related('account')
-# 			for fee in fee_list:
-# 				response_data.append({'data_type':'Yearly Fee','account':fee.account.name,\
-# 					'amount': str(fee.amount),})
-# 		jsondata = json.dumps(response_data)
-# 		return HttpResponse(jsondata)
-# 	return render(request, 'fees/fee_linking.html',{'groups':group, 'monthly_fee':monthly, 'yearly_fee':yearly})
 
 @login_required
 #For adding new entry for fees structure
@@ -171,13 +148,38 @@ def student_payment(request, input_type):
 			response_data=view_student(request)
 		elif (calltype == 'details'):
 			response_data=view_fee_details(request)
+			# print (response_data)
 		elif (calltype == 'payment_history'):
 			response_data=view_payment_details(request)
 		elif (calltype == 'save'):
-			print ("Save Called")
 			response_data=save_student_payment(request)
-			#Add all the relavant data which has to be updated in the models.
-
+		elif (calltype=='pdf'):
+			with transaction.atomic():
+				try:
+					response_data=view_fee_details(request)
+					paid_on=save_student_payment(request)
+					response = HttpResponse(content_type='application/pdf')
+					filename = 'Fee_Payment'
+					response['Content-Disposition'] ='attachement; filename={0}.pdf'.format(filename)
+					buffer = BytesIO()
+					report = PdfPrint(buffer,'A4')
+					pdf = report.report(request, paid_on, response_data, 'Fee Payment')
+					response.write(pdf)
+					return response
+				except:
+					transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render(request, 'fees/student_fee.html',{'input_type':input_type,'classsection':classsection, 'extension':extension})
+
+# def print_fee_structure(request):
+# 	response_data=view_fee_details(request)
+# 	response = HttpResponse(content_type='application/pdf')
+# 	filename = 'fee_payment'
+# 	response['Content-Disposition'] ='attachement; filename={0}.pdf'.format(filename)
+# 	buffer = BytesIO()
+# 	report = PdfPrint(buffer,
+# 	 'A4')
+# 	pdf = report.report(respo, 'Fee Payment')
+# 	response.write(pdf)
+# 	return response

@@ -72,17 +72,17 @@ class academicYearForm (forms.ModelForm):
 		else:
 			try:
 				data=academic_year.objects.for_tenant(self.tenant).get(year=year)
-				self.add_error('year',"Academin Session with same data already exist")
+				self.add_error('year',"Academic Session with same data already exist")
 			except:
-				return cd
+				pass
 			try:
-				start=academic_year.objects.for_tenant(self.tenant).get(start=start)
-				self.add_error('start',"Academin Session with same data already exist")
+				data=academic_year.objects.for_tenant(self.tenant).get(start=start)
+				self.add_error('start',"Academic Session with same data already exist")
 			except:
-				return cd
+				pass
 			try:
 				data=academic_year.objects.for_tenant(self.tenant).get(end=end)
-				self.add_error('end',"Academin Session with same data already exist")
+				self.add_error('end',"Academic Session with same data already exist")
 			except:
 				return cd
 		return cd

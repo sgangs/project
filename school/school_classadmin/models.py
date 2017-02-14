@@ -21,7 +21,7 @@ class Attendance(models.Model):
 	class_section=models.ForeignKey(class_section,\
 									db_index=True,related_name='attendance_classadmin_eduadmin_classSection')
 	student=models.ForeignKey(Student,db_index=True,related_name='attendance_classadmin_student_student')
-	date=models.DateField()#form/datefield option needed as "input_formats=settings.DATE_INPUT_FORMATS"
+	date=models.DateField()
 	ispresent=models.CharField(db_index=True,max_length=12)
 	remarks=models.TextField()
 	slug=models.SlugField(max_length=50)

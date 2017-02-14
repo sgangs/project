@@ -88,8 +88,8 @@ def registerTeacher(request):
 		this_tenant=request.user.tenant
 		#saving the class
 		if (calltype == 'mail'):
-			studentid=request.POST.get('profileid')
-			email=teachers.get(id=studentid).email_id
+			teacherid=request.POST.get('profileid')
+			email=teachers.get(id=teacherid).email_id
 			response_data['email'] = email
 
 		elif (calltype == 'user'):

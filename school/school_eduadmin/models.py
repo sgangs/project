@@ -68,22 +68,22 @@ class classstudent(models.Model):
 	roll_no=models.CharField(max_length=10)
 	student=models.ForeignKey(Student,db_index=True,related_name='classstudent_eduadmin_student_student')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
-	slug=models.SlugField(max_length=40)
+	#slug=models.SlugField(max_length=40)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classstudent_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item="cls"+" "+self.tenant.key+" "+self.student.key+" "+str(self.year)
-			self.slug=slugify(item)
-		super(classstudent, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item="cls"+" "+self.tenant.key+" "+self.student.key+" "+str(self.year)
+	# 		self.slug=slugify(item)
+	# 	super(classstudent, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("class_section","student","year", "tenant"), ("class_section", "roll_no","year", "tenant"))
-		# ordering = ('name',)
+		ordering = ('roll_no',)
 		
 	def __str__(self):
 		return '%s %s - %s' % (self.class_section, self.student, self.year)
@@ -255,3 +255,25 @@ class period(models.Model):
 		
 	def __str__(self):
 		return '%s %s' % (self.day, self.period)
+
+#Notice Board. Should the message be deleted?
+class notice_board(models.Model):
+	title=models.TextField()
+	details=models.TextField()
+	show_from=models.DateField()
+	show_until=models.DateField()
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='noticeBoard_eduadmin_user_tenant')
+	objects=TenantManager()
+
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item="pe"+""+self.tenant.key+" "+str(self.day)+" "+str(self.period)+" "+str(self.year)
+	# 		self.slug=slugify(item)
+	# 	super(period, self).save(*args, **kwargs)
+
+	class Meta:
+		# unique_together = (("day","period","year", "tenant"))
+		ordering = ('show_from','show_until')
+		
+	def __str__(self):
+		return '%s ' % (self.title)

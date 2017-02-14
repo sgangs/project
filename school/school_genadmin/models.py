@@ -84,7 +84,7 @@ class academic_year(models.Model):
 		super(academic_year, self).save(*args, **kwargs)
 
 	class Meta:
-		unique_together = (("year", "tenant"))
+		unique_together = (("year", "tenant"),("start", "tenant"),("end", "tenant"))
 		# ordering = ('name',)
 		
 	def __str__(self):

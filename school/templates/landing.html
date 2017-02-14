@@ -17,6 +17,8 @@
 <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
 {% endblock %}
 
+{% block dashboard %}
+{% endblock %}
 
 {%block content%}
 
@@ -30,40 +32,40 @@
             <div class="col-lg-8 col-md-8 col-xs-12 ">
                 
                 <div >
-                    <label style="color:#0585B3; ">Annual Financials
+                    <label title="Annual Financials: Waterfall chart">Annual Financials
                         <div id="waterfall" ></div>
                     </label>
                 </div>
                 
                 
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
-                    <h4 style="font-size: 30px; font-family: 'Righteous', cursive;">Events For The Month:</h4>
+                    <h4 style="font-size: 30px; font-family: 'Righteous';">Events For The Month:</h4>
                     <ul>
                         {% for i in events %}
-                        <li style="font-size: 20px; font-family: 'Pangolin', cursive;">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
+                        <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
                         {% endfor %}
                     </ul>                    
                 </div>
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
-                    <h4 style="font-size: 30px; font-family: 'Righteous', cursive;">News Bulletin:</h4>
+                    <h4 style="font-size: 30px; font-family: 'Righteous';">Notice Board:</h4>
                     <ul>
                         {% for i in news %}
-                        <li style="font-size: 20px; font-family: 'Pangolin', cursive;">{{i.date|date:"d-m-Y"}}: {{i.title}}</li>
+                        <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.title}}</li>
                         {% endfor %}
                     </ul>                    
                 </div>
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
-                    <h4 style="font-size: 30px; font-family: 'Righteous', cursive;">Today's Birthday:</h4>
+                    <h4 style="font-size: 30px; font-family: 'Righteous';">Today's Birthday:</h4>
                     <ul>
                     {% for i in teachers %}
-                    <li style="font-size: 20px; font-family: 'Pangolin', cursive;">{{i.first_name}} {{i.last_name}}</li>
+                    <li style="font-size: 20px; font-family: 'Pangolin';">{{i.first_name}} {{i.last_name}}</li>
                     {% endfor %}
                 </ul>
                 </div>
             </div>            
             <div class="col-lg-4 col-md-4 col-xs-12 ">
                 <div>
-                    <label style="color:#0585B3;">Fees Collection For the Month
+                    <label title="Fee Collection: Pie chart">Fees Collection For the Month <small></small>
                         <canvas id="salary-chart"  height="250"></canvas>
                     </label>                    
                 </div>      
@@ -72,32 +74,32 @@
                         <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Salary Payment" alt="Salary Payment">
                     </a>
                 </div> -->
-                <div>
-                    <h3 style="color:#00D8A5;"> Teacher Attendance </h3>
-                    <h1 id="teacherattendanceText" style="color:#00D8A5;">68%</h1>
+                <div style="color:#008062;">
+                    <h3> Teacher Attendance </h3>
+                    <h1 id="teacherattendanceText">68%</h1>
                     <div id ="teacherattendanceChart" class="chart bar" data-value="68"></div>
-                    <div class="text" style="color:#00D8A5;">
-                        Total Number of Teachers: 
-                    </div>
-                    <div class="text" style="color:#00D8A5;">
+                    <h4 class="text tot_teachers">
+                        Total Number of Teachers:  
+                    </h4>
+                    <h4 class="text">
                         Total Teachers Present: 
-                    </div>
+                    </h4>
                 </div>
-                <div>
-                    <h3 style="color:#9b59b6;"> Students Attendance </h3>
-                    <h1 id="studentattendanceText" style="color:#9b59b6;">75%</h1>
+                <div style="color:#68367c;">
+                    <h3 > Students Attendance </h3>
+                    <h1 id="studentattendanceText">{{percent_student}}%</h1>
                     <div id ="studentattendanceChart" class="chart bar" data-value="75"></div>
-                    <div class="text" style="color:#9b59b6;">
+                    <h4 class="text tot_students">
                         Total Number of Students: 
-                    </div>
-                    <div class="text" style="color:#9b59b6;">
-                        Total Students Present:
-                    </div>
+                    </h4>
+                    <h4 class="text">
+                        Total Students Present: {{students_present}}
+                    </h4>
                 </div>
             </div>
         </div>
 
-    </div>
+</div>
 
     
     <!--Chart.js (for graph)-->
@@ -118,15 +120,19 @@
     <script type="text/javascript">
         var paid='{{paid}}'
         var total='{{total}}'
+        var total_teachers='{{total_teachers}}'
+        var total_students='{{total_students}}'
+        $('.tot_teachers').append(" "+total_teachers);
+        $('.tot_students').append(" "+total_students);
         accounts=JSON.parse('{{i_e |escapejs}}'); //this gets the p&l json
         console.log(accounts)
-        var colors = ["#00D8A5", "#9b59b6"];
+        var colors = ["#008062", "#68367c"];
         var chart = new Fancychart(200, 120, colors, '#e5e5e5');
-        // document.getElementById('#teacherattendanceText').style.color = colors[0];
-        var val = 68;
+        var percent_student = parseInt('{{percent_student}}')
+        var val=68
         chart.circles("#teacherattendanceChart", val, colors[0]);
         var val = 75;
-        chart.circles("#studentattendanceChart", val, colors[1], true);
+        chart.circles("#studentattendanceChart", percent_student, colors[1]);
     </script>
 	
 {% endblock %}

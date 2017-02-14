@@ -141,8 +141,8 @@ def journal_detail(request,detail):
 #This view helps in creating & thereafter saving a purchase invoice
 def journalentry(request):
 	date=datetime.now()	
-	grouplist=journal_group.objects.for_tenant(request.user.tenant).all()
 	this_tenant=request.user.tenant
+	grouplist=journal_group.objects.for_tenant(this_tenant).all()
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
@@ -174,7 +174,7 @@ def journalentry(request):
 						value=data['value']
 						accountkey=data['code']
 						trn_type=data['transaction_type']
-						account=Account.objects.for_tenant(request.user.tenant).get(key__iexact=accountkey)
+						account=Account.objects.for_tenant(this_tenant).get(key__iexact=accountkey)
 						if (trn_type == "Debit"):
 							account.current_debit=account.current_debit+value
 						elif (trn_type == "Credit"):
@@ -201,11 +201,11 @@ def journalentry(request):
 
 #This view is to help create new account
 def new_account(request):
-	#date=datetime.now()	
-	periods=accounting_period.objects.for_tenant(request.user.tenant).all()
-	groups=ledger_group.objects.for_tenant(request.user.tenant).all()
-	accounts=Account.objects.for_tenant(request.user.tenant).all()
+	#date=datetime.now()
 	this_tenant=request.user.tenant
+	periods=accounting_period.objects.for_tenant(this_tenant).all()
+	groups=ledger_group.objects.for_tenant(this_tenant).all()
+	accounts=Account.objects.for_tenant(this_tenant).all()
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
@@ -238,8 +238,8 @@ def new_account(request):
 					periodid=request.POST.get('periodid')
 					balance_type=request.POST.get('balance_type')
 					balance=float(request.POST.get('balance'))
-					ledger=ledger_group.objects.get(id=ledgerid)
-					period=accounting_period.objects.get(id=periodid)
+					ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledgerid)
+					period=accounting_period.objects.for_tenant(this_tenant).get(id=periodid)
 					account=Account()
 					account.ledger_group=ledger
 					account.name=name

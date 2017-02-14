@@ -22,8 +22,8 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
 
     <!--This is for modernizer-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    
 		<!--jQuery Confirmation Plugin CSS for confirmation boxes-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/2.5.1/jquery-confirm.min.css">
 
@@ -69,13 +69,26 @@
 					<!-- <h2>{{request.user.tenant.name}}</h2> -->
 				</div>
 				<div class="col-md-6" align="right">
-					<h3> Welcome {{request.user.first_name}} {{request.user.last_name}}</h3>
+					<h4>
+            <ul class="nav pull-right">
+              <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{request.user.first_name}} {{request.user.last_name}} <b class="caret"></b></a>
+                <ul class="dropdown-menu" style="background-color: #f2f5f7;">
+                  <li><a href="{% url 'password_change' %}"><i class="fa fa-user"></i>  Change Password</a></li>
+                  <li><a href="/help/support"><i class="fa fa-wrench"></i>  Contact Support</a></li>
+                  <!-- <li class="divider"></li>
+                  <li><a href="/auth/logout"><i class="icon-off"></i> Logout</a></li> -->
+                </ul>
+              </li>
+            </ul>     
+          </h4>
 				</div>
 			</div>
 			<ul class="nav nav-tabs"></ul>
 			<ul class="nav nav-pills navbar-light">
         <li role="presentation" class="navbar-left"> </li>
-				<li role="presentation" class="navbar-light" title="Click to go to Dashboard"><a href="{% url 'landing' %}"><i class="fa fa-home fa-2x"></i></a></li>
+        {% block dashboard %}
+        <li role="presentation" class="navbar-light" title="Click to go to Dashboard"><a href="{% url 'landing' %}"><i class="fa fa-home fa-2x"></i></a></li>
+        {% endblock %}
         	<!-- <li role="presentation" class="dropdown extra" title="Click here for items related to general administration"><a href="{% url 'genadmin:base' %}">General Administration</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here for education related administration"><a href="{% url 'eduadmin:base' %}">Educational Administration</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here to manage daily class administrtion"><a href="{% url 'classadmin:base' %}">Class Administration</a></li>
@@ -84,7 +97,7 @@
 	  			<li role="presentation" class="dropdown extra"><a href="#">Others</a></li>
 	  			<li role="presentation" class="dropdown extra" title="Click here for accounting, finance, fees, salary etc"><a href="{% url 'accounts:base' %}">Accounts</a></li> -->
 	  			<li role="presentation" class="navbar-right"> </li>
-	  			<li role="presentation" class="navbar-right"><a href="{% url 'logout' %}" title="Click to logout"><i class="fa fa-sign-out fa-2x"></i></a></li>
+	  			<li role="presentation" class="navbar-right"><a href="{% url 'logout' %}" title="Click to logout"><i class="fa fa-power-off fa-2x"></i></a></li>
 	  	</ul>
 
 <nav id="primary-navigation">
@@ -290,7 +303,7 @@
           <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> View Period</a>
             <ul>
               <li><a href="{% url 'eduadmin:class_list' %}" title="Sub Nav 2">View class wise period</a></li>
-              <li><a href="#" title="Sub Nav 2">View teacher wise period</a></li>
+              <li><a href="{% url 'eduadmin:teacher_period' %}" title="Sub Nav 2">View teacher wise period</a></li>
             </ul>
           </li>
         </ul>
@@ -316,6 +329,15 @@
               <li><a href="#" title="Sub Nav 2">Student Exam Report</a></li>
             </ul>
           </li>
+        </ul>
+      </li>
+    </ul>
+    <!-- Promotion -->
+    <ul class="promote">
+      <li><a href="#" title="Nav"><span><i class="fa fa-calendar"></i></span>Students Promotion</a>
+        <ul>
+          <li><a href="{% url 'genadmin:calendar' %}" title="Sub Nav"><i class="fa fa-calendar-o"></i> Promote Student</a></li>
+          <!-- <li><a href="{% url 'genadmin:event_list' %}" title="Sub Nav"><i class="fa fa-list"></i> View Event List</a></li> -->
         </ul>
       </li>
     </ul>
@@ -394,10 +416,10 @@
     </ul>
 </nav>    
 	  		
-			<div style="padding:1%">
-				{% block content %}
-				{% endblock %}
-			</div>
+<div style="padding:1%">
+{% block content %}
+{% endblock %}
+</div>
 		</div>
 		<script type="text/javascript">
 			$('.extra').tooltip({animation: true});

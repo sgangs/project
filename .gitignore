@@ -5,5 +5,5 @@ email.py
 secret.py
 new_simple.html
 manufacturing/**
-school/school_user/static/**
-distributor/distribution_user/static/**
+school/school_user/static/**/*
+distributor/distribution_user/static/*

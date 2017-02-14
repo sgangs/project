@@ -34,10 +34,14 @@ class Tenant(models.Model):
 	registered_on=models.DateTimeField(default=datetime.now())
 	#details=models.TextField(blank=True)
 	#email=models.EmailField('e-mail id',blank=True, null=True)
+	#no_of_registered_students_allowed
 	account=models.CharField(max_length=12,choices=account,default='Basic')
 	paid=models.BooleanField('Has the tenant paid?')
 	trail=models.BooleanField('Is the tenant under trail?')
+	trial_from=models.DateField(null=True, blank=True)
+	trial_to=models.DateField(null=True, blank=True)
 	paid_until=models.DateField(null=True, blank=True)
+	is_active=models.BooleanField(default=True)
 
 	def save(self, *args, **kwargs):
 		if not self.id:

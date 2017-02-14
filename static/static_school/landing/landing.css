@@ -1,6 +1,7 @@
 body {
     background-image: url(../img/landing.png);
-    background-repeat: no-repeat;
+    /*background-repeat: no-repeat;*/
+    width: 100%;
     background-attachment: fixed;
 }
 

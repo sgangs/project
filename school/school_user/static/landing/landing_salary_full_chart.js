@@ -16,12 +16,12 @@ var myChart = new Chart(ctx, {
             label: '# of Votes',
             data: [(total-paid), paid],
             backgroundColor: [
-                'rgba(0,255,0,0.2)',
-                'rgba(75, 192, 192, 0.2)',
+                'rgba(162,125,255,0.5)',
+                'rgba(0,179,167,0.5)',
             ],
             borderColor: [
-                'rgba(0,255,0,1)',
-                'rgba(75, 192, 192, 1)',
+                'rgba(162,125,255,1)',
+                'rgba(0,179,167,1)',
             ],
             borderWidth: 1
         }]

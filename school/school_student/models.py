@@ -46,7 +46,7 @@ class Student(models.Model):
 	address_line_2=models.CharField("Address Line 2",max_length=100, blank=True, null=True)
 	state=models.CharField(blank=True, null=True, max_length=30)
 	pincode=models.PositiveIntegerField(blank=True, null=True)
-	batch=models.ForeignKey(Batch,blank=True, null=True,db_index=True,related_name='student_student_genadmin_batch')
+	batch=models.ForeignKey(Batch,db_index=True,related_name='student_student_genadmin_batch')
 	#branch=models.ForeignKey(Branch,db_index=True,related_name='teacher_schoolTeacher_genadmin_branch')
 	isactive=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='student_student_user_tenant')

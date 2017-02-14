@@ -63,27 +63,40 @@ def attendance_new(request):
 			called_for='Attendance'
 			response_data=get_student_data(request, called_for, classes)
 		#saving the class
-		if (calltype == 'save'):
+		elif (calltype == 'save'):
 			classid=request.POST.get('classid')
 			year=request.POST.get('year')
 			date=request.POST.get('date')
 			class_final=classes.get(id__exact=classid)
-			student_list=classstudent.objects.for_tenant(request.user.tenant).filter(class_section=class_final,year=year)
+			#Getting set of student ids for validation
+			list_student=classstudent.objects.for_tenant(request.user.tenant).filter(class_section=class_final,year=year)
+			students_final=list(Student.objects.filter(classstudent_eduadmin_student_student__in=list_student).values('id'))
+			students_set=set()
+			for i in students_final:
+				for k,v in i.items():
+					students_set.add(v)
 			attendance_data = json.loads(request.POST.get('details'))
-			for data in attendance_data:
-				student_id=data['student_id']
-				ispresent=data['is_present']
-				remarks=data['remarks']
-				#Better still if we could check if student is in that said class for data integrity
-				student=Student.objects.get(id=student_id)
-				attendance=Attendance()
-				attendance.class_section=class_final
-				attendance.student=student
-				attendance.date=date
-				attendance.ispresent=ispresent
-				attendance.remarks=remarks
-				attendance.tenant=this_tenant
-				attendance.save()
+			with transaction.atomic():
+				try:
+					for data in attendance_data:
+						student_id=int(data['student_id'])
+						ispresent=data['is_present']
+						remarks=data['remarks']
+						#If is used to validate whether input student is in student set (of the class selected)
+						if (student_id in students_set):
+							student=Student.objects.for_tenant(this_tenant).get(id=student_id)
+							attendance=Attendance()
+							attendance.class_section=class_final
+							attendance.student=student
+							attendance.date=date
+							attendance.ispresent=ispresent
+							attendance.remarks=remarks
+							attendance.tenant=this_tenant
+							attendance.save()
+						else:
+							raise IntegrityError
+				except:
+					transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 

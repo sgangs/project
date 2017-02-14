@@ -20,17 +20,31 @@ var paid=0;
 //This is called after the class is entered
 $( ".class" ).change(function() {
     class_selected=$('.class').find(':selected').data('id');
+    // fee_total=0;
+    $(".nowpay").val(0);
     $( ".year" ).prop('disabled', false);
+    $( ".nowpaydiv" ).removeClass('has-warning');
+    $( ".nowpaydiv" ).removeClass('has-success');
+    $( ".nowpaydiv" ).removeClass('has-error');
     // console.log(class_selected);
 });
 //This is called if month is changed
 $( ".month" ).change(function() {
     month=$('.month').find(':selected').data('id');
-    // console.log(month);
+    // fee_total=0;
+    $(".nowpay").val(0);
+    $( ".nowpaydiv" ).removeClass('has-warning');
+    $( ".nowpaydiv" ).removeClass('has-success');
+    $( ".nowpaydiv" ).removeClass('has-error');
 });
 //This is called if year is changed
 $( ".year" ).change(function() {
     year=parseInt($('.year').val());
+    // fee_total=0;
+    $(".nowpay").val(0);
+    $( ".nowpaydiv" ).removeClass('has-warning');
+    $( ".nowpaydiv" ).removeClass('has-success');
+    $( ".nowpaydiv" ).removeClass('has-error');
     selectlist=$('#student')
     selectlist.find("option:gt(0)").remove();
     $('#student').selectpicker('refresh');
@@ -77,14 +91,20 @@ $( ".year" ).change(function() {
 
 $( "#student" ).change(function() {
     studentid=$("#student").find(':selected').data('id');
+    // fee_total=0;
+    $(".nowpay").val(0);
+    $( ".nowpaydiv" ).removeClass('has-warning');
+    $( ".nowpaydiv" ).removeClass('has-success');
+    $( ".nowpaydiv" ).removeClass('has-error');
 });
 
 //This is for the reset button to work
-$( ".reset" ).click(function() {
-    location.reload(true);
-});
+
 
 $( ".details" ).click(function() {
+    $( ".nowpaydiv" ).removeClass('has-warning');
+    $( ".nowpaydiv" ).removeClass('has-success');
+    $( ".nowpaydiv" ).removeClass('has-error');
     if (studentid != "" && month !=""){
         //Send ajax function to back-end 
             (function() {
@@ -92,6 +112,7 @@ $( ".details" ).click(function() {
                     url : "", 
                     type: "POST",
                     data:{ studentid: studentid,
+                        class_selected: class_selected,
                         year: year,
                         month:month,
                         calltype: 'details',
@@ -144,10 +165,11 @@ $( ".details" ).click(function() {
                         fee_total=fee_total-fee_paid;
                         if (fee_total >0){
                             $( ".submit" ).prop('disabled', false);
+                            $( ".download" ).prop('disabled', false);
                         }
                         $('.feetable').append("<tr class='data total'>"+
                             "<td hidden='true'></td>"+
-                            "<th>" + "Total Fee Paid" + "</th>"+
+                            "<th>" + "Total Fee Payable" + "</th>"+
                             "<th>" + parseFloat(fee_total).toFixed(2) + "</th></tr>");
                         },
                     // handle a non-successful response
@@ -167,13 +189,13 @@ $( ".details" ).click(function() {
 
 $(".nowpay").change(function() {
     paid=$(".nowpay").val();
-    console.log(paid);
-    if (paid<0){
-        swal("Nopsie..", "Negative payment is not possible!", "error");
+    if (paid<0 || paid == 0){
+        swal("Nopsie..", "Negative or Zero payment is not possible!", "error");
         $( ".nowpaydiv" ).removeClass('has-warning');
         $( ".nowpaydiv" ).removeClass('has-success');
         $( ".nowpaydiv" ).addClass('has-error');
         $('.submit').attr('disabled',true)
+        $('.download').attr('disabled',true)
     }
     else{
         if (paid>fee_total){
@@ -184,6 +206,7 @@ $(".nowpay").change(function() {
             $( ".nowpaydiv" ).removeClass('has-success');
             swal("Bluhh..", "Payment more than monthly fee is not accepted!", "error");
             $('.submit').attr('disabled',true)
+            $('.download').attr('disabled',true)
         }
         else if (paid<fee_total){
             // paid=fee_total;
@@ -193,6 +216,7 @@ $(".nowpay").change(function() {
             $( ".nowpaydiv" ).removeClass('has-success');
             swal("Ehhh..", "Payment less than monthly fee is not accepted!", "error");
             $('.submit').attr('disabled',true)
+            $('.download').attr('disabled',true)
         }
         // else if (paid<fee_total && paid>=20){
         //     $( ".nowpaydiv" ).removeClass('has-error');
@@ -212,7 +236,8 @@ $(".nowpay").change(function() {
             $( ".nowpaydiv" ).removeClass('has-error');
             $( ".nowpaydiv" ).removeClass('has-warning');
             $( ".nowpaydiv" ).addClass('has-success');
-            $('.submit').attr('disabled',false)
+            $('.submit').attr('disabled',false);
+            $('.download').attr('disabled',false);
         }
     }
 });
@@ -231,14 +256,15 @@ $('.submit').click(function(e) {
         closeOnCancel: true,
         html: false
     }, function(isConfirm){
-        // swal("Deleted!",
-        // "Your imaginary file has been deleted.",
-        // "success");
         if (isConfirm){
             setTimeout(function(){reconfirm()},600)
             
         }
     })
+});
+
+$('.download').click(function(e) {
+    save_data("print");
 });
 
 function reconfirm() {
@@ -253,26 +279,27 @@ function reconfirm() {
         closeOnCancel: true,
         html: false
     }, function(isConfirm){
-        // swal("Deleted!",
-        // "Your imaginary file has been deleted.",
-        // "success");
         if (isConfirm){
-            setTimeout(function(){save_data()},600)
-            
+            setTimeout(function(){save_data("saving")},600)            
+        }
+        else{
+            console.log("Not confirmed")
         }
     })
 }
 
 
-function save_data(){
+function save_data(called_for){
     if (studentid != "" && paid !=0 && month !="" && year != "" && paid<=fee_total){
-            console.log("Successful entry");
+        if (called_for == "saving")
+            {
             // Send ajax function to back-end 
             (function() {
                 $.ajax({
                     url : "", 
                     type: "POST",
                     data:{ studentid: studentid,
+                        class_selected: class_selected,
                         month:month,
                         year:year,
                         amount:paid,
@@ -282,28 +309,51 @@ function save_data(){
                                 // handle a successful response
                     success : function(jsondata) {
                         swal("Hooray..", "Fees payment registered successfully!!", "success");
-                        // location.href = redirect_url;
-                        //console.log(jsondata);
+                        setTimeout(location.reload(true),600)
+                        // console.log(jsondata);
                         },
                     // handle a non-successful response
                     error : function() {
                         swal("Oops..", "There were some errors!!", "error");
-                        // bootbox.alert({
-                        //     size: "medium",
-                        //     message: "Fee Structure entry failed", 
-                        //     onEscape: true });
-                        // clearmodal();
                     }
                 });
             }());
+        }
+        else if (called_for == "print"){
+            (function() {
+                $.ajax({
+                    url : "", 
+                    type: "POST",
+                    data:{ studentid: studentid,
+                        class_selected: class_selected,
+                        month:month,
+                        year:year,
+                        amount:paid,
+                        calltype: 'pdf',
+                        csrfmiddlewaretoken: csrf_token},
+                    dataType: 'html',               
+                                // handle a successful response
+                    success : function(jsondata) {
+                        swal("Hooray..", "Fees payment registered successfully!!", "success");
+                        var blob=new Blob([jsondata]);
+                        var link=document.createElement('a');
+                        link.href=window.URL.createObjectURL(blob);
+                        link.download="Fees_Payment"+".pdf";
+                        link.click();
+
+                        setTimeout(location.reload(true),600)
+                        },
+                    // handle a non-successful response
+                    error : function() {
+                        swal("Oops..", "There were some errors!!", "error");
+                    }
+                });
+            }());
+
+        }
     }
     else{
         swal("Ehhh..", "Check these again: Year, Month, Student and Amount Paid ", "error");
-            // bootbox.alert({
-            //     size: "small",
-            //     message: "Please select class, month and enter yeat details.",
-            //     onEscape: true });
-            // clearmodal();
     }
             
 }

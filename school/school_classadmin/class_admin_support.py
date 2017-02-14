@@ -26,6 +26,7 @@ def get_subject_data(request, called_for, classes):
 
 def get_student_data(request, called_for, classes ):
     classid=request.POST.get('classid')
+    this_tenant=request.user.tenant
     if (called_for=='Attendance'):
     	year=request.POST.get('year')
     else:
@@ -33,7 +34,7 @@ def get_student_data(request, called_for, classes ):
         exam=Exam.objects.for_tenant(request.user.tenant).get(id__exact=examid)
         year=exam.year
         subjectid=int(request.POST.get('subjectid'))
-        subject=Subject.objects.get(id=subjectid)
+        subject=Subject.objects.for_tenant(this_tenant).get(id=subjectid)
     class_selected=classes.get(id__exact=classid)
     response_data=[]
     # try:
@@ -41,14 +42,15 @@ def get_student_data(request, called_for, classes ):
         students_list=classstudent.objects.for_tenant(request.user.tenant).\
     	   filter(class_section=class_selected,year=year).select_related("student")
     else:
-        # try:
-        excluded_student_raw=exam_report.objects.filter(class_section=class_selected,exam=exam,subject=subject).all()
-        excluded_student=Student.objects.filter(examReport_classadmin_student_student__in=excluded_student_raw).all()
-        students_list=classstudent.objects.for_tenant(request.user.tenant).\
+        try:
+            excluded_student_raw=exam_report.objects.filter(tenant=request.user.tenant, class_section=class_selected,\
+                exam=exam,subject=subject).all()
+            excluded_student=Student.objects.filter(examReport_classadmin_student_student__in=excluded_student_raw).all()
+            students_list=classstudent.objects.for_tenant(request.user.tenant).\
                 filter(class_section=class_selected,year=year).all().exclude(student__in=excluded_student).select_related("student")
-        # except:
-        #     students_list=classstudent.objects.for_tenant(request.user.tenant).\
-        #         filter(class_section=class_selected,year=year).select_related("student")
+        except:
+            students_list=classstudent.objects.for_tenant(request.user.tenant).\
+                filter(class_section=class_selected,year=year).select_related("student")
 
     for student in students_list:
     	response_data.append({'data_type':'Student','id':student.student.id,'key':student.student.key,\
@@ -105,11 +107,11 @@ def get_attendance_data(request):
 def get_exam_report(request, called_for, classes ):
     # classid=int(request.POST.get('classid'))
     examid=int(request.POST.get('examid'))
-    # subjectid=int(request.POST.get('subjectid'))
-    exam=Exam.objects.for_tenant(request.user.tenant).get(id__exact=examid)
+    this_tenant=request.user.tenant
+    exam=Exam.objects.for_tenant(this_tenant).get(id__exact=examid)
     # class_selected=classes.get(id__exact=classid)
     # subject=Subject.objects.get(id=subjectid)
-    exam_report_details=exam_report.objects.filter(exam=exam).\
+    exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(exam=exam).\
                         select_related('student','subject','class_section').all()
     # try:
     response_data=[]
@@ -128,7 +130,7 @@ def get_studentattendance_data(request, called_for, classes):
     studentid=int(request.POST.get('studentid'))
     date=request.POST.get('date')
     class_selected=classes.get(id__exact=classid)
-    student=Student.objects.get(id=studentid)
+    student=Student.objects.for_tenant(request.user.tenant).get(id=studentid)
     response_data=[]
     # try:
     attendance=Attendance.objects.filter(class_section=class_selected, student=student).get(date=date)

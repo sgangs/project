@@ -1,18 +1,25 @@
 $(function(){
 
-//This variable will store the student list added via json
 
-
-var batch="";
-var classselected="";
-var year="";
-
-$( ".batch" ).change(function() {
-    batch=$(".batch").find(':selected').data('id');  
+$(".old").hover(function(){
+    $('.hint1').attr('hidden',false);
+},function(){
+    $('.hint1').attr('hidden', true);
 });
 
-$( ".class" ).change(function() {
-    classselected=$('.class').find(':selected').data('id');
+$(".new").hover(function(){
+    $('.hint2').attr('hidden',false);
+},function(){
+    $('.hint2').attr('hidden', true);
+});
+
+
+
+var from_classid="";
+var from_year="";
+
+$( ".class1" ).change(function() {
+    from_classid=$('.class1').find(':selected').data('id');
 });
 
 //This is for the reset button to work
@@ -20,27 +27,38 @@ $( ".class" ).change(function() {
 //     location.reload(true);
 // });
 
-$( ".year" ).change(function() {
-    year=$(".year").val();    
+
+$( ".year1" ).change(function() {
+    from_year=$(".year1").val();
 });
 
 $('.fetch').click(function(e) {
-    if (batch != '' && classselected != '' && year != '' && batch != undefined && classselected != undefined && year != undefined){
-        console.log(batch);
+    if (from_classid != '' && from_year != '' && from_classid != undefined && from_year != undefined){
         (function(){
             $.ajax({
                 url : "", 
                 type: "POST",
-                data:{batchid:batch,
-                    classselected:classselected,
-                    year:year,
-                    calltype: 'student',
+                data:{from_classid:from_classid,
+                    from_year:from_year,
+                    calltype: 'students',
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',
                 // handle a successful response
                 success : function(jsondata) {
                 // location.href = redirect_url;
                 console.log(jsondata);
+                $.each(jsondata, function(){
+                    $('.new').prop('hidden',false);
+                    $('.table-responsive').prop('hidden',false);
+                    $('#student_table').append("<tr class='data'>"+
+                    "<td hidden>"+this.id+"</td>"+
+                    "<td>"+this.key+"</td>"+
+                    "<td>"+this.local_id+"</td>"+
+                    "<td>"+this.first_name+" "+this.first_name+"</td>"+
+                    "<td><input type='checkbox' class='promote'/></td>"+
+
+                    "</tr>");
+                })
                 },
                 // handle a non-successful response
                 error : function() {
