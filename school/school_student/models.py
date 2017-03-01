@@ -26,10 +26,11 @@ blood_list=(('A+','A Positive'),
 				('B-','B Negative'),
 				('O-','O Negative'),
 				('AB-','AB Negative'),
-				('O','Other'),)
+				('Ot','Other'),)
 
 #This is the branch details
 class Student(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
 	dob=models.DateField("Date of Birth", blank=True, null=True)
@@ -81,6 +82,7 @@ class Student(models.Model):
 		return '%s  %s : %s %s' % (self.key, self.local_id, self.first_name, self.last_name)
 
 class student_guardian(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	student=models.ForeignKey(Student,db_index=True,related_name='studentGuardian_student')
 	relation=models.CharField(max_length=100)
 	first_name=models.CharField(max_length=100)
@@ -95,6 +97,7 @@ class student_guardian(models.Model):
 		unique_together = (("student","relation", "tenant"))
 
 class student_education(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	student=models.ForeignKey(Student,db_index=True,related_name='studentEducation_student')
 	degree_name=models.TextField()
 	institute=models.TextField()

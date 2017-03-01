@@ -15,7 +15,9 @@
 {% block content%}
 
 	{% block heading %}
-	<h3>Trail Balance from {{start|date:"d-M-Y"}} till {{date|date:"d-M-Y"}}</h3>
+  
+  <h3>Trail Balance from {{start|date:"d-M-Y"}} till {{date|date:"d-M-Y"}}</h3>
+  <a href="{% url 'accounts:download_trail_balance_excel' %}"><button type="button" class='addmore btn btn-primary btn-xs'><i class="fa fa-file-excel-o"></i>  Download Excel</button></a>
 	{% endblock %}	
 	
 	{% block details %}
@@ -61,8 +63,8 @@
         $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
         "<td >"+accounts[i].account_type+"</td>"+
         "<td>"+accounts[i].account+"</td>"+
-        "<td>"+parseFloat(accounts[i].debit)+"</td>"+
-        "<td>"+parseFloat(accounts[i].credit)+"</td>"+
+        "<td>"+accounts[i].debit+"</td>"+
+        "<td>"+accounts[i].credit+"</td>"+
         "</tr>");                    
       }
       else{

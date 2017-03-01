@@ -6,10 +6,14 @@ from django.db.models import F, Prefetch, Sum
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import IntegrityError, transaction
-from .models import accounting_period, Account, ledger_group, Journal, journal_group, journal_entry, payment_mode, account_year
+from .models import *
 from .forms import PeriodForm, LedgerGroupForm, AccountForm, JournalGroupForm, PaymentForm, AccountYearForm
 from school_user.models import Tenant
 from .account_support import *
+from .excel_download import *
+
+
+
 
 @login_required
 #This is the base page.
@@ -114,7 +118,7 @@ def account_export(request):
 	response['Content-Disposition'] = 'attachment; filename=Accounts List-'+name+'.xlsx'
 	data_type="Account List"
 	accounts = Account.objects.for_tenant(request.user.tenant).all()
-	xlsx_data = WriteToExcel(accounts, data_type)
+	xlsx_data = account_excel(accounts, data_type)
 	response.write(xlsx_data)
 	return response
 
@@ -199,9 +203,11 @@ def journalentry(request):
 	#return render(request, 'bill/purchaseinvoice.html', {'date':date,'type': type})
 	return render(request, 'accounts/journal_entry.html', {'date':date,'type': type, 'groups':grouplist})
 
+@login_required
 #This view is to help create new account
 def new_account(request):
 	#date=datetime.now()
+	account_type_dict=dict((y, x) for x, y in account_type_general)
 	this_tenant=request.user.tenant
 	periods=accounting_period.objects.for_tenant(this_tenant).all()
 	groups=ledger_group.objects.for_tenant(this_tenant).all()
@@ -235,6 +241,10 @@ def new_account(request):
 					remarks=request.POST.get('remarks')
 					key=request.POST.get('key')
 					acct_type=request.POST.get('acct_type')
+					# print(account_type_dict)
+					sub_acct_type=request.POST.get('sub_acct_type')
+					if (acct_type not in account_type_dict):
+						raise IntegrityError
 					periodid=request.POST.get('periodid')
 					balance_type=request.POST.get('balance_type')
 					balance=float(request.POST.get('balance'))
@@ -242,6 +252,7 @@ def new_account(request):
 					period=accounting_period.objects.for_tenant(this_tenant).get(id=periodid)
 					account=Account()
 					account.ledger_group=ledger
+					account.sub_account_type=sub_acct_type
 					account.name=name
 					account.remarks=remarks
 					account.key=key
@@ -266,6 +277,7 @@ def new_account(request):
 	return render(request, 'accounts/new_account.html', {'periods':periods, 'groups':groups, 'accounts':accounts})
 
 
+@login_required
 #This view is for trail balance
 def trail_balance(request):
 	date=datetime.now()
@@ -279,6 +291,24 @@ def trail_balance(request):
 	jsondata = json.dumps(response_data)
 	return render(request, 'accounts/trail_balance.html', {'accounts':jsondata, "start":start, "date":date})
 
+@login_required
+#Export Account List
+def trail_balance_export(request):
+	# if 'excel' in request.POST:
+	response = HttpResponse(content_type='application/vnd.ms-excel')
+	name=request.user.tenant.name
+	response['Content-Disposition'] = 'attachment; filename=Trail Balance-'+name+'.xlsx'
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	data_type="Trail Balance Summary"
+	data=get_trail_balance(request, start, end)
+	xlsx_data = trail_balance_excel(data, data_type)
+	response.write(xlsx_data)
+	return response
+
+
+@login_required
 #This view is for profit and loss
 def profit_loss(request):
 	date=datetime.now()
@@ -292,6 +322,25 @@ def profit_loss(request):
 	jsondata = json.dumps(response_data)
 	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":"p-l"})
 
+@login_required
+#Export Account List
+def profit_loss_export(request):
+	# if 'excel' in request.POST:
+	response = HttpResponse(content_type='application/vnd.ms-excel')
+	name=request.user.tenant.name
+	response['Content-Disposition'] = 'attachment; filename=Income Expenditure-'+name+'.xlsx'
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	data_type="Income Expenditure Summary"
+	data=get_profit_loss(request, start, end)
+	xlsx_data = profit_loss_excel(data, data_type)
+	response.write(xlsx_data)
+	return response
+
+
+@login_required
+#Show Balance Sheet
 def balance_sheet(request):
 	date=datetime.now()
 	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)

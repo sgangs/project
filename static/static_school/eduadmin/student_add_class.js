@@ -16,12 +16,29 @@ $( ".class" ).change(function() {
 });
 
 //This is for the reset button to work
-// $( ".reset" ).click(function() {
-//     location.reload(true);
-// });
+$( ".reset" ).click(function() {
+    // location.reload(true);
+    $('.student_add').attr('hidden',true);
+    $('.fetch_data').attr('disabled',false);
+    $(".student_add .data").remove();
+});
 
 $( ".year" ).change(function() {
     year=$(".year").val();    
+});
+
+$('.helpdiv').click(function(e){
+    swal({
+        type: "info",
+        title: "How To",
+        text: "<p>Select the batch from which the students nedd to be added. Select the class to add the students."+
+        " Then enter the acaemic year.</p><p> Finally from the list of students that appears below,"
+        +" select students to add to selected class. All selected student must have the roll number for the new class.</p>",
+        html: true,
+        timer: 15000,
+        allowOutsideClick: true,
+        showConfirmButton: true
+    });
 });
 
 $('.fetch').click(function(e) {
@@ -40,7 +57,20 @@ $('.fetch').click(function(e) {
                 // handle a successful response
                 success : function(jsondata) {
                 // location.href = redirect_url;
-                console.log(jsondata);
+                    console.log(jsondata);
+                    $('.student_add').attr('hidden',false);
+                    $('.fetch_data').attr('disabled',true);
+                    $.each(jsondata, function(){
+                        if (this.data_type=="Student"){
+                            $('.student').append("<tr class='data' >"+
+                                "<td hidden='true'>"+this.id+"</td>"+
+                                "<td style='height:20px;'>" + this.key + "</td>"+
+                                "<td style='height:20px;'>" + this.local_id + "</td>"+
+                                "<td style='height:20px;'>" + this.name + "</td>"+
+                                "<td style='height:20px;'><input type='checkbox' checked></td>"+
+                                "<td style='height:20px;'><input class='form-control' type='number'></td></tr>");
+                        }
+                    });
                 },
                 // handle a non-successful response
                 error : function() {

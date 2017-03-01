@@ -18,8 +18,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from school.user_util import user_passes_test_custom
 from school_user.models import Tenant
 from school_account.models import accounting_period
-from .forms import SubjectForm, classGroupForm, HouseForm, academicYearForm, BatchForm
-from .models import Subject, class_group, House, annual_calender, annual_holiday_rules, academic_year
+from .forms import *
+from .models import *
 from .genadmin_util import *
 from .genadmin_view_control import *
 

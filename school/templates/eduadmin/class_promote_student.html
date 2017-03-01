@@ -41,12 +41,12 @@
 <div class="row new" hidden='true'>
 	<div class="form-group col-xs-4 col-md-4 class2div">
 		<label class="control-label">Select New Class To Add</label>
-		<select class='form-control selectpicker class2' data-live-search="true">
+		<select class='form-control selectpicker class1' data-live-search="true">
 			<option disabled selected hidden style='display: none' value>Select New Class To Add</option>
-			{% for i in classsection %}
-      		<option data-id="{{i.id}}">{{i.name}}</option>			
+			{% for i in class_section %}
+      		<option data-id="{{i.id}}">{{i.name}}</option>
       		{% endfor %}
-    	</select>
+    	</select>		
 	</div>
 
 	<div class="form-group col-xs-4 col-md-4 year2div">

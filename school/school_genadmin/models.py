@@ -12,39 +12,12 @@ class TenantManager(models.Manager):
 	def for_tenant(self, tenant):
 		return self.get_queryset().filter(tenant=tenant)
 
-#This is the branch details
-# class Branch(models.Model):
-# 	name = models.CharField("Name of the branch", max_length=12)
-# 	key=models.CharField(db_index=True, max_length=10)
-# 	slug=models.SlugField(max_length=35)
-# 	address_line_1=models.TextField("Address Line 1",blank=True)
-# 	address_line_2=models.TextField("Address Line 2",blank=True)
-# 	state=models.CharField(blank=True, max_length=30)
-# 	pincode=models.PositiveIntegerField(blank=True)
-# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='branch_genadmin_user_tenant')
-# 	objects=TenantManager()
-	
-# 	# def get_absolute_url(self):
-# 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-# 	def save(self, *args, **kwargs):
-# 		if not self.id:
-# 			item="br"+" "+self.tenant.key+" "+self.key
-# 			self.slug=slugify(item)
-# 		super(Product, self).save(*args, **kwargs)
-
-# 	class Meta:
-# 		verbose_name_plural = "branches"
-# 		unique_together = (("key", "tenant"))
-# 		# ordering = ('name',)
-		
-# 	def __str__(self):
-# 		return self.name
-
 
 #This is the list of subjects to be taught in school.
 class Subject(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name=models.CharField("Subject Name", blank=True, max_length=20)
+	is_additional=models.BooleanField(default=False)
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='subject_genadmin_user_tenant')
 	objects=TenantManager()
@@ -65,7 +38,32 @@ class Subject(models.Model):
 	def __str__(self):
 		return self.name
 
+grade_choices=(('S','Scholastic'),
+		('C','Co-scholastic'))
+
+#This is the list of subjects to be taught in school.
+class grade_table(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	name=models.CharField("Subject Name", blank=True, max_length=20)
+	grade_type=models.CharField("Type of grade?",max_length=1,choices=grade_choices)
+	marks=models.PositiveSmallIntegerField()
+	grade=models.CharField(max_length=4)
+	grade_point=models.DecimalField(max_digits=4, decimal_places=2)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='gradeTable_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+	
+	class Meta:
+		unique_together = (("grade_type", "tenant"))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return self.name
+
 class academic_year(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	year=models.PositiveSmallIntegerField("Academic Year: If year is 2016-17, enter 2016")
 	start=models.DateField()
 	end=models.DateField()
@@ -91,10 +89,30 @@ class academic_year(models.Model):
 		return self.year
 
 
+standard_choices=((-6,'Lower Nusrsery'),
+		(-5,'Nursery'),
+		(-4,'Upper Nursery'),
+		(-3,'Lower KG'),
+		(-2,'Kindergarten'),
+		(-1,'Upper KG'),
+		(1,'One'),
+		(2,'Two'),
+		(3,'Three'),
+		(4,'Foure'),
+		(5,'Five'),
+		(6,'Six'),
+		(7,'Seven'),
+		(8,'Eight'),
+		(9,'Nine'),
+		(10,'Ten'),
+		(11,'Eleven'),
+		(12,'Twelve'))
+
 #This is the class group model. Class has FK to class group and syllabus is assigned to class group
 class class_group(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name = models.CharField(db_index=True,max_length=15)
-	#branch=models.ForeignKey(Branch,db_index=True,related_name='classGroup_branch')
+	standard=models.IntegerField(db_index=True, choices=standard_choices)
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classGroup_genadmin_user_tenant')
 	objects=TenantManager()
@@ -117,8 +135,10 @@ class class_group(models.Model):
 
 
 class Batch(models.Model):
-	name=models.CharField(db_index=True,max_length=20)
-	# class_group=models.ForeignKey(class_group,db_index=True,related_name='batch_classGroup')
+	id=models.BigAutoField(primary_key=True)
+	start_year=models.PositiveSmallIntegerField("Batch Starts On")
+	end_year=models.PositiveSmallIntegerField("Batch Ends On")
+	name=models.CharField(db_index=True,max_length=9)
 	slug=models.SlugField(max_length=45)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='batch_genadmin_user_tenant')
 	objects=TenantManager()
@@ -130,6 +150,7 @@ class Batch(models.Model):
 		if not self.id:
 			item="ba"+" "+self.tenant.key+" "+self.name
 			self.slug=slugify(item)
+		self.name=str(self.start_year)+"-"+str(self.end_year)
 		super(Batch, self).save(*args, **kwargs)
 
 	class Meta:
@@ -142,6 +163,7 @@ class Batch(models.Model):
 
 #This is the house model.
 class House(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name = models.CharField(db_index=True,max_length=20)
 	house_motto = models.TextField(blank=True)
 	#branch=models.ForeignKey(Branch,db_index=True,related_name='house_branch')
@@ -167,23 +189,9 @@ class House(models.Model):
 
 
 
-# #This is the model for event type. 
-# class event_type(models.Model):
-# 	name=models.CharField(max_length=20)
-# 	#key=models.CharField(db_index=True,max_length=10)
-# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='eventType_genadmin_user_tenant')
-# 	objects=TenantManager()
-	
-# 	class Meta:
-# 		unique_together = (("name", "tenant"))
-# 		# ordering = ('name',)
-		
-# 	def __str__(self):
-# 		return self.name
-
 event_type=((1,'Holiday'),
 			(2,'Exam'),
-			(3,'Excption'),
+			(3,'Exception'),
 			(4,'Others'))
 
 attendance_type=((1,'Working Day'),
@@ -192,6 +200,7 @@ attendance_type=((1,'Working Day'),
 
 #This is the list of annual events model.
 class annual_calender(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	date=models.DateTimeField(db_index=True)
 	event=models.CharField(max_length=20)
 	event_type=models.PositiveSmallIntegerField('Event type', choices=event_type, default='1')
@@ -209,6 +218,7 @@ class annual_calender(models.Model):
 
 #Annual Calendar Holiday Rules
 class annual_holiday_rules(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	title=models.CharField(max_length=25)
 	week=models.PositiveSmallIntegerField()
 	day=models.PositiveSmallIntegerField(db_index=True, default=5)
@@ -231,4 +241,26 @@ class annual_holiday_rules(models.Model):
 		
 	def __str__(self):
 		return '%s' % (self.ttile)
-	
+
+#Notice Board. Should the message be deleted?
+class notice_board(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	title=models.TextField()
+	details=models.TextField()
+	show_from=models.DateField()
+	show_until=models.DateField()
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='noticeBoard_eduadmin_user_tenant')
+	objects=TenantManager()
+
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item="pe"+""+self.tenant.key+" "+str(self.day)+" "+str(self.period)+" "+str(self.year)
+	# 		self.slug=slugify(item)
+	# 	super(period, self).save(*args, **kwargs)
+
+	class Meta:
+		# unique_together = (("day","period","year", "tenant"))
+		ordering = ('show_from','show_until')
+		
+	def __str__(self):
+		return '%s ' % (self.title)

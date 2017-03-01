@@ -7,7 +7,6 @@ from django.utils.translation import ugettext
 
 from .models import Account, accounting_period, journal_entry
 
-
 #This function is used to provide trail balance details
 def get_trail_balance(request, start, end):
     account_list=Account.objects.for_tenant(request.user.tenant)
@@ -15,6 +14,8 @@ def get_trail_balance(request, start, end):
     debit=0
     credit=0
     for item in account_list:
+        item_debit=0
+        item_credit=0
         journals=journal_entry.objects.for_tenant(request.user.tenant).\
             filter(journal__date__range=(start,end), account=item)
         journal_debit=journals.filter(transaction_type="Debit").aggregate(Sum('value'))
@@ -23,10 +24,16 @@ def get_trail_balance(request, start, end):
             journal_debit['value__sum'] = 0
         if (journal_credit['value__sum'] == None):
             journal_credit['value__sum'] = 0
-        debit+=journal_debit['value__sum']
-        credit+=journal_credit['value__sum']
+        if (item.account_type in ('Current Assets','Long Term Assets','Depreciation', 'Direct Expense','Salary','Indirect Expense')):
+            debit+=journal_debit['value__sum']-journal_credit['value__sum']
+            item_debit=journal_debit['value__sum']-journal_credit['value__sum']
+            item_credit=""
+        elif (item.account_type in ('Current Liabilities','Long Term Liabilities', 'Revenue','Fees','Indirect Revenue')):
+            credit+=journal_credit['value__sum']-journal_debit['value__sum']
+            item_credit=journal_credit['value__sum']-journal_debit['value__sum']
+            item_debit=""
         response_data.append({'data_type':'journal','account':item.name,'account_type':item.account_type,\
-                                'debit':str(journal_debit['value__sum']),'credit':str(journal_credit['value__sum'])})
+                                'debit':str(item_debit),'credit':str(item_credit)})
     response_data.append({'data_type':'value','debit':str(debit),'credit':str(credit)})
     return response_data
 
@@ -138,80 +145,3 @@ def get_balance_sheet(request, start, end):
     return response_data
             
 
-def title_format(workbook):
-    title = workbook.add_format({
-        'bold': True,
-        'font_size': 14,
-        'align': 'center',
-        'valign': 'vcenter'
-    })    
-    return title
-
-def header_format(workbook):
-    header = workbook.add_format({
-        'bg_color': '#F7F7F7',
-        'color': 'black',
-        'align': 'center',
-        'valign': 'top',
-        'border': 1
-    })    
-    return header
-
-def cell_format(workbook):
-    cell = workbook.add_format({
-        'align': 'left',
-        'valign': 'top',
-        'text_wrap': True,
-        'border': 1
-    })    
-    return cell
-
-def cell_center_format(workbook):
-    cell_center = workbook.add_format({
-        'align': 'center',
-        'valign': 'top',
-        'border': 1
-    })    
-    return cell_center
-
-def WriteToExcel(items, data_type):
-    output = BytesIO()
-    workbook = xlsxwriter.Workbook(output)
-    worksheet_s = workbook.add_worksheet("Summary")
-    title=title_format(workbook)
-    header=header_format(workbook)
-    cell=cell_format(workbook)
-    cell_center=cell_center_format(workbook)
-       
-    title_text = u"{0}".format(ugettext(data_type))
-    # merge cells
-    worksheet_s.merge_range('A2:H2', title_text, title)
-
-    # write header
-    worksheet_s.write(4, 0, ugettext("No"), header)
-    worksheet_s.write(4, 1, ugettext("Ledger Group Name"), header)
-    worksheet_s.write(4, 2, ugettext("Account Name"), header)
-    worksheet_s.write(4, 3, ugettext("Account Type"), header)
-    worksheet_s.write(4, 4, ugettext("Account Key"), header)
-    worksheet_s.write(4, 5, ugettext("Remarks"), header)
-    worksheet_s.write(4, 6, ugettext("Current Debit"), header)
-    worksheet_s.write(4, 7, ugettext("Current Credit"), header)
-    
-    # column widths definition
-    base_col_width = 16
-    
-    #add data to table
-    for idx, data in enumerate(items):
-        row = 5 + idx
-        worksheet_s.write_number(row, 0, idx + 1, cell_center)
-        worksheet_s.write(row, 1, data.ledger_group.name, cell_center)
-        worksheet_s.write(row, 2, data.name, cell_center)
-        worksheet_s.write(row, 3, data.account_type, cell_center)
-        worksheet_s.write(row, 4, data.key, cell_center)
-        worksheet_s.write(row, 5, data.remarks, cell_center)
-        worksheet_s.write(row, 6, data.current_debit, cell_center)
-        worksheet_s.write(row, 7, data.current_credit, cell_center)        
-    
-    workbook.close()
-    xlsx_data = output.getvalue()
-    return xlsx_data

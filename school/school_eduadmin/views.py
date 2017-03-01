@@ -16,8 +16,8 @@ from school_teacher.models import Teacher
 from school_student.models import Student
 from school_genadmin.models import class_group, Subject, Batch
 from school_fees.models import student_fee, group_default_fee
-from .forms import SyllabusForm, ExamForm, ClassTeacherForm, ExaminerForm, ClassStudentForm, SubjectTeacherForm, TotalPeriodForm
-from .models import class_section, classteacher, classstudent, Syllabus, Exam, Examiner, subject_teacher, total_period
+from .forms import *
+from .models import *
 from .eduadmin_util import *
 
 
@@ -33,7 +33,7 @@ def class_new(request):
 	#date=datetime.now()
 	this_tenant=request.user.tenant
 	group=class_group.objects.for_tenant(this_tenant)
-	class_teacher=Teacher.objects.for_tenant(this_tenant)
+	class_teacher=Teacher.objects.for_tenant(this_tenant).filter(staff_type="Teacher").all()
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
@@ -64,7 +64,8 @@ def class_new(request):
 					if (teacher_added == "true"):
 						teacher=classteacher()
 						teacher.class_section=section
-						teacher.class_teacher=Teacher.objects.for_tenant(request.user.tenant).get(key__exact=teacher_key)
+						teacher.class_teacher=Teacher.objects.for_tenant(request.user.tenant).\
+							get(staff_type="Teacher",key__exact=teacher_key)
 						teacher.year=year
 						teacher.tenant=this_tenant
 						teacher.save()
@@ -93,12 +94,12 @@ def eduadmin_new(request, input_type):
 	elif (input_type=="Subject Teacher"):
 		importform=SubjectTeacherForm
 		name='eduadmin:subject_teacher_list'
-	elif (input_type=="Examiner"):
-		importform=ExaminerForm
-		name='eduadmin:examiner_list'
 	elif (input_type=="Total Period"):
 		importform=TotalPeriodForm
 		name='eduadmin:class_list'
+	elif (input_type=="Term"):
+		importform=TermForm
+		name='eduadmin:base'
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
 	#importformset=formset_factory(wraps(importform)(partial(importform, tenant=current_tenant)), extra=3)
@@ -113,27 +114,27 @@ def eduadmin_new(request, input_type):
 			item.tenant=current_tenant
 			if (input_type=="ClassStudent"):
 				with transaction.atomic():
-					# try:
-					item.save()
-						# try:
-					fee=student_fee()
-					fee.student=item.student
-					class_section=item.class_section
-					classgroup=class_section.classgroup
-					year=item.year
-					fee_group=group_default_fee.objects.get(classgroup=classgroup,year=year)
-					yearly_fee=fee_group.yearly_fee.all()
-					monthly_fee=fee_group.monthly_fee
-					fee.monthly_fee=monthly_fee
-					fee.year=year
-					fee.tenant=current_tenant
-					fee.save()
-					for data in yearly_fee:
-						fee.yearly_fee.add(data)
-					# 	except:
-					# 		pass
-					# except:
-					# 	transaction.rollback()
+					try:
+						item.save()
+						try:
+							fee=student_fee()
+							fee.student=item.student
+							class_section=item.class_section
+							classgroup=class_section.classgroup
+							year=item.year
+							fee_group=group_default_fee.objects.get(classgroup=classgroup,year=year)
+							yearly_fee=fee_group.yearly_fee.all()
+							monthly_fee=fee_group.monthly_fee
+							fee.monthly_fee=monthly_fee
+							fee.year=year
+							fee.tenant=current_tenant
+							fee.save()
+							for data in yearly_fee:
+								fee.yearly_fee.add(data)
+						except:
+							pass
+					except:
+						transaction.rollback()
 			else:
 				item.save()
 			return redirect(name)
@@ -142,30 +143,9 @@ def eduadmin_new(request, input_type):
 	#return render(request, 'master/new.html',{'formset': formset, 'helper': helper, 'item': type})
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
 
-# @login_required
-# #This view is used for entering exam invigilators. Nothing is done yet.
-# def examiner_new(request):
-# 	name='genadmin:unit_list'
-# 	current_tenant=request.user.tenant
-# 	form=ExaminerForm(tenant=current_tenant)
-# 	if (request.method == "POST"):
-# 		current_tenant=request.user.tenant
-# 		form = ExaminerForm(request.POST, tenant=current_tenant)
-# 		if form.is_valid():
-# 			item=form.save(commit=False)
-# 			item.tenant=current_tenant
-# 			unique_class=cd.get('class_section')
-# 			unique_exam=cd.get('exam')
-# 			unique_subject=cd.get('subject')
-# 			year=Exam.objects.for_tenant(request.user.tenant).get_object_or_404(name=unique_exam).year
-# 			item.internal_examiner=subject_teacher.filter(class_section=unique_class).filter(subject=unique_subject).\
-# 									filter(year=year).teacher
-# 			item.save()
-# 			return redirect(name)
-# 	return render(request, 'genadmin/new.html',{'form': form, 'item': "Examiner"})
 
 @login_required
-#This is used to add subject teachers. Nothing is done yet.
+#This is used to add subject teachers.
 def subject_teacher_new(request):
 	class_section_option=class_section.objects.for_tenant(request.user.tenant)
 	if request.method == 'POST':
@@ -179,7 +159,7 @@ def subject_teacher_new(request):
 			response_data['subjects'] = subject_options
 		elif (calltype == 'subject_selection'):
 			subject_name=request.POST.get('subject')
-			teachers=Teacher.objects.for_tenant(request.user.tenant).all()
+			teachers=Teacher.objects.for_tenant(request.user.tenant).filter(staff_type="Teacher").all()
 			response_data['teachers']=teachers
 		#saving the class
 		elif (calltype == 'save'):
@@ -190,7 +170,7 @@ def subject_teacher_new(request):
 			subjectTeacher=subject_teacher()
 			subjectTeacher.class_section=class_name
 			subjectTeacher.subject=subject_name
-			subjectTeacher.teacher=Teacher.objects.for_tenant(request.user.tenant).filter(key=teacher_key)
+			subjectTeacher.teacher=Teacher.objects.for_tenant(request.user.tenant).get(staff_type="Teacher",key=teacher_key)
 			subjectTeacher.year=year
 			subjectTeacher.save()
 		jsondata = json.dumps(response_data)
@@ -304,8 +284,6 @@ def classdetail(request, detail):
 					
 			except:
 				pass
-			#combined_json = list(chain(students_list, class_teacher))
-			#jsondata = serializers.serialize('json', class_teacher)
 		jsondata=json.dumps(response_data)
 		return HttpResponse(jsondata)
 
@@ -361,12 +339,12 @@ def view_add_period(request, detail):
 	except:
 		return render (request, 'eduadmin/class_period.html', {'class_selected':class_selected, 'extension':extension})
 	
-
+@login_required
 #View a teacher's period. This is step 1 in absent teacher subsitution
 def view_teacher_period(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
-	teachers=Teacher.objects.for_tenant(this_tenant).all()
+	teachers=Teacher.objects.for_tenant(this_tenant).filter(staff_type="Teacher").all()
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
@@ -390,6 +368,7 @@ def view_teacher_period(request):
 	except:
 		return render (request, 'eduadmin/teacher_period.html', { 'extension':extension, 'teachers':teachers})
 
+@login_required
 #View to promote students
 def promote_student(request):
 	extension="base.html"
@@ -441,3 +420,35 @@ def promote_student(request):
 		jsondata=json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'eduadmin/class_promote_student.html', { 'extension':extension, 'class_section':class_section_options})
+
+@login_required
+#This is used to create new exams. CCE is automatically created
+def exam_type_new(request):
+	current_tenant=request.user.tenant
+	form=ExamTypeForm(tenant=current_tenant)
+	input_type="Exam Type"
+	if (request.method == "POST"):
+		current_tenant=request.user.tenant
+		form = ExamTypeForm(request.POST, tenant=current_tenant)
+		if form.is_valid():
+			item=form.save(commit=False)			
+			item.tenant=current_tenant
+			item.opted=True
+			exam_type=form.cleaned_data['exam_type']
+			with transaction.atomic():
+				try:
+					if (exam_type == "CCE"):
+						create_term("Term 1", current_tenant)
+						create_term("Term 2", current_tenant)
+						create_exam("Formative Assessments 1", "FA1", current_tenant, 0.1,"Term 1")
+						create_exam("Formative Assessments 2", "FA2", current_tenant, 0.1,"Term 1")
+						create_exam("Formative Assessments 3", "FA3", current_tenant, 0.1,"Term 2")
+						create_exam("Formative Assessments 4", "FA4", current_tenant, 0.1,"Term 2")
+						create_exam("Summative Assessments 1", "SA1", current_tenant, 0.3,"Term 1")
+						create_exam("Summative Assessments 2", "SA2", current_tenant, 0.3,"Term 2")
+						item.save()						
+				except:
+					transaction.rollback()
+
+			return redirect('landing')
+	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})

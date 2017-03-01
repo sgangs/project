@@ -16,6 +16,7 @@
 	{% block heading %}
   {% if call == 'p-l' %}
 	<h3>Income Expenditure Statement from {{start|date:"d-M-Y"}} till {{date|date:"d-M-Y"}}</h3>
+  <a href="{% url 'accounts:download_profit_loss_excel' %}"><button type="button" class='addmore btn btn-primary btn-xs'><i class="fa fa-file-excel-o"></i>  Download Excel</button></a>
   {% elif call == 'b-s' %}
   <h3>Balance Sheet Statement from {{start|date:"d-M-Y"}} till {{date|date:"d-M-Y"}}</h3>
   {% endif %}

@@ -4,7 +4,7 @@ from django.db import IntegrityError
 from school_user.models import User, Tenant
 from school_genadmin.models import class_group, Subject
 from school_student.models import Student
-from .models import subject_teacher, Syllabus, period, total_period, class_section, classstudent
+from .models import subject_teacher, Syllabus, period, total_period, class_section, classstudent, Term, Exam
 
 def period_add(request, class_selected):
     this_tenant=request.user.tenant
@@ -45,3 +45,23 @@ def get_student_list (request,batch,class_sections):
         response_data.append({'data_type':'Student','id':student.id,'key':student.key, \
             'local_id':student.local_id,'name':student.first_name+" "+student.last_name,})
     return response_data
+
+def create_term(name, tenant):
+    term_new=Term()
+    term_new.name=name
+    term_new.tenant=tenant
+    term_new.save()
+
+def create_exam(name, key, tenant, weightage=1, term_name=""):
+    exam_new=Exam()
+    exam_new.name=name
+    if (term_name!= ""):
+        term=Term.objects.for_tenant(tenant).get(name=term_name)
+        exam_new.term=term
+    exam_new.key=key
+    exam_new.total=100
+    exam_new.weightage=weightage
+    exam_new.tenant=tenant
+    print ("In Create Exam")
+    print(key)
+    exam_new.save()

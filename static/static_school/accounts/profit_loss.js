@@ -69,7 +69,7 @@ income=0;
       if (accounts[i].data_type=='other_expense'){
         if (other_income == 0){
         $('#trail_balance').append("<tr class='data'>"+
-        "<td>OTHER INCOME<</td>"+
+        "<td>OTHER INCOME</td>"+
         "<td><b>-</b></td>"+
         "</tr>");  
         }

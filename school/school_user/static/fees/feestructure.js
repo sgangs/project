@@ -39,16 +39,12 @@ $(".addmore").on('click',function(){
     });
 });
 
-
-
-
-
-
 //This is called after the fee structure name is entered
 $( ".feename" ).change(function() {
     fee_name=$(".feename").val();
     $( ".submit" ).prop('disabled',false); 
 });
+
 //This is called if month is changed
 $( ".month" ).change(function() {
     month=$('.month').find(':selected').data('id');

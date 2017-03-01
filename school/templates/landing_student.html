@@ -4,28 +4,84 @@
 <title>
     Dashboard 
 </title>
-<!-- This is for the animation to work -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <!-- Google Fonts Load Pangolin-->
+    <link href="https://fonts.googleapis.com/css?family=Pangolin" rel="stylesheet">
+    <!-- Google Fonts Load Righteous-->
+    <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
 {% endblock %}
 
+{% block dashboard %}
+{% endblock %}
 
 {%block content%}
 
 <div class="container">
-
-        <div class="row">
-
-            <!--<div class="col-lg-12">
-                <h1 class="page-header">Thumbnail Gallery</h1>
-            </div>-->
-            THERE WILL BE AN AWESOME DASHBOARD HERE
-
-            
+    <div class="row">
+        
+        <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+            <h4 style="font-size: 30px; font-family: 'Righteous';">Events For The Month:</h4>
+            <ul>
+                {% for i in events %}
+                    <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
+                {% endfor %}                
+            </ul>
+        </div>
+        <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+            <h4 style="font-size: 30px; font-family: 'Righteous';">Notice Board:</h4>
+                <ul>
+                    {% for i in news %}
+                        <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.title}}</li>
+                        {% endfor %}
+                </ul>                    
         </div>
 
     </div>
+    
+
+</div>
+
+    
+    <!--Chart.js (for graph)-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>    
+
+    <link href='https://fonts.googleapis.com/css?family=Signika:300,400,600,700' rel='stylesheet' type='text/css'>
+
+    
+    {% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'landing/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'text_color.css' %}">
+
+    
 	
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,116 +1,11 @@
 $(function(){
 
-var repeat_change=0;
-var profileid='';
-var email='';
-var user='';
-var pass='';
-var repeat='';
-$( ".student" ).change(function() {
-    profileid=$(".student").find(':selected').data('id');
-    (function() {
-    $.ajax({
-        url : "", 
-        type : "POST", 
-        data : { profileid: profileid,
-            calltype: 'mail',
-            csrfmiddlewaretoken: csrf_token}, // data sent with the post request
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            if (jsondata['email'] == "" || jsondata['email'] == null){
-                email=null;
-                $('.email').val('');
-            }
-            else{
-                email=jsondata['email']
-                $('.email').val(email);
-            }
-            
-            
-            //console.log("success"); // another sanity check
-        },
-        //handle a non-successful response
-        error : function() {
-            classnameproceed = true;
-        }
-    });
-    }());
-});
+var date=0;
+var proceed=true;
 
-
-$( ".repeat" ).change(function() {
-    repeat_change+=1;
-    repeat=$(".repeat").val();
-    pass=$(".password").val();
-    if (repeat != pass){
-        $(".repeatdiv").addClass('has-error');
-        $(".repeat-p").attr('hidden',false);
-        $(".passworddiv").addClass('has-error');
-    }
-    if (repeat == pass){
-        $(".repeatdiv").removeClass('has-error');
-        $(".passworddiv").removeClass('has-error');
-        $(".repeat-p").attr('hidden',true);
-    }
-});
-
-$( ".email" ).change(function() {
-    email=$(".email").val();
-});
-
-$( ".user" ).change(function() {
-    user=$(".user").val();
-    if (user != ""){
-        (function() {
-        $.ajax({
-            url : "", 
-            type : "POST", 
-            data : { user: user,
-                calltype: 'user',
-                csrfmiddlewaretoken: csrf_token}, // data sent with the post request
-            dataType: 'json',
-            // handle a successful response
-            success : function(jsondata) {
-                if (jsondata['error'] == "Username exist"){
-                    $(".userdiv").addClass('has-error');
-                    $(".user-p").attr('hidden',false);
-                }
-                else{
-                    $(".userdiv").removeClass('has-error');
-                    $(".userdiv").addClass('has-success');
-                    $(".user-p").attr('hidden',true);
-                }
-                
-                
-                //console.log("success"); // another sanity check
-            },
-            //handle a non-successful response
-            error : function() {
-                $(".userdiv").removeClass('has-error');
-                $(".userdiv").addClass('has-success');
-                $(".user-p").attr('hidden',true);
-            }
-        });
-        })();
-    }
-});
-
-$( ".password" ).change(function() {
-    repeat=$(".repeat").val();
-    pass=$(".password").val();
-    if (repeat_change>0){
-        if (repeat != pass){
-            $(".repeatdiv").addClass('has-error');
-            $(".repeat-p").attr('hidden',false);
-            $(".passworddiv").addClass('has-error');
-        }
-        if (repeat == pass){
-            $(".repeatdiv").removeClass('has-error');
-            $(".passworddiv").removeClass('has-error');
-            $(".repeat-p").attr('hidden',true);
-        }
-    }
+$( ".date" ).change(function() {
+    date=$(".date").val();
+    $('.submit').attr('disabled', false)
 });
 
 $('.submit').click(function(e) {
@@ -120,14 +15,11 @@ $('.submit').click(function(e) {
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, create profile!",
+        confirmButtonText: "Yes, record attendance!",
         closeOnConfirm: false,
         closeOnCancel: true,
         html: false
     }, function(isConfirm){
-        // swal("Deleted!",
-        // "Your imaginary file has been deleted.",
-        // "success");
         if (isConfirm){
             save_data()
         }
@@ -135,25 +27,37 @@ $('.submit').click(function(e) {
 });
 
 function save_data(){
-    var items = [];
-    var proceed = true;
-    var info=false;
+    var items = [], proceed = true, info=false;
+    if (date == undefined || date==''){
+        proceed=false;
+    }
+    $("tr.data").each(function(){
+        $(this).removeClass('has-error');
+    })
     $("tr.data").each(function() {       
         var id = $(this).find('td:nth-child(1)').html();
         var ispresent = $(this).find('td:nth-child(5) input').is(":checked");
         var absenttype = $(this).find('td:nth-child(6)').find(':selected').data('id');
+        if (absenttype == undefined){
+            absenttype=''
+        }
+        if (ispresent == undefined){
+            ispresent=''
+        }
         var remarks = $(this).find('td:nth-child(7) input').val();
         if (ispresent == undefined || ispresent=='' || ispresent == false){
-            if (absenttype == undefined || absenttype==''){
+            if (absenttype == undefined || absenttype=='' || absenttype=='Dont'){
                 proceed=false;
+                $(this).addClass('has-error')
             }
         }
         else{
-            if (absenttype != undefined && absenttype !=''){
+            if (absenttype != undefined && absenttype !='' && absenttype !='Dont'){
                 info=true;
+                proceed=false
+                $(this).addClass('has-error')
             }   
         }
-
         var item = {
             teacherid : id,
             ispresent: ispresent,
@@ -164,15 +68,36 @@ function save_data(){
     });
     console.log(items)
     if (proceed){
-        if (info){
-            swal("Umm...", "In case teacher is present, reason for absent will be ignored", "info");
-        }
-        else{
-            swal("Hooray..", "Teacher attendance recorded successfully", "success");
-        }
+        (function() {
+            $.ajax({
+                url : "", 
+                type : "POST", 
+                data : { date: date,
+                    attendances: JSON.stringify(items),
+                    calltype: 'save',
+                    csrfmiddlewaretoken: csrf_token}, // data sent with the post request
+                dataType: 'json',
+                // handle a successful response
+                success : function(jsondata) {
+                    swal("Hooray..", "Teacher attendance recorded successfully", "success");
+                    setTimeout(location.reload(true),600);
+                },
+                //handle a non-successful response
+                error : function() {
+                    swal("Ehhh..", "There were some errors.", "error");
+                }
+            });
+        }());
+        
+        // }
     }
     else{
-        swal("Oops...", "Select type of absence.", "error");
+        if (info){
+            swal("Umm...", "In case teacher is present, please remove the reason for absence", "info");
+        }
+        else{
+            swal("Oops...", "Select type of absence, in case the teacher is absent.", "error");
+        }
     }
         
 };

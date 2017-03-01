@@ -4,17 +4,17 @@
 <title>
     Dashboard 
 </title>
-<!-- Pace JS, used for animating page load -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/black/pace-theme-center-circle.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>
+    <!-- Pace JS, used for animating page load -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-circle.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>
 
-<!-- This is for the animation to work -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 
-<!-- Google Fonts Load Pangolin-->
-<link href="https://fonts.googleapis.com/css?family=Pangolin" rel="stylesheet">
-<!-- Google Fonts Load Righteous-->
-<link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
+    <!-- Google Fonts Load Pangolin-->
+    <link href="https://fonts.googleapis.com/css?family=Pangolin" rel="stylesheet">
+    <!-- Google Fonts Load Righteous-->
+    <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
 {% endblock %}
 
 {% block dashboard %}
@@ -35,8 +35,7 @@
                     <label title="Annual Financials: Waterfall chart">Annual Financials
                         <div id="waterfall" ></div>
                     </label>
-                </div>
-                
+                </div>                
                 
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
                     <h4 style="font-size: 30px; font-family: 'Righteous';">Events For The Month:</h4>
@@ -57,18 +56,20 @@
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
                     <h4 style="font-size: 30px; font-family: 'Righteous';">Today's Birthday:</h4>
                     <ul>
-                    {% for i in teachers %}
+                    {% for i in staffs %}
                     <li style="font-size: 20px; font-family: 'Pangolin';">{{i.first_name}} {{i.last_name}}</li>
                     {% endfor %}
                 </ul>
                 </div>
             </div>            
             <div class="col-lg-4 col-md-4 col-xs-12 ">
+            <a href="{% url 'fees:fee_collection' %}">
                 <div>
                     <label title="Fee Collection: Pie chart">Fees Collection For the Month <small></small>
                         <canvas id="salary-chart"  height="250"></canvas>
                     </label>                    
                 </div>      
+            </a>
                 <!-- <div>
                     <a class="thumbnail" href="#">
                         <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Salary Payment" alt="Salary Payment">
@@ -76,13 +77,13 @@
                 </div> -->
                 <div style="color:#008062;">
                     <h3> Teacher Attendance </h3>
-                    <h1 id="teacherattendanceText">68%</h1>
+                    <h1 id="teacherattendanceText">{{percent_staff}}%</h1>
                     <div id ="teacherattendanceChart" class="chart bar" data-value="68"></div>
                     <h4 class="text tot_teachers">
-                        Total Number of Teachers:  
+                        Total Number of Teachers: {{total_staffs}}
                     </h4>
                     <h4 class="text">
-                        Total Teachers Present: 
+                        Total Teachers Present: {{staffs_present}}
                     </h4>
                 </div>
                 <div style="color:#68367c;">
@@ -90,7 +91,7 @@
                     <h1 id="studentattendanceText">{{percent_student}}%</h1>
                     <div id ="studentattendanceChart" class="chart bar" data-value="75"></div>
                     <h4 class="text tot_students">
-                        Total Number of Students: 
+                        Total Number of Students: {{total_students}}
                     </h4>
                     <h4 class="text">
                         Total Students Present: {{students_present}}
@@ -120,18 +121,14 @@
     <script type="text/javascript">
         var paid='{{paid}}'
         var total='{{total}}'
-        var total_teachers='{{total_teachers}}'
-        var total_students='{{total_students}}'
-        $('.tot_teachers').append(" "+total_teachers);
-        $('.tot_students').append(" "+total_students);
         accounts=JSON.parse('{{i_e |escapejs}}'); //this gets the p&l json
         console.log(accounts)
         var colors = ["#008062", "#68367c"];
         var chart = new Fancychart(200, 120, colors, '#e5e5e5');
-        var percent_student = parseInt('{{percent_student}}')
-        var val=68
-        chart.circles("#teacherattendanceChart", val, colors[0]);
-        var val = 75;
+        var percent_staff = parseInt('{{percent_staff}}');
+        var percent_student = parseInt('{{percent_student}}');
+        console.log(percent_staff);
+        chart.circles("#teacherattendanceChart", percent_staff, colors[0]);
         chart.circles("#studentattendanceChart", percent_student, colors[1]);
     </script>
 	

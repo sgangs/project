@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'school_library',
     'school_account',
     'school_fees',
+    'school_salary',
     'school_hr',    
 ]
 
@@ -151,3 +152,12 @@ SECURE_BROWSER_XSS_FILTER=True
 #CAPTCHA SETTINGS
 NOCAPTCHA = True
 RECAPTCHA_USE_SSL = False
+
+#This is where django shall send mail in case of error
+ADMINS = (
+ ('Sayantan Ganguly', 'sayantan@techassisto.com'),
+)
+
+#This is for defining the maximum persistant connection's age (poooling ciinections to DB)
+#Its used as creating new pool for postgrres is very expensive
+CONN_MAX_AGE = 500

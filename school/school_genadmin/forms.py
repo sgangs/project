@@ -91,7 +91,7 @@ class academicYearForm (forms.ModelForm):
 class BatchForm(forms.ModelForm):
 	class Meta:
 		model=Batch
-		fields = ('name',)
+		fields = ('start_year','end_year')
 	def __init__(self, *args, **kwargs):
 		self.tenant=kwargs.pop('tenant',None)
 		super(BatchForm, self).__init__(*args, **kwargs)
@@ -102,18 +102,31 @@ class BatchForm(forms.ModelForm):
 		self.helper.field_class = 'col-sm-4'
 	def clean(self):
 		cd= super(BatchForm, self).clean()
-		unique_name=cd.get('name')
+		start_year=cd.get('start_year')
+		end_year=cd.get('end_year')
 		error=[]
 		data=""
-		if not unique_name:
+		if not start_year or end_year:
 			raise forms.ValidationError(error)
 			return cd
 		else:
 			try:
-				data=Batch.objects.for_tenant(self.tenant).get(name=unique_name)
-				self.add_error('name',"Subject with name already exists.")
+				datas=Batch.objects.for_tenant(self.tenant).get(start_year=start_year)
+				datae=Batch.objects.for_tenant(self.tenant).get(end_year=end_year)
+				self.add_error('start_year',"Batch with same start and end year exist.")
+				self.add_error('end_year',"Batch with same start and end year exist.")
 			except:
-				return cd
+				pass
+			try:
+				if (int(start_year)<1980 or int(start_year)>2050):
+					self.add_error('start_year',"As of now, batch much start between 1980 and 2050.")
+			except:
+				self.add_error('start_year',"This must be a year.")
+			try:
+				if (int(end_year)<1980 or int(end_year)>2050):
+					self.add_error('end_year',"As of now, batch much end between 1980 and 2050.")
+			except:
+				self.add_error('end_year',"This must be a year.")
 		return cd
 
 #This for is to adding new class group
@@ -123,16 +136,13 @@ class classGroupForm(forms.ModelForm):
 		super (classGroupForm,self ).__init__(*args,**kwargs) # populates the post
 		self.helper = FormHelper(self)
 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
-		# self.helper.layout = Layout(
-		# 	'name','unit', 'key','manufacturer','vat_type',
-  #       	AppendedText('vat_percent', '%'),)
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-sm-2'
 		self.helper.field_class = 'col-sm-4'
 
 	class Meta:
 		model=class_group
-		fields = ('name',)
+		fields = ('name','standard')
 	def clean(self):
 		cd= super(classGroupForm, self).clean()
 		unique_name=cd.get('name')

@@ -14,20 +14,22 @@ account=(('Basic','Basic'),
 			('SMS_Active','SMS_Active'))
 
 user_type=(('Master','Master'),
-			('Account','Account'),
-			('Admin','Admin'),
 			('Teacher','Teacher'),
+			('Admin','Admin'),
+			('Principal','Principal'),
+			('Account','Account'),			
+			('Collector','Fee Collector'),
 			('Student','Student'),
 			('Parent','Parent'))
 
 #This is the list of schools. Add paid until model and get it to work with decorators
 class Tenant(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(max_length=50)
+	board=models.TextField("Affiliated Board", blank=True, null=True)
+	number=models.PositiveIntegerField("Affiliation Number", blank=True, null=True)
 	address=models.CharField(max_length=200)
 	email=models.EmailField(unique=True)
-	#cst=models.CharField("CST",max_length=20, blank=True, null=True)
-	#vat=models.CharField("VAT",max_length=20, blank=True, null=True)
-	#tin=models.CharField("TIN",max_length=20, blank=True, null=True)
 	phone=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=20)
 	key=models.CharField("Unique key for School",max_length=20, unique=True)
@@ -65,9 +67,10 @@ class Tenant(models.Model):
 
 #This is the individual user module
 class User(AbstractUser):
-    tenant = models.ForeignKey(Tenant,default=2,related_name='user_tenant')
+	id=models.BigAutoField(primary_key=True)
+	tenant = models.ForeignKey(Tenant,default=2,related_name='user_tenant')
+	user_type=models.CharField(max_length=10,choices=user_type)
     #user_id = models.CharField(max_length=30)
-    user_type=models.CharField(max_length=10,choices=user_type)
     #registered_on=models.DateTimeField(null=True, blank=True)
 
     # def save(self, *args, **kwargs):

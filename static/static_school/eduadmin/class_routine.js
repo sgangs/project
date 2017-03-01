@@ -42,7 +42,6 @@ $( ".year" ).change(function() {
                         }));
                     }
                     else if (this.data_type=="Period"){
-                        console.log(this)
                         $('tr.'+this.period).find('.'+this.day+'').html('<p>'+this.subject +'<//p><p>'+this.teacher+'</p>')
                     }
                     else if (this.data_type=="Error"){

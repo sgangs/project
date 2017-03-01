@@ -16,6 +16,7 @@ class TenantManager(models.Manager):
 
 #This is the library model.
 class Library(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	room=models.CharField("Room name/no.",max_length=15)
 	slug=models.SlugField(max_length=40)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='library_library_user_tenant')
@@ -40,6 +41,7 @@ class Library(models.Model):
 
 #This is the librarian model. Each library can have one or multiple librarian
 class Librarian(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	library=models.ForeignKey(Library,db_index=True,related_name='librarian_library')
 	librarian=models.ForeignKey(Teacher,db_index=True,related_name='librarian_library_teacher_teacher')
 	slug=models.SlugField(max_length=55)
@@ -66,6 +68,7 @@ class Librarian(models.Model):
 #This is the model to store no. of days book can be issued.This is a separate model so that schools can have the option to have  
 #different issue period for different student/book
 class issue_period(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	period=models.PositiveSmallIntegerField("No of days book will be issued",default=7)
 	slug=models.SlugField(max_length=30)
 	tenant=models.OneToOneField(Tenant, db_index=True,related_name='issuePeriod_library_user_tenant')
@@ -78,7 +81,7 @@ class issue_period(models.Model):
 		if not self.id:
 			item="isty"+" "+self.tenant.key+" "+str(self.period)
 			self.slug=slugify(item)
-		super(Library, self).save(*args, **kwargs)
+		super(issue_period, self).save(*args, **kwargs)
 
 	# class Meta:
 	# 	unique_together = (("period", "tenant"))
@@ -90,6 +93,7 @@ class issue_period(models.Model):
 	
 #This is the books model.
 class Book(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name=models.TextField(db_index=True)
 	author=models.CharField(max_length=100,blank=True, null=True)
 	publisher=models.CharField(max_length=100,blank=True, null=True)
@@ -138,6 +142,7 @@ class Book(models.Model):
 
 #This is the book issue model.
 class book_issue(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	book=models.ForeignKey(Book, related_name='bookIssue_book')
 	issued_on=models.DateField()
 	issued_by=models.ForeignKey(Librarian, related_name='bookIssue_librarian')
@@ -183,6 +188,7 @@ class book_issue(models.Model):
 
 #This is the book return model.
 class book_return(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	issue_details=models.ForeignKey(book_issue, related_name='bookReturn_bookIssue')
 	returned_on=models.DateField()
 	maximum_return_date=models.DateField()

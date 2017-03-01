@@ -33,6 +33,7 @@ def library_new(request, input_type):
 	elif (input_type == "Period"):
 		importform = PeriodForm
 		name='library:book_list'
+		input_type="Book Holding Period"
 	# elif (input_type == "Unit"):
 	# 	importform = TotalPeriodForm
 	# 	name='master:unit_list'
@@ -51,7 +52,7 @@ def library_new(request, input_type):
 def library_list(request, input_type):
 	if (input_type == "Library"):
 		libraries = Library.objects.for_tenant(request.user.tenant).all()
-		return render(request, 'library/list_bae.html',{'libraries': libraries})
+		return render(request, 'library/list_base.html',{'libraries': libraries})
 	elif (input_type == "Book"):
 		books = Book.objects.for_tenant(request.user.tenant).all().select_related('subject')
 		return render(request, 'library/book_list.html',{'books': books, 'list_for':'Books'})

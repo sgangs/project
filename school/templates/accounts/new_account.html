@@ -26,7 +26,9 @@
 	<div class="alert alert-danger" role="alert" hidden='true'>
 		
 	</div>
-
+	<div class="form-group narrate">
+		<label>Items marked * cannot be left blank</label>
+	</div>
 	<div class="form-group ledgergroupdiv">
 		<label for="classgroup" class="control-label">Ledger Group *</label>
 		<select class="form-control select ledgergroup">
@@ -47,27 +49,42 @@
 			<input type="text" required="" class="form-control remarks" aria-required="true">
 	</div>
 	
-	<div class="form-group keydiv">
-		<label for="roomnumber" class="control-label room">Key *</label>
-		<input type="text" class="form-control key" maxlength="20" placeholder="This is a short name/key/code for the account">
+	<div class="form-group keydiv" title="This is a short name/key/code for the account">
+		<label for="roomnumber" class="control-label room">Key/Code *</label>
+		<input type="text" class="form-control key" maxlength="10" placeholder="This is a short name/key/code for the account">
 	</div>
 	
 	<div class="form-group accounttypediv">
-		<label for="roomnumber" class="control-label room">Select Account Type *</label>
+		<label class="control-label room">Select Account Type *</label>
 		<select class="form-control select accounttype">
     		<option disabled selected hidden style='display: none' value>Select Account Type</option>
 			<option data-id="Current Assets">Current Assets</option>
 			<option data-id="Long Term Assets">Long Term Assets</option>
 			<option data-id="Current Liabilities">Current Liabilities</option>
 			<option data-id="Long Term Liabilities">Long Term Liabilities</option>
-			<option data-id="Equity">Equity</option>
+			<option data-id="Equity">Equity/Capital</option>
 			<option data-id="Revenue">Revenue</option>
 			<option data-id="Indirect Revenue">Indirect Revenue</option>
 			<option data-id="Direct Expense">Direct Expense</option>
 			<option data-id="Indirect Expense">Indirect Expense</option>
 		</select>
 	</div>
-	
+
+	<div class="form-group subaccounttypediv" title="This is an optional account required to be filled only of the new account is one of the following accounts. This can be left blank.">
+		<label class="control-label room">Select Sub Account Type (Leave blank if not applicable)</label>
+		<select class="form-control select subaccounttype" disabled="true">
+    		<option disabled selected hidden style='display: none' value>Select Sub Account Type (Do not fill if not applicable)</option>
+    		<option data-id="None">Not Applicable</option>
+			<option data-id="PFEEL">PF Employee - Liability Account</option>
+			<option data-id="PFERL">PF Employer - Liability Account</option>
+			<option data-id="PFERE">PF Employer - Expense Account</option>
+			<option data-id="ESEEL">ESI Employee - Liability Account</option>
+			<option data-id="ESERL">ESI Employer - Liability Account</option>
+			<option data-id="ESERE">ESI Employer - Expense Account</option>			
+		</select>
+	</div>
+	<p class="has-error subaccount-p" hidden='true'>A sub account liability/expense must have account type has liability/expense respectively </p>
+
 	<div>
 		<h4>Opening Balance is specific for accounting period.</h4>
 	</div>

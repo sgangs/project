@@ -1,14 +1,11 @@
 import datetime as dt
 from django.db import models
-#from django.db.models import signals
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
 from school_account.models import Account
 from school_user.models import Tenant, User
-#from school_eduadmin.models import Exam, class_section, Examiner
 from school_genadmin.models import class_group
-#from school_teacher.models import Teacher
 from school_student.models import Student
 
 
@@ -21,6 +18,7 @@ class TenantManager(models.Manager):
 
 #This is an abstract class for fee lists.
 class abstract_fee(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(max_length=100)
 	amount=models.DecimalField(max_digits=7, decimal_places=2)
 	
@@ -31,6 +29,7 @@ class abstract_fee(models.Model):
 
 #This would be the model for monthly fee
 class monthly_fee(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	#subject=models.ForeignKey(Subject,db_index=True,related_name='Homework_classadmin_genadmin_subject')
 	name=models.TextField()
 	key=models.CharField(db_index=True,max_length=12)
@@ -54,7 +53,7 @@ class monthly_fee(models.Model):
 				last_mf_number=int(last_mf.key[8:])
 				next_mf_number='{0:03d}'.format(last_mf_number + 1)
 			self.key=data+today_string+next_mf_number
-			toslug=tenant+" " +self.key
+			toslug=tenant+" "+self.key
 			self.slug=slugify(toslug)
 
 		super(monthly_fee, self).save(*args, **kwargs)
@@ -67,6 +66,7 @@ class monthly_fee(models.Model):
 
 #This would be the line item for each monthly fee.
 class monthly_fee_list(abstract_fee):
+	id=models.BigAutoField(primary_key=True)
 	monthly_fee=models.ForeignKey(monthly_fee,db_index=True,related_name='monthlyFeeList_monthlyFee')
 	account=models.ForeignKey(Account,db_index=True,related_name='monthlyFeeList_fees_account_account')
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='monthlyFeeList_fees_user_tenant')
@@ -85,6 +85,7 @@ class monthly_fee_list(abstract_fee):
 
 #This would be the model for yearly fee
 class yearly_fee(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	#subject=models.ForeignKey(Subject,db_index=True,related_name='Homework_classadmin_genadmin_subject')
 	name=models.TextField()
 	month=models.CharField(max_length=3)
@@ -124,6 +125,7 @@ class yearly_fee(models.Model):
 
 #This would be the line item for each monthly fee.
 class yearly_fee_list(abstract_fee):
+	id=models.BigAutoField(primary_key=True)
 	yearly_fee=models.ForeignKey(yearly_fee,db_index=True,related_name='yearlyFeeList_monthlyFee')
 	account=models.ForeignKey(Account,db_index=True,related_name='yearlyFeeList_fees_account_account')
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='yearlyFeeList_fees_user_tenant')
@@ -139,78 +141,10 @@ class yearly_fee_list(abstract_fee):
 	def __str__(self):
 		return '%s' % (self.name)
 
-#This would be the model for fee structure
-# class fee_structure(models.Model):
-# 	#subject=models.ForeignKey(Subject,db_index=True,related_name='Homework_classadmin_genadmin_subject')
-# 	name=models.TextField()
-# 	jan_1=models.BooleanField()
-# 	feb_2=models.BooleanField()
-# 	mar_3=models.BooleanField()
-# 	apr_4=models.BooleanField()
-# 	may_5=models.BooleanField()
-# 	jun_6=models.BooleanField()
-# 	jul_7=models.BooleanField()
-# 	aug_8=models.BooleanField()
-# 	sep_9=models.BooleanField()
-# 	oct_10=models.BooleanField()
-# 	nov_11=models.BooleanField()
-# 	dec_12=models.BooleanField()
-# 	key=models.CharField(db_index=True,max_length=10)
-# 	slug=models.SlugField(max_length=50)
-# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='feeStrucure_fees_user_tenant')
-# 	objects=TenantManager()
-
-# 	# def get_absolute_url(self):
-# 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-# 	def save(self, *args, **kwargs):
-# 		if not self.id:
-# 			data="fs"
-# 			tenant=self.tenant.key
-# 			today=dt.date.today()
-# 			today_string=today.strftime('%y%m%d')
-# 			next_fs_number='01'
-# 			last_fs=type(self).objects.filter(tenant=self.tenant).\
-# 						filter(key__contains=today_string).order_by('key').last()
-# 			if last_fs:
-# 				last_fs_number=int(last_fs.key[8:])
-# 				next_fs_number='{0:02d}'.format(last_fs_number + 1)
-# 			self.key=data+today_string+next_fs_number
-# 			toslug=tenant+" " +self.key
-# 			self.slug=slugify(toslug)
-
-# 		super(fee_structure, self).save(*args, **kwargs)
-
-# 	class Meta:
-# 		unique_together = (("key","tenant",))
-# 		# ordering = ('name',)
-		
-# 	def __str__(self):
-# 		return '%s' % (self.name)
-
-
-#This would be the line item for each monthly fee.
-# class fee_structure_list(models.Model):
-# 	name=models.CharField(max_length=100)
-# 	amount=models.DecimalField(max_digits=7, decimal_places=2)
-# 	fee_structure=models.ForeignKey(yearly_fee,db_index=True,related_name='feeStructureList_feeStructure')
-# 	account=models.ForeignKey(Account,db_index=True,related_name='feeStructureList_fees_account_account')
-# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='feeStructureList_fees_user_tenant')
-# 	objects=TenantManager()
-	
-# 	# def get_absolute_url(self):
-# 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-# 	class Meta:
-# 		unique_together = (("fee_structure","account"))
-# 		# ordering = ('name',)
-		
-# 	def __str__(self):
-# 		return '%s' % (self.name)
-
 
 #This model will link class group to monthly and yearly fee for default fee structure.
 class group_default_fee(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	classgroup=models.ForeignKey(class_group,db_index=True,related_name='groupDefaultFee_fees_genadmin_classGroup')
 	yearly_fee=models.ManyToManyField(yearly_fee,db_index=True,related_name='groupDefaultFee_yearlyFee')
 	monthly_fee=models.ForeignKey(monthly_fee,db_index=True,related_name='groupDefaultFee_monthlyFee')
@@ -239,6 +173,7 @@ class group_default_fee(models.Model):
 
 #This model will link student to monthly and yearly fee for default fee structure.
 class student_fee(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	student=models.ForeignKey(Student,db_index=True,related_name='studentFee_fees_student_student')
 	#fee_structure=models.ManyToManyField(fee_structure,db_index=True,related_name='studentFee_feeStructure')
 	yearly_fee=models.ManyToManyField(yearly_fee,db_index=True,related_name='studentFee_yearlyFee')
@@ -266,6 +201,7 @@ class student_fee(models.Model):
 		return '%s' % (self.student)
 
 class student_fee_payment(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	student=models.ForeignKey(Student,db_index=True,related_name='studentFeePayment_fees_student_student')
 	month=models.CharField(db_index=True,max_length=3)
 	year=models.PositiveSmallIntegerField(db_index=True)

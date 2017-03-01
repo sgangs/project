@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{%block title%}
+<title>Fee Collection</title>
+
+<!--Chosen (for searchbox in select box) JS and CSS-->
+<!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script> -->
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Fee Collection</h3>
+<h5>For current academic year</h5>
+<h1></h1>
+<div class="selector">
+<div class="row ">
+	<div class="form-group col-xs-4 col-md-4 datediv" title="Select the date range to ge the necessary fee collection details">
+		<label class="control-label">Select Date Range</label>
+		<input class="form-control date">
+	</div>
+</div>
+<button type="button" class='details btn btn-primary btn-xs' title="Click here to get student list">Get Details</button>
+</div>
+
+<div class="row details" hidden>
+	<div class="form-group col-md-12">
+	<label class='fee_heading_outer'>
+		
+	</label>
+	<table class="table table-striped table-bordered table-hover feeview" >
+	    <thead class="thead-inverse header-background bg-success">
+	    	<tr>
+	    		<th style="text-align: center" class="header">Student System ID</th>
+	  			<th style="text-align: center" class="header">Student Admission/School ID</th>
+	        	<th>Student Name</th>
+		       	<th>Paid On</th>
+		        <th>Amount Paid</th>
+			    </tr>
+	    </thead>
+	    <tbody>
+	    </tbody>
+  	</table>  
+</div>
+
+
+
+<!-- <button type="button" class='reset btn btn-primary btn-xs'>Reset</button> -->
+
+{% load static from staticfiles %}
+
+<script src="{% static 'fees/fee_collected_range.js' %}"></script>
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+
+<!-- Bootstrap Daterangepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.js"></script>
+
+<script>
+	var min='{{min}}'
+	var max='{{max}}'
+	csrf_token='{{csrf_token}}';
+</script>
+{% endblock %}
+

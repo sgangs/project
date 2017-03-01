@@ -19,6 +19,7 @@ var account_name = '';
 var remarks ='';
 var key ='';
 var acct_type ='';
+var sub_acct_type ='';
 var period = '';
 var bal_type ='';
 var balance =0;
@@ -121,6 +122,7 @@ $( ".key" ).change(function(){
 $( ".accounttype" ).change(function(){
     acct_type=$(".accounttype").find(':selected').data('id');
     $('.accounttypediv').removeClass('has-error');
+    $(".subaccounttype").attr('disabled', false);
     if (acct_type == "Current Assets" || acct_type == "Long Term Assets" || acct_type == "Direct Expense" 
         || acct_type =="Indirect Expense"){
         $(".balancetype").val("Debit balance");
@@ -128,6 +130,95 @@ $( ".accounttype" ).change(function(){
     }
     else{
         $(".balancetype").val("Credit balance");
+    }
+
+    //This is used to check sub account via-a-vis  account type
+    if (acct_type =="Current Liabilities"){
+        if (sub_acct_type == 'PFERE' || sub_acct_type == 'ESERE'){
+            $('.subaccounttypediv').addClass('has-error');
+            $('.subaccount-p').attr('hidden', false);
+            $('.subaccount-p').addClass('has-error');
+            $('.submit').attr('disabled', true);
+        }
+        else{
+            $('.subaccounttypediv').removeClass('has-error');
+            $('.subaccount-p').attr('hidden', true);
+            $('.submit').attr('disabled', false);
+        }        
+    }
+    else if (acct_type =="Direct Expense" || acct_type == "Indirect Expense"){
+        if (sub_acct_type == 'PFEEL' || sub_acct_type == 'PFERL' || sub_acct_type == 'ESEEL' || sub_acct_type == 'ESERL'){
+            console.log("Error here");
+            $('.subaccounttypediv').addClass('has-error');
+            $('.subaccount-p').attr('hidden', false);   
+            $('.subaccount-p').addClass('has-error');
+            $('.submit').attr('disabled', true);
+        }
+        else{
+            $('.subaccounttypediv').removeClass('has-error');
+            $('.subaccount-p').attr('hidden', true);
+            $('.submit').attr('disabled', false);
+        }
+    }
+    else{
+        if (sub_acct_type != '' && sub_acct_type != 'None' && sub_acct_type != 'undefined'){
+            $('.subaccounttypediv').addClass('has-error');
+            $('.subaccount-p').attr('hidden', false);
+            $('.subaccount-p').addClass('has-error');
+            $('.submit').attr('disabled', true);
+        }
+        else{
+            $('.subaccounttypediv').removeClass('has-error');
+            $('.subaccount-p').attr('hidden', true);
+            $('.submit').attr('disabled', false);
+        }
+    }
+});
+
+$( ".subaccounttype" ).change(function(){
+    sub_acct_type=$(".subaccounttype").find(':selected').data('id');
+    $('.subaccounttypediv').removeClass('has-error');
+    $('.subaccount-p').attr('hidden', true);
+
+    //This is used to check sub account via-a-vis  account type
+    if (acct_type =="Current Liabilities"){
+        if (sub_acct_type == 'PFERE' || sub_acct_type == 'ESERE'){
+            $('.subaccounttypediv').addClass('has-error');
+            $('.subaccount-p').attr('hidden', false);
+            $('.subaccount-p').addClass('has-error');
+            $('.submit').attr('disabled', true);
+        }
+        else{
+            $('.subaccounttypediv').removeClass('has-error');
+            $('.subaccount-p').attr('hidden', true);
+            $('.submit').attr('disabled', false);
+        }        
+    }
+    else if (acct_type =="Direct Expense" || acct_type == "Indirect Expense"){
+        if (sub_acct_type == 'PFEEL' || sub_acct_type == 'PFERL' || sub_acct_type == 'ESEEL' || sub_acct_type == 'ESERL'){
+            $('.subaccounttypediv').addClass('has-error');
+            $('.subaccount-p').attr('hidden', false);   
+            $('.subaccount-p').addClass('has-error');
+            $('.submit').attr('disabled', true);
+        }
+        else{
+            $('.subaccounttypediv').removeClass('has-error');
+            $('.subaccount-p').attr('hidden', true);
+            $('.submit').attr('disabled', false);
+        }
+    }
+    else{
+        if (sub_acct_type != '' && sub_acct_type != 'None' && sub_acct_type != 'undefined'){
+            $('.subaccounttypediv').addClass('has-error');
+            $('.subaccount-p').attr('hidden', false);
+            $('.subaccount-p').addClass('has-error');
+            $('.submit').attr('disabled', true);
+        }
+        else{
+            $('.subaccounttypediv').removeClass('has-error');
+            $('.subaccount-p').attr('hidden', true);
+            $('.submit').attr('disabled', false);
+        }
     }
 });
 
@@ -161,6 +252,9 @@ $( ".submit" ).confirm({
     confirm: function(){
         var blank=false;
         $('.error').remove();
+        if (sub_acct_type == 'undefined' || sub_acct_type == 'None'){
+            sub_acct_type = '';
+        }
         bal_type=$(".balancetype").find(':selected').data('id');
         //get all the input details
         if (ledger == ''){
@@ -194,6 +288,7 @@ $( ".submit" ).confirm({
                         remarks: remarks,
                         key: key,
                         acct_type: acct_type,
+                        sub_acct_type: sub_acct_type,
                         periodid: period,
                         balancetype: bal_type,
                         balance: balance,

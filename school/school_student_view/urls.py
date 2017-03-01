@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     url(r'^routine/$', views.routine, name='routine'),
     url(r'^syllabus/$', views.syllabus_view, name='syllabus'),
+    url(r'^applyleave/$', views.apply_leave, name='apply_leave'),
     #url(r'^classdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
     #url(r'^calender/$', views.calender, name='calender'),
 ]

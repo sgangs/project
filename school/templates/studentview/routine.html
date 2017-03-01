@@ -2,7 +2,7 @@
 
 
 {%block title%}
-<title>CLass Routine</title>
+<title>Class Routine</title>
 
 {% load static from staticfiles %}
 
@@ -51,16 +51,15 @@
     </thead>
     <tbody>
     {% for i in range %}
-      <tr>
-        <th>Period: {{i|add:"1"}}</th>
-        
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+      <tr class="{{i|add:'1'}}">
+        <th>Period: {{i|add:"1"}}</th>        
+            <td class="0"></td>
+            <td class="1"></td>
+            <td class="2"></td>
+            <td class="3"></td>
+            <td class="4"></td>
+            <td class="5"></td>
+            <td class="6"></td>
         </tr>
     {% endfor %}
     </tbody>
@@ -71,6 +70,12 @@
 
 <script>
 csrf_token='{{csrf_token}}';
+var periods=JSON.parse('{{periods |escapejs}}');
+$.each(periods, function(){
+  if (this.data_type=="Period"){
+    $('tr.'+this.period).find('.'+this.day+'').html('<p>'+this.subject +'<//p><p>'+this.teacher+'</p>')
+  }
+});
 $('.addperiod').attr('data-toggle',"modal")
 $('.addperiod').attr('data-target',"#myModal")
 </script>

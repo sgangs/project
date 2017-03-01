@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Student Remarks</title>
+
+
+{% load static from staticfiles %}
+
+<script src="{% static 'classadmin/attendance.js' %}"></script>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Student Remarks</h3>
+<h1></h1>
+<div class="row">
+	<div class="form-group col-xs-4 col-md-3">
+		<select class="form-control classsection">
+    	<option disabled selected hidden style='display: none' value>Select Class</option>
+			{% for item in items %}
+  				<option data-id="{{item.id}}">{{item.name}}</option>
+			{% endfor %}
+  		</select> 
+	</div>
+</div>
+
+
+
+
+<button type="button" class='submit btn btn-primary btn-xs' disabled="true" title="Click submit to record class atendance.">Submit</button>
+
+<button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
+
+
+<script>
+	$('.tooltip').tooltip({animation: true, container: 'body'});
+	
+	redirect_url="{% url 'classadmin:attendance_view' %}"
+	csrf_token='{{csrf_token}}';
+</script>
+{% endblock %}

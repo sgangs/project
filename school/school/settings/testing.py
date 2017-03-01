@@ -28,3 +28,6 @@ DATABASES = {
     }
 }
 
+
+#For the hash function to work
+SALT=SALT

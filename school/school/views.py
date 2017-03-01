@@ -18,6 +18,7 @@ from school_classadmin.models import Attendance
 from school_genadmin.models import academic_year, annual_calender
 from school_teacher.models import Teacher
 from school_student.models import Student
+from school_hr.models import teacher_attendance
 from .user_util import *
 from .forms import revisedPasswordResetForm, LoginForm
 
@@ -118,28 +119,37 @@ def RegisterView(request):
 @login_required
 #landing page
 def landing(request):
-    if (request.user.user_type == "Student"):
-        return render (request, 'landing_student.html')    
-    elif (request.user.user_type == "Teacher"):
-        return render (request, 'landing_teacher.html')
+    this_tenant=request.user.tenant
+    current_day=''
+    current_day=datetime.datetime.now()
+    start=dt(year=current_day.year, month=current_day.month, day=1)
+    end=dt(year=current_day.year, month=current_day.month, day=(monthrange(current_day.year,current_day.month)[1]))
     try:
-        this_tenant=request.user.tenant
+        events=annual_calender.objects.for_tenant(this_tenant).filter(date__range=(start,end))
+    except:
+        pass
+    if (request.user.user_type == "Student"):
+        return render (request, 'landing_student.html', {"events":events,})    
+    elif (request.user.user_type == "Teacher"):
+        return render (request, 'landing_teacher.html', {"events":events,})
+    try:
         year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
         paid=fee_paid(request, year)
         total=month_fee(request, year)
-        current_day=datetime.datetime.now()
-        start=dt(year=current_day.year, month=current_day.month, day=1)
-        end=dt(year=current_day.year, month=current_day.month, day=(monthrange(current_day.year,current_day.month)[1]))
-        events=annual_calender.objects.for_tenant(this_tenant).filter(date__range=(start,end))
-        teachers_list=Teacher.objects.for_tenant(this_tenant).all()
+        staff_list=Teacher.objects.for_tenant(this_tenant).all()
         student_list=Student.objects.for_tenant(this_tenant).all()
-        teachers=teachers_list.filter(dob__month=current_day.month,dob__day=current_day.day)
+        staffs=staff_list.filter(dob__month=current_day.month,dob__day=current_day.day)
         today=datetime.date.today()
         try:
             students_present=Attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
         except:
             students_present=0
-        total_teachers=teachers_list.count()
+        try:
+            staffs_present=teacher_attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
+        except:
+            staffs_present=0
+        total_staffs=staff_list.count()
+        percent_staff=round(staffs_present/total_staffs*100)
         total_students=student_list.count()
         percent_student=round(students_present/total_students*100)
     except:
@@ -148,9 +158,9 @@ def landing(request):
         return redirect('genadmin:new_academic_year')
     income_expense=yearly_pl(request)
     i_e_json = json.dumps(income_expense)
-    return render (request, 'landing.html', {"paid":paid,"events":events,"teachers":teachers,"total":total, 'i_e':i_e_json, \
-        'total_teachers': total_teachers, 'total_students':total_students, 'students_present':students_present, \
-        'percent_student':percent_student})
+    return render (request, 'landing.html', {"paid":paid,"events":events,"staffs":staffs,"total":total, 'i_e':i_e_json, \
+        'total_staffs': total_staffs, 'staffs_present':staffs_present, 'percent_staff':percent_staff,\
+        'total_students':total_students, 'students_present':students_present,'percent_student':percent_student})
 
 #400 error
 def bad_request(request):

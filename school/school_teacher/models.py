@@ -17,13 +17,11 @@ gender_list=(('M','Male'),
 				('F','Female'),
 				('O','Other'),)
 
-staff_type=(('T','Teacher'),
-				('A','Admin'),
-				('P','Principal'),
-				('P','Principal'),
-				('P','Principal'),
-				('C','Accounts'),
-				('F','Fee Collector'),)
+staff_type=(('Teacher','Teacher'),
+				('Admin','Admin'),
+				('Principal','Principal'),
+				('Accounts','Accounts'),
+				('Collector','Fee Collector'))
 
 blood_list=(('A+','A Positive'),
 				('B+','B Positive'),
@@ -37,10 +35,11 @@ blood_list=(('A+','A Positive'),
 
 #This is the branch details
 class Teacher(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
 	dob=models.DateField("Date of Birth", blank=True, null=True)
-	# staff_type=models.CharField(max_length=2,choices=staff_type, default='T')
+	staff_type=models.CharField(max_length=12,choices=staff_type)
 	joining_date=models.DateField(blank=True, null=True)
 	key=models.CharField(db_index=True,max_length=12)
 	gender=models.CharField(max_length=1,choices=gender_list)
@@ -90,15 +89,16 @@ class Teacher(models.Model):
 		return '%s: %s %s' % (self.key, self.first_name, self.last_name)
 
 class teacher_history(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	teacher=models.ForeignKey(Teacher,db_index=True, related_name='teacherHistory_teacher')
 	work_place=models.TextField()
 	details=models.TextField(blank=True,null=True)
 	reward=models.TextField(blank=True, null=True)
 
 class teacher_education(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	teacher=models.ForeignKey(Teacher,db_index=True,related_name='teacherEducation_teacher')
 	degree_name=models.TextField()
 	institute=models.TextField()
 	details=models.TextField(blank=True, null=True)
 	reward=models.TextField(blank=True, null=True)
-	

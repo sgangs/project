@@ -30,7 +30,7 @@ def teacher_validate(row, this_tenant, counter):
     row.append(key)
     row.append(slug)
     row.append(this_tenant)
-    row.append(item)
+    row.append("Teacher")
     row.append(item)
     if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "") :
         transaction.rollback()

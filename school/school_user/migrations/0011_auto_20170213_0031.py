@@ -23,9 +23,4 @@ class Migration(migrations.Migration):
             name='trial_to',
             field=models.DateField(blank=True, null=True),
         ),
-        migrations.AlterField(
-            model_name='tenant',
-            name='registered_on',
-            field=models.DateTimeField(default=datetime.datetime(2017, 2, 13, 0, 31, 32, 842807)),
-        ),
     ]

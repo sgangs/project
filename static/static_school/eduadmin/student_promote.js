@@ -14,6 +14,10 @@ $(".new").hover(function(){
 });
 
 
+//This is for the reset button to work
+// $( ".reset" ).click(function() {
+//     location.reload(true);
+// });
 
 var from_classid="";
 var from_year="";
@@ -21,12 +25,6 @@ var from_year="";
 $( ".class1" ).change(function() {
     from_classid=$('.class1').find(':selected').data('id');
 });
-
-//This is for the reset button to work
-// $( ".reset" ).click(function() {
-//     location.reload(true);
-// });
-
 
 $( ".year1" ).change(function() {
     from_year=$(".year1").val();
@@ -46,15 +44,19 @@ $('.fetch').click(function(e) {
                 // handle a successful response
                 success : function(jsondata) {
                 // location.href = redirect_url;
-                console.log(jsondata);
-                $.each(jsondata, function(){
-                    $('.new').prop('hidden',false);
+                $("#student_table .data").remove();
+                console.log(Object.keys(jsondata).length);
+                if (Object.keys(jsondata).length == 0){
+                    swal("Umm..", "Student doesn't exist for said combination.", "warning");
+                }
+                $('.new').prop('hidden',false);
+                $.each(jsondata, function(){                    
                     $('.table-responsive').prop('hidden',false);
                     $('#student_table').append("<tr class='data'>"+
                     "<td hidden>"+this.id+"</td>"+
                     "<td>"+this.key+"</td>"+
                     "<td>"+this.local_id+"</td>"+
-                    "<td>"+this.first_name+" "+this.first_name+"</td>"+
+                    "<td>"+this.first_name+" "+this.last_name+"</td>"+
                     "<td><input type='checkbox' class='promote'/></td>"+
 
                     "</tr>");
@@ -72,15 +74,25 @@ $('.fetch').click(function(e) {
     }
 })
 
+var to_classid="";
+var to_year="";
+
+$( ".class2" ).change(function() {
+    to_classid=$('.class2').find(':selected').data('id');
+});
+
+$( ".year2" ).change(function() {
+    to_year=$(".year2").val();
+});
 
 $('.submit').click(function(e) {
     swal({
         title: "Are you sure?",
-        text: "Please confirm adding student(s) to class for selected academic year!",
-        type: "info",
+        text: "Please confirm promoting/movings student(s) to new class/academic year! This cannot be undone.",
+        type: "warning",
         showCancelButton: true,
-      // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, add student(s)!",
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, promote/move student(s)!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
@@ -98,17 +110,9 @@ $('.submit').click(function(e) {
 function save_data(){
             
     //get all itemcode & quantity pair
-    console.log($('.month').is(":visible")); 
-        var items = [];
-        var proceed = true;
-        var month_entered=true
-        fee_name=$(".feename").val();
-        if ($('.month').is(":visible")){
-            if (month ==''){
-                month_entered=false
-            }
-        }
-        if (fee_name != "" && month_entered){
+    var items = [];
+    var proceed = true;
+    if (fee_name != "" && month_entered){
             //console.log("Date: "+date);
             $("tr.data").each(function() {
                 var account = $(this).find('td:nth-child(2)').find(':selected').data('id');
@@ -121,7 +125,6 @@ function save_data(){
                     };
                 items.push(item);        
             });
-            console.log(items);
             if (proceed){
         //Send ajax function to back-end 
                 (function() {

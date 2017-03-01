@@ -1,0 +1,50 @@
+{% extends "base_student.html" %}
+
+{% block title %}
+<title>
+    Dashboard 
+</title>
+	<!-- This is for the animation to work -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+	<!-- Google Fonts Load Pangolin-->
+    <link href="https://fonts.googleapis.com/css?family=Pangolin" rel="stylesheet">
+    <!-- Google Fonts Load Righteous-->
+    <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
+
+{% endblock %}
+
+
+{%block content%}
+
+<div class="container">
+
+    <div class="row">
+		
+		<div class="col-lg-8 col-md-8 col-xs-12 thumb">
+			<h4 style="font-size: 30px; font-family: 'Righteous';">Events For The Month:</h4>
+			<ul>
+				{% for i in events %}
+                	<li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
+                        {% endfor %}
+            </ul>
+        </div>
+        <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+        	<h4 style="font-size: 30px; font-family: 'Righteous';">Notice Board:</h4>
+            	<ul>
+                	{% for i in news %}
+                        <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.title}}</li>
+                        {% endfor %}
+				</ul>                    
+		</div>
+
+	</div>
+
+
+	{% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'landing/landing.css' %}">
+</div>
+	
+{% endblock %}
+
+
+

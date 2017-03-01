@@ -309,7 +309,7 @@ function save_data(called_for){
                                 // handle a successful response
                     success : function(jsondata) {
                         swal("Hooray..", "Fees payment registered successfully!!", "success");
-                        setTimeout(location.reload(true),600)
+                        setTimeout(location.reload(true),600);
                         // console.log(jsondata);
                         },
                     // handle a non-successful response

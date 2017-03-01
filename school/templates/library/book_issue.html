@@ -21,16 +21,25 @@
 <h3>Issue Books</h3>
 <h1></h1>
 <div class="row">
-<div class="form-group col-xs-8 col-md-6">
-  <label for="classname" class="control-label">Select Class of Student</label>
+<div class="form-group col-xs-4 col-md-4">
+  <label for="classname" class="control-label">Select Class</label>
   <select class="form-control selectpicker classgroup" data-live-search="true">
-      <option disabled selected hidden style='display: none' value>Select Class of Student</option>
+      <option disabled selected hidden style='display: none' value>Select Class</option>
       {% for item in classlist %}
           <option data-id="{{item.id}}">{{item.name}}</option>
       {% endfor %}
     </select>
 </div>
 <div class="form-group col-xs-4 col-md-4">
+  <label for="classname" class="control-label">Select Student</label>
+  <select class="form-control selectpicker classgroup" data-live-search="true">
+      <option disabled selected hidden style='display: none' value>Select Student</option>
+      {% for item in classlist %}
+          <option data-id="{{item.id}}">{{item.name}}</option>
+      {% endfor %}
+    </select>
+</div>
+<div class="form-group col-xs-4 col-md-3">
   <label for="classname" class="control-label">Select Date of Issue of Book</label>
   <input type="date" class="form-control date">
 </div>
@@ -48,9 +57,9 @@
 </div>
 
 <div class='row'>
-  <div class="form-group col-xs-12 col-md-10 bookdiv">
+  <div class="form-group col-xs-10 col-md-8 bookdiv">
   <label for="classname" class="control-label">Select Available Book</label>
-  <select class="form-control selectpicker classgroup" data-live-search='true' disabled='true'>
+  <select class="form-control selectpicker classgroup" data-live-search='true'>
       <option disabled selected hidden style='display: none' value>Select Book</option>
       {% for book in books %}
           <option data-id="{{book.id}}">{{book.name}}-{{book.author}}-{{book.school_book_code}}-{{book.key}}</option>

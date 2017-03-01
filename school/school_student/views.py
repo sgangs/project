@@ -1,14 +1,14 @@
-import datetime as dt
 import django_excel as excel
 import json
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
 from school_user.models import Tenant
+from school_genadmin.models import Batch
 from .forms import StudentForm, StudentGuardianForm, StudentEducationForm,  UploadFileForm
 from .models import Student, student_guardian, student_education
 from .student_support import *
@@ -54,10 +54,7 @@ def import_student(request):
                               request.FILES)
 		def choice_func(row):
 			choice_func.counter+=1
-			print(row)
 			data=student_validate(row, this_tenant, choice_func.counter)
-			print("revised")
-			print (data)
 			return data
 		
 		choice_func.counter=0
@@ -94,5 +91,26 @@ def student_export(request):
 	xlsx_data = WriteToExcel(student)
 	response.write(xlsx_data)
 	return response
+
+def student_edit(request):
+	batch=Batch.objects.for_tenant(request.user.tenant).all()
+	if request.method == "POST":
+		call_type = request.POST.get('call_type')
+		response_data=[]
+		if (call_type=='sending_batch'):
+			batchid = request.POST.get('batchid')
+			batch_selected=batch.get(id=batchid)
+			response_data=list(Student.objects.for_tenant(request.user.tenant).filter(batch = batch_selected).\
+							values('id','key','local_id','first_name','last_name'))
+		elif (call_type=='sending_student'):
+			studentid = request.POST.get('studentid')
+			student=Student.objects.for_tenant(request.user.tenant).get(id=studentid)
+			response_data.append({'dob':student.dob.isoformat(),'gender':student.gender,'blood':student.blood_group,\
+				'contact':student.contact,'email':student.email_id,'local_id':student.local_id,'address1':student.address_line_1,\
+				'address2':student.address_line_2,'state':student.state,'pincode':student.pincode,})
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+	return render(request, 'student/edit_student.html',{'batch':batch})
 	
 

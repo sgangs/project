@@ -26,8 +26,8 @@ from school_fees.models import student_fee, student_fee_payment
 from school_student.models import Student
 from school_genadmin.models import class_group
 from .models import monthly_fee, monthly_fee_list, yearly_fee, yearly_fee_list
-# fee_structure, fee_structure_list,
-#This function is used to provide students' data for attendance/exam score entry
+from school.school_general import *
+
 def create_fee_structure(request, fee_type):
     with transaction.atomic():
         try:
@@ -46,9 +46,9 @@ def create_fee_structure(request, fee_type):
             fee_create.tenant=this_tenant
             fee_create.save()
             for data in fee_lists:
-                accountid=data['account']
+                accountid=decoder(data['account'])[0]
                 amount=float(data['amount'])
-                account=Account.objects.get(id=accountid)
+                account=Account.objects.for_tenant(this_tenant).get(id=accountid)
                 if (fee_type == 'Monthly'):
                     fee_list=monthly_fee_list()
                     fee_list.monthly_fee=fee_create
@@ -97,11 +97,6 @@ def view_fee_details(request):
                     'amount':str(fee.amount)})
     except:
         pass
-    # try:
-    #     fee_paid=student_fee_payment.objects.get(student=student,month=month, year=year).amount
-    # except:
-    #     fee_paid=0
-    # response_data.append({'data_type':'Paid','amount':str(fee_paid)})
     return response_data
 
 
@@ -171,9 +166,9 @@ def save_student_payment(request):
             fee_payment.amount=amount_paid
             fee_payment.tenant=this_tenant
             fee_payment.save()
-            return tz_aware_now
         except:
             transaction.rollback()
+    return tz_aware_now
 
 
 

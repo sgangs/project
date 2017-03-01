@@ -41,7 +41,8 @@ urlpatterns = [
     url(r'^student/', include('school_student.urls',namespace='student', app_name='student')),
     url(r'^teacher/', include('school_teacher.urls',namespace='teacher', app_name='teacher')),
     url(r'^fees/', include('school_fees.urls',namespace='fees', app_name='fees')),
-    # url(r'^library/', include('school_library.urls',namespace='library', app_name='library')),
+    url(r'^salary/', include('school_salary.urls',namespace='salary', app_name='salary')),
+    url(r'^library/', include('school_library.urls',namespace='library', app_name='library')),
     url(r'^hr/', include('school_hr.urls',namespace='hr', app_name='hr')),
     url(r'^studentview/', include('school_student_view.urls',namespace='student_view', app_name='student_view')),
 ]

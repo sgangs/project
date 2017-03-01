@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Statutory Structure Creation</title>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Statutory Structure Creation: </h3>
+<h4 style="margin-bottom: 20px;">Employee Contribution to EPF</h4>
+<h1></h1>
+
+<div class="row" style="margin-bottom: 20px;">
+	<div class="form-group col-xs-6 col-md-4">
+		<label class="control-label">Statutory Structure Name</label>
+		<input type="text" required="" class="form-control structurename"  placeholder="Please input name of fee structure."> 
+	</div>
+</div>
+
+<div style="margin-bottom: 40px;">
+
+	<div class="row" style="margin-bottom: 20px;">
+		<div class="form-group col-xs-4 col-md-4">
+			<p class="control-label">Select Account for Employee EPF Liability</p><p> (under Ledger Group: Salary)</p>
+			<select class='form-control selectpicker account' data-live-search="true">
+				<option disabled selected hidden style='display: none' value>Select Account Name</option>
+				{% for i in accounts %}
+					<option data-id="{{i.id}}">{{i.name}}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="form-group col-xs-1 col-md-1">			
+		</div>
+		<div class="form-group col-xs-3 col-md-3 accounthover">
+			<label class="control-label">Click to view hints regaring these accounts</label>			
+		</div>
+	</div>
+		
+	<div>
+		<fieldset class="form-group">
+		<form class="rule">
+		    <label>Select EPF Rules</label>
+		    <div class="form-check" style="margin-bottom: 20px;">
+		      <p class="form-check-label">
+		        <input type="radio" class="form-check-input rule" name="optionsRadios" value="1">
+		        Rule 1: EPF Employee = Eligible Salary x 12% (please enter the multiplier in the sapce below)
+		      </p>
+		    </div>
+		    <div class="form-check" style="margin-bottom: 20px;">
+		    <p class="form-check-label">
+		        <input type="radio" class="form-check-input rule" name="optionsRadios" value="2">
+		        Rule 2: EPF Employee = Eligible Salary (capped, normally at Rs. 15000) X 12% (please enter the ceiling and multiplier in the sapce below)
+		      </p>
+		    </div>
+		    <div class="form-check" style="margin-bottom: 20px;">
+		    <p class="form-check-label">
+		        <input type="radio" class="form-check-input rule" name="optionsRadios" value="3">
+		        Rule 3: Predefined Value 
+		      </p>
+		    </div>
+		</form>
+		</fieldset>
+	</div>
+
+	<div style="margin-bottom: 40px;">
+		<p><b>NOTE: Eligible salary is determined by summation of salary structures with PF(includes EPF, EPS,EDIL)/ESI  account selected.(Accounts with "Use this for EPF/ESI calculation" selected)</b></p>
+	</div>
+
+	<div class="row">
+		<div class="form-group col-xs-3 col-md-3 other sal_cap" hidden>
+			<p class="control-label">EPF Salary Ceiling</p>
+			<input type="text" required="" class="form-control salary_ceiling"  placeholder="Salary ceiling is normally Rs. 15000"> 
+		</div>
+		<div class="form-group col-xs-3 col-md-3 other epsmultiplierdiv" hidden>
+			<p class="control-label">EPF Multiplier (In %)</p>
+			<input type="text" required="" class="form-control multiplier"  placeholder="Normally 12%">
+		</div>
+		<div class="form-group col-xs-3 col-md-3 predefined" hidden>
+			<p class="control-label">EPF Predefined Value</p>
+			<input type="text" required="" class="form-control predefined"  placeholder="Please enter EPF Predefined Value."> 
+		</div>
+	</div>
+
+</div>
+
+<h1></h1>
+
+<button type="button" class='submit btn btn-primary btn-xs' disabled="true" title="Click submit to record fee structure.">Submit</button>
+<button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<!--Tooltipser - Tooltip with HTML-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tooltipster/3.3.0/css/themes/tooltipster-shadow.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tooltipster/3.3.0/js/jquery.tooltipster.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'salary/employee_statutory.js' %}"></script>
+
+
+<script>
+	// redirect_url="{% url 'fees:yearly_fee_view' %}";	
+	csrf_token='{{csrf_token}}';	
+</script>
+
+{% endblock %}

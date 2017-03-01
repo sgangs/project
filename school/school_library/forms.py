@@ -92,17 +92,17 @@ class PeriodForm(forms.ModelForm):
 	class Meta:
 		model=issue_period
 		fields =('period', )
-	# def clean(self):
-	# 	cd= super(PeriodForm, self).clean()
-	# 	unique_room=cd.get('room')
-	# 	error=[]
-	# 	if not unique_key:
-	# 		raise forms.ValidationError(error)
-	# 	if(data != None and not key_blank):
-	# 		try:
-	# 			room=Library.objects.for_tenant(self.tenant).get(room=unique_room)
-	# 			self.add_error('room',"Library with same room number/name already exists.")
-	# 		except:
-	# 			return cd
-	# 	raise forms.ValidationError(error)
-	# 	return cd
+	def clean(self):
+		cd= super(PeriodForm, self).clean()
+		unique_period=cd.get('period')
+		error=[]
+		if not unique_period:
+			raise forms.ValidationError(error)
+			return cd
+		else:
+			try:
+				data=issue_period.objects.get(tenant=self.tenant)
+				self.add_error('period',"Book holding period already exist.")
+			except:
+				return cd
+		return cd

@@ -47,7 +47,7 @@ def student_validate(row, this_tenant, counter):
 
 def WriteToExcel(student):
     output = BytesIO()
-    workbook = xlsxwriter.Workbook(output)
+    workbook = xlsxwriter.Workbook(output, {'constant_memory': True})
     worksheet_s = workbook.add_worksheet("Summary")
 
     # excel styles

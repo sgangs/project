@@ -40,12 +40,13 @@ def teacherprofile_new(request, input_type):
 		if form.is_valid():
 			item=form.save(commit=False)			
 			item.tenant=current_tenant
+			item.staff_type="Teacher"
 			item.save()
 			return redirect(name)
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
 
 def teacher_list(request):
-	teachers=Teacher.objects.for_tenant(request.user.tenant).all()
+	teachers=Teacher.objects.for_tenant(request.user.tenant).filter(staff_type="Teacher")
 	return render(request, 'teacher/list.html',{'items': teachers})
 
 def import_teacher(request):
@@ -71,7 +72,7 @@ def import_teacher(request):
 						model=Teacher,
 						initializer=choice_func,
 						mapdict=['first_name', 'last_name', 'dob','joining_date','gender','blood_group', 'local_id','contact',\
-						 'email_id','address_line_1','address_line_2','state','pincode','key', 'slug', 'tenant'])
+						 'email_id','address_line_1','address_line_2','state','pincode','key', 'slug', 'tenant', 'staff_type'])
 					# messages.success(request, 'Students data uploaded successfully.')
 					return redirect('teacher:teacher_list')
 				except:

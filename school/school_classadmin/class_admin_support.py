@@ -2,17 +2,16 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from .models import Attendance, exam_report
 #from school_eduadmin.models import * #class_section
-from school_teacher.models import Teacher
 from school_student.models import Student
 from school_eduadmin.models import class_section, classstudent, Exam, Syllabus
 from school_genadmin.models import class_group, Subject 
-
+from school.school_general import *
 
 #This function is used to provide students' data for attendance/exam score entry
 def get_subject_data(request, called_for, classes):
     classid=request.POST.get('classid')
     examid=int(request.POST.get('examid'))
-    year=Exam.objects.for_tenant(request.user.tenant).get(id__exact=examid).year
+    year=int(request.POST.get('year'))
     class_selected=classes.get(id__exact=classid)
     response_data=[]
     try:
@@ -109,21 +108,16 @@ def get_exam_report(request, called_for, classes ):
     examid=int(request.POST.get('examid'))
     this_tenant=request.user.tenant
     exam=Exam.objects.for_tenant(this_tenant).get(id__exact=examid)
-    # class_selected=classes.get(id__exact=classid)
-    # subject=Subject.objects.get(id=subjectid)
+    total=exam.total
     exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(exam=exam).\
                         select_related('student','subject','class_section').all()
-    # try:
     response_data=[]
-        # if (average_external['external_score__avg'] != None):
     for report in exam_report_details:
-        response_data.append({'data_type':'Report w ext','marks': report.final_score,'subject': report.subject.name,\
+        response_data.append({'data_type':'Report w ext','marks': float((report.final_score/total)*100),'subject':report.subject.name,\
             'student_id':str(report.student.id) + " "+report.student.first_name+ " "+report.student.last_name,\
             'class':report.class_section.name})
     return response_data
-    # except:
-    #     pass
-
+    
 #This function is used to provide individual student's data for attendance
 def get_studentattendance_data(request, called_for, classes):
     classid=int(request.POST.get('classid'))
@@ -138,3 +132,33 @@ def get_studentattendance_data(request, called_for, classes):
     return response_data
     # except:
     #   pass
+
+def get_cce_transcript(request, called_for, classes ):
+    studentid=int(request.POST.get('studentid'))
+    classid=int(request.POST.get('classid'))
+    year=int(request.POST.get('year'))
+    response_data=[]
+    class_selected=class_section.objects.get(id=classid)
+    class_group_selected=class_group.objects.for_tenant(this_tenant).get(class_group=class_selected.classgroup.id)
+    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected,year=year)
+    for item in subjects:
+        response_data.append({'data_type':'Subject','name': item.subject.name, 'id':item.subject.id})
+    try:
+        final_data=exam_year_final.objects.for_tenant(this_tenant).get(year=year,class_section=class_selected)
+    except:
+        pass
+    student=Student.objects.for_tenant(this_tenant).get(id=studentid)
+    this_tenant=request.user.tenant
+    exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(student=student, year=year)
+    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group)
+    for report in exam_report_details:
+        exam=report.exam        
+        if (exam.name=='SA2'):
+            try:
+                subject_data=Subject.objects.for_tenant.get(id=report.subject.id)
+                final_subject=exam_year_final.objects.for_tenant(this_tenant).filter(final_report=final_data,subject=subject_data)
+                response_data.append({'data_type':'Final','subject': report.subject.name, 'total':final_subject.final_score})
+            except:
+                pass        
+        response_data.append({'data_type':exam.name,'grade':report.grade,'subject': report.subject.name})
+    return response_data

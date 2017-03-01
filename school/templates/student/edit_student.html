@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Edit Student Data</title>
+
+
+{% endblock %} 
+
+{% block content%}
+	<div class="row">
+		<div class="form-group col-xs-4 col-md-3">
+			<label class="control-label">Select Batch</label>
+			<select class="form-control selectpicker batch" data-live-search="true">
+    		<option disabled selected hidden style='display: none' value>Select Batch</option>
+				{% for i in batch %}
+  					<option data-id="{{i.id}}">{{i.name}}</option>
+				{% endfor %}
+  			</select>
+		</div>		
+
+		<div class="form-group col-xs-4 col-md-3">
+			<label class="control-label">Select Student</label>
+			<select class="form-control selectpicker student" id="student" data-live-search="true">
+    			<option disabled selected hidden style='display: none' value>Select Student</option>				
+  			</select>
+		</div>
+	</div>
+	<div class="row">
+		<div class="form-group col-xs-8 col-md-6">
+			<label class="control-label">Date Of Birth</label>
+			<input type="date" required="" class="form-control dob" aria-required="true">    		
+		
+			<label class="control-label">Gender</label>
+			<select class='form-control selectpicker gender'>
+				<option disabled selected hidden style='display: none' value>Select Gender</option>
+	      		<option data-id="M" value="M" >Male</option>
+				<option data-id="F" value="F">Female</option>
+				<option data-id="O" value="O">Other</option>			
+    		</select>    		
+		
+			<label class="control-label">Blood Group</label>
+			<select class='form-control selectpicker blood'>
+				<option disabled selected hidden style='display: none' value>Select Blood Group</option>
+	      		<option data-id="A+" value="A+">A Positive</option>
+				<option data-id="B+" value="B+">B Positive</option>
+				<option data-id="O+" value="O+">O Positive</option>
+				<option data-id="AB+" value="AB+">Other</option>
+				<option data-id="A-" value="A-">A Negative</option>
+				<option data-id="B-" value="B-">B Negative</option>
+				<option data-id="O-" value="O-">O Negative</option>
+				<option data-id="AB-" value="AB-">AB Negative</option>
+				<option data-id="Ot" value="Ot">Other</option>				
+    		</select>    		
+		
+			<label class="control-label">Contact</label>
+			<input type="tel" required="" class="form-control phone" aria-required="true" placeholder="Student Contact/Phone Number">    		
+			<label class="control-label">Email ID</label>
+			<input type="email" required="" class="form-control email" aria-required="true" placeholder="Student Email ID">    		
+		
+			<label class="control-label">School ID/Admission ID</label>
+			<input type="text" required="" class="form-control local_id" aria-required="true" placeholder="Should be unique for each student">
+		
+			<label class="control-label">Address Line 1</label>
+			<input type="text" required="" class="form-control address1" aria-required="true">
+		
+			<label class="control-label">Address Line 2</label>
+			<input type="text" required="" class="form-control address2" aria-required="true">
+		
+			<label class="control-label">State</label>
+			<input type="text" required="" class="form-control state" aria-required="true">
+		
+			<label class="control-label">Pincode</label>
+			<input type="text" required="" class="form-control pincode" aria-required="true">
+		</div>		
+
+	<button type="button" class="btn btn-primary btn-xs submit">Submit</button>
+	
+</div>			
+
+{% load static from staticfiles %}
+
+<script src="{% static 'student/student_edit.js' %}"></script>
+
+<script>
+	csrf_token='{{csrf_token}}';	
+	redirect_url= "{% url 'student:student_list' %}" 
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

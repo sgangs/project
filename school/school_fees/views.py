@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
-from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 #from django.db.models import F
 
 
@@ -18,10 +18,11 @@ from school_user.models import Tenant
 #from .forms import SubjectForm, classGroupForm, HouseForm
 from school_account.models import Account
 from school_eduadmin.models import class_section, classstudent
-from school_genadmin.models import class_group
+from school_genadmin.models import class_group, academic_year
 from school_student.models import Student
 from .models import monthly_fee, monthly_fee_list, yearly_fee, yearly_fee_list, student_fee, group_default_fee
 from .fee_utils import *
+from school.school_general import *
 
 @login_required
 #This is the base page.
@@ -35,7 +36,7 @@ def feestructure_new(request, input_type):
 	accountlist=Account.objects.for_tenant(request.user.tenant).all()
 	accounts=[]
 	for account in accountlist:
-		accounts.append({'data_type':'Accounts','id':account.id,'name':account.name})
+		accounts.append({'data_type':'Accounts','id':encoder(account.id),'name':account.name})
 	jsondata = json.dumps(accounts)
 	if (input_type == "Monthly Fees"):
 		fee_type='Monthly'
@@ -83,7 +84,7 @@ def group_fee_linking(request):
 					group_fee.tenant=this_tenant
 					group_fee.save()
 					if (addstudent == "Yes"):
-						classlist=class_section.objects.filter(classgroup=group).all()
+						classlist=class_section.objects.for_tenant(this_tenant).filter(classgroup=group).all()
 						for classdata in classlist:
 							class_students=Student.objects.filter(classstudent_eduadmin_student_student__year=year,\
 											classstudent_eduadmin_student_student__class_section=classdata)
@@ -171,6 +172,28 @@ def student_payment(request, input_type):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render(request, 'fees/student_fee.html',{'input_type':input_type,'classsection':classsection, 'extension':extension})
+
+def fee_collected_between(request):
+	this_tenant=request.user.tenant
+	academic=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+	min_date=academic.start.isoformat()
+	max_date=academic.end.isoformat()
+	if request.method == 'POST':
+		response_data=[]
+		start=request.POST.get('start')
+		end=request.POST.get('end')
+		fees_paid=student_fee_payment.objects.for_tenant(this_tenant).filter(paid_on__range=(start,end)).\
+					order_by('paid_on').select_related('student')
+		total_collected=0
+		for fee in fees_paid:
+			total_collected+=fee.amount
+			response_data.append({'data':'Student','student_name':fee.student.first_name+" "+fee.student.first_name,\
+				'student_id':fee.student.key,'student_local':fee.student.local_id,'amount':str(fee.amount),\
+				'date':fee.paid_on.isoformat()})
+		response_data.append({'data':'Total', 'collected':str(total_collected)})
+		jsondata=json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render(request, 'fees/fee_collection.html',{'min':min_date,'max':max_date})	
 
 # def print_fee_structure(request):
 # 	response_data=view_fee_details(request)

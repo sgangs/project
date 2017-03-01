@@ -17,23 +17,24 @@ class TenantManager(models.Manager):
 
 #This creates an accounting period
 class accounting_period(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	start=models.DateField(db_index=True,auto_now=False)
 	end=models.DateField(db_index=True, auto_now=False)
 	#key=models.CharField(db_index=True, max_length=10)
 	current_period=models.BooleanField('Current Accounting Period?')
 	finalized=models.BooleanField(default=False)
-	slug=models.SlugField(max_length=45)
+	#slug=models.SlugField(max_length=45)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountingPeriod_account_user_tenant')
 	objects = TenantManager()
 	
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item=self.tenant.key+" "+str(self.start)+" "+str(self.end)
-			self.slug=slugify(item)
-		super(accounting_period, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item=self.tenant.key+" "+str(self.start)+" "+str(self.end)
+	# 		self.slug=slugify(item)
+	# 	super(accounting_period, self).save(*args, **kwargs)
 	
 	class Meta:
 		unique_together = (("start","end", "tenant"))
@@ -74,19 +75,20 @@ class accounting_period(models.Model):
 
 #This is a ledger group. here will be a general ledger. User can add ledger groups thereafter.
 class ledger_group(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True, max_length=20)
-	slug=models.SlugField(max_length=41)
+	# slug=models.SlugField(max_length=41)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='ledgergroup_account_user_tenant')
 	objects = TenantManager()
 
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item=self.tenant.key+" "+self.name
-			self.slug=slugify(item)
-		super(ledger_group, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item=self.tenant.key+" "+self.name
+	# 		self.slug=slugify(item)
+	# 	super(ledger_group, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("name", "tenant"))
@@ -109,19 +111,28 @@ account_type_general=(('Current Assets','Current Assets'),
 				('Indirect Expense','Indirect Expense'),
 				('Equity','Equity'),)
 
+sub_account_type_choices=(('PFEEL','PF Employee - Liability'),
+	('PFERL','PF Employer - Liability'),
+	('PFERE','PF Employer - Expense'),
+	('ESEEL','ESI Employee - Liability'),
+	('ESERL','ESI Employer - Liability'),
+	('ESERE','ESI Employer - Expense'))
+
 
 #This is a list of ledgers
 class Account(models.Model):
-	ledger_group=models.ForeignKey(ledger_group,related_name='account_ledgerGroup')
-	name=models.CharField(db_index=True, max_length =100)
+	id=models.BigAutoField(primary_key=True)
+	ledger_group=models.ForeignKey(ledger_group, db_index=True, related_name='account_ledgerGroup')
+	name=models.CharField(db_index=True, max_length =60)
 	remarks=models.TextField(blank=True)
 	account_type=models.CharField('Account type', max_length=30,choices=account_type_general)
+	sub_account_type=models.CharField('Sub Account type', max_length=5,choices=sub_account_type_choices, blank=True, null=True)
 	#opening_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	#opening_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	current_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	slug=models.SlugField(max_length=50)
-	key=models.CharField(db_index=True, max_length=20)
+	slug=models.SlugField(max_length=40)
+	key=models.CharField(db_index=True, max_length=10)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='account_account_user_tenant')
 	objects = TenantManager()
 	
@@ -142,6 +153,7 @@ class Account(models.Model):
 		return self.name
 
 class account_year(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	account=models.ForeignKey(Account,db_index=True, related_name='accountYear_account')
 	opening_debit=models.DecimalField("Opening Debit Balance", max_digits=12, decimal_places=2, default=0)
 	opening_credit=models.DecimalField("Opening Credit Balance", max_digits=12, decimal_places=2, default=0)
@@ -157,19 +169,20 @@ class account_year(models.Model):
 
 #This is to have each journal as group
 class journal_group(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True, max_length=20)
-	slug=models.SlugField(max_length=32)
+	# slug=models.SlugField(max_length=32)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalGroup_account_user_tenant')
 	objects = TenantManager()
 
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item=self.tenant.key+" "+self.name
-			self.slug=slugify(item)
-		super(journal_group, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item=self.tenant.key+" "+self.name
+	# 		self.slug=slugify(item)
+	# 	super(journal_group, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("name", "tenant"))
@@ -179,10 +192,11 @@ class journal_group(models.Model):
 
 #This is a list of journal entry
 class Journal(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	date=models.DateTimeField(default=datetime.now)
 	group=models.ForeignKey(journal_group,related_name='journal_journalGroup')
-	remarks=models.CharField(max_length=100, blank=True, null=True)
-	slug=models.SlugField(max_length=20)
+	remarks=models.CharField(max_length=80, blank=True, null=True)
+	slug=models.SlugField(max_length=50)
 	key=models.CharField(db_index=True, max_length=20)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journal_account_user_tenant')
 	objects = TenantManager()
@@ -217,6 +231,7 @@ class Journal(models.Model):
 
 #This is to link to journal entry line items
 class journal_entry(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	transaction_type=(('Credit','Credit'),
 				('Debit','Debit'))	
 	journal=models.ForeignKey(Journal,db_index=True, related_name='journalEntry_journal')
@@ -245,18 +260,19 @@ class journal_entry(models.Model):
 
 #This model is for modes of payment
 class payment_mode(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	name = models.CharField('Payment Mode Name', db_index=True, max_length=20)
 	payment_account=models.ForeignKey(Account,related_name='paymentMode_account')
 	default=models.BooleanField('Default Payment Mode ?', default=False)
-	slug=models.SlugField(max_length=32)
+	# slug=models.SlugField(max_length=32)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='paymentMode_account_user_tenant')
 	objects = TenantManager()
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item=self.tenant.key+" "+self.name
-			self.slug=slugify(item)
-		super(payment_mode, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item=self.tenant.key+" "+self.name
+	# 		self.slug=slugify(item)
+	# 	super(payment_mode, self).save(*args, **kwargs)
 
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
@@ -266,5 +282,3 @@ class payment_mode(models.Model):
 		
 	def __str__(self):
 		return self.name
-
-#Should we create balance sheet?
