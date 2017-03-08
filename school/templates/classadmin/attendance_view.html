@@ -3,10 +3,6 @@
 {%block title%}
 <title>Daily Attendance Register</title>
 
-<!--Chosen (for searchbox in select box) JS and CSS-->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
-
 {% load static from staticfiles %}
 
 <script src="{% static 'classadmin/attendance_view.js' %}"></script>
@@ -18,7 +14,7 @@
 <h3>View Attendance Register</h3>
 <h1></h1>
 <div class="row">
-	<div class="form-group col-xs-4 col-md-3"">
+	<div class="form-group col-xs-4 col-md-3">
 		<select class="form-control classsection">
     	<option disabled selected hidden style='display: none' value>Select Class</option>
 			{% for item in items %}
@@ -60,10 +56,6 @@
 
 
 <script>
-	$(".select").chosen({
-		no_results_text: "Oops, nothing found!",
-		width: "95%"
-	});
 	csrf_token='{{csrf_token}}';
 </script>
 {% endblock %}

@@ -16,7 +16,7 @@
 <div class="row old">
 	<div class="form-group col-xs-4 col-md-4 class1div">
 		<label class="control-label">Select Old Class</label>
-		<select class='form-control selectpicker class1' data-live-search="true">
+		<select class='form-control select class1'>
 			<option disabled selected hidden style='display: none' value>Select Old Class</option>
 			{% for i in class_section %}
       		<option data-id="{{i.id}}">{{i.name}}</option>
@@ -29,9 +29,10 @@
 		<input type="text" required="" class="form-control year1"  placeholder="Enter previous academic year"> 		
 	</div>
 
-	<div class="form-group col-xs-4 col-md-4 hint1" hidden>
-		<label class="control-label">How To: </label>
-		<p>Select the class (section) and enter the current (old) academic year of the students</p>
+	<div class="form-group col-xs-4 col-md-4 hint1">
+		<label class="control-label">Help!</label>
+		<p></p>
+		<p>Click here to get hints</p>
 	</div>
 </div>
 
@@ -41,7 +42,7 @@
 <div class="row new" hidden='true'>
 	<div class="form-group col-xs-4 col-md-4 class2div">
 		<label class="control-label">Select New Class To Add</label>
-		<select class='form-control selectpicker class1' data-live-search="true">
+		<select class='form-control select class2'>
 			<option disabled selected hidden style='display: none' value>Select New Class To Add</option>
 			{% for i in class_section %}
       		<option data-id="{{i.id}}">{{i.name}}</option>
@@ -55,9 +56,9 @@
 	</div>
 
 	<div class="form-group col-xs-12 col-md-4 helpdiv hint2">
-		<label>How To:</label>
-		<p>Select the new class (section) and enter the start year of the academic year  where the students will be promoted. 
-		Then select the students who shall have to be promoted.</p>
+		<label class="control-label">Help!</label>
+		<p></p>
+		<p>Click here to get hints</p>
 	</div>
 </div>
 
@@ -74,6 +75,7 @@
 	  			<th style="text-align: center" class="header">Student School Key</th>
 	  			<th style="text-align: center" class="header">Student Name</th>
 		    	<th style="text-align: center" class="header"> Select to promote</th>
+		    	<th style="text-align: center" class="header"> Roll Number in new classs</th>
 	    	</tr>
 		</thead>
 		<tbody>

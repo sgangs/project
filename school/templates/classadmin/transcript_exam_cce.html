@@ -3,13 +3,9 @@
 {%block title%}
 <title>Exam Report</title>
 
-<!--Chosen (for searchbox in select box) JS and CSS-->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
-
 {% load static from staticfiles %}
 
-<script src="{% static 'classadmin/exam_entry.js' %}"></script>
+<script src="{% static 'classadmin/transcript_exam_cce.js' %}"></script>
 
 {% endblock %}
 
@@ -19,22 +15,18 @@
 <h1></h1>
 
 <div class="row">
-	<div class="form-group col-xs-3 col-md-3">
-		<label for="year" class="control-label">Academic Year</label>
-		<input type="number" required="" class="form-control year"  min="1990" max="2080" placeholder="Enter the academic year."> 
-	</div>
 	<div class="form-group col-xs-4 col-md-3">
 		<label for="year" class="control-label">Select Class</label>
-		<select class="form-control classsection">
+		<select class="form-control selectpicker classsection">
     		<option disabled selected hidden style='display: none' value>Select Class</option>
 			{% for item in items %}
   				<option data-id="{{item.id}}">{{item.name}}</option>
 			{% endfor %}
   	</select> 
 	</div>
-	<div class="form-group col-xs-3 col-md-3 subjectdiv">
+	<div class="form-group col-xs-3 col-md-3 studentdiv">
 		<label class="control-label">Select Student</label>
-		<select class="form-control subject">
+		<select class="form-control selectpicker" id="student">
     		<option selected hidden style='display: none' value>Select Student</option>			
   		</select> 
 	</div>
@@ -62,17 +54,11 @@
 
 </div>
 
-<button type="button" class='submit btn btn-primary btn-xs' disabled="true" title="Click submit to record class atendance.">Submit</button>
+<button type="button" class='submit btn btn-primary btn-xs' title="Click submit to record class atendance.">Submit</button>
 
-<button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
 
 
 <script>
-	$(".select").chosen({
-		no_results_text: "Oops, nothing found!",
-		width: "95%"
-	});
-	redirect_url="{% url 'classadmin:attendance_view' %}"
 	csrf_token='{{csrf_token}}';
 </script>
 {% endblock %}

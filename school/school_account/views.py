@@ -136,8 +136,7 @@ def account_detail(request,detail):
 def journal_detail(request,detail):
 	journal=Journal.objects.for_tenant(request.user.tenant).get(slug__exact=detail)
 	entries=journal_entry.objects.filter(journal=journal).prefetch_related('journal').select_related('account').all()
-	print (journal.slug)
-
+	
 	return render(request, 'accounts/journal_entry.html',{'journal':journal,'entries':entries, 'callfrom':'detail'})
 
 
@@ -209,9 +208,9 @@ def new_account(request):
 	#date=datetime.now()
 	account_type_dict=dict((y, x) for x, y in account_type_general)
 	this_tenant=request.user.tenant
-	periods=accounting_period.objects.for_tenant(this_tenant).all()
+	periods=accounting_period.objects.for_tenant(this_tenant).filter(finalized=False).values('id','start','end')
 	groups=ledger_group.objects.for_tenant(this_tenant).all()
-	accounts=Account.objects.for_tenant(this_tenant).all()
+	accounts=Account.objects.for_tenant(this_tenant).values('name','current_debit','current_credit')
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
@@ -241,7 +240,6 @@ def new_account(request):
 					remarks=request.POST.get('remarks')
 					key=request.POST.get('key')
 					acct_type=request.POST.get('acct_type')
-					# print(account_type_dict)
 					sub_acct_type=request.POST.get('sub_acct_type')
 					if (acct_type not in account_type_dict):
 						raise IntegrityError

@@ -10,15 +10,13 @@
     <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
 {% endblock %}
 
-{% block dashboard %}
-{% endblock %}
-
+{% load static from staticfiles %}
 {%block content%}
 
 <div class="container">
     <div class="row">
         
-        <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+        <div class="col-md-7 col-xs-12">
             <h4 style="font-size: 30px; font-family: 'Righteous';">Events For The Month:</h4>
             <ul>
                 {% for i in events %}
@@ -26,7 +24,7 @@
                 {% endfor %}                
             </ul>
         </div>
-        <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+        <div class="col-md-7 col-xs-12">
             <h4 style="font-size: 30px; font-family: 'Righteous';">Notice Board:</h4>
                 <ul>
                     {% for i in news %}
@@ -34,6 +32,9 @@
                         {% endfor %}
                 </ul>                    
         </div>
+        <!--<div class="col-md-5">
+            <p><img src="{% static 'gif/student_landing.gif' %}" alt="Forgot Password"></p>
+        </div>-->
 
     </div>
     

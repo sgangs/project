@@ -4,7 +4,6 @@
 <title>
     Accounts Master 
 </title>
-<!--jQuery & javascript for this html-->
 {% load static from staticfiles %}
   <script src="{% static 'master/script.js' %}"></script>
 {% endblock %}
@@ -23,7 +22,7 @@
   {% block details %}
 
   {% for item in items %}
-    {% if type != 'Sales_Invoice' and type != 'Purchase_Invoice' and type != 'Period'%}
+    {% if type != 'Period'%}
     <div>
       <h4><a href= "#" >{{item.name}}</a></h4>
         <h6 hidden>{{item.key}}</h6>

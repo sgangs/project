@@ -133,24 +133,24 @@ def get_studentattendance_data(request, called_for, classes):
     # except:
     #   pass
 
-def get_cce_transcript(request, called_for, classes ):
-    studentid=int(request.POST.get('studentid'))
-    classid=int(request.POST.get('classid'))
-    year=int(request.POST.get('year'))
+def get_cce_transcript(request, year):
+    this_tenant=request.user.tenant
+    studentid=int(request.POST.get('student'))
+    classid=int(request.POST.get('classsection'))
     response_data=[]
-    class_selected=class_section.objects.get(id=classid)
-    class_group_selected=class_group.objects.for_tenant(this_tenant).get(class_group=class_selected.classgroup.id)
-    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected,year=year)
+    class_group_selected=class_group.objects.for_tenant(this_tenant).\
+                    get(classSection_classadmin_classGroup_genadmin=classid)
+    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected,year=year).select_related('subject')
     for item in subjects:
         response_data.append({'data_type':'Subject','name': item.subject.name, 'id':item.subject.id})
     try:
-        final_data=exam_year_final.objects.for_tenant(this_tenant).get(year=year,class_section=class_selected)
+        final_data=exam_year_final.objects.for_tenant(this_tenant).get(year=year,class_section=classid)
     except:
         pass
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     this_tenant=request.user.tenant
     exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(student=student, year=year)
-    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group)
+    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected)
     for report in exam_report_details:
         exam=report.exam        
         if (exam.name=='SA2'):
@@ -160,5 +160,5 @@ def get_cce_transcript(request, called_for, classes ):
                 response_data.append({'data_type':'Final','subject': report.subject.name, 'total':final_subject.final_score})
             except:
                 pass        
-        response_data.append({'data_type':exam.name,'grade':report.grade,'subject': report.subject.name})
+        response_data.append({'data_type':'Exam','name':exam.key,'grade':report.grade,'subject': report.subject.name})
     return response_data

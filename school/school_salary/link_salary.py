@@ -58,10 +58,10 @@ def link_cadre_salary(request, cadre_type):
                 cadre_link.esiEmployer=esi
             except:
                 esi=''
-            # try:
-            cadre_link.esiEmployee=esi_employee
-            # except:
-            #     esi_employee=''
+            try:
+                cadre_link.esiEmployee=esi_employee
+            except:
+                esi_employee=''
             try:
                 cadre_link.epfEmployee=epf_employee
             except:

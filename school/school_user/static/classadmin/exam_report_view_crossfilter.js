@@ -14,57 +14,13 @@ var examid=1;
 
 
 //This is for the reset button to work
-$( ".reset" ).click(function() {
-    location.reload(true);
-});
-
-//This is called after the class option is selected
-// $( ".classsection" ).change(function() {
-//     classid=parseInt($(".classsection").find(':selected').data('id'));
-//     $( ".classsection" ).prop('disabled',true); 
-//     $( ".exam" ).prop('disabled',false);
-// });
-
-
-//This function gets called as exam is entered.
-// $( ".exam" ).change(function() {
-//     examid =parseInt($(".exam").find(':selected').data('id'));
-//     (function() {
-//         $.ajax({
-//             url : "", 
-//             type : "POST", 
-//             data : { examid: examid,
-//                 classid: classid,
-//                 calltype: 'details',
-//                 csrfmiddlewaretoken: csrf_token}, // data sent with the post request
-//             dataType: 'json',
-//             // handle a successful response
-//             success : function(jsondata){
-//                 $('.subjectdiv').attr('hidden', false);
-//                 $('.exam').attr('disabled', true);
-//                 $.each(jsondata, function(){
-//                     if (this.data_type=="Subject"){
-//                         $('.subject').append($('<option>',{
-//                             'data-id': this.id,
-//                             'text': this.name
-//                         }));
-//                     }
-//                 })
-//             },
-//             // handle a non-successful response
-//             error : function() {
-//                 bootbox.alert({
-//                     message: "Class and exam combination doesn't exist.", 
-//                     onEscape: true }); // provide a bit more info about the error to the user
-//                 clearmodal();
-//             }
-//         });
-//     }());
+// $( ".reset" ).click(function() {
+//     location.reload(true);
 // });
 
 //This is called when subject is entered.
 $( ".exam" ).change(function() {
-    subjectid =parseInt($(".subject").find(':selected').data('id'));
+    examid =parseInt($(".exam").find(':selected').data('id'));
     (function() {
         $.ajax({
             url : "", 
@@ -92,20 +48,8 @@ $( ".exam" ).change(function() {
 });
 
 
-
-
 function draw_crossfilter(data){
 
-        // var livingThings = crossfilter([
-        // { 'name': 'Rusty',  'type': 'human', 'legs': 2 },
-        // { 'name': 'Alex',   'type': 'human', 'legs': 2 },
-        // { 'name': 'Lassie', 'type': 'dog',   'legs': 4 },
-        // { 'name': 'Spot',   'type': 'dog',   'legs': 4 },
-        // { 'name': 'Polly',  'type': 'bird',  'legs': 2 },
-        // { 'name': 'Fiona',  'type': 'plant', 'legs': 0 }
-        // ]);
-
-        
     var subjectChart = dc.rowChart("#subject-chart");
     var classChart = dc.rowChart("#class-chart");
     var marksChart = dc.pieChart("#marks-chart");
@@ -141,7 +85,7 @@ function draw_crossfilter(data){
             p.group = "60-80"
         }
         else{
-            p.group = "Above 80"
+            p.group = "80-100"
         }
         return p.group;
     });
@@ -173,7 +117,6 @@ function draw_crossfilter(data){
     reducer(classAvgGroup);
     reducer(studentAvgGroup);
     // reductio().avg(function(d) { return +d.marks; })(subjectAvgGroup);
-    console.log(subjectAvgGroup.top(2));
     // marksGroup = marksDim.groupAll()
 
     function render_plots(){
@@ -186,12 +129,18 @@ function draw_crossfilter(data){
                     //console.log("p.value.average: ", p.value.avg) //displays the avg fine
                     return p.value.avg; 
                 })
+                .title(function (d) {
+                  return (d.key + " Average Marks: " + d.value.avg.toFixed(2)) ;
+                })
                 .xAxis().ticks(5);
 
         classChart
                 // .width(300).height(200)
                 .dimension(classDim)
                 .group(classAvgGroup)
+                .title(function (d) {
+                  return (d.key + " Average Marks: " + d.value.avg.toFixed(2)) ;
+                })
                 .valueAccessor(function(p) { 
                     //console.log("p.value.average: ", p.value.avg) //displays the avg fine
                     return p.value.avg; ;
@@ -202,7 +151,11 @@ function draw_crossfilter(data){
                 .dimension(marksDim)
                 .group(marksGroup)
                 .innerRadius(20)
-                .renderLabel(true);
+                .renderLabel(true)
+                .title(function (d) {
+                  return ("No. of students in range " +d.key +": " + d.value) ;
+                });
+
 
         studentChart
                 // .width(800).height(200)
@@ -210,6 +163,9 @@ function draw_crossfilter(data){
                 .group(studentAvgGroup, "Student wise score")
                 .label(function (d) {
                   return (d.key.split(' ')[1] +" "+d.key.split(' ')[2]) ;
+                })
+                .title(function (d) {
+                  return (d.key.split(' ')[1] +" "+d.key.split(' ')[2] + " Average Marks: " + d.value.avg.toFixed(2)) ;
                 })
                 .valueAccessor(function(p) { 
                     //console.log("p.value.average: ", p.value.avg) //displays the avg fine
@@ -234,6 +190,18 @@ function draw_crossfilter(data){
 
 
         dc.renderAll()
+
+        // marksChart.on ("renderlet", function(chart) {
+        //     dc.events.trigger(function() {
+        //         console.log(marksChart.filters());
+        //     });
+        // })
+        
+        // subjectChart.turnOnControls(true)
+        // classChart.turnOnControls(true)
+        // marksChart.turnOnControls(true)
+        // studentChart.turnOnControls(true)
+
     };
 
     render_plots();

@@ -1,7 +1,6 @@
 from datetime import date, datetime
 from dateutil.rrule import *
 from dateutil.parser import *
-from django.db.models import Sum
 from django.utils.timezone import localtime
 from school_user.models import User, Tenant
 from .models import annual_holiday_rules

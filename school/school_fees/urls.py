@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^yearlyfeeview/$', views.fee_view,  {'input_type': 'Yearly Fees'}, name='yearly_fee_view'),
     url(r'^studentfeepayment/$', views.student_payment, {'input_type': 'Payment'}, name='student_payment'),
     url(r'^feecollection/$', views.fee_collected_between, name='fee_collection'),
+    url(r'^feeslicingdicing/$', views.fee_collection_graph, name='fee_report'),
     url(r'^studentfeepaymentview/$', views.student_payment, {'input_type': 'View'}, name='student_payment_view'),
     # url(r'^printfee/$', views.print_fee_structure, name='student_fee_print'),
     #url(r'^(?P<detail>[-\S]+)/$',views.purchase_detail, {'type': 'Detail'}, name='invoice_detail'),

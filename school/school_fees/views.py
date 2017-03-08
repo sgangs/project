@@ -11,8 +11,8 @@ from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.conf import settings
 #from django.db.models import F
-
 
 from school_user.models import Tenant
 #from .forms import SubjectForm, classGroupForm, HouseForm
@@ -165,10 +165,10 @@ def student_payment(request, input_type):
 					buffer = BytesIO()
 					report = PdfPrint(buffer,'A4')
 					pdf = report.report(request, paid_on, response_data, 'Fee Payment')
-					response.write(pdf)
-					return response
+					response.write(pdf)					
 				except:
 					transaction.rollback()
+			return response
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render(request, 'fees/student_fee.html',{'input_type':input_type,'classsection':classsection, 'extension':extension})
@@ -194,6 +194,21 @@ def fee_collected_between(request):
 		jsondata=json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render(request, 'fees/fee_collection.html',{'min':min_date,'max':max_date})	
+
+def fee_collection_graph(request):
+	this_tenant=request.user.tenant
+	academic=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+	min_date=academic.start.isoformat()
+	max_date=academic.end.isoformat()
+	fees_paid=student_fee_payment.objects.for_tenant(this_tenant).filter(paid_on__range=(min_date,max_date)).\
+					order_by('paid_on').select_related('student','student_class')
+	response_data=[]
+	for fee in fees_paid:
+		response_data.append({'student':str(fee.student.id) + " "+fee.student.first_name+ " "+fee.student.last_name,\
+			'fee_month':fee.month, 'amount':float(fee.amount),'date':fee.paid_on.isoformat(), 'class':fee.student_class.name})
+	# jsondata=
+		# return HttpResponse(jsondata)
+	return render(request, 'fees/view_feereport_crossfilter.html',{'data':json.dumps(response_data), 'min':min_date,'max':max_date})
 
 # def print_fee_structure(request):
 # 	response_data=view_fee_details(request)

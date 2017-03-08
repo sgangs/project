@@ -81,15 +81,6 @@ class ledger_group(models.Model):
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='ledgergroup_account_user_tenant')
 	objects = TenantManager()
 
-	#def get_absolute_url(self):
-	#	return reverse('master_detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item=self.tenant.key+" "+self.name
-	# 		self.slug=slugify(item)
-	# 	super(ledger_group, self).save(*args, **kwargs)
-
 	class Meta:
 		unique_together = (("name", "tenant"))
 		
@@ -113,7 +104,7 @@ account_type_general=(('Current Assets','Current Assets'),
 
 sub_account_type_choices=(('PFEEL','PF Employee - Liability'),
 	('PFERL','PF Employer - Liability'),
-	('PFERE','PF Employer - Expense'),
+	('PFERE','PF Employer - Expense'),#This should actually be ESRE: Employer Statutory Expense
 	('ESEEL','ESI Employee - Liability'),
 	('ESERL','ESI Employer - Liability'),
 	('ESERE','ESI Employer - Expense'))

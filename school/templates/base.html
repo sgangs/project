@@ -185,32 +185,33 @@
           <ul>
             <li><a href="{% url 'hr:new_leave_type' %}" title="Sub Nav">Create Leave Type</a></li>
             <li><a href="#" title="Sub Nav">Link Leave to Staff</a></li>
-            <li><a href="{% url 'hr:new_teacher_attendance' %}" title="Sub Nav">Note Teacher Attendance</a></li>
+            <!--{# <li><a href="{% url 'hr:new_teacher_attendance' %}" title="Sub Nav">Note Teacher Attendance</a></li> #}-->
           </ul>
         </li>
       </ul>
         <!-- Class -->
       <ul class="Class">
-        <li><a href="#" title="Nav"><span><i class="fa fa-group"></i></span>Class</a>
+        <li><a href="#"><span><i class="fa fa-group"></i></span>Class</a>
           <div class="sub-wrapper">
             <ul>
-              <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Class</a>
+              <li><a href="#"><i class="fa fa-plus"></i> Add To Class</a>
                 <div>
                   <ul>
-                    <li><a href="{% url 'genadmin:new_class_group' %}" title="Sub Nav 2">Add New Class Group</a></li>
-                    <li><a href="{% url 'eduadmin:new_class' %}" title="Sub Nav 2">Add New Class (Section)</a></li>
-                    <li><a href="{% url 'eduadmin:new_classteacher' %}" title="Sub Nav 2">Add Class Teacher</a></li>
-                    <li><a href="{% url 'eduadmin:new_subject_teacher' %}" title="Sub Nav 2">Add Subject Teacher</a></li>
-                    <li><a href="{% url 'eduadmin:new_class_student' %}" title="Sub Nav 2">Add Student To Class</a></li>
+                    <li><a href="{% url 'genadmin:new_class_group' %}">Add New Class Group</a></li>
+                    <li><a href="{% url 'eduadmin:new_class' %}">Add New Class (Section)</a></li>
+                    <li><a href="{% url 'eduadmin:new_classteacher' %}">Add Class Teacher</a></li>
+                    <li><a href="{% url 'eduadmin:new_subject_teacher' %}">Add Subject Teacher</a></li>
+                    <li><a href="{% url 'eduadmin:promote_student' %}" title="Use this for promoting/moving students from one academic year to next academic year">Promote Students</a></li>
+                    <li><a href="{% url 'eduadmin:new_class_student' %}">Assign Class To New Admission Students</a></li>
                   </ul>
                 </div>
               </li>
-              <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> Class List</a>
+              <li><a href="#"><i class="fa fa-list"></i> Class List</a>
                 <div>
                   <ul>
-                    <li><a href="{% url 'genadmin:class_group_list' %}" title="Sub Nav 2">View Class Group List</a></li>
-                    <li><a href="{% url 'eduadmin:class_list' %}" title="Sub Nav 2">View Class (Section) List</a></li>
-                    <li><a href="{% url 'eduadmin:subject_teacher_list' %}" title="Sub Nav 2">View List of Subject Teachers</a></li>
+                    <li><a href="{% url 'genadmin:class_group_list' %}">View Class Group List</a></li>
+                    <li><a href="{% url 'eduadmin:class_list' %}">View Class (Section) List</a></li>
+                    <li><a href="{% url 'eduadmin:subject_teacher_list' %}">View List of Subject Teachers</a></li>
                   </ul>
                 </div>
               </li>
@@ -341,9 +342,9 @@
       </ul>
       <!-- Promotion -->
       <ul class="promote">
-        <li><a href="#" title="Nav"><span><i class="fa fa-exchange"></i></span>Students Promotion</a>
+        <li><a href="#" ><span><i class="fa fa-exchange"></i></span>Students Promotion</a>
           <ul>
-            <li><a href="{% url 'eduadmin:promote_student' %}" title="Sub Nav">Promote Student</a></li>
+            <li><a href="{% url 'eduadmin:promote_student' %}" title="Use this for promoting/moving students from one academic year to next academic year">Promote Student</a></li>
             <!-- <li><a href="{% url 'genadmin:event_list' %}" title="Sub Nav"><i class="fa fa-list"></i> View Event List</a></li> -->
           </ul>
         </li>

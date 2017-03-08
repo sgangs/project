@@ -40,7 +40,7 @@ class Teacher(models.Model):
 	last_name=models.CharField(max_length=100)
 	dob=models.DateField("Date of Birth", blank=True, null=True)
 	staff_type=models.CharField(max_length=12,choices=staff_type)
-	joining_date=models.DateField(blank=True, null=True)
+	joining_date=models.DateField()
 	key=models.CharField(db_index=True,max_length=12)
 	gender=models.CharField(max_length=1,choices=gender_list)
 	blood_group=models.CharField('Blood Group', max_length=3,choices=blood_list, blank=True, null=True)

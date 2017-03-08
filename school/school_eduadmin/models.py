@@ -96,6 +96,7 @@ class classstudent(models.Model):
 	roll_no=models.PositiveSmallIntegerField()
 	student=models.ForeignKey(Student,db_index=True,related_name='classstudent_eduadmin_student_student')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
+	is_promoted=models.BooleanField(default=False)
 	#slug=models.SlugField(max_length=40)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classstudent_eduadmin_user_tenant')
 	objects=TenantManager()
@@ -144,7 +145,7 @@ class Term(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(max_length=15)
 	number=models.PositiveSmallIntegerField("Term Number",default=1)
-	year=models.PositiveSmallIntegerField("Academic Year",db_index=True,default=2016)
+	year=models.PositiveSmallIntegerField("Academic Year",db_index=True,default=2017)
 	# slug=models.SlugField(max_length=45)
 	weightage=models.PositiveSmallIntegerField("Term Weightage",default=1)
 	is_active=models.BooleanField("Is this Term active", default=True)
@@ -204,6 +205,32 @@ class Syllabus(models.Model):
 	def __str__(self):
 		return self.key
 
+grade_choices=(('S','Scholastic'),
+		('C','Co-scholastic'))
+
+#This is the list of subjects to be taught in school.
+class grade_table(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	# name=models.CharField("Subject Name", blank=True, max_length=20)
+	grade_type=models.CharField("Type of grade?",max_length=1,choices=grade_choices)
+	sl_no=models.PositiveSmallIntegerField()
+	min_mark=models.PositiveSmallIntegerField()
+	max_mark=models.PositiveSmallIntegerField()
+	grade=models.CharField(max_length=4)
+	grade_point=models.DecimalField(max_digits=4, decimal_places=2)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='gradeTable_genadmin_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+	
+	class Meta:
+		# unique_together = (("grade_type", "tenant"))
+		ordering = ('tenant','sl_no')
+		
+	def __str__(self):
+		return self.name
+
 class Exam(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True,max_length=40)
@@ -226,7 +253,7 @@ class Exam(models.Model):
 
 	class Meta:
 		unique_together = (("key", "tenant"))
-		ordering = ('year','term','serial_no')		
+		ordering = ('year','term','serial_no')
 
 	def __str__(self):
 		return '%s %s' % (self.name, self.year)

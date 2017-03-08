@@ -106,20 +106,14 @@ class cadre_leave(models.Model):
 	def __str__(self):
 		return '%s: %s' % (self.cadre, self.teacher)
 
-#This is the daily attendance abstract model, only used for code maintainance and doesn't affect db schema
-class Attendance(models.Model):
-	# id=models.BigAutoField(primary_key=True)
-	date=models.DateField()#form/datefield option needed as "input_formats=settings.DATE_INPUT_FORMATS"
+
+class teacher_attendance(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	date=models.DateField(db_index=True)#form/datefield option needed as "input_formats=settings.DATE_INPUT_FORMATS"
 	ispresent=models.BooleanField()
+	is_authorized=models.BooleanField(default=True)
 	remarks=models.TextField()
 	slug=models.SlugField(max_length=50)
-
-	class Meta:
-		abstract = True
-
-	
-class teacher_attendance(Attendance):
-	id=models.BigAutoField(primary_key=True)
 	teacher=models.ForeignKey(Teacher,db_index=True,related_name='teacherAttendance_hr_teacher_teacher')
 	leave_type=models.ForeignKey(leave_type, blank=True, null=True, related_name='teacherAttendance_leaveType')
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='teacherAttendance_hr_user_tenant')

@@ -6,10 +6,6 @@
 {%block title%}
 <title>Add New Account</title>
 
-<!--Chosen (for searchbox in select box) JS and CSS-->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
-
 {% load static from staticfiles %}
 
 <script src="{% static 'accounts/new_account.js' %}"></script>
@@ -77,7 +73,7 @@
     		<option data-id="None">Not Applicable</option>
 			<option data-id="PFEEL">PF Employee - Liability Account</option>
 			<option data-id="PFERL">PF Employer - Liability Account</option>
-			<option data-id="PFERE">PF Employer - Expense Account</option>
+			<option data-id="PFERE">Employer - Statutory Expense Account</option>
 			<option data-id="ESEEL">ESI Employee - Liability Account</option>
 			<option data-id="ESERL">ESI Employer - Liability Account</option>
 			<option data-id="ESERE">ESI Employer - Expense Account</option>			

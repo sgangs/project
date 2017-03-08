@@ -31,7 +31,7 @@
 	</div>
 	<p class="bg-danger year-p" hidden="true">...</p>
 	<div class="form-group monthly_salarydiv">
-		<label for="classgroup" class="control-label">Select Monthly Salary Structure (Select Only One)</label>
+		<label for="classgroup" class="control-label">Select Monthly Recurring Structure(Select Only One)</label>
 		<select class="form-control selectpicker monthly_salary" data-live-search="true">
     		<option disabled selected hidden style='display: none' value>Select Monthly Salary</option>
 				{% for salary in monthly_salary %}
@@ -40,7 +40,7 @@
   		</select>
 	</div>
 	<div class="form-group yearly_salarydiv">
-		<label for="classgroup" class="control-label" >Select Yearly Salary Structure(Select Singel/Multiple/Leave Blank as applicable)</label>
+		<label for="classgroup" class="control-label" >Select Yearly Recurring Structure(Select Single/Multiple/Leave Blank as applicable)</label>
 		<select class="form-control selectpicker yearly_salary" multiple data-live-search="true">
     			{% for salary in yearly_salary %}
   					<option data-id="{{salary.id}}">{{salary.name}}</option>

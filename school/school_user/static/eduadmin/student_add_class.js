@@ -58,19 +58,24 @@ $('.fetch').click(function(e) {
                 success : function(jsondata) {
                 // location.href = redirect_url;
                     console.log(jsondata);
-                    $('.student_add').attr('hidden',false);
-                    $('.fetch_data').attr('disabled',true);
-                    $.each(jsondata, function(){
-                        if (this.data_type=="Student"){
-                            $('.student').append("<tr class='data' >"+
-                                "<td hidden='true'>"+this.id+"</td>"+
-                                "<td style='height:20px;'>" + this.key + "</td>"+
-                                "<td style='height:20px;'>" + this.local_id + "</td>"+
-                                "<td style='height:20px;'>" + this.name + "</td>"+
-                                "<td style='height:20px;'><input type='checkbox' checked></td>"+
-                                "<td style='height:20px;'><input class='form-control' type='number'></td></tr>");
-                        }
-                    });
+                    if (jsondata.length<1){
+                        swal("Umm..", "There's no new admission student in the batch.", "error");    
+                    }
+                    else{
+                        $('.student_add').attr('hidden',false);
+                        $('.fetch_data').attr('disabled',true);
+                        $.each(jsondata, function(){
+                            if (this.data_type=="Student"){
+                                $('.student').append("<tr class='data' >"+
+                                    "<td hidden='true'>"+this.id+"</td>"+
+                                    "<td style='height:20px;'>" + this.key + "</td>"+
+                                    "<td style='height:20px;'>" + this.local_id + "</td>"+
+                                    "<td style='height:20px;'>" + this.name + "</td>"+
+                                    "<td style='height:20px;'><input type='checkbox' checked></td>"+
+                                    "<td style='height:20px;'><input class='form-control' type='number'></td></tr>");
+                            }
+                        });
+                    }
                 },
                 // handle a non-successful response
                 error : function() {

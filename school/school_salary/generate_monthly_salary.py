@@ -383,3 +383,72 @@ def finalize_salary(request):
                             payment_list.save()
         except:
             transaction.rollback()
+
+def pay_staff(this_tenant, salary_id, mode):
+    salary=staff_salary_payment.objects.for_tenant(this_tenant).get(id=salary_id)
+    staff_name=salary.staff.first_name+" "+salary.staff.last_name
+    salary_lists=salary_payment_list.objects.filter(salary_payment=salary)
+    now=datetime.date.today()
+    tz_unaware_now=datetime.datetime.strptime(str(now), "%Y-%m-%d")
+    tz_aware_now=timezone.make_aware(tz_unaware_now, timezone.get_current_timezone())
+    with transaction.atomic():
+        try:
+            salary_journal_entry(this_tenant, salary_lists, staff_name, tz_aware_now, mode, \
+                salary.gross, salary.employee_deduction, salary.employer_contribution)
+            salary.paid_on=tz_aware_now
+            salary.paid=True
+            salary.save()
+        except:
+            transaction.rollback()
+
+
+def salary_journal_entry(this_tenant, salary_lists,name, tz_aware_now, mode, gross, employee_stat, employer_stat):
+    journal=Journal()
+    journal.date=tz_aware_now
+    group=journal_group.objects.for_tenant(this_tenant).get(name="General")
+    journal.group=group
+    journal.remarks="Salary for for: "+name
+    journal.tenant=this_tenant
+    journal.save()
+    #Take care of journal entries related to salary (Monthly, yearly, employee & employer contributions)
+    for item in salary_lists:    
+        entry=journal_entry()
+        entry.journal=journal
+        account=Account.objects.for_tenant(this_tenant).get(id=item.account.id)
+        entry.account=account
+        if (item.list_type == "Monthly" or item.list_type=="Yearly"):
+            entry.transaction_type="Debit"
+            account.current_debit=account.current_debit+item.amount
+        else:
+            entry.transaction_type="Credit"
+            account.current_credit=account.current_credit+item.amount
+        account.save()
+        entry.value=item.amount
+        entry.tenant=this_tenant
+        entry.save()
+    i=1
+    while (i<3):
+        entry=journal_entry()
+        entry.journal=journal
+        #Salary Payment
+        if (i==1):
+            account=Account.objects.for_tenant(this_tenant).get(id=mode.payment_account.id)
+            entry.transaction_type="Credit"
+            account.current_credit=account.current_credit+(gross - employee_stat)
+            entry.value=(gross - employee_stat)
+        #Employer Liability Expense
+        elif (i==2):
+            accountid=basic_salary_rule.objects.get(tenant=this_tenant).employer_contribution_expense.id
+            account=Account.objects.for_tenant(this_tenant).get(id=accountid)
+            entry.transaction_type="Debit"
+            account.current_debit=account.current_debit+(employer_stat)
+            entry.value=(gross - employer_stat)
+        entry.account=account  
+        account.save() 
+        entry.tenant=this_tenant
+        entry.save()
+        i+=1
+
+def reject_salary(this_tenant, salary_id):
+    salary=staff_salary_payment.objects.for_tenant(this_tenant).get(id=salary_id)
+    

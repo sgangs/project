@@ -1,10 +1,11 @@
 from decimal import Decimal
 import datetime
 import json
+import os
 from django.db import IntegrityError, transaction
 from django.db.models import Sum
 from django.utils import timezone
-from django.utils.timezone import localtime
+# from django.utils.timezone import localtime
 from num2words import num2words
 
 from reportlab.lib import colors
@@ -14,7 +15,7 @@ from reportlab.lib.units import mm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageTemplate, Frame
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageTemplate, Frame, Image
 from reportlab.lib.units import cm
 from reportlab.graphics.shapes import Line
 
@@ -25,6 +26,7 @@ from school_eduadmin.models import class_section, classstudent
 from school_fees.models import student_fee, student_fee_payment
 from school_student.models import Student
 from school_genadmin.models import class_group
+from school_eduadmin.models import class_section, classstudent
 from .models import monthly_fee, monthly_fee_list, yearly_fee, yearly_fee_list
 from school.school_general import *
 
@@ -118,8 +120,11 @@ def save_student_payment(request):
     studentid=request.POST.get('studentid')
     year=int(request.POST.get('year'))
     month=request.POST.get('month')
+    print(month)
     amount=Decimal(int(request.POST.get('amount')))
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
+    student_classid = classstudent.objects.get(year=year, student=student).class_section.id
+    class_selected = class_section.objects.get(id=student_classid)
     student_name=student.first_name + " " + student.last_name
     feelist=student_fee.objects.for_tenant(this_tenant).get(student=student,year=year)
     monthlyfee=feelist.monthly_fee
@@ -160,6 +165,7 @@ def save_student_payment(request):
                 transaction.rollback()
             fee_payment=student_fee_payment()
             fee_payment.student=student
+            fee_payment.student_class=class_selected
             fee_payment.month=month
             fee_payment.year=year
             fee_payment.paid_on=tz_aware_now
@@ -233,8 +239,11 @@ class PdfPrint:
         tz_aware_now=timezone.make_aware(now, timezone.get_current_timezone())
         timestring= tz_aware_now.strftime('%Y-%m-%d at %H:%M:%S hrs')
         footer="Printed on: "+timestring
+        # stamp_paid = Image(os.path.join(settings.STATIC_ROOT, 'img/stamp_paid.jpg'))
+        # print(stamp_paid)
         canvas.drawCentredString(100*mm, 15*mm, str(number))
         canvas.drawCentredString(50*mm, 15*mm, str(footer))
+        # canvas.drawCentredString(100 * mm, 100 * mm, stamp_paid)
 
     
 

@@ -144,7 +144,7 @@ $( ".subject" ).change(function() {
             success : function(jsondata){
                 //console.log(jsondata);
                 $('.subject').attr('disabled', true);
-                // $('.exam').attr('disabled', true);
+                $('.report').attr('hidden', false);
                 $('.submit').attr('disabled', false);
                 $.each(jsondata, function(){
                     if (this.data_type=="Student")
@@ -152,12 +152,13 @@ $( ".subject" ).change(function() {
                     "<td hidden='true' class='pk'>"+this.id+"</td>"+
                     "<td class='key'>"+this.key+"</td>"+
                     "<td class='local_id'>"+this.local_id+"</td>"+
+                    "<td class='last_name'>"+this.roll_no+"</td>"+
                     "<td class='first_name'>"+this.first_name+"</td>"+
                     "<td class='last_name'>"+this.last_name+"</td>"+
-                    "<td><input type='text' class='final' value=0 style='text-align:center;'/></td>"+
-                    "<td><input type='text' class='grade' style='text-align:center;' /></td>"+
-                    "<td><input type='text' class='grade point' style='text-align:center;' /></td>"+
-                    "<td><input type='text' class='remarks'/></td>"+
+                    "<td><input type='text' class='form-control final' value=0 style='text-align:center;'/></td>"+
+                    "<td><input type='text' class='form-control grade' style='text-align:center;' /></td>"+
+                    "<td><input type='text' class='form-control grade_point' style='text-align:center;' /></td>"+
+                    "<td><input type='text' class='form-control remarks'/></td>"+
                     "</tr>");
                 })
             },
@@ -173,54 +174,69 @@ $( ".subject" ).change(function() {
 });
 
 
-
-$( ".submit" ).confirm({
-    title: 'Confirm!',
-    icon: 'fa fa-spinner fa-spin',
-    theme: 'black',
-    backgroundDismiss: true,
-    content: 'Are you sure to record the attendances?',
-    confirmButton: 'Yes!',
-    cancelButton: 'No!',
-    autoClose: 'cancel|6000',
-    confirmButtonClass: 'btn-success',
-    cancelButtonClass: 'btn-danger',
-    animation: 'rotateY',
-    closeAnimation: 'rotateXR',
-    animationSpeed: 750,
-    confirm: function(){
-            
-    //get all itemcode & quantity pair 
-        var items = [];
-        console.log("Subject: "+subjectid);
-        if (isNaN(subjectid) ){
-            bootbox.alert({
-                size: "small",
-                message: "Please select the subject.",
-                onEscape: true });
-            clearmodal();
+$( ".table" ).on('change', '.final',function() {
+    score=$(this).val()
+    table=$(this)
+    $.each(grades, function(){
+        if (score<=this.max_mark && score>=this.min_mark){
+            table.closest("tr").find('td:nth-child(8) input').val(this.grade);
+            table.closest("tr").find('td:nth-child(9) input').val(this.grade_point);
+            return false;
         }
-        else{
-            $("tr.data").each(function() {
-                var student_id = $(this).find('td:nth-child(1)').html();
-                var internal = parseInt($(this).find('.internal').val());
-                var external = parseInt($(this).find('.external').val());
-                var final = parseInt($(this).find('.final').val());
-                var remarks = $(this).find('td:nth-child(8)').val();
-                if (internal == 0 & external == 0){
-                    final = 0;
-                }
-                var item = {
-                    student_id : student_id,
-                    internal: internal,
-                    external: external,
-                    final: final,
-                    remarks: remarks,
-                    };
-                items.push(item);        
-                });
+    });
+});
+
+$('.submit').click(function(e) {
+    swal({
+        title: "Record Marks/Grade?",
+        text: "You cannot undo student fee payment!",
+        type: "info",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){save_data()},600)
             
+        }
+    })
+});
+
+
+function save_data(){
+    var proceed=true;            
+    //get all itemcode & quantity pair 
+    var items = [];
+    if (isNaN(subjectid) ){
+        swal("Oops..", "Please select the subject.", "error");
+        proceed=false;
+    }
+    else{
+        $("tr.data").each(function() {
+            var student_id = $(this).find('td:nth-child(1)').html();
+            var final = parseInt($(this).find('.final').val());
+            var grade = $(this).find('td:nth-child(8) input').val();
+            var grade_point = parseFloat($(this).find('td:nth-child(9) input').val());
+            var remarks = $(this).find('td:nth-child(10)').val();
+            if ($.trim(grade).length<1 || typeof(grade) == "undefined" || typeof(grade_point) == "undefined" || isNaN(grade_point)){
+                proceed=false;
+            }
+            var item = {
+                student_id : student_id,
+                final: final,
+                grade: grade,
+                grade_point: grade_point,
+                remarks: remarks,
+            };
+            items.push(item);        
+        });
+        console.log(items);
+        console.log("Listed");
         
+        if (proceed){
         //Send ajax function to back-end 
             (function() {
                 $.ajax({
@@ -235,22 +251,22 @@ $( ".submit" ).confirm({
                         dataType: 'json',               
                         // handle a successful response
                     success : function(jsondata) {
-                        alert("Exem report registered successfully");
+                        swal("Hooray..", "Exam report registered!!", "success");
+                        setTimeout(location.reload(true),750);
                         //location.href = redirect_url;
                         //console.log(jsondata);
                     },
                         // handle a non-successful response
                     error : function() {
-                        bootbox.alert({
-                            size: "medium",
-                            message: "Exem report entry failed", 
-                            onEscape: true });
-                        clearmodal();
+                        swal("Oops..", "There were some errors!!", "error");
                     }
                 });
             })();
+        }
+        else{
+            swal("Oops..", "Pleae check the inputs. There has been errors!!", "error");
         }        
-    }, //bracket for confirm closing
-});
+    }
+};
 
 });

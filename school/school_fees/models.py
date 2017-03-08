@@ -6,7 +6,8 @@ from django.template.defaultfilters import slugify
 from school_account.models import Account
 from school_user.models import Tenant, User
 from school_genadmin.models import class_group
-from school_student.models import Student
+from school_eduadmin.models import class_section
+from school_student.models import Student 
 
 
 
@@ -203,6 +204,7 @@ class student_fee(models.Model):
 class student_fee_payment(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	student=models.ForeignKey(Student,db_index=True,related_name='studentFeePayment_fees_student_student')
+	student_class=models.ForeignKey(class_section,db_index=True,related_name='studentFeePayment_fees_eduadmin_classSection')
 	month=models.CharField(db_index=True,max_length=3)
 	year=models.PositiveSmallIntegerField(db_index=True)
 	paid_on=models.DateField()

@@ -12,7 +12,8 @@ urlpatterns = [
     url(r'^staffcadre/$', views.add_data, {'input_type': 'Staff Cadre'}, name='new_staff_cadre'),
     url(r'^linkcadreteacher/$', views.link_staff_teachers, name='link_cadre_teacher'),
     url(r'^linkleavetype/$', views.link_leave, name='link_leave_type'),
-	url(r'^teacherattendancerecord/$', views.attendance_employee, {'input_type': 'Teacher'}, name='new_teacher_attendance'),    
+    url(r'^individualattendance/$', views.individual_attendance, name='individual_attendance'),
+	# url(r'^teacherattendancerecord/$', views.attendance_employee, {'input_type': 'Teacher'}, name='new_teacher_attendance'),    
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
     #url(r'^housedetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
 ]

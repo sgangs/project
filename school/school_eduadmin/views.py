@@ -14,7 +14,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from school_teacher.models import Teacher
 from school_student.models import Student
-from school_genadmin.models import class_group, Subject, Batch
+from school_genadmin.models import class_group, Subject, Batch, academic_year
 from school_fees.models import student_fee, group_default_fee
 from .forms import *
 from .models import *
@@ -213,23 +213,6 @@ def class_student_add(request):
 @login_required
 #This is the view to provide list
 def eduadmin_list(request, input_type):
-	#for the delete button to work
-	# if request.method == 'POST':
-	# 	itemtype = request.POST.get('type')
-	# 	itemkey = request.POST.get('itemkey')
-	# 	response_data = {}
-	# 	if (itemtype == 'Period'):
-	# 		item = Period.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
-	# 		response_data['name'] = itemkey
-	# 		jsondata = json.dumps(response_data)
-	# 		return HttpResponse(jsondata)
-	# 	elif (itemtype == 'Chart'):
-	# 		item = accountChart.objects.for_tenant(request.user.tenant).get(key__iexact=itemkey).delete()
-	# 		response_data['name'] = itemkey
-	# 		jsondata = json.dumps(response_data)
-	# 		return HttpResponse(jsondata)	
-	
-	#for the list to be displayed	
 	if (input_type=="Class"):
 		this_tenant=request.user.tenant
 		items = class_section.objects.for_tenant(this_tenant).all()
@@ -239,7 +222,7 @@ def eduadmin_list(request, input_type):
 		except:
 			return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes"})
 	elif (input_type=="Subject Teacher"):
-		items = subject_teacher.objects.for_tenant(request.user.tenant).select_related().all()
+		items = subject_teacher.objects.for_tenant(request.user.tenant).select_related('teacher').all()
 		return render(request, 'eduadmin/subjectteacher_list.html',{'items':items, 'list_for':"Subjet Teachers, Year and Class Wise "})
 	elif (input_type=="House"):
 		items = House.objects.for_tenant(request.user.tenant).all()
@@ -381,13 +364,13 @@ def promote_student(request):
 			from_classid=request.POST.get('from_classid')
 			from_year=int(request.POST.get('from_year'))
 			class_selected=class_section_options.get(id=from_classid)
-			students=classstudent.objects.filter(class_section=class_selected, year=from_year)
+			students=classstudent.objects.filter(class_section=class_selected, year=from_year, is_promoted=False)
 			response_data=list(Student.objects.filter(classstudent_eduadmin_student_student__in=students).values('id','first_name',\
 					'last_name','key','local_id'))
 			#jsonify django querysets
 		elif (calltype == 'promote'):
 			from_class=request.POST.get('from_classid')
-			to_class=request.POST.get('to_class')
+			to_class=request.POST.get('to_classid')
 			from_year=int(request.POST.get('from_year'))
 			to_year=int(request.POST.get('to_year'))
 			from_class_selected=class_section_options.get(id=from_class)
@@ -397,24 +380,33 @@ def promote_student(request):
 					filter(class_section=from_class_selected,year=from_year)
 			students_final=list(Student.objects.filter(classstudent_eduadmin_student_student__in=list_student).values('id'))
 			students_set=set()
-			students_data=json.loads(request.POST.get('students_data'))
+			for i in students_final:
+				students_set.add(i['id'])
+			students_data=json.loads(request.POST.get('details'))
 			with transaction.atomic():
 				try:
 					for data in students_data:
-						student_id=data['studentid']
-						roll_no=data['rollno']
+						student_id=data['student_id']
+						roll_no=data['roll_no']
+						is_promoted=data['is_promoted']
+						print(is_promoted)
 						#Doing a validation, if student is actually in class
-						if (student_id in students_set):
-							student=Student.objects.for_tenant(this_tenant).get(id=student_id)
-							new_classstudent=classstudent()
-							new_classstudent.class_section=to_class
-							new_classstudent.student=student
-							new_classstudent.roll_no=roll_no
-							new_classstudent.year=year
-							new_classstudent.tenant=this_tenant
-							new_classstudent.save()
-						else:
-							raise IntegrityError
+						if (is_promoted):
+							if (student_id in students_set):
+								student=Student.objects.for_tenant(this_tenant).get(id=student_id)
+								class_student=list_student.get(student=student)
+								class_student.is_promoted=True
+								class_student.save()
+								new_classstudent=classstudent()
+								new_classstudent.class_section=to_class_selected
+								new_classstudent.student=student
+								new_classstudent.roll_no=roll_no
+								new_classstudent.year=to_year
+								new_classstudent.is_promoted=False
+								new_classstudent.tenant=this_tenant
+								new_classstudent.save()
+							else:
+								raise IntegrityError
 				except:
 					transaction.rollback()
 		jsondata=json.dumps(response_data)
@@ -435,20 +427,83 @@ def exam_type_new(request):
 			item.tenant=current_tenant
 			item.opted=True
 			exam_type=form.cleaned_data['exam_type']
+			year=form.cleaned_data['year']
 			with transaction.atomic():
 				try:
 					if (exam_type == "CCE"):
-						create_term("Term 1", current_tenant)
+						create_term("Term 1", year, current_tenant)
 						create_term("Term 2", current_tenant)
-						create_exam("Formative Assessments 1", "FA1", current_tenant, 0.1,"Term 1")
-						create_exam("Formative Assessments 2", "FA2", current_tenant, 0.1,"Term 1")
-						create_exam("Formative Assessments 3", "FA3", current_tenant, 0.1,"Term 2")
-						create_exam("Formative Assessments 4", "FA4", current_tenant, 0.1,"Term 2")
-						create_exam("Summative Assessments 1", "SA1", current_tenant, 0.3,"Term 1")
-						create_exam("Summative Assessments 2", "SA2", current_tenant, 0.3,"Term 2")
-						item.save()						
+						create_exam("Formative Assessments 1", "FA1", year, current_tenant, 0.1,"Term 1")
+						create_exam("Formative Assessments 2", "FA2", year, current_tenant, 0.1,"Term 1")
+						create_exam("Formative Assessments 3", "FA3", year, current_tenant, 0.1,"Term 2")
+						create_exam("Formative Assessments 4", "FA4", year, current_tenant, 0.1,"Term 2")
+						create_exam("Summative Assessments 1", "SA1", year, current_tenant, 0.3,"Term 1")
+						create_exam("Summative Assessments 2", "SA2", year, current_tenant, 0.3,"Term 2")
+						item.save()
+					elif (exam_type == "MG"):
+						create_grade_table('S',1, 100, 100,"A+", 10, current_tenant)
+						create_grade_table('S',2, 99, 90,"A", 9, current_tenant)
+						create_grade_table('S',3, 89, 80,"B", 8, current_tenant)
+						create_grade_table('S',4, 79, 70,"C", 7, current_tenant)
+						create_grade_table('S',5, 69, 60,"D", 6, current_tenant)
+						create_grade_table('S',6, 59, 40,"E", 5, current_tenant)
+						create_grade_table('S',7, 39, 0,"F", 4, current_tenant)
 				except:
 					transaction.rollback()
 
 			return redirect('landing')
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
+
+@login_required
+#This is the base page.
+def new_grade_table(request):
+	this_tenant=request.user.tenant
+	try:
+		exam_type=exam_creation.objects.get(tenant=this_tenant).exam_type
+		# if (exam_type == 'CCE'):
+		# send user to view grade table
+		try:
+			data=grade_table.objects.for_tenant(tenant=this_tenant)
+			return redirect ('eduadmin:view_grade_table')
+		# send user to view grade table
+		# else:
+		except:
+			if (request.method == 'POST'):
+				grade_details = json.loads(request.POST.get('details'))
+				response_data=[]
+				with transaction.atomic():
+					try:
+						for grade in grade_details:
+							create_grade_table('S', grade['sl_no'], grade['max'], grade['min'], \
+								grade['grade'], grade['grade_point'], this_tenant)							
+					except:
+						transaction.rollback()
+				jsondata=json.dumps(response_data)
+				return HttpResponse(jsondata)
+			return render (request, 'eduadmin/new_grade_table.html')
+	except:
+		return redirect ('eduadmin:new_exam_type')
+
+def view_grade_table(request):
+	this_tenant=request.user.tenant
+	# if (exam_type == 'CCE'):
+	# take user's input os scholastic/co-scholastic. Get this details via POST and show to frontend
+	#else :
+	grades=grade_table.objects.for_tenant(tenant=this_tenant)
+	return render (request, 'eduadmin/view_grade_table.html', {'grades':grades,})
+
+
+def period_free_teachers(request):
+	this_tenant=request.user.tenant
+	totalperiod=total_period.objects.get(tenant=this_tenant).number_period
+	if (request.method == 'POST'):
+		period_selected = request.POST.get('period')
+		day_selected = request.POST.get('day')
+		year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+		period_teachers=period.objects.for_tenant(this_tenant).filter(year=year, day=day_selected, period=period_selected).\
+					select_related('teacher')
+		excluded_teachers=Teacher.objects.filter(period_eduadmin_teacher_teacher__in=period_teachers).all()
+		free_teachers=list(Teacher.objects.for_tenant(this_tenant).filter(staff_type="Teacher").exclude(teacher__in=excluded_teachers).\
+					values('id','local_id','first_name','last_name'))
+		return HttpResponse(json.dumps(free_teachers))
+	return render (request, 'eduadmin/view_grade_table.html', {'periods':totalperiod})

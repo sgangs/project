@@ -48,6 +48,7 @@ def genadmin_new(request, input_type):
 	elif (input_type == "Batch"):
 		importform = BatchForm
 		name='genadmin:base'
+		input_type="Student Batch"
 	
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
@@ -160,7 +161,7 @@ def calendar(request):
 				response_data.append({'title':event.event, 'start': localtime(event.date).isoformat(), 'allDay':True})
 			rules=annual_holiday_rules.objects.for_tenant(request.user.tenant)
 			hol=[] #To store all holidays here.
-			hol=holiday_calculator(start, end, events, hol)			
+			hol=holiday_calculator(start, end, events, hol)
 			#Appends working holidays
 			for i in hol:
 				response_data.append({'title':"Weekly Holiday", 'start': i.isoformat(), 'allDay':True})

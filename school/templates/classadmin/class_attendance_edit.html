@@ -3,10 +3,6 @@
 {%block title%}
 <title>Daily Attendance Register</title>
 
-<!--Chosen (for searchbox in select box) JS and CSS-->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
-
 {% load static from staticfiles %}
 
 <script src="{% static 'classadmin/attendance_edit.js' %}"></script>
@@ -78,11 +74,6 @@
 
 
 <script>
-	$('.tooltip').tooltip({animation: true, container: 'body'});
-	$(".select").chosen({
-		no_results_text: "Oops, nothing found!",
-		width: "95%"
-	});
 	redirect_url="{% url 'classadmin:attendance_view' %}"
 	csrf_token='{{csrf_token}}';
 </script>

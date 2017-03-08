@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'school_account',
     'school_fees',
     'school_salary',
-    'school_hr',    
+    'school_hr',
 ]
 
 AUTH_USER_MODEL='school_user.User'
@@ -120,6 +120,8 @@ LANGUAGE_CODE = 'en-us'
 #Number grouping to group numbers in a format. Turned off for now.
 #NUMBER_GROUPING = (3, 2, 0)
 
+DEBUG = True
+
 USE_TZ = True
 
 TIME_ZONE = 'Asia/Kolkata'
@@ -161,3 +163,37 @@ ADMINS = (
 #This is for defining the maximum persistant connection's age (poooling ciinections to DB)
 #Its used as creating new pool for postgrres is very expensive
 CONN_MAX_AGE = 500
+
+
+#debug_toolbar settings
+if DEBUG:
+    INTERNAL_IPS = ('127.0.0.1',)
+    MIDDLEWARE_CLASSES += (
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    )
+
+    INSTALLED_APPS += (
+        'debug_toolbar',
+    )
+
+    DEBUG_TOOLBAR_PANELS = [
+        'ddt_request_history.panels.request_history.RequestHistoryPanel',
+        'debug_toolbar.panels.versions.VersionsPanel',
+        'debug_toolbar.panels.timer.TimerPanel',
+        'debug_toolbar.panels.settings.SettingsPanel',
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+        'debug_toolbar.panels.templates.TemplatesPanel',
+        'debug_toolbar.panels.cache.CachePanel',
+        'debug_toolbar.panels.signals.SignalsPanel',
+        'debug_toolbar.panels.logging.LoggingPanel',
+        'debug_toolbar.panels.redirects.RedirectsPanel',
+        'debug_toolbar.panels.profiling.ProfilingPanel',
+    ]
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+        'SHOW_TOOLBAR_CALLBACK': 'ddt_request_history.panels.request_history.allow_ajax',
+    }

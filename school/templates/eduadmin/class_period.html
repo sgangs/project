@@ -4,10 +4,6 @@
 {%block title%}
 <title>Period</title>
 
-<!--Chosen (for searchbox in select box) JS and CSS-->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
-
 {% load static from staticfiles %}
 
 <script src="{% static 'eduadmin/class_routine.js' %}"></script>
@@ -23,7 +19,7 @@
     <h4>Total  number of period is yet to be entered. Click <a href="{% url 'eduadmin:total_period_entry' %}">here</a> to enter total number of periods in a day</h4>
   {% endif %}
 <div class="row">
-	<div class="form-group col-xs-5 col-md-3"">
+	<div class="form-group col-xs-5 col-md-3">
 		<label for="classname" class="control-label">Academic Year</label>
 		<input type="number" required="" class="form-control year"  min="1960" max="2050" placeholder="Please enter the academic year.">
 	</div>

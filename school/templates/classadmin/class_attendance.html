@@ -3,10 +3,6 @@
 {%block title%}
 <title>Daily Attendance Register</title>
 
-<!--Chosen (for searchbox in select box) JS and CSS-->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
-
 {% load static from staticfiles %}
 
 <script src="{% static 'classadmin/attendance.js' %}"></script>
@@ -18,7 +14,7 @@
 <h3>Attendance Entry</h3>
 <h1></h1>
 <div class="row">
-	<div class="form-group col-xs-4 col-md-3"">
+	<div class="form-group col-xs-4 col-md-3">
 		<select class="form-control classsection">
     	<option disabled selected hidden style='display: none' value>Select Class</option>
 			{% for item in items %}
@@ -28,7 +24,7 @@
 	</div>
 </div>
 <div class="row">
-	<div class="form-group col-xs-4 col-md-3"">
+	<div class="form-group col-xs-4 col-md-3">
 		<label for="year" class="control-label">Academic Year</label>
 		<input type="number" required="" class="form-control year"  min="1960" max="2050" placeholder="Please input academic year." disabled="True"> 
 	</div>
@@ -64,11 +60,6 @@
 
 
 <script>
-	$('.tooltip').tooltip({animation: true, container: 'body'});
-	$(".select").chosen({
-		no_results_text: "Oops, nothing found!",
-		width: "95%"
-	});
 	redirect_url="{% url 'classadmin:attendance_view' %}"
 	csrf_token='{{csrf_token}}';
 </script>

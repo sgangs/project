@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Fee Collection Report</title>
+
+<!--Chart.js (for graph)-->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script> -->
+
+<!-- D3, Dc and Crossfilter.js -->
+<script type="text/javascript" src="http://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+<script type="text/javascript" src="http://dc-js.github.io/dc.js/js/d3.js"></script>
+<script type="text/javascript" src="http://dc-js.github.io/dc.js/js/dc.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/reductio/0.6.3/reductio.min.js"></script>
+
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'fees/fee_collection_view_crossfilter.js' %}"></script>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Fee Collection Report</h3>
+
+<div class ="graphs">
+	<div class = "row">
+		<div id="month-chart" class="col-xs-6 col-md-4"><label>Month wise Collection</label></div>
+		<div id="class-chart" class="col-xs-6 col-md-4"><label>Class wise Collection</label></div>
+		<div id="quarter-chart" class="col-xs-6 col-md-4"><label>Quarter Wise Collection</label></div>
+	</div>
+	
+	<!--<div class="row">
+		<div class="col-md-12" id="collection-move-chart"><span>Collection Amount</span></div>
+	</div>
+	<div class="row">
+		<div class="col-md-12" id="collection-volume-chart"><span></span></div>
+	</div> -->
+	<!-- Add data-count and filter widget here -->
+
+	<div class='row-fluid'>
+		<div class='span12 table-graph'>
+			<label>Collection Details</label>
+			<table class='table table-hover dc-data-table' id='table-graph'>
+			<thead>
+			<tr class='header bg-primary'>
+				<th>Name</th>
+				<th>Class</th>
+				<th>Amount Paid</th>
+				<th>Paid On</th>
+				<th>Fee For the Month</th>
+			</tr>
+			</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- <button type="button" class='submit btn btn-primary btn-xs' disabled="true" title="Click submit to record class atendance.">Submit</button> -->
+
+<!-- <button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
+ -->
+
+<script>
+	var data=JSON.parse('{{data |escapejs}}');
+	var min='{{min}}'
+	var max='{{max}}'
+
+
+	// var data='{{data}}'
+
+	// var dateFormat = d3.time.format('%d/%m/%Y');
+	
+    console.log(data)
+</script>
+{% endblock %}

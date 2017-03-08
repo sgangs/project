@@ -7,7 +7,12 @@
 
 {% block content%}
 	
-<h3>{{salary_type}} Salary Structure Creation</h3>
+<h3>{{salary_type}} Recurring Salary Structure Creation</h3>
+{% if salary_type == 'Monthly' %}
+<p>This structure will be present in every month of the salary</p>
+{% elif salary_type == 'Monthly' %}
+<p>This structure will repeat only in the selected month of the year</p>
+{% endif %}
 <h1></h1>
 <div class="row">
 	<div class="form-group col-xs-6 col-md-4">
@@ -91,8 +96,6 @@
 
 
 <script>
-	$('.tooltip').tooltip({animation: true, container: 'body'});
-	// });
 	salary_type="{{salary_type}}";
 	if (salary_type == "Monthly"){
 		// redirect_url="{% url 'fees:monthly_fee_view' %}";
@@ -105,7 +108,6 @@
 	}
 	csrf_token='{{csrf_token}}';
 	var accounts=JSON.parse('{{accounts |escapejs}}');
-	//console.log(accounts);
 	$.each(accounts, function(){
         $('table').find('.account').append($('<option>',{
         //$('.account').append($('<option>',{

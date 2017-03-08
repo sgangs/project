@@ -38,29 +38,6 @@ class Subject(models.Model):
 	def __str__(self):
 		return self.name
 
-grade_choices=(('S','Scholastic'),
-		('C','Co-scholastic'))
-
-#This is the list of subjects to be taught in school.
-class grade_table(models.Model):
-	id=models.BigAutoField(primary_key=True)
-	name=models.CharField("Subject Name", blank=True, max_length=20)
-	grade_type=models.CharField("Type of grade?",max_length=1,choices=grade_choices)
-	marks=models.PositiveSmallIntegerField()
-	grade=models.CharField(max_length=4)
-	grade_point=models.DecimalField(max_digits=4, decimal_places=2)
-	tenant=models.ForeignKey(Tenant,db_index=True,related_name='gradeTable_genadmin_user_tenant')
-	objects=TenantManager()
-	
-	# def get_absolute_url(self):
-	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-	
-	class Meta:
-		unique_together = (("grade_type", "tenant"))
-		# ordering = ('name',)
-		
-	def __str__(self):
-		return self.name
 
 class academic_year(models.Model):
 	id=models.BigAutoField(primary_key=True)
@@ -136,8 +113,8 @@ class class_group(models.Model):
 
 class Batch(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	start_year=models.PositiveSmallIntegerField("Batch Starts On")
-	end_year=models.PositiveSmallIntegerField("Batch Ends On")
+	start_year=models.PositiveSmallIntegerField("Batch Starting Year")
+	end_year=models.PositiveSmallIntegerField("Batch Ending Year")
 	name=models.CharField(db_index=True,max_length=9)
 	slug=models.SlugField(max_length=45)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='batch_genadmin_user_tenant')

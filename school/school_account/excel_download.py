@@ -186,8 +186,6 @@ def profit_loss_excel(items, data_type):
     i=0
     for idx, data in enumerate(items):
         if (data['data_type'] == 'expense'):
-            print(data['account'])
-            print(data['total'])
             row = final_row + i
             worksheet_s.write(row, 0, data['account'], cell_center)
             worksheet_s.write(row, 1, data['total'], cell_center)
@@ -196,7 +194,6 @@ def profit_loss_excel(items, data_type):
     #add Gross Income data to table
     for idx, data in enumerate(items):
         if (data['data_type'] == 'gross'):
-            print(float(data['income']))
             if(float(data['income']) >=0):
                 worksheet_s.write(final_row, 0, "Gross Income Over Expenditure", cell_bold)
                 worksheet_s.write(final_row, 1, float(data['income']), cell_bold)

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{%block title%}
+<title>Staff Salary Rules</title>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Staff Salary Rules</h3>
+<h1></h1>
+
+<div class="form-group row">
+	<div class="col-xs-12 col-md-8">
+	<div class="form-group daydiv">
+		<label for="classname" class="control-label">No.of woking days in a month</label>
+			<input type="text" required="" class="form-control days" placeholder="Normally number of working days considered per month is 26.">
+	</div>
+	<div class="form-group startdiv">
+		<label for="classname" class="control-label">Salary Cycle Start (Only the date)</label>
+			<input type="number" min="1" max="28" required="" class="form-control start" placeholder='For eg: If 1st of every month, enter 1. If its 10th, enter 10. Salary cycle shoud not start from 29th, 30th or 31st of month.'>
+	</div>
+	<div class="form-group enddiv">
+		<label for="classname" class="control-label">Salary Cycle Ends</label>
+			<input type="text" required="" class="form-control end" placeholder='This will be auto-filled. If salary starts on 1st, it ends on last of month. If it starts on 10th, it ends on 9th.' disabled>
+	</div>
+	<div class="form-group paydiv">
+		<label for="classname" class="control-label">Normal salary payment date</label>
+			<input type="text" required="" class="form-control pay" placeholder='Salary will normally be paid on this date.'>
+	</div>
+	<div class="form-group staffdiv">
+		<label for="classgroup" class="control-label">Select Employer Contribution Expense Account</label>
+		<select class="form-control selectpicker account" data-live-search="true">
+			<option disabled selected hidden style='display: none' value>Select Account</option>
+    		{% for i in accounts %}
+  				<option data-id="{{i.id}}">{{i.name}}</option>
+			{% endfor %}
+  		</select>
+	</div>
+	</div>
+</div>
+
+<button type="button" class='submit btn btn-primary btn-xs'>Save Salary Rule</button>
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+{% load static from staticfiles %}
+<script src="{% static 'salary/salary_rule.js' %}"></script>
+
+
+<script>
+	csrf_token='{{csrf_token}}';
+</script>
+{% endblock %}

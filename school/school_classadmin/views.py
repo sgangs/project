@@ -1,20 +1,21 @@
 from datetime import date, datetime
+from decimal import Decimal
 import json
 from dateutil.rrule import *
 from dateutil.parser import *
-from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Attendance, exam_report
+from .models import *
 from .class_admin_support import *
 from school_teacher.models import Teacher
 from school_student.models import Student
-from school_eduadmin.models import classstudent, Exam, exam_creation
-from school_genadmin.models import class_group, Subject, annual_calender
+from school_eduadmin.models import classstudent, Exam, exam_creation, grade_table
+from school_genadmin.models import class_group, Subject, annual_calender, academic_year
 from school_genadmin.genadmin_util import holiday_calculator
 
 
@@ -119,12 +120,14 @@ def attendance_view(request):
 def new_exam_report(request):
 	from school_eduadmin.models import class_section
 	#For the next line, do remember django does lazy querying.
-	classes = class_section.objects.for_tenant(request.user.tenant)
-	exams = Exam.objects.for_tenant(request.user.tenant)
+	this_tenant=request.user.tenant
+	classes = class_section.objects.for_tenant(this_tenant)
+	exams = Exam.objects.for_tenant(this_tenant)
+	grades=list(grade_table.objects.for_tenant(tenant=this_tenant).filter(grade_type='S').\
+			values('min_mark','max_mark','grade','grade_point'))
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
-		this_tenant=request.user.tenant
 		#Getting subject details based on selection
 		if (calltype == 'details'):
 			called_for='Exam'
@@ -142,12 +145,12 @@ def new_exam_report(request):
 			exam=Exam.objects.get(id__exact=examid)
 			subject=Subject.objects.get(id__exact=subjectid)
 			year=exam.year
-			student_list=classstudent.objects.for_tenant(request.user.tenant).filter(class_section=class_final,year=year)
+			# student_list=classstudent.objects.for_tenant(request.user.tenant).filter(class_section=class_final,year=year)
 			report_details = json.loads(request.POST.get('details'))
 			for data in report_details:
 				student_id=data['student_id']
-				grade=int(data['grade'])
-				grade_point=int(data['grade_point'])
+				grade=data['grade']
+				grade_point=Decimal(data['grade_point'])
 				final_score=int(data['final'])
 				remarks=data['remarks']
 				#Better still if we could check if student is in that said class for data integrity
@@ -166,25 +169,23 @@ def new_exam_report(request):
 				exam_report_entry.save()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-
-	return render (request, 'classadmin/new_examreport.html', {'items':classes, 'exams':exams})
+	return render (request, 'classadmin/new_examreport.html', {'items':classes, 'exams':exams, \
+					'grades':json.dumps(grades,cls=DjangoJSONEncoder)})
 
 @login_required
 #Exam Report View
 def exam_report_view(request):
 	from school_eduadmin.models import class_section
 	#For the next line, do remember django does lazy querying.
-	classes = class_section.objects.for_tenant(request.user.tenant)
-	exams = Exam.objects.for_tenant(request.user.tenant)
+	this_tenant=request.user.tenant
+	classes = class_section.objects.for_tenant(this_tenant)
+	current_academic_year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+	exams = Exam.objects.for_tenant(request.user.tenant).filter(year=current_academic_year.year)
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
-		this_tenant=request.user.tenant
 		#Getting student details based on selection
-		if (calltype == 'details'):
-			called_for='Exam'
-			response_data=get_subject_data(request, called_for, classes)
-		elif (calltype == 'subject'):
+		if (calltype == 'subject'):
 			called_for='Exam'
 			response_data=get_exam_report(request, called_for, classes)
 			#response_data=["Ram"]
@@ -221,7 +222,7 @@ def attendance_edit(request):
 			year=request.POST.get('year')
 			date=request.POST.get('date')
 			class_final=classes.get(id__exact=classid)
-			student_list=classstudent.objects.for_tenant(request.user.tenant).filter(class_section=class_final,year=year)
+			# student_list=classstudent.objects.for_tenant(request.user.tenant).filter(class_section=class_final,year=year)
 			attendance_data = json.loads(request.POST.get('details'))
 			for data in attendance_data:
 				student_id=data['student_id']
@@ -282,30 +283,28 @@ def view_student_attendance(request):
 @login_required
 def generate_transcript(request):
 	this_tenant=request.user.tenant
-	classes = class_section.objects.for_tenant(this_tenant)
-	exam_type=exam_creation.objects.for_tenant(this_tenant).get(year=2016).exam_type
-	exams=Exam.objects.for_tenant(this_tenant).filter(year=2016)
+	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+	exam_type=exam_creation.objects.for_tenant(this_tenant).get(year=year).exam_type
+	exams=Exam.objects.for_tenant(this_tenant).filter(year=year)
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
-		
-		#Getting student details based on selection
-		if (calltype == 'details'):
+		if calltype=='class':
+			class_selected = request.POST.get('classsection')
+			students_list=classstudent.objects.for_tenant(request.user.tenant).\
+				filter(class_section=class_selected,year=year).select_related("student")	
+			for student in students_list:
+				response_data.append({'data_type':'Student','id':student.student.id,'roll_no': student.roll_no,\
+					'first_name': student.student.first_name, 'last_name': student.student.last_name})
+		elif calltype=='student':
+			#Getting student details based on selection
 			if (exam_type=='CCE'):
-				response_data=get_student_data(request, called_for, classes)
-				jsondata = json.dumps(response_data)
-				return HttpResponse(jsondata)
+				response_data=get_cce_transcript(request, year)
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	classes = class_section.objects.for_tenant(this_tenant)
 	if (exam_type=='CCE'):
 		return render (request, 'classadmin/transcript_exam_cce.html', {'items':classes})
 	else:
 		return render (request, 'classadmin/transcript_exam_generic.html', {'items':classes},{'exams':exams})
 
-@login_required
-def esi_structure_creation(request):
-	accounts=Account.objects.for_tenant(request.user.tenant).filter(ledger_group__name='Salary').values('id','name')
-	if request.method == 'POST':
-		response_data = []
-		create_esi_employer(request)
-		jsondata = json.dumps(response_data)
-		return HttpResponse(jsondata)
-	return render(request, 'salary/esi_structure.html', {'accounts':accounts})

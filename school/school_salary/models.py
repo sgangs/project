@@ -26,13 +26,14 @@ class abstract_salary(models.Model):
 	class Meta:
 		abstract = True
 
-class basic_salary_structure(models.Model):
+class basic_salary_rule(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	#This is used to calculate the per day cost for calculation due to leaves.
 	working_days=models.PositiveSmallIntegerField("Number of working days in month")
 	salary_cycle_start=models.PositiveSmallIntegerField()
 	salary_cycle_end=models.PositiveSmallIntegerField()
 	salary_cycle_payment=models.PositiveSmallIntegerField()
+	employer_contribution_expense=models.ForeignKey(Account,db_index=True,related_name='basicSalaryRule_salary_account_account')
 	#employer_statutory_contribution_account FK to Account has to be linked
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='basicSalaryStructure_salary_user_tenant')
 	objects=TenantManager()
@@ -58,30 +59,6 @@ class monthly_salary(models.Model):
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='monthlySalary_salary_user_tenant')
 	objects=TenantManager()
 
-	# def get_absolute_url(self):
-	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		data="mf"
-	# 		tenant=self.tenant.key
-	# 		today=dt.date.today()
-	# 		today_string=today.strftime('%y%m%d')
-	# 		next_mf_number='01'
-	# 		last_mf=type(self).objects.filter(tenant=self.tenant).\
-	# 					filter(key__contains=today_string).order_by('key').last()
-	# 		if last_mf:
-	# 			last_mf_number=int(last_mf.key[8:])
-	# 			next_mf_number='{0:03d}'.format(last_mf_number + 1)
-	# 		self.key=data+today_string+next_mf_number
-	# 		toslug=tenant+" "+self.key
-	# 		self.slug=slugify(toslug)
-
-	# 	super(monthly_fee, self).save(*args, **kwargs)
-
-	# class Meta:
-		# unique_together = (("key","tenant",))
-		# ordering = ('name',)
 	def __str__(self):
 		return '%s' % (self.name)
 
@@ -265,13 +242,6 @@ class edli_employer(models.Model):
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='edliEmployer_salary_user_tenant')
 	objects=TenantManager()
 
-	# def get_absolute_url(self):
-	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# class Meta:
-		# unique_together = (("key","tenant",))
-		# ordering = ('name',)
-		
 	def __str__(self):
 		return '%s' % (self.name)
 
@@ -344,16 +314,6 @@ class cadre_default_salary(models.Model):
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='cadreDefaultSalary_salary_user_tenant')
 	objects=TenantManager()
 
-	# def get_absolute_url(self):
-	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item=self.tenant.key+" "+self.classgroup.name+" "+self.monthly_fee.key
-	# 		self.slug=slugify(item)
-
-	# 	super(group_default_fee, self).save(*args, **kwargs)
-
 	class Meta:
 		unique_together = (("cadre","year","tenant",))
 		# ordering = ('name',)
@@ -381,16 +341,6 @@ class staff_salary_definition(models.Model):
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='staffSalary_salary_user_tenant')
 	objects=TenantManager()
 
-	# def get_absolute_url(self):
-	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item=self.tenant.key+" "+self.student.key+" "+self.monthly_fee.key
-	# 		self.slug=slugify(item)
-
-	# 	super(student_fee, self).save(*args, **kwargs)
-
 	class Meta:
 		unique_together = (("staff","year","tenant",))
 		# ordering = ('name',)
@@ -406,7 +356,7 @@ class staff_salary_payment(models.Model):
 	month=models.CharField(max_length=3)
 	gross=models.DecimalField(max_digits=12, decimal_places=2)
 	net=models.DecimalField(max_digits=12, decimal_places=2)
-	employee_deduction=models.DecimalField(max_digits=12, decimal_places=2)
+	employee_deduction=models.DecimalField(max_digits=12, decimal_places=2) #This is the employee statutory deduction
 	employer_contribution=models.DecimalField(max_digits=12, decimal_places=2)
 	paid=models.BooleanField(default=False)
 	paid_on=models.DateField(null=True, blank=True)
@@ -429,7 +379,7 @@ class staff_salary_payment(models.Model):
 #This model is for line items of a sales invoice
 class salary_payment_list(models.Model):
 	salary_payment=models.ForeignKey(staff_salary_payment,related_name='salaryPaymentList_staffSalaryPayment')
-	 #The options are monthly, yearly, EPFEE, ESIEE, EPFER, ESIER, EPSER, EPFAC, EDLI, EDLIAC, others
+	 #The options are monthly, yearly, EPFEE, ESIEE, EPFER, ESIER, EPSER, EPFAC, EDLI, EDLIAC, Deduction
 	list_type=models.CharField(max_length=8)
 	display_payslip=models.BooleanField(default=True)
 	serial_no=models.PositiveSmallIntegerField(blank=True, null= True)
