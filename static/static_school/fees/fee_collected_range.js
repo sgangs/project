@@ -13,6 +13,9 @@ $('.date').daterangepicker({
     'locale': {
         format: 'DD/MM/YYYY',
     },
+    "dateLimit": {
+        "days": 90
+    },
     'autoApply':true,
     'minDate': moment(min),
     'maxDate': moment(max)      
@@ -46,7 +49,7 @@ $( ".details" ).click(function() {
                         "<td>"+this.student_id+"</td>"+
                         "<td>"+this.student_local+"</td>"+
                         "<td>"+this.student_name+"</td>"+
-                        "<td>"+this.date+"</td>"+
+                        "<td>"+this.date.split("-").reverse().join("-")+"</td>"+
                         "<td>"+this.amount+"</td></tr>");
                     }
                     else if (this.data == 'Total'){

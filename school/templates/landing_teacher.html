@@ -13,19 +13,104 @@
 
 <div class="container">
 
-        <div class="row">
-
-            <!--<div class="col-lg-12">
+        <div class="row col-md-8 col-xs-12">
+           <!--<div class="col-lg-12">
                 <h1 class="page-header">Thumbnail Gallery</h1>
             </div>-->
-            THERE WILL BE AN AWESOME DASHBOARD HERE
-            <div>
-            	<a href="#">Mark your attendance</a>
+            <div style="padding-bottom: 10px;">
+                <a href="{% url 'hr:individual_attendance' %}"><h4 style="font-size: 30px; font-family: 'Righteous';">Click here to mark your attendance</h4></a>
             </div>
+            {% if classes %}
+<!--{# <a href="{{class.class_section.get_absolute_url}}classteacher"> #}-->
+            <div style="padding-bottom: 10px;">
+                <h4 style="font-size: 30px; font-family: 'Righteous';">Your As Class Teacher</h4>
+                {% for class in classes %}
+                <p><label style="font-size: 20px; font-family: 'Pangolin';"><a href="#">{{class.class_section.name}}</a></label></p>
+                {% endfor %}
+            </div>
+            {% endif %}
+<!--{# <a href="{{class.class_section.get_absolute_url}}subjectteacher"> #}-->
+            {% if subjects %}
+            <div style="padding-bottom: 10px;">
+                <h4 style="font-size: 30px; font-family: 'Righteous';">Your As Subject Teacher</h4>
+                {% for class in subjects %}
+                <p><label style="font-size: 20px; font-family: 'Pangolin';"><a href="#">{{class.class_section.name}}: {{class.subject.name}}</a></label></p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!--<div class="col-md-7 col-xs-12">-->
+            <div>
+            <h4 style="font-size: 30px; font-family: 'Righteous';">Events For The Month:</h4>
+            <ul>
+                {% for i in events %}
+                    <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
+                {% endfor %}                
+            </ul>
+        </div>
             
         </div>	
+        <div class="col-md-4 col-xs-12 row">
+            <h3 style="color:#5c5c3d;">Attendance in the last 30 days </h3>
+            <h4 class="total_text" style="color:#5c5c3d;">Total no.of working days: </h4>
+            <div style="color:#008062;">                
+                <h1 id="percent_present"></h1>
+                <div id ="presentChart" class="chart bar"></div>
+                <h4 class="text_present">
+                    Total Number of Days Present: 
+                </h4>                
+            </div>
+            <a href="{% url 'hr:apply_leave' %}" style="text-decoration: none;">
+            <div style="color:#68367c;">
+                <h1 id="percent_no"></h1>
+                <div id ="no_attendanceChart" class="chart bar"></div>
+                <h4 class="text_no">
+                    Number of Days With Missing Record: 
+                </h4>                
+            </div>
+            </a>
+            <div style="color:#e60000;">
+                <h1 id="percent_pending"></h1>
+                <div id ="pendingChart" class="chart bar"></div>
+                <h4 class="text_pending">
+                    Number of Days with attendance authorization pending: 
+                </h4>                
+            </div>
+        </div>
 
     </div>
+
+    <!--Script for D3.js and dimple.js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.4/d3.min.js"></script>
+
+    {% load static from staticfiles %}
+    <link rel="stylesheet" href="{% static 'landing/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'text_color.css' %}">
+    <script src="{% static 'landing/fancycharts.min.js' %}"></script>
+
+    <script type="text/javascript">
+        attendance=JSON.parse('{{attendance |escapejs}}');
+        no_attendance=attendance[0].no_attendance
+        total=attendance[0].total
+        present=attendance[0].present
+        pending=attendance[0].pending_authorize 
+        percent_present=attendance[0].per_present
+        percent_no=attendance[0].per_no
+        percent_pending=attendance[0].per_pending
+        $('.total_text').append(total)
+        $('#percent_present').append(percent_present+"%") 
+        $('.text_present').append(present) 
+        $('#percent_no').append(percent_no+"%") 
+        $('.text_no').append(no_attendance)
+        $('#percent_pending').append(percent_pending+"%") 
+        $('.text_pending').append(pending) 
+        var colors = ["#008062", "#68367c", "e60000"];
+        var chart = new Fancychart(200, 120, colors, '#e5e5e5');
+        chart.circles("#presentChart", percent_present, colors[0]);
+        chart.circles("#no_attendanceChart", percent_no, colors[1]);
+        chart.circles("#pendingChart", percent_pending, colors[2]);
+    </script>
+
 	
 {% endblock %}
 

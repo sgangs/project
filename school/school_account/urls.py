@@ -20,12 +20,16 @@ urlpatterns = [
     url(r'^accountlist/$', views.account_list, {'type': 'Account'},name='account_list'),
     url(r'^journalgrouplist/$', views.account_list, {'type': 'Journal Group'}, name='journalgroup_list'),
     url(r'^paymentmodelist/$', views.account_list, {'type': 'Payment Mode'},name='paymentmode_list'),
+    url(r'^cashdetails/$', views.cash_history, name='cash_details'),
+    #Statutory
+    url(r'^viewbalancesheet/$', views.balance_sheet, name='view_balance_sheet'),
     url(r'^viewtrailbalance/$', views.trail_balance, name='view_trail_balance'),
     url(r'^viewincomeexpenditure/$', views.profit_loss, name='view_income_expenditure'),
     url(r'^viewbalancesheet/$', views.balance_sheet, name='view_balance_sheet'),
     url(r'^accountsexcel/$', views.account_export, name='download_accounts_excel'),
     url(r'^trailbalanceexcel/$', views.trail_balance_export, name='download_trail_balance_excel'),
     url(r'^profitlossexcel/$', views.profit_loss_export, name='download_profit_loss_excel'),
+
     url(r'^accountdetail/(?P<detail>[-\S]+)/$', views.account_detail, name='account_detail'),
     url(r'^journaldetail/(?P<detail>[-\S]+)/$', views.journal_detail, name='journal_detail'),
     #url(r'^calender/$', views.calender, name='calender'),

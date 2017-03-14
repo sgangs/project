@@ -13,7 +13,7 @@
 <div class="selector">
 <div class="row ">
 	<div class="form-group col-xs-4 col-md-4 datediv" title="Select the date range to ge the necessary fee collection details">
-		<label class="control-label">Select Date Range</label>
+		<label class="control-label">Select Date Range (Max Range: 90 days)</label>
 		<input class="form-control date">
 	</div>
 </div>
@@ -44,10 +44,6 @@
 
 <!-- <button type="button" class='reset btn btn-primary btn-xs'>Reset</button> -->
 
-{% load static from staticfiles %}
-
-<script src="{% static 'fees/fee_collected_range.js' %}"></script>
-
 <!-- Sweetalert JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
@@ -58,6 +54,10 @@
 <!-- Bootstrap Daterangepicker -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'fees/fee_collected_range.js' %}"></script>
 
 <script>
 	var min='{{min}}'

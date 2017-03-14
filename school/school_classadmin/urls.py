@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^newexamreport/$', views.new_exam_report, name='new_exam_report'),
     url(r'^attendanceview/$', views.attendance_view, name='attendance_view'),
     url(r'^viewexamreport/$', views.exam_report_view, name='exam_report_view'),
+    url(r'^editexamreport/$', views.exam_report_edit, name='exam_report_edit'),
     url(r'^viewtranscript/$', views.generate_transcript, name='view_transcript'),
     # url(r'^studentremark/$', views.write_remark, name='student_remark'),
     url(r'^studentlist/$', views.class_students_list, name='student_list'),

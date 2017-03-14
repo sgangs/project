@@ -31,8 +31,8 @@ class basic_salary_rule(models.Model):
 	#This is used to calculate the per day cost for calculation due to leaves.
 	working_days=models.PositiveSmallIntegerField("Number of working days in month")
 	salary_cycle_start=models.PositiveSmallIntegerField()
-	salary_cycle_end=models.PositiveSmallIntegerField()
-	salary_cycle_payment=models.PositiveSmallIntegerField()
+	salary_cycle_end=models.CharField(max_length=4)
+	salary_cycle_payment=models.PositiveSmallIntegerField() #Day in which salary would normally be paid
 	employer_contribution_expense=models.ForeignKey(Account,db_index=True,related_name='basicSalaryRule_salary_account_account')
 	#employer_statutory_contribution_account FK to Account has to be linked
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='basicSalaryStructure_salary_user_tenant')
@@ -379,7 +379,7 @@ class staff_salary_payment(models.Model):
 #This model is for line items of a sales invoice
 class salary_payment_list(models.Model):
 	salary_payment=models.ForeignKey(staff_salary_payment,related_name='salaryPaymentList_staffSalaryPayment')
-	 #The options are monthly, yearly, EPFEE, ESIEE, EPFER, ESIER, EPSER, EPFAC, EDLI, EDLIAC, Deduction
+	#The options are monthly, yearly, EPFEE, ESIEE, EPFER, ESIER, EPSER, EPFAC, EDLI, EDLIAC, Deduction
 	list_type=models.CharField(max_length=8)
 	display_payslip=models.BooleanField(default=True)
 	serial_no=models.PositiveSmallIntegerField(blank=True, null= True)

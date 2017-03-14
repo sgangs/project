@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import date
 import datetime
 import json
 from django.db import IntegrityError, transaction
@@ -124,7 +125,7 @@ def generate_salary_report(request, sent_for=""):
         employer_contribution+=eps_value+epf_value+epf_admin_charges
         dict_salary={'data_type':'EPS-EPF','eps_value':format(float(eps_value), '.2f'), 'epf_value':format(float(epf_value), '.2f'), \
                     'epf_admin_charges':format(float(epf_admin_charges), '.2f'), 'epf_accountid':epf_eps_employer.epf_account.id,\
-                    'eps_accountid': epf_eps_employer.eps_account.id}
+                    'eps_accountid': epf_eps_employer.eps_account.id, 'epf_admin_accountid':epf_eps_employer.epf_admin_account.id}
         response_data["EPS-EPF"]=dict_salary
 
     except:
@@ -308,8 +309,8 @@ def finalize_salary(request):
                         payment_list.list_type='EPFAC'
                         payment_list.display_payslip=False
                         payment_list.salary_name='EPF Administrative Charges'
-                        payment_list.account=Account.objects.for_tenant(this_tenant).get(id=value['epf_accountid'])
-                        payment_list.amount=Decimal(edli)
+                        payment_list.account=Account.objects.for_tenant(this_tenant).get(id=value['epf_admin_accountid'])
+                        payment_list.amount=Decimal(epfac)
                         payment_list.tenant=this_tenant
                         payment_list.save()
                 elif (value['data_type'] == 'ESI Employer'):
@@ -384,12 +385,12 @@ def finalize_salary(request):
         except:
             transaction.rollback()
 
-def pay_staff(this_tenant, salary_id, mode):
+def staff_payment (this_tenant, salary_id, mode):
     salary=staff_salary_payment.objects.for_tenant(this_tenant).get(id=salary_id)
     staff_name=salary.staff.first_name+" "+salary.staff.last_name
     salary_lists=salary_payment_list.objects.filter(salary_payment=salary)
-    now=datetime.date.today()
-    tz_unaware_now=datetime.datetime.strptime(str(now), "%Y-%m-%d")
+    now=date.today()
+    tz_unaware_now=datetime.strptime(str(now), "%Y-%m-%d")
     tz_aware_now=timezone.make_aware(tz_unaware_now, timezone.get_current_timezone())
     with transaction.atomic():
         try:
@@ -407,7 +408,7 @@ def salary_journal_entry(this_tenant, salary_lists,name, tz_aware_now, mode, gro
     journal.date=tz_aware_now
     group=journal_group.objects.for_tenant(this_tenant).get(name="General")
     journal.group=group
-    journal.remarks="Salary for for: "+name
+    journal.remarks="Salary for: "+name
     journal.tenant=this_tenant
     journal.save()
     #Take care of journal entries related to salary (Monthly, yearly, employee & employer contributions)
@@ -424,6 +425,8 @@ def salary_journal_entry(this_tenant, salary_lists,name, tz_aware_now, mode, gro
             account.current_credit=account.current_credit+item.amount
         account.save()
         entry.value=item.amount
+        # entry.this_debit=account.current_debit
+        # entry.this_credit=account.current_credit
         entry.tenant=this_tenant
         entry.save()
     i=1
@@ -435,20 +438,28 @@ def salary_journal_entry(this_tenant, salary_lists,name, tz_aware_now, mode, gro
             account=Account.objects.for_tenant(this_tenant).get(id=mode.payment_account.id)
             entry.transaction_type="Credit"
             account.current_credit=account.current_credit+(gross - employee_stat)
-            entry.value=(gross - employee_stat)
+            # if ((account.current_credit - account.current_debit)>0):
+            #     transaction.rollback()
+            entry.value=(gross - employee_stat)            
         #Employer Liability Expense
         elif (i==2):
             accountid=basic_salary_rule.objects.get(tenant=this_tenant).employer_contribution_expense.id
             account=Account.objects.for_tenant(this_tenant).get(id=accountid)
             entry.transaction_type="Debit"
             account.current_debit=account.current_debit+(employer_stat)
-            entry.value=(gross - employer_stat)
+            entry.value=(employer_stat)
         entry.account=account  
         account.save() 
+        # entry.this_debit=account.current_debit
+        # entry.this_credit=account.current_credit
         entry.tenant=this_tenant
         entry.save()
         i+=1
 
 def reject_salary(this_tenant, salary_id):
     salary=staff_salary_payment.objects.for_tenant(this_tenant).get(id=salary_id)
+    lists=salary_payment_list.objects.filter(salary_payment=salary)
+    for item in lists:
+        item.delete()
+    salary.delete()
     

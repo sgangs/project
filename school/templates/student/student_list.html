@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    Student List 
+</title>
+
+{% load static from staticfiles %}
+{% endblock %}
+
+{% block content%}
+	<h2>Students List</h2>
+  <h1></h1>
+  
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th class="text-center">Sl. No</th>
+      <th>System ID</th>
+      <th>School/Admission ID</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Date of Birth</th>
+      <th>Batch</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for student in students %}
+      <tr>
+        <td>{{forloop.counter|add:start}}</td>
+        <td><a href="#">{{student.key}}</a></td>
+            <td>{{student.local_id}}</td>
+            <td>{{student.first_name}}</td>
+            <td>{{student.last_name}}</td>
+            <td>{{student.dob}}</td>
+            <td>{{student.batch}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!--{# {% if students.has_other_pages %}
+  <ul class="pagination">
+    {% if students.has_previous %}
+      <li><a href="?page={{ students.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for i in students.paginator.page_range %}
+      {% if students.number == i %}
+        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+      {% else %}
+        <li><a href="?page={{ i }}">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if students.has_next %}
+      <li><a href="?page={{ students.next_page_number }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+{% endif %} #}-->
+
+<div class="prev_next">
+<ul>
+    {% if students.has_previous %}
+        <a class="prev btn btn-info" href="?page={{1}}">First</a>
+        <a class="prev btn btn-info" href="?page={{students.previous_page_number}}">Prev</a>
+    {% endif %}
+    
+    
+    <!--<div class="pages">-->
+        
+        {% for pg in page_range %}
+            {% if students.number == pg %}
+                <a href="?page={{pg}}" class="btn btn-default">{{pg}}</a>
+            {% else %}
+                <a href="?page={{pg}}" class="btn">{{pg}}</a>
+            {% endif %}
+        {% endfor %}
+        
+    <!--</div>-->
+    {% if students.has_next %}
+        <a class="next btn btn-info" href="?page={{students.next_page_number}}">Next</a>
+        <a class="next btn btn-info" href="?page={{num_page}}">Last</a>
+    {% endif %}
+    <span class="clear_both"></span>
+</ul>
+</div>
+
+
+{% endblock %}
+
+
+
+

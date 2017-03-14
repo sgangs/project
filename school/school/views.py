@@ -1,5 +1,6 @@
 import json
 from datetime import datetime as dt
+from datetime import date
 import datetime
 from calendar import monthrange
 #from django.conf import settings
@@ -20,6 +21,7 @@ from school_teacher.models import Teacher
 from school_student.models import Student
 from school_hr.models import teacher_attendance
 from .user_util import *
+from .teacher_landing import *
 from .forms import revisedPasswordResetForm, LoginForm
 
 #landing page
@@ -80,15 +82,14 @@ def RegisterView(request):
                             create_journal_group(new_tenant,"General")
                             create_ledger_group(new_tenant,"General")
                         i-=1
-                    create_account(new_tenant,"Cash in Hand",\
-						"Current Assets", "Cash in Hand account", "cash", "General")
+                    create_leave_type("Loss of Pay", "lop", "LOP", new_tenant)
                     payment= payment_mode()
                     payment.name="Cash"
-                    payment.default="Yes"
+                    payment.default=True
                     payment.tenant=new_tenant
                     payment.payment_account=Account.objects.for_tenant(tenant=new_tenant).get(key="cash")
                     payment.save()
-                    current_day=datetime.datetime.now()                    
+                    current_day=dt.now()                    
                     if (current_day.month >4):
                         start_date=dt(year=current_day.year, month=4, day=1)
                         end_date=dt(year=current_day.year+1, month=3, day=31)
@@ -101,6 +102,9 @@ def RegisterView(request):
                     period.current_period=True
                     period.tenant=new_tenant
                     period.save()
+                    create_account(new_tenant,"Cash in Hand",\
+                        "Current Assets", "Cash in Hand account", "cash", "General")
+                    create_account_year(new_tenant,"cash", period)
                 except:
                     transaction.rollback()
             return render(request,'registration_success.html')
@@ -121,7 +125,7 @@ def RegisterView(request):
 def landing(request):
     this_tenant=request.user.tenant
     current_day=''
-    current_day=datetime.datetime.now()
+    current_day=dt.now()
     start=dt(year=current_day.year, month=current_day.month, day=1)
     end=dt(year=current_day.year, month=current_day.month, day=(monthrange(current_day.year,current_day.month)[1]))
     try:
@@ -131,7 +135,13 @@ def landing(request):
     if (request.user.user_type == "Student"):
         return render (request, 'landing_student.html', {"events":events,})    
     elif (request.user.user_type == "Teacher"):
-        return render (request, 'landing_teacher.html', {"events":events,})
+        teacher=Teacher.objects.get(user=request.user)
+        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+        class_teacher=get_class_teacher(request, teacher, year, this_tenant)
+        subject_teacher=get_subject_teacher(request, teacher, year, this_tenant)
+        attendance=json.dumps(staff_attendance_number(request, teacher, this_tenant))
+        return render (request, 'landing_teacher.html', {"attendance":attendance,"events":events, \
+                    'classes': class_teacher, 'subjects':subject_teacher})
     try:
         year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
         paid=fee_paid(request, year)
@@ -139,7 +149,7 @@ def landing(request):
         staff_list=Teacher.objects.for_tenant(this_tenant).all()
         student_list=Student.objects.for_tenant(this_tenant).all()
         staffs=staff_list.filter(dob__month=current_day.month,dob__day=current_day.day)
-        today=datetime.date.today()
+        today=date.today()
         try:
             students_present=Attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
         except:
@@ -149,9 +159,15 @@ def landing(request):
         except:
             staffs_present=0
         total_staffs=staff_list.count()
-        percent_staff=round(staffs_present/total_staffs*100)
+        if (total_staffs != 0):
+            percent_staff=round(staffs_present/total_staffs*100)
+        else:
+            percent_staff=100
         total_students=student_list.count()
-        percent_student=round(students_present/total_students*100)
+        if (total_students != 0):
+            percent_student=round(students_present/total_students*100)
+        else:
+            percent_student=100
     except:
         paid=0
         total=0

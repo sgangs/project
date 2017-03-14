@@ -73,10 +73,14 @@
     		<option data-id="None">Not Applicable</option>
 			<option data-id="PFEEL">PF Employee - Liability Account</option>
 			<option data-id="PFERL">PF Employer - Liability Account</option>
-			<option data-id="PFERE">Employer - Statutory Expense Account</option>
+			<option data-id="PSERL">EPS Employer - Liability Account</option>
+			<option data-id="PFADL">PF Admin Charges - Liability Account</option>
+			<option data-id="ESRE">Employer - Statutory Expense Account</option>
 			<option data-id="ESEEL">ESI Employee - Liability Account</option>
 			<option data-id="ESERL">ESI Employer - Liability Account</option>
-			<option data-id="ESERE">ESI Employer - Expense Account</option>			
+			<option data-id="EDLIL">EDLI Employer - Liability Account</option>
+			<option data-id="EDACL">EDLI Admin Charges - Liability Account</option>
+			<!--<option data-id="ESERE">ESI Employer - Expense Account</option>-->
 		</select>
 	</div>
 	<p class="has-error subaccount-p" hidden='true'>A sub account liability/expense must have account type has liability/expense respectively </p>
@@ -89,7 +93,7 @@
 		<select class="form-control select accountingperiod">
     		<option disabled selected hidden style='display: none' value>Select Accounting Period</option>
 				{% for period in periods %}
-  					<option data-id="{{period.id}}">{{period}}</option>
+  					<option data-id="{{period.id}}">{{period.start}} - {{period.end}}</option>
 				{% endfor %}
   		</select>
 	</div>

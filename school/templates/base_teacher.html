@@ -18,14 +18,16 @@
 		<!-- Latest compiled and minified JavaScript for Bootstrap-->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-	    <!-- Pace JS, used for animating page load -->
-    	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/black/pace-theme-center-circle.min.css">
-    	<script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>
-
-
 		<!--This ccs link is for the home icon-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
 
+    <!-- Pace JS, used for animating page load -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-loading-bar.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>
+
+    <!--This is for modernizer-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    
 		<!--jQuery Confirmation Plugin CSS for confirmation boxes-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/2.5.1/jquery-confirm.min.css">
 
@@ -33,11 +35,10 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/2.5.1/jquery-confirm.min.js"></script>
 
 		<!--Bootstrap Bootbox Plugin for alert boxes-->
-		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script> -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 		<!--Bootstrap SelectBoxIt Plugin for styling HTML Select-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/css/bootstrap-select.min.css">
-
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/bootstrap-select.min.js"></script>
 
 
@@ -56,84 +57,110 @@
 
 		{% block title %}
 		{% endblock %}	
-
+    <style type="text/css">
+      body{
+        background-color: #f2f5f7;
+      }
+    </style>
 
 
 	</head>
 	<body>
-		<div class="blockcontent">
+	<div class="blockcontent">
 			<!-- This div is the top-most navigation class -->
 			<div>
   				<div class="col-md-6">
 					<!-- <h2>{{request.user.tenant.name}}</h2> -->
-				</div>
-				<div class="col-md-6" align="right">
-					<h3> Welcome {{request.user.first_name}}</h3>
-				</div>
+				  </div>
+  				<div class="col-md-6" align="right">
+  					<h4>
+              <ul class="nav pull-right">
+                <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-graduation-cap" style="color:dark blue"></i> Welcome, {{request.user.first_name}} {{request.user.last_name}} <b class="caret"></b></a>
+                  <ul class="dropdown-menu" style="background-color: #f2f5f7;">
+                    <li><a href="{% url 'password_change' %}"><i class="fa fa-user"></i>  Change Password</a></li>
+                    <li><a href="/help/support"><i class="fa fa-wrench"></i>  Contact Support</a></li>
+                    <!-- <li class="divider"></li>
+                    <li><a href="/auth/logout"><i class="icon-off"></i> Logout</a></li> -->
+                  </ul>
+                </li>
+              </ul>     
+            </h4>
+  				</div>
 			</div>
 			<ul class="nav nav-tabs"></ul>
-			<!-- <ul class="nav nav-pills navbar-light">
-				<li role="presentation" class="dropdown extra" title="Click to go back to Home"><a href="{% url 'landing' %}"><i class="fa fa-home fa-lg"></i></a></li>
-	  			<li role="presentation" class="dropdown extra" title="Click here for items related to general administration"><a href="{% url 'genadmin:base' %}">General Administration</a></li>
-	  			<li role="presentation" class="dropdown extra" title="Click here for education related administration"><a href="{% url 'eduadmin:base' %}">Educational Administration</a></li>
-	  			<li role="presentation" class="dropdown extra" title="Click here to manage daily class administrtion"><a href="{% url 'classadmin:base' %}">Class Administration</a></li>
-	  			<li role="presentation" class="dropdown extra" title="Click here for Staff/Student Profiles"><a href="{% url 'teacher:profile_base' %}"> Profiles</a></li>
-	  			<li role="presentation" class="dropdown extra"><a href="#">Others</a></li>
-	  			<li role="presentation" class="dropdown extra" title="Click here for accounting, finance, fees, salary etc"><a href="{% url 'accounts:base' %}">Accounts</a></li>
-	  			<li role="presentation" class="navbar-right"> </li>
-	  			<li role="presentation" class="navbar-right"><a href="{% url 'logout' %}">Logout</a></li>
-	  	</ul> -->
+			<ul class="nav nav-pills navbar-light">
+        <li role="presentation" class="navbar-left"> </li>
+        {% block dashboard %}
+        <li role="presentation" class="navbar-light" title="Click to go to Dashboard"><a href="{% url 'landing' %}"><i class="fa fa-home fa-2x"></i></a></li>
+        {% endblock %}
+        	<li role="presentation" class="navbar-right"> </li>
+	  			<li role="presentation" class="navbar-right"><a href="{% url 'logout' %}" title="Click to logout"><i class="fa fa-power-off fa-2x"></i></a></li>
+	  	</ul>
 
-<nav id="primary-navigation">
+    <nav id="primary-navigation">
     <!--Home-->
     <ul class="Home">
     <li><a href="{% url 'landing' %}" title="Nav"><span><i class="fa fa-home"></i></span>Home</a></li>
     </ul>
     <!-- Attendance -->  
-    <ul class="Attendance">
-    <li><a href="#" title="Nav"><span><i class="fa fa-calendar-check-o"></i></span> Attedance Report</a></li>
+    <ul class="StudentAttendance">
+    <li><a href="#"><span><i class="fa fa-calendar-check-o"></i></span>Student Attedance</a>
+      <ul>
+        <li><a href="{% url 'classadmin:dailyattendance_entry' %}"><span></span>Mark Attedance</a></li>
+        <li><a href="{% url 'classadmin:attendance_view' %}"><span></span>View Attedance</a></li>
+      </ul>
+    </li>
     </ul>
     <!-- Exam Report -->
     <ul class="Exam">
-      <li><a href="#" title="Nav"><span><i class="fa fa-percent"></i></span> Exam Report</a>
+      <li><a href="#"><span><i class="fa fa-percent"></i></span> Student Transcript</a>
         <ul>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-pencil"></i>  Exam Wise Report</a></li>
+          <li><a href="#"><i class="fa fa-pencil"></i>  Exam Wise Report</a></li>
           <li></li>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-language"></i>  Class Wise Report</a></li>
+          <li><a href="#"><i class="fa fa-language"></i>  Class Wise Report</a></li>
           <li></li>
-          <li><a href="#" title="Sub Nav"><i class="fa fa-mortar-board"></i>  Marksheet</a></li>
+          <li><a href="#"><i class="fa fa-mortar-board"></i>  Marksheet</a></li>
         </ul>
       </li>      
     </ul>
+    <!-- Attendance -->  
+    <ul class="Attendance">
+    <li><a href="#"><span><i class="fa fa-calendar"></i></span>Your Attedance</a>
+      <ul>
+        <li><a href="{% url 'hr:individual_attendance' %}"><span></span>Mark today's attendance</a></li>
+        <li></li>
+        <li><a href="{% url 'hr:apply_leave' %}"><span></span>Apply for leave</a></li>
+        <li><a href="#"><span></span>View Attendance History</a></li>
+      </ul>
+    </li>
+    </ul>
     <!-- Routine -->
     <ul class="Routine">
-      <li><a href="#" title="Nav"><span><i class="fa fa-table"></i></span> Class Routine</a></li>
+      <li><a href="#"><span><i class="fa fa-table"></i></span> Class Routine</a></li>
     </ul>    
     <!-- Syllabus -->
     <ul class="Syllabus">
-      <li><a href="#" title="Nav"><span><i class="fa fa-language"></i></span> Syllabus</a></li>
+      <li><a href="#"><span><i class="fa fa-language"></i></span> Syllabus</a></li>
     </ul>
     <!-- Annual Events -->  
     <ul class="Events">
-    <li><a href="#" title="Nav"><span><i class="fa fa-calendar"></i></span> Annual Calendar</a></li>
+    <li><a href="#"><span><i class="fa fa-calendar"></i></span> Annual Calendar</a></li>
     </ul>
     <!-- Salary -->  
     <ul class="Salary">
-    <li><a href="#" title="Nav"><span><i class="fa fa-rupee"></i></span> Salary Report</a></li>
+    <li><a href="#"><span><i class="fa fa-rupee"></i></span> Salary Report</a></li>
     </ul>
-
-    <!-- Signout -->
-    <ul class="signout">
-      <li><a href="{% url 'logout' %}" title="Nav"><span><i class="fa fa-sign-out"></i></span>Sign Out</a></li>
-    </ul>    
+    <!-- Discussion -->
+    <ul class="Discussion">
+      <li><a href="#"><span><i class="fa fa-language"></i></span> Student Interaction</a></li>
+    </ul>
 </nav>
-        
 	  		
-			<div style="padding:1%">
-				{% block content %}
-				{% endblock %}
-			</div>
-		</div>
+    <div style="padding:1%">
+      {% block content %}
+      {% endblock %}
+    </div>
+  </div>
 		<script type="text/javascript">
 			$('.extra').tooltip({animation: true});
             $(document).ready(function(){
@@ -145,8 +172,8 @@
 
         });
 		</script>
+    <!-- This is for text color-->
+    <link rel="stylesheet" href="{% static 'text_color.css' %}">
+
 	</body>
 </html>
-
-
-

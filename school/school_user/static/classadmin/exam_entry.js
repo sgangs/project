@@ -1,15 +1,5 @@
 $(function(){
 
-//This variable will store the student list added via json
-var student_list=[];
-
-//This will help to remove the error modal.
-function clearmodal(){
-    window.setTimeout(function(){
-        bootbox.hideAll();
-    }, 2500);
-}
-
 var classid=0, examid=0, subjectid=0, year=0;
 
 
@@ -75,56 +65,11 @@ $( ".exam" ).change(function() {
             },
             // handle a non-successful response
             error : function() {
-                bootbox.alert({
-                    message: "Class and exam combination doesn't exist.", 
-                    onEscape: true }); // provide a bit more info about the error to the user
-                clearmodal();
+                swal("Bluhh..", "Class and exam combination doesn't exist.", "error");
             }
         });
     }());
 });
-
-// //This is called to provide the average in the final score column, when internal score is changed.
-// $( "#student_table" ).on("change",".internal",function() {
-//     var internal=parseInt($(this).find(".internal").val());
-//     var external=parseInt($(this).find(".external").val());
-//     if (isNaN(internal) || isNaN(external)){
-//             bootbox.alert({
-//                 size: "small",
-//                 message: "Please input a number.",
-//                 onEscape: true });
-//             clearmodal();
-//     }
-//     else{
-//         if (external == 0){
-//             $(".final").val(internal);    
-//         }
-//         else{
-//             var final=(internal+external)/2;
-//             $(".final").val(final);    
-//         }
-//     }
-            
-// });
-
-
-// //This is called to provide the average in the final score column, when external score is changed.
-// $( "#student_table" ).on("change",".external",function() {
-//     var internal=parseInt($(this).find(".internal").val());
-//     var external=parseInt($(this).find(".external").val());
-//     if (isNaN(internal) || isNaN(external)){
-//             bootbox.alert({
-//                 size: "small",
-//                 message: "Please input a number.",
-//                 onEscape: true });
-//             clearmodal();
-//     }
-//     else{
-//         var final=(internal+external)/2;
-//         $(".final").val(final);    
-//     }
-// });
-
 
 //This function gets called as exam is entered.
 $( ".subject" ).change(function() {
@@ -164,10 +109,7 @@ $( ".subject" ).change(function() {
             },
             // handle a non-successful response
             error : function() {
-                bootbox.alert({
-                    message: "Class and exam combination doesn't exist.", 
-                    onEscape: true }); // provide a bit more info about the error to the user
-                clearmodal();
+                swal("Bluhh..", "Class and exam combination doesn't exist.", "error");                
             }
         });
     }());

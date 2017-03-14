@@ -1,0 +1,92 @@
+{% extends extension %}
+
+{%block title%}
+<title>Leave Regularization</title>
+
+{% load static from staticfiles %}
+
+
+
+{% endblock %}
+
+{% block content%}
+	
+<h3>Apply for leave &amp Attendance Regularization</h3>
+
+<p>Incase you forgot to apply for attendance, please do so within 60 days, else it'll be considered loss of pay.</p>
+<h1></h1>
+
+<div class="row attendance">
+	<div class="form-group col-md-3 ispresentdiv" >
+		<label for="date" class="control-label">Select Date</label>
+		<input class="form-control date">
+	</div>
+</div>
+<div class="row">
+	<div class="form-group col-md-6 entry_typediv" >
+		<label for="date" class="control-label">Select Leave/Mispunch</label>
+		<select class="selectpicker entry_type">
+	    	<option disabled selected hidden style='display: none' value>Select Leave/Mispunch</option>
+	    	<option data-id="Leave"> Leave </option>
+    		<option data-id="Mispunch"> Mispunch </option>					
+  		</select>
+	</div>	
+</div>
+
+
+<div class="row">
+	<div class="form-group col-md-6  leave div" hidden>
+		<label for="date" class="control-label">Select type of leave</label>
+		<select class="selectpicker leavetype">
+	    	<option disabled selected hidden style='display: none' value>Select Leave Type</option>
+	    	{% for item in leaves%}
+	    		{% if item.available > 0 %}
+	    		<option data-id="{{item.id}}"> {{item.name}} </option>
+	    		{% endif %}
+	    	{% endfor %}
+    		
+  		</select>
+	</div>
+</div>
+<div class="row leave col-md-6 leave mispunch" hidden>
+	<div class="form-group remarksdiv" >
+		<label for="date" class="control-label">Remarks/Reason for leave</label>
+		<input type="text" required="" class="form-control remarks"  placeholder="Please add your remarks/reason for leave">
+	</div>	
+</div>
+
+<div class="row col-md-12">
+<button type="button" class='submit btn btn-primary btn-xs' title="Click submit to record atendance." disabled>Submit</button>
+</div>
+
+<!--<div class="row leave col-md-1">
+</div>
+<div class="row leave col-md-5">
+	<label>Leave Details:</label>
+	{% for item in leaves%}
+		<p>Name: {{item.name}} Leaves Applied: {{item.applied}} Leaves Available: {{item.available}}</p>
+	{% endfor %}
+</div>-->
+
+<!-- <button type="button" class='reset btn btn-primary btn-xs'>Reset</button> -->
+
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+
+<!-- Bootstrap Datepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<script src="{% static 'hr/apply_leave.js' %}"></script>
+<script>
+	redirect_url="{% url 'landing' %}"
+	holiday_url="{% url 'hr:holiday' %}"
+	csrf_token='{{csrf_token}}';
+	
+</script>
+{% endblock %}

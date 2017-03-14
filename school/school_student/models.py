@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
 from school_user.models import Tenant, User
+from school.id_definition import make_id
 #from school_genadmin.models import Branch
 from school_genadmin.models import Subject, Batch
 
@@ -34,11 +35,10 @@ class Student(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
 	dob=models.DateField("Date of Birth", blank=True, null=True)
-	key=models.CharField(db_index=True,max_length=12)
+	key=models.CharField(db_index=True,max_length=64)
 	gender=models.CharField(max_length=1,choices=gender_list)
 	blood_group=models.CharField('Blood Group', max_length=3,choices=blood_list, blank=True, null=True)
-	#school_student_id=models.CharField(max_length=20)
-	slug=models.SlugField(max_length=32)
+	# slug=models.SlugField(max_length=32)
 	contact=models.CharField('Phone Number',max_length=13, blank=True, null=True)
 	email_id=models.EmailField(blank=True, null=True, validators=[validate_email,])
 	local_id=models.CharField("School student ID",blank=True,null=True, max_length=20)
@@ -48,7 +48,6 @@ class Student(models.Model):
 	state=models.CharField(blank=True, null=True, max_length=30)
 	pincode=models.PositiveIntegerField(blank=True, null=True)
 	batch=models.ForeignKey(Batch,db_index=True,related_name='student_student_genadmin_batch')
-	#branch=models.ForeignKey(Branch,db_index=True,related_name='teacher_schoolTeacher_genadmin_branch')
 	isactive=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='student_student_user_tenant')
 	objects=TenantManager()
@@ -56,23 +55,25 @@ class Student(models.Model):
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			data="st"
-			tenant=self.tenant.key
-			today=dt.date.today()
-			today_string=today.strftime('%y%m%d')
-			next_student_number='001'
-			last_student=type(self).objects.filter(tenant=self.tenant).\
-						filter(key__contains=today_string).order_by('key').last()
-			if last_student:
-				last_student_number=int(last_student.key[8:])
-				next_student_number='{0:03d}'.format(last_student_number + 1)
-			self.key=data+today_string+next_student_number
-			toslug=tenant+" " +self.key
-			self.slug=slugify(toslug)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		# data="st"
+	# 		tenant=self.tenant.key
+	# 		print(self.key)
+	# 		# today=dt.date.today()
+	# 		# today_string=today.strftime('%y%m%d')
+	# 		# next_student_number='001'
+	# 		# last_student=type(self).objects.filter(tenant=self.tenant).\
+	# 		# 			filter(key__contains=today_string).order_by('key').last()
+	# 		# if last_student:
+	# 		# 	last_student_number=int(last_student.key[8:])
+	# 		# 	next_student_number='{0:03d}'.format(last_student_number + 1)
+	# 		# self.key=data+today_string+next_student_number
+	# 		# self.key=make_id()
+	# 		toslug=tenant+" " +str(self.key)
+	# 		self.slug=slugify(toslug)
 
-		super(Student, self).save(*args, **kwargs)
+	# 	super(Student, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("key", "tenant"))

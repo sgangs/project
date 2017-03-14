@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^salaryrule/$', views.salary_rules, name='salary_rule'),
     url(r'^salarypayment/$', views.pay_staff, name='salary_payment'),
     url(r'^salarygenerated/$', views.salary_generated_list, name='salary_generated'),
+    url(r'^staffsalaryview/$', views.staff_salary_view, name='staff_salary_view'),
     url(r'^cadreteachersalarylink/$', views.cadre_teacher_salary_linking, name='cadre_salary_link'),
     url(r'^cadreteachersalaryupdate/$', views.cadre_teacher_salary_update, name='cadre_salary_update'),
     #url(r'^classdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),

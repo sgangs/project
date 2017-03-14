@@ -12,6 +12,7 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 #from django.db.models import F
 
+from school.user_util import user_passes_test_custom
 from school_teacher.models import Teacher
 from school_student.models import Student
 from school_genadmin.models import class_group, Subject, Batch, academic_year
@@ -19,16 +20,18 @@ from school_fees.models import student_fee, group_default_fee
 from .forms import *
 from .models import *
 from .eduadmin_util import *
-
+from app_control.view_control import *
 
 @login_required
 #This is the base page.
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def base(request):
 	return render (request, 'eduadmin/eduadmin_base.html')
 
 
 @login_required
 #This function helps in creating new class
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def class_new(request):
 	#date=datetime.now()
 	this_tenant=request.user.tenant
@@ -77,6 +80,7 @@ def class_new(request):
 	
 @login_required
 #This function helps in addidng new syllabus and exams
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def eduadmin_new(request, input_type):
 	if (input_type=="Syllabus"):
 		importform=SyllabusForm
@@ -146,6 +150,7 @@ def eduadmin_new(request, input_type):
 
 @login_required
 #This is used to add subject teachers.
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def subject_teacher_new(request):
 	class_section_option=class_section.objects.for_tenant(request.user.tenant)
 	if request.method == 'POST':
@@ -180,31 +185,39 @@ def subject_teacher_new(request):
 
 @login_required
 #This is used to add students to class. Complex frontend. Not yet done.
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def class_student_add(request):
 	this_tenant=request.user.tenant
-	batch=Batch.objects.for_tenant(this_tenant)
 	class_sections=class_section.objects.for_tenant(this_tenant)
+	batch=Batch.objects.for_tenant(this_tenant)
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
 		students_excluded = []
 		if (calltype == 'student'):
-			#class_name=request.POST.get('class_name')
 			response_data=get_student_list(request,batch,class_sections)
 		if (calltype == 'save'):
 			with transaction.atomic():
-				try:
-					class_name=request.POST.get('class_name')
-					#subject_name=request.POST.get('subject')
-					#teacher_key=request.POST.get('teacher')
-					for data in bill_data:
-						itemcode=data['itemCode']
-						subitemcode=data['subitemCode']
-						unit_entry=data['unit']
-						unit=Unit.objects.for_tenant(this_tenant).get(symbol__iexact=unit_entry)
-						item=Product.objects.for_tenant(request.user.tenant).get(key__iexact=itemcode)
-				except:
-					transaction.rollback()
+				# try:
+				class_selectedid=request.POST.get('class_selected')
+				class_selected=class_sections.get(id=class_selectedid)
+				year=int(request.POST.get('year'))
+				students_data = json.loads(request.POST.get('details'))
+				for data in students_data:
+					student_id=data['student_id']
+					roll_no=data['roll_no']
+					student=Student.objects.for_tenant(this_tenant).get(id=student_id)
+					student_add_fee(student, class_selected, year, this_tenant)
+					new_student=classstudent()
+					new_student.student=student
+					new_student.class_section=class_selected
+					new_student.roll_no=roll_no
+					new_student.year=year
+					new_student.is_promoted=False
+					new_student.tenant=this_tenant
+					new_student.save()
+				# except:
+				# 	transaction.rollback()
 		
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
@@ -212,6 +225,7 @@ def class_student_add(request):
 
 @login_required
 #This is the view to provide list
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def eduadmin_list(request, input_type):
 	if (input_type=="Class"):
 		this_tenant=request.user.tenant
@@ -230,6 +244,7 @@ def eduadmin_list(request, input_type):
 
 @login_required
 #This function is used for viewing the details of a class.
+# @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def classdetail(request, detail):
 	class_selected=class_section.objects.for_tenant(request.user.tenant).get(slug=detail)
 	class_group=class_selected.classgroup
@@ -276,6 +291,7 @@ def classdetail(request, detail):
 @login_required
 #This function is used for viewing period. Adding period has to be done shortly.
 #Student view is separeted out. From student view, prents view will be created.
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def view_add_period(request, detail):
 	extension="base.html"
 	this_tenant=request.user.tenant
@@ -324,6 +340,7 @@ def view_add_period(request, detail):
 	
 @login_required
 #View a teacher's period. This is step 1 in absent teacher subsitution
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def view_teacher_period(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
@@ -353,6 +370,7 @@ def view_teacher_period(request):
 
 @login_required
 #View to promote students
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def promote_student(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
@@ -397,6 +415,7 @@ def promote_student(request):
 								class_student=list_student.get(student=student)
 								class_student.is_promoted=True
 								class_student.save()
+								student_add_fee(student, to_class_selected, to_year, this_tenant)
 								new_classstudent=classstudent()
 								new_classstudent.class_section=to_class_selected
 								new_classstudent.student=student
@@ -415,10 +434,11 @@ def promote_student(request):
 
 @login_required
 #This is used to create new exams. CCE is automatically created
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def exam_type_new(request):
 	current_tenant=request.user.tenant
 	form=ExamTypeForm(tenant=current_tenant)
-	input_type="Exam Type"
+	input_type="Exam Type For Current Academic Year"
 	if (request.method == "POST"):
 		current_tenant=request.user.tenant
 		form = ExamTypeForm(request.POST, tenant=current_tenant)
@@ -427,18 +447,33 @@ def exam_type_new(request):
 			item.tenant=current_tenant
 			item.opted=True
 			exam_type=form.cleaned_data['exam_type']
-			year=form.cleaned_data['year']
+			year=academic_year.objects.for_tenant(current_tenant).get(current_academic_year=True).year
+			item.year=year
 			with transaction.atomic():
 				try:
 					if (exam_type == "CCE"):
 						create_term("Term 1", year, current_tenant)
-						create_term("Term 2", current_tenant)
-						create_exam("Formative Assessments 1", "FA1", year, current_tenant, 0.1,"Term 1")
-						create_exam("Formative Assessments 2", "FA2", year, current_tenant, 0.1,"Term 1")
-						create_exam("Formative Assessments 3", "FA3", year, current_tenant, 0.1,"Term 2")
-						create_exam("Formative Assessments 4", "FA4", year, current_tenant, 0.1,"Term 2")
-						create_exam("Summative Assessments 1", "SA1", year, current_tenant, 0.3,"Term 1")
-						create_exam("Summative Assessments 2", "SA2", year, current_tenant, 0.3,"Term 2")
+						create_term("Term 2", year, current_tenant)
+						create_exam("Formative Assessments 1", "FA1", 1, year, current_tenant, 0.1,"Term 1")
+						create_exam("Formative Assessments 2", "FA2", 2, year, current_tenant, 0.1,"Term 1")
+						create_exam("Summative Assessments 1", "SA1", 3, year, current_tenant, 0.3,"Term 1")
+						create_exam("Formative Assessments 3", "FA3", 4, year, current_tenant, 0.1,"Term 2")
+						create_exam("Formative Assessments 4", "FA4", 5, year, current_tenant, 0.1,"Term 2")						
+						create_exam("Summative Assessments 2", "SA2", 6, year, current_tenant, 0.3,"Term 2")
+						create_grade_table('S',1, 100, 91,"A1", 10, current_tenant)
+						create_grade_table('S',2, 90, 81,"A2", 9, current_tenant)
+						create_grade_table('S',3, 80, 71,"B1", 8, current_tenant)
+						create_grade_table('S',4, 70, 61,"B2", 7, current_tenant)
+						create_grade_table('S',5, 60, 51,"C1", 6, current_tenant)
+						create_grade_table('S',6, 50, 41,"C2", 5, current_tenant)
+						create_grade_table('S',7, 40, 33,"D", 4, current_tenant)
+						create_grade_table('S',8, 32, 21,"E1", 0, current_tenant)
+						create_grade_table('S',9, 20, 0,"E2", 0, current_tenant)
+						create_grade_table('C',1, 100, 81,"A+", 5, current_tenant)
+						create_grade_table('C',2, 80, 61,"A", 4, current_tenant)
+						create_grade_table('C',3, 60, 41,"B+", 3, current_tenant)
+						create_grade_table('C',4, 40, 21,"B", 2, current_tenant)
+						create_grade_table('C',5, 20, 0,"C", 1, current_tenant)
 						item.save()
 					elif (exam_type == "MG"):
 						create_grade_table('S',1, 100, 100,"A+", 10, current_tenant)
@@ -456,6 +491,7 @@ def exam_type_new(request):
 
 @login_required
 #This is the base page.
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def new_grade_table(request):
 	this_tenant=request.user.tenant
 	try:
@@ -484,15 +520,14 @@ def new_grade_table(request):
 	except:
 		return redirect ('eduadmin:new_exam_type')
 
+@login_required
 def view_grade_table(request):
 	this_tenant=request.user.tenant
-	# if (exam_type == 'CCE'):
-	# take user's input os scholastic/co-scholastic. Get this details via POST and show to frontend
-	#else :
 	grades=grade_table.objects.for_tenant(tenant=this_tenant)
 	return render (request, 'eduadmin/view_grade_table.html', {'grades':grades,})
 
-
+@login_required
+#This has to be principal and owner only view
 def period_free_teachers(request):
 	this_tenant=request.user.tenant
 	totalperiod=total_period.objects.get(tenant=this_tenant).number_period
@@ -507,3 +542,21 @@ def period_free_teachers(request):
 					values('id','local_id','first_name','last_name'))
 		return HttpResponse(json.dumps(free_teachers))
 	return render (request, 'eduadmin/view_grade_table.html', {'periods':totalperiod})
+
+@login_required
+def view_exam_list(request):
+	this_tenant=request.user.tenant
+	extension="base.html"
+	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+	terms=Term.objects.for_tenant(this_tenant).filter(is_active=True, year=year)
+	exams=Exam.objects.for_tenant(this_tenant).filter(is_active=True, year=year)
+	return render (request, 'eduadmin/view_exam_list.html', {'terms':terms, 'exams':exams, 'extension':extension})
+
+@login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
+def publish_exam(request):
+	this_tenant=request.user.tenant
+	extension="base.html"
+	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+	exams=Exam.objects.for_tenant(this_tenant).filter(is_active=True, year=year, is_published=False)
+	return render (request, 'eduadmin/publish_exam.html', {'exams':exams, 'extension':extension})

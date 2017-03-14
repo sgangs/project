@@ -1,14 +1,5 @@
 $(function(){
 
-//This variable will store the student list added via json
-
-//This will help to remove the error modal.
-function clearmodal(){
-    window.setTimeout(function(){
-        bootbox.hideAll();
-    }, 3000);
-}
-
 var salary_name="";
 var month="";
 

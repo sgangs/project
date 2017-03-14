@@ -106,10 +106,7 @@ class BatchForm(forms.ModelForm):
 		end_year=cd.get('end_year')
 		error=[]
 		data=""
-		if not start_year or end_year:
-			raise forms.ValidationError(error)
-			return cd
-		else:
+		if start_year and end_year:
 			try:
 				datas=Batch.objects.for_tenant(self.tenant).get(start_year=start_year)
 				datae=Batch.objects.for_tenant(self.tenant).get(end_year=end_year)

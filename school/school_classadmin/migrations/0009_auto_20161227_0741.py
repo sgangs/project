@@ -19,11 +19,11 @@ class Migration(migrations.Migration):
             field=models.TextField(default='a'),
             preserve_default=False,
         ),
-        migrations.AlterField(
-            model_name='exam_report',
-            name='examiner',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='examReport_classadmin_eduadmin_examiner', to='school_eduadmin.Examiner'),
-        ),
+        # migrations.AlterField(
+        #     model_name='exam_report',
+        #     name='examiner',
+        #     field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='examReport_classadmin_eduadmin_examiner', to='school_eduadmin.Examiner'),
+        # ),
         migrations.AlterField(
             model_name='exam_report',
             name='external_score',

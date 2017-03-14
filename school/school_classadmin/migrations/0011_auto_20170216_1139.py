@@ -16,10 +16,10 @@ class Migration(migrations.Migration):
             model_name='attendance',
             name='slug',
         ),
-        migrations.RemoveField(
-            model_name='exam_report',
-            name='examiner',
-        ),
+        # migrations.RemoveField(
+        #     model_name='exam_report',
+        #     name='examiner',
+        # ),
         migrations.RemoveField(
             model_name='exam_report',
             name='external_score',

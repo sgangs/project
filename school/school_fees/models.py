@@ -34,7 +34,8 @@ class monthly_fee(models.Model):
 	#subject=models.ForeignKey(Subject,db_index=True,related_name='Homework_classadmin_genadmin_subject')
 	name=models.TextField()
 	key=models.CharField(db_index=True,max_length=12)
-	slug=models.SlugField(max_length=50)
+	total=models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+	# slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='monthlyFee_fees_user_tenant')
 	objects=TenantManager()
 
@@ -54,8 +55,8 @@ class monthly_fee(models.Model):
 				last_mf_number=int(last_mf.key[8:])
 				next_mf_number='{0:03d}'.format(last_mf_number + 1)
 			self.key=data+today_string+next_mf_number
-			toslug=tenant+" "+self.key
-			self.slug=slugify(toslug)
+			# toslug=tenant+" "+self.key
+			# self.slug=slugify(toslug)
 
 		super(monthly_fee, self).save(*args, **kwargs)
 
@@ -90,8 +91,9 @@ class yearly_fee(models.Model):
 	#subject=models.ForeignKey(Subject,db_index=True,related_name='Homework_classadmin_genadmin_subject')
 	name=models.TextField()
 	month=models.CharField(max_length=3)
+	total=models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
 	key=models.CharField(db_index=True,max_length=12)
-	slug=models.SlugField(max_length=50)
+	# slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='yearlyFee_fees_user_tenant')
 	objects=TenantManager()
 
@@ -111,8 +113,8 @@ class yearly_fee(models.Model):
 				last_yf_number=int(last_yf.key[8:])
 				next_yf_number='{0:03d}'.format(last_yf_number + 1)
 			self.key=data+today_string+next_yf_number
-			toslug=tenant+" " +self.key
-			self.slug=slugify(toslug)
+			# toslug=tenant+" " +self.key
+			# self.slug=slugify(toslug)
 
 		super(yearly_fee, self).save(*args, **kwargs)
 
@@ -151,19 +153,19 @@ class group_default_fee(models.Model):
 	monthly_fee=models.ForeignKey(monthly_fee,db_index=True,related_name='groupDefaultFee_monthlyFee')
 	#fee_structure=models.ManyToManyField(fee_structure,db_index=True,related_name='groupDefaultFee_feeStructure')
 	year=models.PositiveSmallIntegerField(db_index=True)
-	slug=models.SlugField(max_length=50)
+	# slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='groupDefaultFee_fees_user_tenant')
 	objects=TenantManager()
 
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item=self.tenant.key+" "+self.classgroup.name+" "+self.monthly_fee.key
-			self.slug=slugify(item)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item=self.tenant.key+" "+self.classgroup.name+" "+self.monthly_fee.key
+	# 		self.slug=slugify(item)
 
-		super(group_default_fee, self).save(*args, **kwargs)
+	# 	super(group_default_fee, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("classgroup","year","tenant",))
@@ -205,9 +207,9 @@ class student_fee_payment(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	student=models.ForeignKey(Student,db_index=True,related_name='studentFeePayment_fees_student_student')
 	student_class=models.ForeignKey(class_section,db_index=True,related_name='studentFeePayment_fees_eduadmin_classSection')
-	month=models.CharField(db_index=True,max_length=3)
-	year=models.PositiveSmallIntegerField(db_index=True)
-	paid_on=models.DateField()
+	month=models.CharField(db_index=True,max_length=3) #This is month for which the fee is paid (Month: Jan, Feb, etc..)
+	year=models.PositiveSmallIntegerField(db_index=True) #This is the academic year
+	paid_on=models.DateField() #This is the date when the fee is paid_on
 	amount=models.DecimalField(max_digits=7, decimal_places=2)
 	slug=models.SlugField(max_length=56)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='studentFeePayment_fees_user_tenant')

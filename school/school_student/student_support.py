@@ -7,32 +7,21 @@ from django.db import transaction
 #from django.db.models import Avg, Sum, Max, Min
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext
+from school.id_definition import make_id
+from school_genadmin.models import Batch
 from .models import Student
 
-
-#This function is used to provide students' data for attendance/exam score entry
-def student_validate(row, this_tenant, counter):
-    data="st"
-    tenant=this_tenant
-    today=dt.date.today()
-    today_string=today.strftime('%y%m%d')
-    next_student_number='{0:03d}'.format(counter)
-    last_student=Student.objects.filter(tenant=this_tenant).\
-            filter(key__contains=today_string).order_by('key').last()
-    if last_student:
-        last_student_number=int(last_student.key[8:])
-        next_student_number='{0:03d}'.format(last_student_number + counter)
-    key=data+str(today_string)+str(next_student_number)
-    toslug=str(tenant)+" " +str(key)
-    slug=slugify(toslug)
+def student_validate(row, this_tenant, batch):
+    key=str(make_id())
     item=None
+    # row[12]=batch
+    row.append(batch)
     row.append(key)
-    row.append(slug)
+    # row.append(slug)
     row.append(this_tenant)
     row.append(item)
-    row.append(item)
-    print (type(row [2]))
-
+    
+    # print(type(row[2]))
     if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "") :
         transaction.rollback()
         return HttpResponse("There is error in uploaded excel")
@@ -115,7 +104,10 @@ def WriteToExcel(student):
         worksheet_s.write(row, 2, data.local_id, cell_center)
         worksheet_s.write(row, 3, data.first_name, cell_center)
         worksheet_s.write(row, 4, data.last_name, cell_center)
-        worksheet_s.write(row, 5, data.dob.strftime('%d/%m/%Y'), cell_center)
+        if (data.dob != None):
+            worksheet_s.write(row, 5, data.dob.strftime('%d/%m/%Y'), cell_center)
+        else:
+            worksheet_s.write(row, 5, " ", cell_center)
         worksheet_s.write(row, 6, data.gender, cell_center)
         worksheet_s.write(row, 7, data.blood_group, cell_center)
         worksheet_s.write(row, 8, data.contact, cell_center)

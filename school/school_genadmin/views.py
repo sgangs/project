@@ -14,7 +14,6 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 #from django.db.models import F
 
-
 from school.user_util import user_passes_test_custom
 from school_user.models import Tenant
 from school_account.models import accounting_period
@@ -22,15 +21,17 @@ from .forms import *
 from .models import *
 from .genadmin_util import *
 from .genadmin_view_control import *
+from app_control.view_control import *
 
 
 @login_required
 #This is the base page.
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def base(request):
 	return render (request, 'genadmin/genadmin_base.html')
 
 @login_required
-@user_passes_test_custom(allow_gemadmin, redirect_namespace='permission_denied')
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 #For adding new entry for Genadmin models
 def genadmin_new(request, input_type):
 	if (input_type == "Subject"):
@@ -47,21 +48,17 @@ def genadmin_new(request, input_type):
 		name='landing'
 	elif (input_type == "Batch"):
 		importform = BatchForm
-		name='genadmin:base'
+		name='landing'
 		input_type="Student Batch"
 	
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
-	#importformset=formset_factory(wraps(importform)(partial(importform, tenant=current_tenant)), extra=3)
-	#formset=importformset()
-	#helper=ManufacturerFormSetHelper()
 	if (request.method == "POST"):
-		#current_tenant=request.user.tenant
-		#form = formset(request.POST, tenant=current_tenant)
 		form = importform(request.POST, tenant=current_tenant)
 		if form.is_valid():
 			with transaction.atomic():
 				try:
+					print("Valid")
 					if (input_type == "academic_year"):
 						data=form.cleaned_data
 						current=data['current_academic_year']
@@ -82,6 +79,7 @@ def genadmin_new(request, input_type):
 
 @login_required
 #This is the view to provide list
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def master_list(request, input_type):
 	#for the delete button to work - Do we need to have the delete option? 
 	# if request.method == 'POST':

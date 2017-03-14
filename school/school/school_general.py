@@ -1,6 +1,7 @@
 from hashids import Hashids
 from django.conf import settings
 
+
 def encoder(data):
     salter=settings.SALT
     hasher=Hashids(salt=salter, min_length=64)

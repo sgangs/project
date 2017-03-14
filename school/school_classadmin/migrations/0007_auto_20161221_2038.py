@@ -24,10 +24,10 @@ class Migration(migrations.Migration):
             field=models.TextField(default='a'),
             preserve_default=False,
         ),
-        migrations.AddField(
-            model_name='exam_report',
-            name='examiner',
-            field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='examReport_classadmin_eduadmin_examiner', to='school_eduadmin.Examiner'),
-            preserve_default=False,
-        ),
+        # migrations.AddField(
+        #     model_name='exam_report',
+        #     name='examiner',
+        #     field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='examReport_classadmin_eduadmin_examiner', to='school_eduadmin.Examiner'),
+        #     preserve_default=False,
+        # ),
     ]

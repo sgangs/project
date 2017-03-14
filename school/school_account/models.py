@@ -104,10 +104,15 @@ account_type_general=(('Current Assets','Current Assets'),
 
 sub_account_type_choices=(('PFEEL','PF Employee - Liability'),
 	('PFERL','PF Employer - Liability'),
-	('PFERE','PF Employer - Expense'),#This should actually be ESRE: Employer Statutory Expense
+	('PSERL','EPS Employer - Liability'),
+	('PFADL','PF Admin Charges - Liability'),
+	# ('PFERE','PF Employer - Expense'),#This should actually be ESRE: Employer Statutory Expense
+	('ESRE','Employer Statutory - Expense'), #This has been revised from PFERE
 	('ESEEL','ESI Employee - Liability'),
 	('ESERL','ESI Employer - Liability'),
-	('ESERE','ESI Employer - Expense'))
+	('EDLIL','EDLI Employer - Liability'),
+	('EDACL','EDLI Admin Charges - Liability'))
+	# ('ESERE','ESI Employer - Expense') This is not required.
 
 
 #This is a list of ledgers
@@ -224,25 +229,22 @@ class Journal(models.Model):
 class journal_entry(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	transaction_type=(('Credit','Credit'),
-				('Debit','Debit'))	
+				('Debit','Debit'))
 	journal=models.ForeignKey(Journal,db_index=True, related_name='journalEntry_journal')
 	account=models.ForeignKey(Account,related_name='journalEntry_account')
 	transaction_type=models.CharField('Transaction type', max_length=6,choices=transaction_type)
 	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+	#for every journal entry, store the value of the account at the end of the entry. Issue: Journal cannot be deleted/edited.
+	# this_debit=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+	# this_credit =models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalEntry_account_user_tenant')
 	objects = TenantManager()
 	
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
 
-	#def save(self, *args, **kwargs):
-	#	if not self.id:
-	#		item=self.tenant.key+" "+self.key
-	#		self.slug=slugify(item)
-	#	super(Account, self).save(*args, **kwargs)
-	
 	class Meta:
-		unique_together = (("journal", "account"))
+		# unique_together = (("journal", "account"))
 		ordering = ('journal','-transaction_type',)
 
 	def __str__(self):

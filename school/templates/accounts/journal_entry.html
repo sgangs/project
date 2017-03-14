@@ -14,7 +14,9 @@
 {% else %}
 <h3>New Journal Entry</h3>
 {% endif %}
-
+<script type="text/javascript">
+  journal_remark=""
+</script>
 <div class="row">
   <div class="form-group col-xs-6 col-md-4">
   	<select class="form-control selectpicker journalgroup">
@@ -30,15 +32,18 @@
   </div>
 </div>
 <div class="row">
-<div class="form-group col-xs-5 col-md-3"">
+<div class="form-group col-xs-5 col-md-3">
 	<label for="classname" class="control-label">Remarks/Narration</label>
   {% if callfrom == "detail" %}
+  <script type="text/javascript">
+    journal_remark="{{journal.remarks}}"
+  </script>
 	<input type="text"  class="form-control remarks" value="{{journal.remarks}}" disabled>
   {% else %}
   <input type="text"  class="form-control remarks"  placeholder="Max length: 100 characters">
   {% endif %}
 </div>
-<div class="form-group col-xs-5 col-md-3"">
+<div class="form-group col-xs-5 col-md-3">
   <label class="control-label">Date</label>
   {% if callfrom == "detail" %}
   <input type="date" class="form-control date" id="date" value={{journal.date|date:"Y-m-d"}} disabled>
@@ -58,6 +63,7 @@
     {% endif %}
     <th class="header" title="">Account Key</th>
     <th class="header">Account Name</th>
+    <th class="header subaccount" hidden>Sub Account Type</th>
     <th>Debit Value</th>
     <th>Credit Value</th>
   </tr>
@@ -70,6 +76,7 @@
     <td class='accountname'>
     <a href="{{entry.account.get_absolute_url}}">{{entry.account.name}}</a>
     </td>
+    <td class="subaccount" hidden>{{entry.account.sub_account_type}}</td>
     {% if entry.transaction_type == 'Debit' %}
       <td><input type="value" min="0" class="form-control debit" disabled="true" value="{{entry.value}}"></td>
       <td></td>
@@ -115,6 +122,9 @@
 
 <script src="{% static 'accounts/journal_entry.js' %}"></script>
 <script>
+  if (journal_remark.indexOf('Salary') > -1){
+    $('.subaccount').attr('hidden', false)
+  }
   $('.header').tooltip({animation: true, container: 'body'});
   csrf_token='{{csrf_token}}';
   $('.reset').click(function(){location.reload(true)})

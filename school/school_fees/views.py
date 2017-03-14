@@ -1,11 +1,13 @@
+import json
+import calendar
 from datetime import date, datetime
 from django.utils import timezone
 from django.utils.timezone import localtime
 from functools import partial, wraps
 from io import BytesIO
-import json
 #from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
 from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
@@ -59,9 +61,10 @@ def feestructure_new(request, input_type):
 @login_required
 #For adding new entry for fees structure
 def group_fee_linking(request):
-	group=class_group.objects.for_tenant(request.user.tenant).all()
-	monthly=monthly_fee.objects.for_tenant(request.user.tenant).all()
-	yearly=yearly_fee.objects.for_tenant(request.user.tenant).all()
+	this_tenant=request.user.tenant
+	group=class_group.objects.for_tenant(this_tenant).all()
+	monthly=monthly_fee.objects.for_tenant(this_tenant).all()
+	yearly=yearly_fee.objects.for_tenant(this_tenant).all()
 	if request.method == 'POST':
 		response_data = []
 		classgroups=json.loads(request.POST.get('classgroups'))
@@ -69,14 +72,27 @@ def group_fee_linking(request):
 		yearlyfee_inputs =json.loads(request.POST.get('yearlyfees'))
 		year =request.POST.get('year')
 		addstudent =request.POST.get('addstudent')
-		#print (addstudent)
+		total=0
+		yearlyfeeall=[]
+		for fees in yearlyfee_inputs:
+			yearlyfeeid=fees['fee_id']
+			yearlyfee=yearly_fee.objects.get(id=int(yearlyfeeid))
+			yearlyfeeall.append(yearlyfee)
+			# total+=yearly_fee_list.objects.filter(yearly_fee=yearlyfee).\
+			# aggregate(Sum('amount'))['amount__sum']						
+		monthlyfee=monthly_fee.objects.get(id=int(monthlyfee_input))
+		# total+=monthly_fee_list.objects.filter(monthly_fee=monthlyfee).aggregate(Sum('amount'))['amount__sum']
 		for groups in classgroups:
 			groupid=groups['classgroup_id']
 			group=class_group.objects.get(id=int(groupid))
 			monthlyfee=monthly_fee.objects.get(id=int(monthlyfee_input))
-			this_tenant=request.user.tenant
 			with transaction.atomic():
 				try:
+					exist=group_default_fee.objects.for_tenant(this_tenant).filter(classgroup=group, year=year).exists()
+					if (exist):
+						transaction.rollback()						
+					else:
+						pass
 					group_fee=group_default_fee()
 					group_fee.classgroup=group
 					group_fee.monthly_fee=monthlyfee
@@ -95,11 +111,9 @@ def group_fee_linking(request):
 								studentfee.monthly_fee=monthlyfee
 								studentfee.tenant=this_tenant
 								studentfee.save()
-								for fees in yearlyfee_inputs:
-									yearlyfeeid=fees['fee_id']
-									yearlyfee=yearly_fee.objects.get(id=int(yearlyfeeid))
-									group_fee.yearly_fee.add(yearlyfee)
-									studentfee.yearly_fee.add(yearlyfee)
+								for fees in yearlyfeeall:
+									group_fee.yearly_fee.add(fees)
+									studentfee.yearly_fee.add(fees)									
 				except:
 					transaction.rollback()				
 
@@ -154,6 +168,7 @@ def student_payment(request, input_type):
 			response_data=view_payment_details(request)
 		elif (calltype == 'save'):
 			response_data=save_student_payment(request)
+			response_data="Saved"
 		elif (calltype=='pdf'):
 			with transaction.atomic():
 				try:
@@ -166,6 +181,7 @@ def student_payment(request, input_type):
 					report = PdfPrint(buffer,'A4')
 					pdf = report.report(request, paid_on, response_data, 'Fee Payment')
 					response.write(pdf)					
+					response_data=[]
 				except:
 					transaction.rollback()
 			return response
@@ -173,6 +189,7 @@ def student_payment(request, input_type):
 		return HttpResponse(jsondata)
 	return render(request, 'fees/student_fee.html',{'input_type':input_type,'classsection':classsection, 'extension':extension})
 
+@login_required
 def fee_collected_between(request):
 	this_tenant=request.user.tenant
 	academic=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
@@ -195,6 +212,8 @@ def fee_collected_between(request):
 		return HttpResponse(jsondata)
 	return render(request, 'fees/fee_collection.html',{'min':min_date,'max':max_date})	
 
+
+@login_required
 def fee_collection_graph(request):
 	this_tenant=request.user.tenant
 	academic=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
@@ -221,3 +240,49 @@ def fee_collection_graph(request):
 # 	pdf = report.report(respo, 'Fee Payment')
 # 	response.write(pdf)
 # 	return response
+
+@login_required
+#Change this in a way that it is also a student view
+def fee_payment_history(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	classes=class_section.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':		
+		calltype=request.POST.get('calltype')
+		if (calltype == 'student'):
+			response_data=view_student(request)
+		elif (calltype == 'details'):
+			start=request.POST.get('start')
+			end=request.POST.get('end')
+			studentid=request.POST.get('studentid')
+			response_data=list(student_fee_payment.objects.for_tenant(this_tenant).\
+							filter(student=studentid).order_by('paid_on').\
+							values('year','month','paid_on','amount'))
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+	return render(request, 'fees/student_fee_history.html',{'classes':classes, "extension":extension})
+
+@login_required
+def fee_payment_monthwise(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	classes=class_section.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		month=request.POST.get('month')
+		classid=int(request.POST.get('classid'))
+		class_selected=classes.get(id=classid)
+		year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+		response_data=[]
+		# year=int(request.POST.get('year'))
+		# num_days=calendar.monthrange(year, month)
+		# start=datetime.date(year, month, 1)
+		# end=datetime.date(year, month, num_days)
+		payment_list=student_fee_payment.objects.for_tenant(this_tenant).filter(year=year,month=month).\
+					order_by('paid_on', 'student__first_name').select_related('student')
+		for data in payment_list:
+			response_data.append({'paid_on':data.paid_on,'amount':data.amount,\
+				'name':data.student.first_name+" "+data.student.last_name, 'local_id':data.student.local_id, 'key':data.student.key})
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		print (jsondata)
+		return HttpResponse(jsondata)
+	return render(request, 'fees/fee_collection_month.html',{'classes':classes, "extension":extension})

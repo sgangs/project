@@ -1,0 +1,27 @@
+{% extends extension %}
+
+{% block title %}
+<title>
+  It's Holiday Time
+</title>
+
+{% endblock %}
+
+{% block content %}
+{% load staticfiles %}
+<div class="row">
+  <!-- <div class="col-md-6 col-md-offset-3 text-center"> -->
+  <div class="col-md-6 text-center">
+    <br>
+    <h2 style="padding-bottom:10px;">It's Holiday Time.</h2>
+    <h3 style="padding-bottom:30px;">Take a break!! This date is a holiday.</h3>
+    <h4 style="padding-bottom:10px;"><i class="fa fa-exclamation-triangle" style="color:violet"></i> And hey... let me sleep for a day!!</h4>    
+  </div>
+  <div class="col-md-6 text-center">
+    <p><img src="{% static 'gif/holiday.gif' %}"></p>
+  </div>
+</div>
+{% endblock %}
+
+
+

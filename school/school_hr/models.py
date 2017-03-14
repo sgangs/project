@@ -13,11 +13,15 @@ class TenantManager(models.Manager):
 	def for_tenant(self, tenant):
 		return self.get_queryset().filter(tenant=tenant)
 
+leave_choices=(('LOP','Loss of Pay'),
+			('O','Others'),)
+
 #Leave type to be decided by HR
 class leave_type(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(max_length=40)
 	key=models.CharField(max_length=5)
+	leave_type_option=models.CharField(max_length=3, choices=leave_choices, default="O")
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='leaveType_hr_user_tenant')
 	objects=TenantManager()
@@ -64,13 +68,6 @@ class staff_cadre(models.Model):
 	def __str__(self):
 		return '%s' % (self.name)
 
-cadre_type=(('Master','Master'),
-			('Teacher','Teacher'),
-			('Admin','Admin'),
-			('Principal','Principal'),
-			('Account','Account'),			
-			('Collector','Fee Collector'),)
-
 
 #This model links teacher (staff) to cadre
 class staff_cadre_linking(models.Model):
@@ -83,7 +80,7 @@ class staff_cadre_linking(models.Model):
 	objects=TenantManager()
 
 	class Meta:
-		unique_together = (("cadre","teacher",))
+		unique_together = (("cadre","teacher","year"))
 		# ordering = ('name',)
 		
 	def __str__(self):
@@ -107,23 +104,28 @@ class cadre_leave(models.Model):
 		return '%s: %s' % (self.cadre, self.teacher)
 
 
+
+attendance_choices=((1,'Normal'),
+			(2,'Mispunch'),)
+
 class teacher_attendance(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	date=models.DateField(db_index=True)#form/datefield option needed as "input_formats=settings.DATE_INPUT_FORMATS"
 	ispresent=models.BooleanField()
 	is_authorized=models.BooleanField(default=True)
+	attendance_type=models.PositiveSmallIntegerField(choices=attendance_choices, default=1)
 	remarks=models.TextField()
-	slug=models.SlugField(max_length=50)
+	# slug=models.SlugField(max_length=50)
 	teacher=models.ForeignKey(Teacher,db_index=True,related_name='teacherAttendance_hr_teacher_teacher')
 	leave_type=models.ForeignKey(leave_type, blank=True, null=True, related_name='teacherAttendance_leaveType')
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='teacherAttendance_hr_user_tenant')
 	objects=TenantManager()
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item="att"+" "+self.tenant.key+" "+self.teacher.key+" "+str(self.date)
-			self.slug=slugify(item)
-		super(Attendance, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item="att"+" "+self.tenant.key+" "+self.teacher.key+" "+str(self.date)
+	# 		self.slug=slugify(item)
+	# 	super(teacher_attendance, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("teacher", "date","tenant",))

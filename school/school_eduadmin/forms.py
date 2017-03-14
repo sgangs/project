@@ -26,7 +26,7 @@ class SyllabusForm(forms.ModelForm):
 
 	class Meta:
 		model=Syllabus
-		fields =('class_group', 'subject', 'topics', 'year', 'is_additional',)
+		fields =('class_group', 'subject', 'topics', 'year', 'is_additional','is_elective')
 	def clean(self):
 		cd= super(SyllabusForm, self).clean()
 		unique_class=cd.get('class_group')

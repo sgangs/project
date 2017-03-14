@@ -2,7 +2,7 @@ $(function(){
 
   for (i in accounts){
     if (accounts[i].data_type=='income'){
-      income=parseFloat(accounts[i].amount)
+      income=parseFloat(accounts[i].amount)      
     }
     else if (accounts[i].data_type=='expense'){
       expense=parseFloat(accounts[i].amount)*(-1)
@@ -24,7 +24,8 @@ $(function(){
     // Also the "bar" elements must have the correct value (sum of previous "bar"
     // + intervening "var" elements)
     // Thhs ymax check max of income/expense. Then adds 500 to it and rounds up the number to nearest 1000
-    var yMax = Math.ceil(((Math.max((expense+other_expense)*(-1),income+other_income))+500)/1000)*1000,
+    var yMax = Math.ceil((Math.max((expense+other_expense)*(-1),income+other_income))/10000)*10000,    
+    // var yMax=45000
         yMin =  yMax*(-1),
         xLabel = "Income & Expense",
         yLabel = "Amount";
@@ -36,6 +37,7 @@ $(function(){
       { "label":"Profit", "value":profit, "type":"bar" },
       ];
       console.log(yMax);
+      
     // Create the svg as usual
     var svg = dimple.newSvg("#waterfall", 600, 300);
     // The waterfall requires some data manipulation in a similar

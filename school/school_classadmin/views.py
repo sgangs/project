@@ -10,11 +10,14 @@ from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
+
+from school.user_util import user_passes_test_custom
+from app_control.view_control import *
 from .models import *
 from .class_admin_support import *
 from school_teacher.models import Teacher
 from school_student.models import Student
-from school_eduadmin.models import classstudent, Exam, exam_creation, grade_table
+from school_eduadmin.models import classstudent, Exam, exam_creation, grade_table, classteacher, subject_teacher
 from school_genadmin.models import class_group, Subject, annual_calender, academic_year
 from school_genadmin.genadmin_util import holiday_calculator
 
@@ -22,6 +25,7 @@ from school_genadmin.genadmin_util import holiday_calculator
 
 @login_required
 #This is the base page.
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def base(request):
 	return render (request, 'classadmin/classadmin_base.html')
 
@@ -45,17 +49,26 @@ def class_students_list(request):
 	return render (request, 'classadmin/students_list.html', {'items':classes})
 
 @login_required
+@user_passes_test_custom(allow_admin_teacher, redirect_namespace='permission_denied')
 #This function helps in addidng new attendance. Error 1- Why do we need to import class section for each function??
 def attendance_new(request):
 	from school_eduadmin.models import class_section
-	#For the next line, do remember django does lazy querying.
-	classes = class_section.objects.for_tenant(request.user.tenant)
-	#students=classstudent.objects.for_tenant(request.user.tenant).filter(year__exact=year).student
+	this_tenant=request.user.tenant
+	acad=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+	year=acad.year
+	start=acad.start.isoformat()
+	end=acad.end.isoformat()
+	if (request.user.user_type=='Teacher'):
+		teacher=Teacher.objects.get(user=request.user)
+		class_teachers=classteacher.objects.for_tenant(this_tenant).filter(year=year, class_teacher=teacher)
+		classes = class_section.objects.for_tenant(this_tenant).filter(classteacher_classSection__in=class_teachers)
+		extension="base_teacher.html"
+	else:
+		extension="base.html"
+		classes = class_section.objects.for_tenant(this_tenant)
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
-		this_tenant=request.user.tenant
-
 		#Getting student details based on selection
 		if (calltype == 'details'):
 			called_for='Attendance'
@@ -63,7 +76,7 @@ def attendance_new(request):
 		#saving the class
 		elif (calltype == 'save'):
 			classid=request.POST.get('classid')
-			year=request.POST.get('year')
+			# year=request.POST.get('year')
 			date=request.POST.get('date')
 			class_final=classes.get(id__exact=classid)
 			#Getting set of student ids for validation
@@ -97,22 +110,39 @@ def attendance_new(request):
 					transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-
-	return render (request, 'classadmin/class_attendance.html', {'items':classes})
+	return render (request, 'classadmin/class_attendance.html', {'items':classes, 'min':start, 'max':end, "extension":extension})
 
 
 @login_required
+@user_passes_test_custom(allow_admin_teacher, redirect_namespace='permission_denied')
 #This view is for reporting daily class-wsie attendance. Error 1- Why do we need to import class section for each function??
 def attendance_view(request):
 	from school_eduadmin.models import class_section
 	if request.method == 'POST':
 		response_data = []
-		this_tenant=request.user.tenant
 		response_data = get_attendance_data(request)
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-	classes = class_section.objects.for_tenant(request.user.tenant)
-	return render (request, 'classadmin/attendance_view.html', {'items':classes})
+	this_tenant=request.user.tenant
+	acad=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+	year=acad.year
+	start=acad.start.isoformat()
+	end=acad.end.isoformat()
+	if (request.user.user_type=='Teacher'):
+		extension="base_teacher.html"
+		teacher=Teacher.objects.get(user=request.user)
+		class_teachers=classteacher.objects.for_tenant(this_tenant).filter(year=year, class_teacher=teacher)
+		subject_teachers=subject_teacher.objects.for_tenant(this_tenant).filter(year=year, teacher=teacher)
+		classes = list(class_section.objects.for_tenant(this_tenant).filter(classteacher_classSection__in=class_teachers))
+		others = list(class_section.objects.for_tenant(this_tenant).filter(subjectTeacher_classSection__in=subject_teachers))
+		for i in others:
+			classes.append(i)
+		classes=set(classes)
+		print(classes)
+	else:
+		extension="base.html"
+		classes = class_section.objects.for_tenant(request.user.tenant)
+	return render (request, 'classadmin/attendance_view.html', {'items':classes,'min':start, 'max':end, "extension":extension})
 
 
 @login_required
@@ -172,6 +202,46 @@ def new_exam_report(request):
 	return render (request, 'classadmin/new_examreport.html', {'items':classes, 'exams':exams, \
 					'grades':json.dumps(grades,cls=DjangoJSONEncoder)})
 
+def exam_report_edit(request):
+	from school_eduadmin.models import class_section
+	#For the next line, do remember django does lazy querying.
+	this_tenant=request.user.tenant
+	classes = class_section.objects.for_tenant(this_tenant)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = []
+		if (calltype == 'details'):
+			called_for='Exam'
+			response_data=get_subject_data(request, called_for, classes)
+		if (calltype == 'subject'):
+			response_data=get_exam_marks(request, classes, this_tenant)
+			
+		#saving the exam report
+		elif (calltype == 'save'):
+			report_details = json.loads(request.POST.get('details'))
+			for data in report_details:
+				exam_report_id=data['report_id']
+				grade=data['grade']
+				grade_point=Decimal(data['grade_point'])
+				final_score=int(data['final'])
+				remarks=data['remarks']
+				exam_report_entry=exam_report.objects.for_tenant(this_tenant).get(id=exam_report_id)
+				exam_report_entry.grade=grade
+				exam_report_entry.grade_point=grade_point
+				exam_report_entry.final_score=final_score
+				exam_report_entry.remarks=remarks
+				exam_report_entry.save()
+		jsondata=json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+	current_academic_year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+	exams = Exam.objects.for_tenant(request.user.tenant).filter(year=current_academic_year.year)
+	grades=list(grade_table.objects.for_tenant(tenant=this_tenant).filter(grade_type='S').\
+			values('min_mark','max_mark','grade','grade_point'))
+	return render (request, 'classadmin/edit_examreport.html', {'items':classes, 'exams':exams, \
+					'grades':json.dumps(grades,cls=DjangoJSONEncoder)})
+
+
+
 @login_required
 #Exam Report View
 def exam_report_view(request):
@@ -195,6 +265,7 @@ def exam_report_view(request):
 		return HttpResponse(jsondata)
 
 	return render (request, 'classadmin/view_examreport_crossfilter.html', {'items':classes, 'exams':exams})
+
 
 @login_required
 #This function helps in addidng new attendance. Error 1- Why do we need to import class section for each function??

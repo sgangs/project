@@ -25,7 +25,7 @@ from school_account.models import Account, Journal, journal_entry, journal_group
 from school_eduadmin.models import class_section, classstudent
 from school_fees.models import student_fee, student_fee_payment
 from school_student.models import Student
-from school_genadmin.models import class_group
+from school_genadmin.models import class_group, academic_year
 from school_eduadmin.models import class_section, classstudent
 from .models import monthly_fee, monthly_fee_list, yearly_fee, yearly_fee_list
 from school.school_general import *
@@ -33,6 +33,7 @@ from school.school_general import *
 def create_fee_structure(request, fee_type):
     with transaction.atomic():
         try:
+            total=0
             this_tenant=request.user.tenant
             #create_fee_structure(request, fee_type)
             feename=request.POST.get('feename')
@@ -59,9 +60,12 @@ def create_fee_structure(request, fee_type):
                     fee_list.yearly_fee=fee_create
                 fee_list.account = account
                 fee_list.name = account.name
-                fee_list.amount= amount                                   
+                fee_list.amount= amount
+                total+=amount
                 fee_list.tenant=this_tenant
                 fee_list.save()
+            fee_create.total=total
+            fee_create.save()
         except:
             transaction.rollback()
 
@@ -104,10 +108,13 @@ def view_fee_details(request):
 
 def view_student(request):
     response_data = []
+    this_tenant=request.user.tenant
     class_input=request.POST.get('class_selected')
-    year=int(request.POST.get('year'))
-    class_selected=class_section.objects.for_tenant(request.user.tenant).get(id=class_input)
-    group=class_selected.classgroup
+    try:
+        year=int(request.POST.get('year'))
+    except:
+        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+    class_selected=class_section.objects.for_tenant(this_tenant).get(id=class_input)
     studentlist=classstudent.objects.filter(class_section=class_selected, year=year).select_related('student')
     for student in studentlist:
         response_data.append({'data_type':'Student','id':student.student.id,'first_name':student.student.first_name, \
@@ -204,6 +211,8 @@ def new_journal_entry(account, amount, this_tenant,name,tz_aware_now):
             entry.transaction_type="Debit"
         entry.value=amount
         entry.tenant=this_tenant
+        # entry.this_debit=account.current_debit
+        # entry.this_credit=account.current_credit
         entry.save()
         i+=1
 
@@ -243,9 +252,7 @@ class PdfPrint:
         # print(stamp_paid)
         canvas.drawCentredString(100*mm, 15*mm, str(number))
         canvas.drawCentredString(50*mm, 15*mm, str(footer))
-        # canvas.drawCentredString(100 * mm, 100 * mm, stamp_paid)
-
-    
+        # canvas.drawCentredString(100 * mm, 100 * mm, stamp_paid)    
 
     def report(self, request, paid_on, response_data, title):
         doc = SimpleDocTemplate(self.buffer,rightMargin=72,leftMargin=72,topMargin=30,bottomMargin=72,pagesize=self.pageSize)

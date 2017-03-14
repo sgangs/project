@@ -17,7 +17,7 @@ class DateInput(forms.DateInput):
 class leaveTypeForm(forms.ModelForm):
 	class Meta:
 		model=leave_type
-		fields = ('name','key')		
+		fields = ('name','key', 'leave_type_option')		
 	def __init__(self, *args, **kwargs):
 		self.tenant=kwargs.pop('tenant',None)
 		super(leaveTypeForm, self).__init__(*args, **kwargs)

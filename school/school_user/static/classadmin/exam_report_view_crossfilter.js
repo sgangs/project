@@ -33,8 +33,9 @@ $( ".exam" ).change(function() {
             dataType: 'json',
             // handle a successful response
             success : function(jsondata){
-                console.log(jsondata);
+                // console.log(jsondata);
                 draw_crossfilter(jsondata);
+
             },
             // handle a non-successful response
             error : function() {
@@ -58,25 +59,14 @@ function draw_crossfilter(data){
 
     //data format should be: {student name/id, class name, final_score, subject name}
     var xdata=crossfilter(data);
+    total=xdata.size()
     
-    // var typeDimension = livingThings.dimension(function(d) { return d.type; });
-    // var n = livingThings.groupAll().reduceCount().value();
-    // console.log("There are " + n + " living things in my house.") // 6
-    // var legMeasure = typeDimension.group().reduceSum(function(fact) { return fact.legs; });
-    // var a = legMeasure.top(4);
-    // console.log("There are " + a[0].value + " " + a[0].key + " legs in my house.");
-    // console.log(“There are ” + a[1].value + “ ” + a[1].key + “ legs in my house.”);
-    // console.log(“There are ” + a[2].value + “ ” + a[2].key + “ legs in my house.”);
-    // console.log(“There are ” + a[3].value + “ ” + a[3].key + “ legs in my house.”);
-
-    
-
     var subjectDim=xdata.dimension(function(d) {return ""+d.subject;});
     var classDim=xdata.dimension(function(d) {return d.class;});
     var studentDim=xdata.dimension(function(d) {return d.student_id;});
     var marksDim = xdata.dimension(function(p) {
         if (p.marks <35){
-            p.group = "Less than 35"
+            p.group = "0-35"
         }
         else if (p.marks >=35, p.marks<60){
             p.group = "35-60"
@@ -111,6 +101,9 @@ function draw_crossfilter(data){
     classAvgGroup = classDim.group();
     studentAvgGroup = studentDim.group();
     marksGroup = marksDim.group();
+
+    subject_count=subjectAvgGroup.top(Infinity).length;
+    class_count=classAvgGroup.top(Infinity).length;
     
     var reducer = reductio().avg(function(d) { return d.marks; });
     reducer(subjectAvgGroup);
@@ -122,6 +115,7 @@ function draw_crossfilter(data){
     function render_plots(){
         $('.graphs').attr('hidden', false);
         subjectChart
+                .height(subject_count*100)
                 // .width(300).height(200)
                 .dimension(subjectDim)
                 .group(subjectAvgGroup)
@@ -135,6 +129,7 @@ function draw_crossfilter(data){
                 .xAxis().ticks(5);
 
         classChart
+                .height(class_count*100)
                 // .width(300).height(200)
                 .dimension(classDim)
                 .group(classAvgGroup)
@@ -158,7 +153,8 @@ function draw_crossfilter(data){
 
 
         studentChart
-                // .width(800).height(200)
+                .height(total/subject_count*25)
+                // .width(800)
                 .dimension(studentDim)
                 .group(studentAvgGroup, "Student wise score")
                 .label(function (d) {

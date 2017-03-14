@@ -3,13 +3,13 @@ import json
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
 
 from school_user.models import Tenant
-from school_genadmin.models import Batch
-from .forms import StudentForm, StudentGuardianForm, StudentEducationForm,  UploadFileForm
+from .forms import *
 from .models import Student, student_guardian, student_education
 from .student_support import *
 
@@ -39,59 +39,86 @@ def studentprofile_new(request, input_type):
 		if form.is_valid():
 			item=form.save(commit=False)			
 			item.tenant=current_tenant
-			item.save()
+			# item.save()
 			return redirect(name)
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
 
+@login_required
 def student_list(request):
 	students=Student.objects.for_tenant(request.user.tenant).all()
 	return render(request, 'student/list.html',{'students': students})
 
+@login_required
+def student_list_paginator(request):
+	students_list=Student.objects.for_tenant(request.user.tenant).filter(isactive=True).order_by('batch', 'first_name','last_name')\
+		.select_related('batch').all()
+	page = request.GET.get('page', 1)
+	paginator = Paginator(students_list, 25)
+	try:
+		students = paginator.page(page)
+	except PageNotAnInteger:
+		students = paginator.page(1)
+	except EmptyPage:
+		students = paginator.page(paginator.num_pages)
+	index = students.number - 1
+	max_index = len(paginator.page_range)
+	start_index = index - 5 if index >= 5 else 0
+	end_index = index + 5 if index <= max_index - 5 else max_index
+	page_range = paginator.page_range[start_index:end_index]
+	num_page=paginator.num_pages
+	start=students.start_index()-1
+	return render(request, 'student/student_list.html', { 'students': students,'page_range': page_range, \
+				'num_page':num_page, 'start':start})
+
+
+@login_required
 def import_student(request):
 	this_tenant=request.user.tenant
 	if request.method == "POST":
-		form = UploadFileForm(request.POST,
-                              request.FILES)
+		form = UploadFileForm(request.POST, request.FILES, tenant=this_tenant)
+		# batch_selected=Batch.objects.for_tenant(this_tenant).get(id=2)
 		def choice_func(row):
-			choice_func.counter+=1
-			data=student_validate(row, this_tenant, choice_func.counter)
-			return data
-		
-		choice_func.counter=0
-		
+			data=student_validate(row, this_tenant, batch_selected)
+			return data		
 		if form.is_valid():
+			data = form.cleaned_data
+			batch_data= data['batch']
+			batch_selected=Batch.objects.for_tenant(this_tenant).get(id=batch_data)
+			
 			with transaction.atomic():
 				try:
 					request.FILES['file'].save_to_database(
 						model=Student,
 						initializer=choice_func,
 						mapdict=['first_name', 'last_name', 'dob','gender','blood_group', 'contact', 'email_id', \
-						'local_id','address_line_1','address_line_2','state','pincode','key', 'slug', 'tenant','user','batch'])
-					# messages.success(request, 'Students data uploaded successfully.')
+						'local_id','address_line_1','address_line_2','state','pincode','batch','key','tenant','user'])
 					return redirect('student:student_list')
 				except:
 					transaction.rollback()
-					return HttpResponse("Failed")
-			# else:
-			# 	transaction.commit()
-			# finally:
-			# 	transaction.set_autocommit(True)
+					return HttpResponse("Error")
 		else:
 			return HttpResponseBadRequest()
 	else:
-		form = UploadFileForm()
-	return render(request,'upload_form.html',{'form': form})
+		form = UploadFileForm(tenant=this_tenant)
+		
+		
+	return render(request,'upload_form.html',{'form': form,})
 
 
+						
+
+@login_required
 def student_export(request):
 	# if 'excel' in request.POST:
 	response = HttpResponse(content_type='application/vnd.ms-excel')
 	response['Content-Disposition'] = 'attachment; filename=Students.xlsx'
-	student=Student.objects.for_tenant(request.user.tenant).filter(isactive=True)
+	student=Student.objects.for_tenant(request.user.tenant).filter(isactive=True).select_related('batch')
 	xlsx_data = WriteToExcel(student)
 	response.write(xlsx_data)
 	return response
 
+
+@login_required
 def student_edit(request):
 	batch=Batch.objects.for_tenant(request.user.tenant).all()
 	if request.method == "POST":
@@ -112,5 +139,3 @@ def student_edit(request):
 		return HttpResponse(jsondata)
 
 	return render(request, 'student/edit_student.html',{'batch':batch})
-	
-

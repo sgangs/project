@@ -4,14 +4,17 @@ from .models import Attendance, exam_report
 #from school_eduadmin.models import * #class_section
 from school_student.models import Student
 from school_eduadmin.models import class_section, classstudent, Exam, Syllabus
-from school_genadmin.models import class_group, Subject 
+from school_genadmin.models import class_group, Subject, academic_year
 from school.school_general import *
 
 #This function is used to provide students' data for attendance/exam score entry
 def get_subject_data(request, called_for, classes):
     classid=request.POST.get('classid')
     examid=int(request.POST.get('examid'))
-    year=int(request.POST.get('year'))
+    try:
+        year=int(request.POST.get('year'))
+    except:
+        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
     class_selected=classes.get(id__exact=classid)
     response_data=[]
     try:
@@ -27,7 +30,7 @@ def get_student_data(request, called_for, classes ):
     classid=request.POST.get('classid')
     this_tenant=request.user.tenant
     if (called_for=='Attendance'):
-    	year=request.POST.get('year')
+    	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
     else:
         examid=int(request.POST.get('examid'))
         exam=Exam.objects.for_tenant(request.user.tenant).get(id__exact=examid)
@@ -38,8 +41,12 @@ def get_student_data(request, called_for, classes ):
     response_data=[]
     # try:
     if (called_for=='Attendance'):
+        date=request.POST.get('date')
+        excluded_student_raw=Attendance.objects.filter(tenant=request.user.tenant, class_section=class_selected,\
+                date=date).all()
+        excluded_student=Student.objects.filter(attendance_classadmin_student_student=excluded_student_raw).all()
         students_list=classstudent.objects.for_tenant(request.user.tenant).\
-    	   filter(class_section=class_selected,year=year).select_related("student")
+    	   filter(class_section=class_selected,year=year).exclude(student__id__in=excluded_student).select_related("student")        
     else:
         try:
             excluded_student_raw=exam_report.objects.filter(tenant=request.user.tenant, class_section=class_selected,\
@@ -58,6 +65,26 @@ def get_student_data(request, called_for, classes ):
     return response_data
     # except:
    	# 	pass
+
+
+
+def get_exam_marks(request, classes, this_tenant):
+    response_data=[]
+    classid=request.POST.get('classid')
+    examid=request.POST.get('examid')
+    subjectid=int(request.POST.get('subjectid'))
+    class_selected=classes.get(id__exact=classid)
+    year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+    exam=Exam.objects.for_tenant(request.user.tenant).filter(year=year).get(id__exact=examid)    
+    subject=Subject.objects.for_tenant(this_tenant).get(id=subjectid)
+    exam_data=exam_report.objects.for_tenant(request.user.tenant).filter(class_section=class_selected, exam=exam, year=year).\
+                select_related('student')
+    for data in exam_data:
+        roll_no=classstudent.objects.for_tenant(this_tenant).get(student=data.student, year=year).roll_no
+        response_data.append({'id':data.id,'key':data.student.key,'local_id': data.student.local_id,'roll_no': \
+            roll_no,'first_name': data.student.first_name,'last_name': data.student.last_name, 'final':data.final_score,\
+            'grade':data.grade, 'point':data.grade_point})
+    return response_data                
 
 #This function is used to provide data for students' attendance view
 def get_attendance_data(request):

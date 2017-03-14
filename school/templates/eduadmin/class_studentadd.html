@@ -17,7 +17,7 @@
 <div class="row">
 	<div class="form-group col-xs-4 col-md-3 batchdiv">
 		<label class="control-label">Select Student Batch</label>
-		<select class='form-control selectpicker batch fetch_data' data-live-search="true">
+		<select class='form-control select batch fetch_data'>
 			<option disabled selected hidden style='display: none' value>Select Student Batch</option>
 			{% for i in batch %}
       		<option data-id="{{i.id}}">{{i.name}}</option>
@@ -27,7 +27,7 @@
 
 	<div class="form-group col-xs-4 col-md-3 classdiv">
 		<label class="control-label">Select Class To Add</label>
-		<select class='form-control selectpicker class fetch_data' data-live-search="true">
+		<select class='form-control select class fetch_data'>
 			<option disabled selected hidden style='display: none' value>Select Class To Add</option>
 			{% for i in classsection %}
       		<option data-id="{{i.id}}">{{i.name}}</option>			
@@ -55,6 +55,7 @@
 		<thead class="bg-primary">
 	  		<tr style='text-align: center;'>
 	  			<th style="text-align: center" class="header" hidden=""></th>
+	  			<th style="text-align: center" class="header">Sl No</th>
 	  			<th style="text-align: center" class="header">Student System ID</th>
 	  			<th style="text-align: center" class="header">Student Admission/School ID</th>
 	  			<th style="text-align: center" class="header">Student Name</th>

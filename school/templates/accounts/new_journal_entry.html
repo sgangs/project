@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Journal Entry</title>
+
+{% endblock %} 
+
+{% block content%}
+<h3>New Journal Entry</h3>
+<h1></h1>
+<div class="row col-xs-12 col-md-12">
+  <div class="form-group col-xs-6 col-md-4">
+  	<select class="form-control selectpicker journalgroup">
+      <option disabled selected hidden style='display: none' value>Select Journal Group</option>
+  			{% for group in groups %}
+            <option data-id="{{group.id}}">{{group.name}}</option>
+        {% endfor %}
+      </select>
+  </div>
+</div>
+<div class="row col-xs-12 col-md-12">
+  <div class="form-group col-xs-6 col-md-4">
+  	<label for="classname" class="control-label">Remarks/Narration</label>
+    <input type="text"  class="form-control remarks"  placeholder="Max length: 100 characters">  
+  </div>
+  <div class="form-group col-xs-6 col-md-4">
+    <label class="control-label">Date</label>
+    <input type="date" class="form-control date" id="date">  
+  </div>
+  <div class="form-group col-md-12">
+<!-- <form id='students' method='post' name='journal' action=''> -->
+    <table id="journal_table" class="journal table table-striped table-bordered">
+    <thead class="bg-primary">
+      <tr>
+        <th class="header" title="Select Row(s) to delete.">Select</th>
+        <th class="header" title="Select Transaction Type (Debit/Credit).">Transaction Type</th>
+        <th class="header" title="">Account Key</th>
+        <th class="header">Account Name</th>
+        <th class="header subaccount" hidden>Sub Account Type</th>
+        <th>Debit Value</th>
+        <th>Credit Value</th>
+      </tr>
+     </thead>
+     <tbody>
+     <tr class='data'>
+        <td><input type='checkbox' class='case'/></td>
+        <td>
+          <select class='form-control selectpicker' id="trn_type" data-live-search="true" >
+            <option disabled selected hidden style='display: none' value>Debit/Credit</option>
+            <option data-id="Debit">Debit</option>
+            <option data-id="Credit">Credit</option>
+          </select>
+        </td>
+        <td><input type="text"  class="form-control accts_key"></td>
+        <td class='accountname'>
+        </td>
+        <td><input type="value" min="0" class="form-control debit" disabled="true"></td>
+        <td><input type="value" min="0" class="form-control credit" disabled="true"></td>
+       </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="form-group col-md-12">
+    <button type="button" class='delete btn btn-danger btn-xs' >- Delete</button>
+    <button type="button" class='addmore btn btn-success btn-xs' >+ Add More</button>
+    <h1></h1>
+
+    <button type="button" class='submit btn btn-primary btn-xs'>Submit</button>
+    <button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
+  </div>
+</div>
+
+<!-- Create a modal for displaying the following -->
+
+<div class="row col-xs-12 col-md-12" hidden>
+<h3>List of existing accounts</h3>
+  {% if accounts %}
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover" id="master_table">
+      <thead class="thead-inverse header-background bg-info">
+        <tr>
+          <th class="text-center">Account Name</th>
+          <th class="text-center">Account Key/Short Name</th>
+          <th class="text-center">Debit Value</th>
+          <th class="text-center">Credit Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for account in accounts %}
+        <tr align="center">
+                <td>{{account.name}}</td>
+                <td>{{account.key}}</td>
+                <td>{{account.current_debit}}</td>
+                <td>{{account.current_credit}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>You don't have any account registered. Once you have accounts, its urrent balance would be visible here.</p>
+    {% endif %}
+</div>
+
+
+
+{% load static from staticfiles %}
+
+<script src="{% static 'accounts/journal_entry.js' %}"></script>
+<script>
+  csrf_token='{{csrf_token}}';
+  $('.reset').click(function(){location.reload(true)})
+  redirect_url= "#"
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

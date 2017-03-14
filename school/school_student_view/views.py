@@ -1,7 +1,6 @@
 from datetime import datetime
 import json
 from django.contrib.auth.decorators import login_required
-from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse, Http404
 from django.shortcuts import render

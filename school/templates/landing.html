@@ -4,10 +4,6 @@
 <title>
     Dashboard 
 </title>
-    <!-- Pace JS, used for animating page load -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-circle.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>
-
     <!-- This is for the animation to work -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 
@@ -29,7 +25,7 @@
             <!--<div class="col-lg-12">
                 <h1 class="page-header">Thumbnail Gallery</h1>
             </div>-->
-            <div class="col-lg-8 col-md-8 col-xs-12 ">
+            <div class="col-md-8 col-xs-12 ">
                 
                 <div >
                     <label title="Annual Financials: Waterfall chart">Annual Financials
@@ -70,11 +66,6 @@
                     </label>                    
                 </div>      
             </a>
-                <!-- <div>
-                    <a class="thumbnail" href="#">
-                        <img class="img-responsive animated zoomIn" src="http://dummyimage.com/400x300/89d0d9/000000&text=Salary Payment" alt="Salary Payment">
-                    </a>
-                </div> -->
                 <div style="color:#008062;">
                     <h3> Teacher Attendance </h3>
                     <h1 id="teacherattendanceText">{{percent_staff}}%</h1>
@@ -103,12 +94,12 @@
 </div>
 
     
-    <!--Chart.js (for graph)-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>    
+    <!--Chart.js (for pie chart)-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
 
     <link href='https://fonts.googleapis.com/css?family=Signika:300,400,600,700' rel='stylesheet' type='text/css'
 
-    <!-- Script for D3.js and dimple.js-->
+    <!--Script for D3.js and dimple.js-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.4/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js"></script>
 
@@ -122,12 +113,10 @@
         var paid='{{paid}}'
         var total='{{total}}'
         accounts=JSON.parse('{{i_e |escapejs}}'); //this gets the p&l json
-        console.log(accounts)
         var colors = ["#008062", "#68367c"];
         var chart = new Fancychart(200, 120, colors, '#e5e5e5');
         var percent_staff = parseInt('{{percent_staff}}');
         var percent_student = parseInt('{{percent_student}}');
-        console.log(percent_staff);
         chart.circles("#teacherattendanceChart", percent_staff, colors[0]);
         chart.circles("#studentattendanceChart", percent_student, colors[1]);
     </script>

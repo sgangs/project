@@ -33,10 +33,11 @@ class Tenant(models.Model):
 	phone=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=20)
 	key=models.CharField("Unique key for School",max_length=20, unique=True)
-	registered_on=models.DateTimeField(default=datetime.now())
+	registered_on=models.DateTimeField()
 	#details=models.TextField(blank=True)
 	#email=models.EmailField('e-mail id',blank=True, null=True)
 	#no_of_registered_students_allowed
+	no_of_profile=models.PositiveIntegerField(default=0)
 	account=models.CharField(max_length=12,choices=account,default='Basic')
 	paid=models.BooleanField('Has the tenant paid?')
 	trail=models.BooleanField('Is the tenant under trail?')
@@ -47,15 +48,7 @@ class Tenant(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			#data="emr"
-			#today=dt.date.today()
-			#today_string=today.strftime('%y%m%d')
-			#next_emr_number='001'
-			#last_emr=type(self).objects.filter(emr_id__contains=today_string).order_by('emr_id').last()
-			#if last_emr:
-			#	last_emr_number=int(last_emr.emr_id[9:])
-			#	next_emr_number='{0:03d}'.format(last_emr_number + 1)
-			#self.emr_id=data + today_string + next_emr_number 
+			self.registered_on = timezone.now()
 			self.slug=slugify(self.key)
 		#else:
 		#	self.edited_on=timezone.now()

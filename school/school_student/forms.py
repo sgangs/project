@@ -63,15 +63,43 @@ class StudentGuardianForm(forms.ModelForm):
 
 
 class UploadFileForm(forms.Form):
-	file = forms.FileField()
+	# batch = forms.IntegerField()
 	def __init__(self,*args,**kwargs):
+		self.tenant=kwargs.pop('tenant',None)
 		super (UploadFileForm,self ).__init__(*args,**kwargs) # populates the post
+		# self.fields['batch'].queryset = Batch.objects.for_tenant(self.tenant).all()
+		# self.fields['batch'].empty_label = None
+		self.fields['batch'] = forms.ChoiceField(choices=[(o.id, str(o)) for o in Batch.objects.for_tenant(self.tenant)])
 		self.helper = FormHelper(self)
 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-sm-2'
 		self.helper.field_class = 'col-sm-4'
+	
+	file = forms.FileField()
+	# batch = forms.ChoiceField(choices=(), required=True)
 
+	def clean(self):
+		cd= super(UploadFileForm, self).clean()
+		batch=cd.get('batch')
+		try:
+			batch=Batch.objects.for_tenant(self.tenant).get(id=batch)			
+		except:
+			self.add_error('batch',"Selected batch is not valid.")
+		return cd
+
+
+class StudentBatchForm(forms.Form):
+	batch = forms.ModelChoiceField(Batch.objects.all())
+	def __init__(self,*args,**kwargs):
+		self.tenant=kwargs.pop('tenant',None)
+		super (StudentBatchForm,self ).__init__(*args,**kwargs) # populates the post
+		self.fields['batch'].queryset = Batch.objects.for_tenant(self.tenant).all()
+		self.helper = FormHelper(self)
+		# self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-sm-2'
+		self.helper.field_class = 'col-sm-4'
 	
 
 class StudentEducationForm(forms.ModelForm):

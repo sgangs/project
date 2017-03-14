@@ -45,18 +45,18 @@ class classteacher(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='classteacher_classSection')
 	class_teacher=models.ForeignKey(Teacher,db_index=True,related_name='classteacher_eduadmin_teacher_teacher')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
-	slug=models.SlugField(max_length=42)
+	# slug=models.SlugField(max_length=42)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classteacher_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item="clt"+" "+self.tenant.key+" "+self.class_section.name+" "+str(self.year)
-			self.slug=slugify(item)
-		super(classteacher, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		item="clt"+" "+self.tenant.key+" "+self.class_section.name+" "+str(self.year)
+	# 		self.slug=slugify(item)
+	# 	super(classteacher, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("class_section", "year","tenant"))
@@ -180,9 +180,10 @@ class Syllabus(models.Model):
 	year=models.PositiveSmallIntegerField(db_index=True)
 	term=models.ForeignKey(Term,blank=True, null=True, related_name='syllabus_term')
 	weightage=models.PositiveSmallIntegerField("Subject Weightage",default=1)
-	serial_no=models.PositiveSmallIntegerField()
+	# serial_no=models.PositiveSmallIntegerField()
 	#Additional subjects wont have any effect on final score
-	is_additional=models.BooleanField('Is This Additional (Wont effect total calculation)?',default=False) 
+	is_additional=models.BooleanField('Is This Additional (Wont effect total calculation in exam)?',default=False) 
+	is_elective=models.BooleanField('Is This An Elective?',default=False) 
 	# slug=models.SlugField(max_length=45)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='syllabus_eduadmin_user_tenant')
 	objects=TenantManager()
@@ -200,7 +201,7 @@ class Syllabus(models.Model):
 	class Meta:
 		unique_together = (("key", "tenant"))
 		# unique_together = (("key", "term","tenant"))
-		ordering = ('class_group','serial_no','id')
+		ordering = ('class_group','id')
 		
 	def __str__(self):
 		return self.key
@@ -239,11 +240,11 @@ class Exam(models.Model):
 	total=models.PositiveSmallIntegerField()
 	year=models.PositiveSmallIntegerField(db_index=True)
 	has_subexam=models.BooleanField(default=False)
-	period_from=models.DateField("Exam Class Starts")
-	period_to=models.DateField("Exam Class Ends")
+	period_from=models.DateField("Exam Class Starts", null=True, blank=True)
+	period_to=models.DateField("Exam Class Ends", null=True, blank=True)
 	is_published=models.BooleanField(default=False)
 	is_active=models.BooleanField(default=True)
-	weightage=models.PositiveSmallIntegerField("Exam Weightage",default=1)
+	weightage=models.DecimalField("Exam Weightage",max_digits=4, decimal_places=2, default=1)
 	serial_no=models.PositiveSmallIntegerField()
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='exam_classadmin_user_tenant')
 	objects=TenantManager()

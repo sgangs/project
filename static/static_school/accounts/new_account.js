@@ -133,46 +133,46 @@ $( ".accounttype" ).change(function(){
     }
 
     //This is used to check sub account via-a-vis  account type
-    if (acct_type =="Current Liabilities"){
-        if (sub_acct_type == 'PFERE' || sub_acct_type == 'ESERE'){
-            $('.subaccounttypediv').addClass('has-error');
-            $('.subaccount-p').attr('hidden', false);
-            $('.subaccount-p').addClass('has-error');
-            $('.submit').attr('disabled', true);
-        }
-        else{
-            $('.subaccounttypediv').removeClass('has-error');
-            $('.subaccount-p').attr('hidden', true);
-            $('.submit').attr('disabled', false);
-        }        
-    }
-    else if (acct_type =="Direct Expense" || acct_type == "Indirect Expense"){
-        if (sub_acct_type == 'PFEEL' || sub_acct_type == 'PFERL' || sub_acct_type == 'ESEEL' || sub_acct_type == 'ESERL'){
-            console.log("Error here");
-            $('.subaccounttypediv').addClass('has-error');
-            $('.subaccount-p').attr('hidden', false);   
-            $('.subaccount-p').addClass('has-error');
-            $('.submit').attr('disabled', true);
-        }
-        else{
-            $('.subaccounttypediv').removeClass('has-error');
-            $('.subaccount-p').attr('hidden', true);
-            $('.submit').attr('disabled', false);
-        }
-    }
-    else{
-        if (sub_acct_type != '' && sub_acct_type != 'None' && sub_acct_type != 'undefined'){
-            $('.subaccounttypediv').addClass('has-error');
-            $('.subaccount-p').attr('hidden', false);
-            $('.subaccount-p').addClass('has-error');
-            $('.submit').attr('disabled', true);
-        }
-        else{
-            $('.subaccounttypediv').removeClass('has-error');
-            $('.subaccount-p').attr('hidden', true);
-            $('.submit').attr('disabled', false);
-        }
-    }
+    // if (acct_type =="Current Liabilities"){
+    //     if (sub_acct_type == 'ESRE' || sub_acct_type == 'ESERE'){
+    //         $('.subaccounttypediv').addClass('has-error');
+    //         $('.subaccount-p').attr('hidden', false);
+    //         $('.subaccount-p').addClass('has-error');
+    //         $('.submit').attr('disabled', true);
+    //     }
+    //     else{
+    //         $('.subaccounttypediv').removeClass('has-error');
+    //         $('.subaccount-p').attr('hidden', true);
+    //         $('.submit').attr('disabled', false);
+    //     }        
+    // }
+    // else if (acct_type =="Direct Expense" || acct_type == "Indirect Expense"){
+    //     if (sub_acct_type == 'ESRE' || sub_acct_type == 'ESERE'){
+    //         $('.subaccounttypediv').removeClass('has-error');
+    //         $('.subaccount-p').attr('hidden', true);
+    //         $('.submit').attr('disabled', false);
+            
+    //     }
+    //     else{
+    //         $('.subaccounttypediv').addClass('has-error');
+    //         $('.subaccount-p').attr('hidden', false);   
+    //         $('.subaccount-p').addClass('has-error');
+    //         $('.submit').attr('disabled', true);            
+    //     }
+    // }
+    // else{
+    //     if (sub_acct_type != '' && sub_acct_type != 'None' && sub_acct_type != 'undefined'){
+    //         $('.subaccounttypediv').addClass('has-error');
+    //         $('.subaccount-p').attr('hidden', false);
+    //         $('.subaccount-p').addClass('has-error');
+    //         $('.submit').attr('disabled', true);
+    //     }
+    //     else{
+    //         $('.subaccounttypediv').removeClass('has-error');
+    //         $('.subaccount-p').attr('hidden', true);
+    //         $('.submit').attr('disabled', false);
+    //     }
+    // }
 });
 
 $( ".subaccounttype" ).change(function(){
@@ -181,45 +181,46 @@ $( ".subaccounttype" ).change(function(){
     $('.subaccount-p').attr('hidden', true);
 
     //This is used to check sub account via-a-vis  account type
-    if (acct_type =="Current Liabilities"){
-        if (sub_acct_type == 'PFERE' || sub_acct_type == 'ESERE'){
-            $('.subaccounttypediv').addClass('has-error');
-            $('.subaccount-p').attr('hidden', false);
-            $('.subaccount-p').addClass('has-error');
-            $('.submit').attr('disabled', true);
-        }
-        else{
-            $('.subaccounttypediv').removeClass('has-error');
-            $('.subaccount-p').attr('hidden', true);
-            $('.submit').attr('disabled', false);
-        }        
-    }
-    else if (acct_type =="Direct Expense" || acct_type == "Indirect Expense"){
-        if (sub_acct_type == 'PFEEL' || sub_acct_type == 'PFERL' || sub_acct_type == 'ESEEL' || sub_acct_type == 'ESERL'){
-            $('.subaccounttypediv').addClass('has-error');
-            $('.subaccount-p').attr('hidden', false);   
-            $('.subaccount-p').addClass('has-error');
-            $('.submit').attr('disabled', true);
-        }
-        else{
-            $('.subaccounttypediv').removeClass('has-error');
-            $('.subaccount-p').attr('hidden', true);
-            $('.submit').attr('disabled', false);
-        }
-    }
-    else{
-        if (sub_acct_type != '' && sub_acct_type != 'None' && sub_acct_type != 'undefined'){
-            $('.subaccounttypediv').addClass('has-error');
-            $('.subaccount-p').attr('hidden', false);
-            $('.subaccount-p').addClass('has-error');
-            $('.submit').attr('disabled', true);
-        }
-        else{
-            $('.subaccounttypediv').removeClass('has-error');
-            $('.subaccount-p').attr('hidden', true);
-            $('.submit').attr('disabled', false);
-        }
-    }
+    // if (acct_type =="Current Liabilities"){
+    //     if (sub_acct_type == 'ESRE' || sub_acct_type == 'ESERE'){
+    //         $('.subaccounttypediv').addClass('has-error');
+    //         $('.subaccount-p').attr('hidden', false);
+    //         $('.subaccount-p').addClass('has-error');
+    //         $('.submit').attr('disabled', true);
+    //     }
+    //     else{
+    //         $('.subaccounttypediv').removeClass('has-error');
+    //         $('.subaccount-p').attr('hidden', true);
+    //         $('.submit').attr('disabled', false);
+    //     }        
+    // }
+    // else if (acct_type =="Direct Expense" || acct_type == "Indirect Expense"){
+    //     if (sub_acct_type == 'ESRE' || sub_acct_type == 'ESERE'){
+    //         $('.subaccounttypediv').removeClass('has-error');
+    //         $('.subaccount-p').attr('hidden', true);
+    //         $('.submit').attr('disabled', false);
+            
+    //     }
+    //     else{
+    //         $('.subaccounttypediv').addClass('has-error');
+    //         $('.subaccount-p').attr('hidden', false);   
+    //         $('.subaccount-p').addClass('has-error');
+    //         $('.submit').attr('disabled', true);            
+    //     }
+    // }
+    // else{
+    //     if (sub_acct_type != '' && sub_acct_type != 'None' && sub_acct_type != 'undefined'){
+    //         $('.subaccounttypediv').addClass('has-error');
+    //         $('.subaccount-p').attr('hidden', false);
+    //         $('.subaccount-p').addClass('has-error');
+    //         $('.submit').attr('disabled', true);
+    //     }
+    //     else{
+    //         $('.subaccounttypediv').removeClass('has-error');
+    //         $('.subaccount-p').attr('hidden', true);
+    //         $('.submit').attr('disabled', false);
+    //     }
+    // }
 });
 
 $( ".accountingperiod" ).change(function(){
@@ -314,29 +315,15 @@ $( ".submit" ).confirm({
         }
         else{
             if ( !keyproceed ){
-                // bootbox.alert({
-                //     size: "large",
-                //     message: "Account with same key exist. ", 
-                //     onEscape: true });
                 // clearmodal();
                 $('.alert').prop('hidden',false);
                 $('.alert').append("<p class='error'><strong>Oh snap!</strong> Account with same key exist.</p>");
             }
             if (!accountnameproceed) {
-                // bootbox.alert({
-                //     size: "large",
-                //     message: "Account with same name exist. ", 
-                //     onEscape: true });
-                // clearmodal();
                 $('.alert').prop('hidden',false);
                 $('.alert').append("<p class='error'><strong>Oh snap!</strong> Account with same name exist.</p>");
             }
             if(blank){
-                // bootbox.alert({
-                //     size: "large",
-                //     message: "All items marked * should be filled.", 
-                //     onEscape: true });
-                // clearmodal();
                 $('.alert').prop('hidden',false);
                 $('.alert').append("<p class='error'><strong>Oh snap!</strong> All items marked * should be filled.</p>");
             }

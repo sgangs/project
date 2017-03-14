@@ -15,6 +15,7 @@ var month="";
 var fee_total=0.00;
 var fee_paid=0.00;
 var studentid="";
+var studentdetails="";
 var paid=0;
 
 //This is called after the class is entered
@@ -91,6 +92,7 @@ $( ".year" ).change(function() {
 
 $( "#student" ).change(function() {
     studentid=$("#student").find(':selected').data('id');
+    studentdetails=$("#student").find(':selected').text();
     // fee_total=0;
     $(".nowpay").val(0);
     $( ".nowpaydiv" ).removeClass('has-warning');
@@ -251,7 +253,7 @@ $('.submit').click(function(e) {
         type: "info",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, pay fee!",
+        confirmButtonText: "Yes, "+studentdetails+" payment confirmed",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
@@ -264,16 +266,34 @@ $('.submit').click(function(e) {
 });
 
 $('.download').click(function(e) {
-    save_data("print");
+    swal({
+        title: "Are you sure?",
+        text: "You cannot undo student fee payment!",
+        type: "info",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes,  "+studentdetails+" payment confirmed",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){reconfirm_print()},600)
+            
+        }
+    })
 });
+// $('.download').click(function(e) {
+//     reconfirm_print("print");
+// });
 
 function reconfirm() {
     swal({
         title: "Please Reconfirm!",
-        text: "Reconfirm fee payment!",
+        text: "Reconfirm fee payment! Payment by "+studentdetails,
         type: "warning",
         showCancelButton: true,
-      // confirmButtonColor: "#DD6B55",
+        confirmButtonColor: "#DD6B55",
         confirmButtonText: "Yes, fee payment reconfirmed!",
         closeOnConfirm: true,
         closeOnCancel: true,
@@ -281,6 +301,27 @@ function reconfirm() {
     }, function(isConfirm){
         if (isConfirm){
             setTimeout(function(){save_data("saving")},600)            
+        }
+        else{
+            console.log("Not confirmed")
+        }
+    })
+}
+
+function reconfirm_print() {
+    swal({
+        title: "Please Reconfirm!",
+        text: "Reconfirm fee payment! Payment by "+studentdetails,
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, fee payment reconfirmed!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){save_data("print")},600)            
         }
         else{
             console.log("Not confirmed")

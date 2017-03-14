@@ -127,18 +127,15 @@ def account_export(request):
 def account_detail(request,detail):
 	account=Account.objects.for_tenant(request.user.tenant).get(slug__exact=detail)
 	# entries=Account.journalEntry_account.all()
-	entries=journal_entry.objects.filter(account=account).prefetch_related('journal').all()
-
+	entries=journal_entry.objects.filter(account=account).select_related('journal').all()
 	return render(request, 'accounts/accountledger.html',{'account':account, 'entries':entries})
 
 @login_required
 #For showing the general ledger
 def journal_detail(request,detail):
 	journal=Journal.objects.for_tenant(request.user.tenant).get(slug__exact=detail)
-	entries=journal_entry.objects.filter(journal=journal).prefetch_related('journal').select_related('account').all()
-	
+	entries=journal_entry.objects.filter(journal=journal).prefetch_related('journal').select_related('account').all()	
 	return render(request, 'accounts/journal_entry.html',{'journal':journal,'entries':entries, 'callfrom':'detail'})
-
 
 @login_required
 #This view helps in creating & thereafter saving a purchase invoice
@@ -146,16 +143,16 @@ def journalentry(request):
 	date=datetime.now()	
 	this_tenant=request.user.tenant
 	grouplist=journal_group.objects.for_tenant(this_tenant).all()
+	accounts=Account.objects.for_tenant(this_tenant).values('name','key','current_debit','current_credit')
+
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
-		response_data = {}
-
+		response_data = {}		
 		#getting Account Name
 		if (calltype == 'account'):
 			accountkey=request.POST.get('account_code')
 			response_data['name']=Account.objects.for_tenant(this_tenant).\
-									get(key__iexact=accountkey).name
-					
+									get(key__iexact=accountkey).name					
 		#saving the transaction
 		if (calltype == 'save'):
 			with transaction.atomic():
@@ -187,6 +184,8 @@ def journalentry(request):
 							raise IntegrityError
 						account.save()
 						entry.value=value
+						# entry.this_debit=account.current_debit
+						# entry.this_credit=account.current_credit
 						entry.account=account
 						entry.transaction_type=trn_type
 						entry.save()
@@ -200,7 +199,7 @@ def journalentry(request):
 		return HttpResponse(jsondata)
 
 	#return render(request, 'bill/purchaseinvoice.html', {'date':date,'type': type})
-	return render(request, 'accounts/journal_entry.html', {'date':date,'type': type, 'groups':grouplist})
+	return render(request, 'accounts/new_journal_entry.html', {'date':date,'type': type, 'groups':grouplist, 'accounts':accounts,})
 
 @login_required
 #This view is to help create new account
@@ -351,3 +350,41 @@ def balance_sheet(request):
 	jsondata = json.dumps(response_data)
 	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s'})
 
+
+
+@login_required
+#Show Balance Sheet
+def cash_history(request):
+	this_tenant=request.user.tenant
+	response_data=[]
+	date=datetime.now()
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	cash_account=Account.objects.for_tenant(this_tenant).get(key='cash')
+	entries=journal_entry.objects.for_tenant(request.user.tenant).\
+		filter(journal__date__range=(start,end), account=cash_account).order_by('journal__date').select_related('journal')
+	try:
+		opening=account_year.objects.for_tenant(this_tenant).get(account=cash_account, accounting_period=period)
+		opening_credit=opening.opening_credit
+		opening_debit=opening.opening_debit
+	except:
+		opening_credit=0
+		opening_debit=0
+	balance=opening_debit-opening_credit
+	for entry in entries:
+		if (entry.transaction_type == "Debit"):
+			balance=balance+entry.value
+			response_data.append({'slug':entry.journal.slug,'date':entry.journal.date,'trn_id':entry.journal.key,\
+            	'trn_type':entry.transaction_type,'value':entry.value,'balance':balance,})
+		elif (entry.transaction_type == "Credit"):
+			balance=balance-entry.value
+			response_data.append({'slug':entry.journal.slug,'date':entry.journal.date,'trn_id':entry.journal.key,\
+            	'trn_type':entry.transaction_type,'value':entry.value,'balance':balance,})
+		print(balance)
+	# try:
+	# 	response_data=get_balance_sheet(request, start, end)
+	# except:
+	# 	response_data=[]
+	# jsondata = json.dumps(response_data)
+	return render(request, 'accounts/cash_accountledger.html', {'entries':response_data})

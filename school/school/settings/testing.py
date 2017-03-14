@@ -4,7 +4,7 @@ from .email import *
 
 SECRET_KEY = school_secret_key
 
-DEBUG = False
+DEBUG = True
 
 EMAIL_USE_TLS = EMAIL_USE_TLS
 EMAIL_HOST = EMAIL_HOST

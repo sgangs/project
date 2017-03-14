@@ -5,7 +5,7 @@ $(function(){
 
 var batch="";
 var classselected="";
-var year="";
+var year=0;
 
 $( ".batch" ).change(function() {
     batch=$(".batch").find(':selected').data('id');  
@@ -43,7 +43,6 @@ $('.helpdiv').click(function(e){
 
 $('.fetch').click(function(e) {
     if (batch != '' && classselected != '' && year != '' && batch != undefined && classselected != undefined && year != undefined){
-        console.log(batch);
         (function(){
             $.ajax({
                 url : "", 
@@ -56,21 +55,27 @@ $('.fetch').click(function(e) {
                 dataType: 'json',
                 // handle a successful response
                 success : function(jsondata) {
-                // location.href = redirect_url;
-                    console.log(jsondata);
-                    $('.student_add').attr('hidden',false);
-                    $('.fetch_data').attr('disabled',true);
-                    $.each(jsondata, function(){
-                        if (this.data_type=="Student"){
-                            $('.student').append("<tr class='data' >"+
-                                "<td hidden='true'>"+this.id+"</td>"+
-                                "<td style='height:20px;'>" + this.key + "</td>"+
-                                "<td style='height:20px;'>" + this.local_id + "</td>"+
-                                "<td style='height:20px;'>" + this.name + "</td>"+
-                                "<td style='height:20px;'><input type='checkbox' checked></td>"+
-                                "<td style='height:20px;'><input class='form-control' type='number'></td></tr>");
-                        }
-                    });
+                    var i=0;
+                    if (jsondata.length<1){
+                        swal("Umm..", "There's no new admission student in the batch.", "error");    
+                    }
+                    else{
+                        $('.student_add').attr('hidden',false);
+                        $('.fetch_data').attr('disabled',true);
+                        $.each(jsondata, function(){
+                            if (this.data_type=="Student"){
+                                i++;
+                                $('.student').append("<tr class='data' >"+
+                                    "<td hidden='true'>"+this.id+"</td>"+
+                                    "<td style='height:20px;'>" + i + "</td>"+
+                                    "<td style='height:20px;'>" + this.key + "</td>"+
+                                    "<td style='height:20px;'>" + this.local_id + "</td>"+
+                                    "<td style='height:20px;'>" + this.name + "</td>"+
+                                    "<td style='height:20px;'><input type='checkbox'></td>"+
+                                    "<td style='height:20px;'><input class='form-control' type='number'></td></tr>");
+                            }
+                        });
+                    }
                 },
                 // handle a non-successful response
                 error : function() {
@@ -101,90 +106,64 @@ $('.submit').click(function(e) {
         // "Your imaginary file has been deleted.",
         // "success");
         if (isConfirm){
-            setTimeout(function(){reconfirm()},600)
-            
+            setTimeout(function(){save_data()},600)            
         }
     })
 });
 
 function save_data(){
-            
-    //get all itemcode & quantity pair
-    console.log($('.month').is(":visible")); 
-        var items = [];
-        var proceed = true;
-        var month_entered=true
-        fee_name=$(".feename").val();
-        if ($('.month').is(":visible")){
-            if (month ==''){
-                month_entered=false
-            }
-        }
-        if (fee_name != "" && month_entered){
-            //console.log("Date: "+date);
-            $("tr.data").each(function() {
-                var account = $(this).find('td:nth-child(2)').find(':selected').data('id');
-                var amount = parseInt($(this).find('td:nth-child(3) input').val());
-                if (isNaN(amount) || typeof(account) === "undefined" ){
-                    proceed=false;}
+    var proceed = true;        
+    var items = [];    
+    if (year != 0 && typeof(year) != "undefined" && classselected!= "" && typeof(classselected) != "undefined"){
+        $("tr.data").each(function() {
+            var student_id = parseInt($(this).find('td:nth-child(1)').html());
+            var is_added = $(this).find('td:nth-child(6) input').is(":checked");
+            var roll_no = parseInt($(this).find('td:nth-child(7) input').val());
+            if (is_added){
+                if (isNaN(roll_no) || typeof(roll_no) === "undefined" ){  
+                    proceed=false;
+                    console.log("Here");
+                }
                 var item = {
-                    account : account,
-                    amount: amount,
-                    };
-                items.push(item);        
-            });
-            console.log(items);
-            if (proceed){
+                    student_id : student_id,
+                    roll_no: roll_no
+                };
+                items.push(item);
+            }
+        });
+        // console.log(proceed);
+        if (proceed){
         //Send ajax function to back-end 
-                (function() {
-                    $.ajax({
-                        url : "", 
-                        type: "POST",
-                        data:{ details: JSON.stringify(items),
-                            feename: fee_name,
-                            month:month,
-                            csrfmiddlewaretoken: csrf_token},
-                            dataType: 'json',               
-                            // handle a successful response
-                        success : function(jsondata) {
-                            //alert("Fee Structure registered successfully");
-                            location.href = redirect_url;
-                            //console.log(jsondata);
-                        },
-                            // handle a non-successful response
-                        error : function() {
-                            bootbox.alert({
-                                size: "medium",
-                                message: "Fee Structure entry failed", 
-                                onEscape: true });
-                            clearmodal();
-                        }
-                    });
-                }());
-            }
-            else{
-                bootbox.alert({
-                    size: "small",
-                    message: "Please select Account and enter values in all rows.",
-                    onEscape: true });
-                clearmodal();
-
-            }
-        }
-        else if (month_entered==false){
-            bootbox.alert({
-                size: "small",
-                message: "Please enter the name of fee structure or the month.",
-                onEscape: true });
-            clearmodal();
+            (function() {
+                $.ajax({
+                    url : "", 
+                    type: "POST",
+                    data:{ class_selected:classselected,
+                        year:year,
+                        details: JSON.stringify(items),
+                        calltype: 'save',
+                        csrfmiddlewaretoken: csrf_token},
+                        dataType: 'json',               
+                        // handle a successful response
+                    success : function(jsondata) {
+                        // console.log(jsondata);
+                        swal("Hooray..", "Data recorder successfully.", "success");
+                        setTimeout(function(){location.reload(true);},750);
+                    },
+                    // handle a non-successful response
+                    error : function() {
+                        swal("Oops..", "There were some errors.", "error");                            
+                    }
+                });
+            }());
         }
         else{
-            bootbox.alert({
-                size: "small",
-                message: "Please enter the name of fee structure.",
-                onEscape: true });
-            clearmodal();
+            swal("Oops..", "All added students must have a roll no.", "error");
         }
+    }        
+    else{
+        swal("Oops..", "Please select class and academic year before clicking submit", "error");
+    }
     
 }
 

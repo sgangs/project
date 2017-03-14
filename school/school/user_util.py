@@ -3,6 +3,7 @@ from functools import wraps
 from django.db.models import Sum
 from django.shortcuts import redirect, resolve_url
 from school_user.models import User, Tenant
+from school_hr.models import leave_type
 from school_account.models import accounting_period, Account, journal_group, journal_entry, ledger_group
 from school_fees.models import student_fee_payment, student_fee,monthly_fee_list, yearly_fee_list
  
@@ -47,6 +48,25 @@ def create_account(tenant, name, acc_type, remarks, key, ledgername):
 	account.tenant=tenant
 	account.save()
 
+def create_account_year(tenant, key, period):
+    account=account_year()
+    account_selected=Account.objects.for_tenant(tenant).get(key=key)
+    account.account=account_selected
+    account.opening_debit=0
+    account.opening_credit=0
+    account.period=period
+    account.save()
+
+#This function is used to create new leave type
+def create_leave_type(name, key, current_leave_type, tenant):
+    leave=leave_type()
+    leave.name=name
+    leave.key=key
+    leave.leave_type=current_leave_type
+    leave.tenant=tenant
+    leave.save()
+
+
 
 #This function is used to show monthly fee collection graph
 def fee_paid(request,year):
@@ -57,19 +77,18 @@ def fee_paid(request,year):
     return total_paid
 
 def month_fee(request, year):
-	now=datetime.date.today()
-	month=now.strftime("%b").lower()
-	students_fee=student_fee.objects.for_tenant(request.user.tenant).filter(year=year)
-	yearly_fee_total=0
-	monthly_fee_total=0
-	for fee in students_fee:
-		monthly_fee=fee.monthly_fee
-		monthly_fee_total+=monthly_fee_list.objects.filter(monthly_fee=monthly_fee).aggregate(Sum('amount'))['amount__sum']
-		yearly_fee=fee.yearly_fee.filter(month=month)
-		for item in yearly_fee:
-			yearly_fee_total+=yearly_fee_list.objects.filter(yearly_fee=item).aggregate(Sum('amount'))['amount__sum']
-	return monthly_fee_total+yearly_fee_total
-
+    now=datetime.date.today()
+    month=now.strftime("%b").lower()
+    students_fee=student_fee.objects.for_tenant(request.user.tenant).filter(year=year).select_related('monthly_fee')
+    yearly_fee_total=0
+    monthly_fee_total=0
+    for fee in students_fee:
+        monthly_fee_total+=fee.monthly_fee.total
+        yearly_fee=fee.yearly_fee.filter(month=month)
+        for item in yearly_fee:
+            yearly_fee_total+=item.total
+    return monthly_fee_total+yearly_fee_total
+	
 
 def yearly_pl(request):
     account_list=Account.objects.for_tenant(request.user.tenant).filter(account_type__in=('Revenue','Fees',\
