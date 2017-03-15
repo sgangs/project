@@ -187,7 +187,8 @@ def student_payment(request, input_type):
 			return response
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-	return render(request, 'fees/student_fee.html',{'input_type':input_type,'classsection':classsection, 'extension':extension})
+	return render(request, 'fees/student_fee_payment.html',{'input_type':input_type,\
+					'classsection':classsection, 'extension':extension})
 
 @login_required
 def fee_collected_between(request):
@@ -286,3 +287,25 @@ def fee_payment_monthwise(request):
 		print (jsondata)
 		return HttpResponse(jsondata)
 	return render(request, 'fees/fee_collection_month.html',{'classes':classes, "extension":extension})
+
+
+@login_required
+def student_fee_structure(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	classes=class_section.objects.for_tenant(this_tenant).all()
+	yearly=yearly_fee.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':		
+		calltype=request.POST.get('calltype')
+		if (calltype == 'student'):
+			response_data=view_student(request)
+		elif (calltype == 'details'):
+			start=request.POST.get('start')
+			end=request.POST.get('end')
+			studentid=request.POST.get('studentid')
+			response_data=list(student_fee_payment.objects.for_tenant(this_tenant).\
+							filter(student=studentid).order_by('paid_on').\
+							values('year','month','paid_on','amount'))
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+	return render(request, 'fees/student_fee_edit.html',{'classes':classes, "extension":extension,'yearly_fees':yearly})

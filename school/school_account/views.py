@@ -199,7 +199,7 @@ def journalentry(request):
 		return HttpResponse(jsondata)
 
 	#return render(request, 'bill/purchaseinvoice.html', {'date':date,'type': type})
-	return render(request, 'accounts/new_journal_entry.html', {'date':date,'type': type, 'groups':grouplist, 'accounts':accounts,})
+	return render(request, 'accounts/journal_entry.html', {'date':date,'type': type, 'groups':grouplist, 'accounts':accounts,})
 
 @login_required
 #This view is to help create new account

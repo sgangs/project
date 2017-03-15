@@ -521,6 +521,7 @@ def new_grade_table(request):
 		return redirect ('eduadmin:new_exam_type')
 
 @login_required
+#Accept changes in grade in here
 def view_grade_table(request):
 	this_tenant=request.user.tenant
 	grades=grade_table.objects.for_tenant(tenant=this_tenant)

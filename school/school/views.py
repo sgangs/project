@@ -83,6 +83,8 @@ def RegisterView(request):
                             create_ledger_group(new_tenant,"General")
                         i-=1
                     create_leave_type("Loss of Pay", "lop", "LOP", new_tenant)
+                    create_account(new_tenant,"Cash in Hand",\
+                        "Current Assets", "Cash in Hand account", "cash", "General")
                     payment= payment_mode()
                     payment.name="Cash"
                     payment.default=True
@@ -102,8 +104,6 @@ def RegisterView(request):
                     period.current_period=True
                     period.tenant=new_tenant
                     period.save()
-                    create_account(new_tenant,"Cash in Hand",\
-                        "Current Assets", "Cash in Hand account", "cash", "General")
                     create_account_year(new_tenant,"cash", period)
                 except:
                     transaction.rollback()

@@ -241,3 +241,11 @@ class notice_board(models.Model):
 		
 	def __str__(self):
 		return '%s ' % (self.title)
+
+# class gate_pass(models.Model):
+# 	id=models.BigAutoField(primary_key=True)
+# 	visitor_name=models.CharField(max_length=50)
+# 	visit_purpose=models.TextField()
+# 	date=models.DateField()
+# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='noticeBoard_eduadmin_user_tenant')
+# 	objects=TenantManager()

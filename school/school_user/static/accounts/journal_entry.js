@@ -20,14 +20,14 @@ $(".delete").on('click', function() {
 
 $(".addmore").on('click',function(){
     count=$('table tr').length;
-    var data="<tr class='data'>"+
+    var new_row="<tr class='data'>"+
     "<td><input type='checkbox' class='case'/></td>"+
     "<td id='trn_col'></td>"+
     "<td><input type='text'  class='form-control accts_key'></td>"+
     "<td class='accountname'></td>"+
     "<td><input type='value' min='0' class='form-control debit' disabled='true'></td>"+
     "<td><input type='value' min='0' class='form-control credit' disabled='true'></td></tr>";
-    $('table').append(data);
+    $('table').append(new_row);
     // <select class='form-control selectpicker' id="trn_type">
     $('table').find('tr:eq('+count+')').find('#trn_col').append("<select class='form-control selectpicker'"+
         "data-live-search='true' id='trn_type'>"+
@@ -125,6 +125,7 @@ $( ".submit" ).confirm({
     animationSpeed: 750,
     confirm: function(){
     //get all the input details
+        var proceed=true;
         var items=[]; 
         var debit=0;
         var credit=0;
@@ -134,11 +135,15 @@ $( ".submit" ).confirm({
         var value_identifier=1;
         var trn_identifier=1;
         if (date != "" && journal_group!= ""){
+            var i=0
             $("tr.data").each(function() {
+                value=0;
+                i++;
+                console.log(i);
                 var trn_type =  $(this).find('td:nth-child(2)').find(':selected').text();
-                // var trn_type=$(this).find('#trn_type').value
                 console.log(trn_type);
                 var code = $(this).find('td:nth-child(3) input').val();
+                console.log(code);
                 //trn_type is short for transaction type
                 if (trn_type == "Debit"){
                     value=parseFloat($(this).closest('tr').find('td:nth-child(5) input').val());
@@ -166,8 +171,12 @@ $( ".submit" ).confirm({
             });
             console.log (items);
         }
+        else{
+            proceed=false;
+        }
         console.log ("Debit: "+debit+"Credit: "+credit);
-        if (debit == credit){
+        console.log(proceed);
+        if (debit == credit && proceed){
             if (value_identifier ==1 & trn_identifier == 1){
                 //Send ajax function to back-end         
                 (function() {
@@ -207,11 +216,20 @@ $( ".submit" ).confirm({
             }
         }
         else{
-            bootbox.alert({
-                size: "large",
-                message: "Debit should be equal to credit & value should not be blank", 
-                onEscape: true });
-            clearmodal();
+            if (! proceed){
+                bootbox.alert({
+                    size: "large",
+                    message: "Please select journal group and date.", 
+                    onEscape: true });
+                clearmodal();
+            }
+            else{
+                bootbox.alert({
+                    size: "large",
+                    message: "Debit should be equal to credit & value should not be blank.", 
+                    onEscape: true });
+                clearmodal();                
+            }
         }
                 
     }, //bracket for confirm closing

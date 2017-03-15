@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^feecollection/$', views.fee_collected_between, name='fee_collection'),
     url(r'^studentwisehistory/$', views.fee_payment_history, name='studentwise_history'),
     url(r'^feepaymentmonthwise/$', views.fee_payment_monthwise, name='fee_payment_monthwise'),
+    url(r'^studentfeeedit/$', views.student_fee_structure, name='student_fee_structure'),
     url(r'^feeslicingdicing/$', views.fee_collection_graph, name='fee_report'),
     url(r'^studentfeepaymentview/$', views.student_payment, {'input_type': 'View'}, name='student_payment_view'),
     # url(r'^printfee/$', views.print_fee_structure, name='student_fee_print'),

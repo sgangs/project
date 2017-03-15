@@ -50,6 +50,10 @@ def genadmin_new(request, input_type):
 		importform = BatchForm
 		name='landing'
 		input_type="Student Batch"
+	# elif (input_type == "Pass"):
+	# 	importform = GatePassForm
+	# 	name='genad,in:gate_pass_list'
+	# 	input_type="Gate Pass"
 	
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)

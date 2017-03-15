@@ -2,6 +2,8 @@ from .base import *
 from .secret import *
 from .email import *
 
+ALLOWED_HOSTS = ALLOWED_HOSTS
+
 SECRET_KEY = school_secret_key
 
 DEBUG = True

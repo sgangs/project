@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.shortcuts import redirect, resolve_url
 from school_user.models import User, Tenant
 from school_hr.models import leave_type
-from school_account.models import accounting_period, Account, journal_group, journal_entry, ledger_group
+from school_account.models import accounting_period, Account, journal_group, journal_entry, ledger_group, account_year
 from school_fees.models import student_fee_payment, student_fee,monthly_fee_list, yearly_fee_list
  
 
@@ -54,7 +54,8 @@ def create_account_year(tenant, key, period):
     account.account=account_selected
     account.opening_debit=0
     account.opening_credit=0
-    account.period=period
+    account.accounting_period=period
+    account.tenant=tenant
     account.save()
 
 #This function is used to create new leave type
