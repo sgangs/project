@@ -13,9 +13,13 @@ from .create_salary import *
 from .link_salary import *
 from .generate_monthly_salary import *
 
+from school.user_util import user_passes_test_custom
+from app_control.view_control import allow_admincontrol
+
 
 @login_required
 #This is the salary rule. Rules are: Salary cycle. 
+#This view is debatable - for who can access it
 def salary_rules(request):
 	this_tenant=request.user.tenant
 	try:
@@ -51,6 +55,7 @@ def salary_rules(request):
 
 
 @login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def salary_structure_creation(request, input_type):
 	accountlist=Account.objects.for_tenant(request.user.tenant).filter(ledger_group__name='Salary').all()
 	accounts=[]
@@ -66,6 +71,7 @@ def salary_structure_creation(request, input_type):
 	return render(request, 'salary/salary_structure.html', {'accounts':jsondata, 'salary_type':input_type})
 
 @login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def epf_eps_structure_creation(request):
 	accounts=Account.objects.for_tenant(request.user.tenant).filter(ledger_group__name='Salary').values('id','name')
 	if request.method == 'POST':
@@ -76,6 +82,7 @@ def epf_eps_structure_creation(request):
 	return render(request, 'salary/epf_eps_structure.html', {'accounts':accounts})
 
 @login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def epf_employee_creation(request):
 	accounts=Account.objects.for_tenant(request.user.tenant).filter(ledger_group__name='Salary').values('id','name')
 	if request.method == 'POST':
@@ -86,6 +93,7 @@ def epf_employee_creation(request):
 	return render(request, 'salary/epf_employee.html', {'accounts':accounts})
 
 @login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def esi_employee_creation(request):
 	accounts=Account.objects.for_tenant(request.user.tenant).filter(ledger_group__name='Salary').values('id','name')
 	if request.method == 'POST':
@@ -96,6 +104,7 @@ def esi_employee_creation(request):
 	return render(request, 'salary/esi_employee.html', {'accounts':accounts})
 
 @login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def esi_structure_creation(request):
 	accounts=Account.objects.for_tenant(request.user.tenant).filter(ledger_group__name='Salary').values('id','name')
 	if request.method == 'POST':
@@ -107,6 +116,7 @@ def esi_structure_creation(request):
 	
 
 @login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def edli_admin_structure_creation(request):
 	accounts=Account.objects.for_tenant(request.user.tenant).filter(ledger_group__name='Salary').values('id','name')
 	if request.method == 'POST':
@@ -118,6 +128,7 @@ def edli_admin_structure_creation(request):
 
 @login_required
 #This is to create new cadre salary link
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def cadre_teacher_salary_linking(request):
 	this_tenant=request.user.tenant
 	# group=staff_cadre.objects.for_tenant(this_tenant).filter(cadre_type='Teacher').all()
@@ -141,6 +152,7 @@ def cadre_teacher_salary_linking(request):
 
 @login_required
 #For existing linked staff cadre, add other linked structure
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def cadre_teacher_salary_update(request):
 	this_tenant=request.user.tenant
 	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
@@ -185,6 +197,7 @@ def cadre_teacher_salary_update(request):
 	return render(request, 'salary/existing_salary_linking.html',{'groups':group,})
 
 @login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def salary_generation(request):
 	this_tenant=request.user.tenant
 	if request.method == 'POST':

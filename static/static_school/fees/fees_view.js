@@ -35,6 +35,7 @@ $( ".check" ).click(function() {
                     $.each(jsondata, function(){
                         $('#student_table').append("<tr class='data'>"+
                         "<td class='account'>"+this.account+"</td>"+
+                        "<td class='account'>"+this.name+"</td>"+
                         "<td class='amount'>"+this.amount+"</td></tr>");                    
                     })
                 },

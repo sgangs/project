@@ -1,353 +1,894 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+  <head>    
+  {% load static from staticfiles %}
+    <meta charset="UTF-8">
+	  <title>TECHASSISTO For School - Smart Learning School Management Solution</title>
+    <meta name="description" content="School Management Scolution, with smart learning, accounting, online fees and salaray, attendance, biometric attendance, CCE Report, Exam report, smart communication">
+    <meta name="author" content="TechAssisto">
+	
+	<!-- Mobile Specific Meta -->	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
 
-<head>
+    <!-- Bootstrap -->
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet">
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>Assisto: ERP Software - Accounting Inventory Invoicing and HR Software</title>
-    <meta name="description" content="ERP Software, packed with /
-            one stop Accounting, Inventory, Invoicng and HR software">
-    
-
-    {% load static from staticfiles %}
-
-    <link type ="image/x-icon" href= "{% static 'img/Logo_Favicon.ico' %}" rel="logo icon">
-
-    <!-- Bootstrap Core CSS -->
-    <link href= "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link href="{% static 'css/stylish-portfolio.css' %}" rel="stylesheet">
-
-    <!-- Custom Fonts -->
+    <!--This ccs link is for font awesome-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
-    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
 
-    <!-- jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <!-- Font awesome -->
+    <!-- <link rel="stylesheet" href="{% static 'assets/css/font-awesome.min.css' %}"> -->
 
-    <!-- Latest compiled and minified JavaScript for Bootstrap-->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
 
+    <!-- Owl-carousel style -->
+    <link rel="stylesheet" href="{% static 'assets/css/owl.carousel.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/owl.theme.css' %}">
 
+    <!-- magnific style -->
+    <link rel="stylesheet" href="{% static 'assets/css/magnific-popup.css' %}">
 
-</head>
+    <!-- Custom stylesheet-->
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/responsive.css' %}" media="screen">
 
-<body>
+    <!-- Added google font -->
+    <link href='https://fonts.googleapis.com/css?family=Dosis:400,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Raleway:400,300,700' rel='stylesheet' type='text/css'>
 
-    <!-- Navigation -->
-    <a id="menu-toggle" href="#" class="btn btn-dark btn-lg toggle"><i class="fa fa-bars"></i></a>
-    <nav id="sidebar-wrapper">
-        <ul class="sidebar-nav">
-            <a id="menu-close" href="#" class="btn btn-light btn-lg pull-right toggle"><i class="fa fa-times"></i></a>
-            <li class="sidebar-brand">
-                <a href="#"  onclick = $("#menu-close").click(); >ASSISTO</a>
-            </li>
-            <li>
-                <a href="#" onclick = $("#menu-close").click(); >Home</a>
-            </li>
-            <li>
-                <a href="#about" onclick = $("#menu-close").click(); >About</a>
-            </li>
-            <li>
-                <a href="#services" onclick = $("#menu-close").click(); >Services</a>
-            </li>
-            <li>
-                <a href="#portfolio" onclick = $("#menu-close").click(); >Portfolio</a>
-            </li>
-            <li>
-                <a href="#contact" onclick = $("#menu-close").click(); >Contact</a>
-            </li>
-        </ul>
-    </nav>
+    <!--Fav and touch icons-->
+    <link rel="shortcut icon" href="{% static 'img/Logo_Favicon.ico' %}">
+    <link rel="apple-touch-icon" href="{% static 'assets/images/icons/apple-touch-icon.png' %}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{% static 'assets/images/icons/apple-touch-icon-72x72.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'assets/images/icons/apple-touch-icon-114x114.png' %}">
 
-    <!-- Header -->
-    <header id="top" class="header">
-        <div class="text-vertical-center">
-            <!--<h1>Assisto</h1>
-            <h3>Your technical assistant</h3>-->
-            <br>
-            <a href="{% url 'register' %}" class="button btn btn-dark btn-lg">Register (School)</a>
-            <a href="{% url 'login' %}" class="button btn btn-dark btn-lg">Login (School)</a>
-            <!-- <button type="button" class="btn btn-dark btn-lg" id="register" data-toggle="modal" data-target="#regModal">Register</button>
-            <button type="button" class="btn btn-dark btn-lg" id="register" data-toggle="modal" data-target="#logModal">Login</button> -->
-        </div>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+ 
+	<!-- Preloader -->
+      <div id="faceoff">
+        <div id="preloader"></div>
+        <div class="preloader-section"></div>
+      </div>
+    <!-- Preloader end -->
+  
+    <!-- header start -->
+    <header id="home" class="navbar-fixed-top">
+      <nav class="navbar navbar-default" role="navigation">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-3">
+              <!-- Brand and toggle get grouped for better mobile display -->
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <h1><a class="nav-brand" href=""> <img src="{% static 'img/Logo_Favicon.ico' %}" alt="gigninga"></a></h1>
+              </div>
+            </div>
+            <div class="col-sm-7">
+              <!-- Collect the nav toggling -->
+              <div class="collapse navbar-collapse navbar-example" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                  <li><a href="#intro">Intro</a></li>
+                  <li><a href="#feature">Feature</a></li>
+                  <li><a href="#description">Description</a></li>
+                  <!-- <li><a href="#screenshot">Screenshots</a></li>
+                  <li><a href="#download">Download</a></li>-->
+                  <li><a href="#contact">Contact</a></li>
+                </ul>             
+              </div><!-- /.navbar-collapse -->
+            </div>
+            <!-- <div class="col-sm-2 mob-right">
+              <ul class="app pull-right">
+                <li><a href=""><i class="fa fa-apple"></i></a></li>
+                <li><a href=""><i class="fa fa-android"></i></a></li>
+                <li><a href=""><i class="fa fa-windows"></i></a></li>
+              </ul>
+            </div> -->
+          </div>
+        </div><!-- /.container -->
+      </nav>
     </header>
+    <!-- header end -->
 
-
-    <!-- Register Modal -->
-    <div class="modal fade regmodal" id="regModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Register As:</h4>
+    <!-- banner start -->
+    <section id="banner" class="banner">
+      <div class="trans-bg">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-12">              
+              <h2><a href="" class="lg-logo default-color">TechAssisto for School</a></h2> <!--/ .lg-logo -->
+               <div class="flex_text text-slider">
+                  <ul class="slides">
+                      <li>We are the smart education solution</li>
+                      <li>Integrate all your solutions, at the price of one.</li>
+                      <li>We are not just a School Management Solution, we are technology enablers.</li>
+                      <li>You can find others but ultimately you will love us</li>
+                      <li> We ae platform independent <i class="fa fa-apple"></i> <i class="fa fa-android"></i> <i class="fa fa-windows"></i></li>
+                  </ul>
                 </div>
-                <div class="modal-body text-center">
-                    <a href="{% url 'register' %}"><button type="button" class="btn btn-primary distributor">School</button></a>
-                    <button type="button" class="btn btn-primary school">Distributor</button>
-                    
-                </div>
-                <div class="modal-footer">
-                    <!-- <button type="button" class="btn btn-primary distributor">Distributor</button>
-                    <button type="button" class="btn btn-primary school">School</button> -->
-                </div>
+                <!--/.text-slider end-->                
+                <!-- <ul class="app">
+                  <li><a href=""><i class="fa fa-apple"></i></a></li>
+                  <li><a href=""><i class="fa fa-android"></i></a></li>
+                  <li><a href=""><i class="fa fa-windows"></i></a></li>
+                </ul>   -->
+                <div class="download-block text-center">
+                   <a href="{% url 'register' %}" class="btn-download">Try for free</a><a href="{% url 'login' %}" class="btn-download">Login</a>
+                   <!-- <a href="" class="btn-download">Take a tour</a> -->
+                 </div>             
             </div>
+          </div>
         </div>
-    </div>
-    <!-- Login Modal -->
-    <div class="modal fade regmodal" id="logModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Login As:</h4>
-                </div>
-                <div class="modal-body text-center">
-                    <a href="{% url 'login' %}"><button type="button" class="btn btn-primary distributor">School</button></a>
-                    <button type="button" class="btn btn-primary school">Distributor</button>
-                    
-                </div>
-                <div class="modal-footer">
-                    <!-- <button type="button" class="btn btn-primary distributor">Distributor</button>
-                    <button type="button" class="btn btn-primary school">School</button> -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- About -->
-    <section id="about" class="about">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12 text-center">
-                    <h2>We solve your accounting, inventory, invoicing and HR problem with our one stop
-                     ERP software, segregated for every business types.</h2>
-                    <p class="lead">Enjoy what yo do best and take vacations. Get your stats on the go with us. Access your business from anywhere, using any system - all you need is a just web browser.</p>
-                </div>
-            </div>
-            <!-- /.row -->
-        </div>
-        <!-- /.container -->
+      </div> <!-- /.trans-bg -->                 
     </section>
+    <!-- banner end -->
 
-    <!-- Services -->
-    <!-- The circle icons use Font Awesome's stacked icon classes. For more information, visit http://fontawesome.io/examples/ -->
-    <section id="services" class="services bg-primary">
+    <!-- intro start -->
+    <section id="intro" class="intro white">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 text-center">
+            <span class="sub-head wow fadeInLeft">hrere is our</span>
+            <div class="title wow fadeInRight">
+              <h2>awesome solution: techassisto</h2>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="app-block wow bounceInUp" data-wow-delay=".1s">
+              <i class="fa fa-gear"></i>
+              <h3>Digitize Education</h3>
+              <p>With our unique solution, be a proud school to have a technology enabled education system, where videos, graphs, questions can be shared.</p>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="app-block wow bounceInUp" data-wow-delay=".2s">
+              <i class="fa fa-bolt"></i>
+              <h3>quick &amp efficiency</h3>
+              <p>We proudly proclaim that we have the quickest database design of all the available solutions.</p>
+            </div>            
+          </div>
+          <div class="col-sm-4">
+            <div class="app-block wow bounceInUp" data-wow-delay=".3s">
+              <i class="fa fa-bar-chart"></i>
+              <h3>Reports</h3>
+              <p>We have awesome real-time data mind reports. Why buy a separate reporting solution?</p>
+            </div>            
+          </div>          
+        </div>
+        <div class="row">
+        <div class="col-sm-4">
+            <div class="app-block wow bounceInUp" data-wow-delay=".4s">
+              <i class="fa fa-paint-brush"></i>
+              <h3>unique design</h3>
+              <p>With our unique deisgns, children would love to be at this site. Staffs would be intruiged with the design.</p>
+            </div>
+          </div>          
+          <div class="col-sm-4">
+            <div class="app-block wow bounceInUp" data-wow-delay=".5s">
+              <i class="fa fa-thumbs-o-up"></i>
+              <h3>best in qulality</h3>
+              <p>Speed. Reliability. Integrity. Cutting-edge technology. One-click support. We are the best.</p>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="app-block wow bounceInUp" data-wow-delay=".6s">
+              <i class="fa fa-credit-card"></i>
+              <h3>bank level security</h3>
+              <p>Your data is 256-bit encrypted right from the moment it leaves your computer. We provide bank level security.</p>
+            </div>            
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- intro end -->
+
+    <!-- feature start -->
+    <section id="feature" class="feature">
+      <div class="trans-bg">
         <div class="container">
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <h2 class="wow swing" data-wow-delay=".1s">some features</h2>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4">
+              <ul class="feature-list-left">
+                <li>
+                  <div class="feature-detail wow fadeInLeft" data-wow-delay=".4s">
+                    <h4>Idea Generation</h4>
+                    <p>Proudly help your children to be idea generators with our solution.</p>
+                  </div>                          
+                  <div class="feature-icon wow fadeInLeft" data-wow-delay=".3s">
+                    <i class="fa fa-puzzle-piece"></i>
+                  </div>
+                </li>
+                <li>
+                  <div class="feature-detail wow fadeInLeft" data-wow-delay=".4s">
+                    <h4>Integrated Accounting</h4>
+                    <p>We are a technology enabler everywhere.</p>
+                  </div>
+                  <div class="feature-icon wow fadeInLeft" data-wow-delay=".3s">
+                    <i class="fa fa-rupee"></i>
+                  </div>
+                </li>
+                <li>
+                  <div class="feature-detail wow fadeInLeft" data-wow-delay=".4s">
+                    <h4>Digitize your economy</h4>
+                    <p>Receive fees online. Pay Staffs online. Buy online. Sell online.</p>
+                  </div>
+                  <div class="feature-icon wow fadeInLeft" data-wow-delay=".3s">
+                    <i class="fa fa-dollar"></i>
+                  </div>                  
+                </li>
+                <li>
+                  <div class="feature-detail wow fadeInLeft" data-wow-delay=".4s">
+                    <h4>Barcode Everything.</h4>
+                    <p>We are a technology enabler. Take attendance, receive fee, exam report, all through barcodes</p>
+                  </div>
+                  <div class="feature-icon wow fadeInLeft" data-wow-delay=".3s">
+                    <i class="fa fa-barcode"></i>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="col-sm-4 text-center">
+              <img class="wow bounceInUp" src="{% static 'img/iphone-screenshot.png' %}" alt="" title="">
+            </div>
+            <div class="col-sm-4">
+              <ul class="feature-list-right">
+                <li>
+                  <div class="feature-icon wow fadeInRight" data-wow-delay=".3s">
+                    <i class="fa fa-cloud"></i>
+                  </div>
+                  <div class="feature-detail wow fadeInRight" data-wow-delay=".4s">
+                    <h4>Lifetime support.</h4>
+                    <p>No upfornt investment. Technology upgrades for your life. Dont get stuck with a custom solution with your own server.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="feature-icon wow fadeInRight" data-wow-delay=".3s">
+                    <i class="fa  fa-cloud-download"></i>
+                  </div>
+                  <div class="feature-detail wow fadeInRight" data-wow-delay=".4s">
+                    <h4>Work From Anywhere</h4>
+                    <p>At home? Office? Vacation? Mac? Windows? Android? We are everywhere.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="feature-icon wow fadeInRight" data-wow-delay=".3s">
+                    <i class="fa fa-mobile"></i>
+                  </div>
+                  <div class="feature-detail wow fadeInRight" data-wow-delay=".4s">
+                    <h4>Android App</h4>
+                    <p>We have an app. For everythinng. Free of cost.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="feature-icon wow fadeInRight" data-wow-delay=".3s">
+                    <i class="fa fa-arrow-up"></i>
+                  </div>
+                  <div class="feature-detail wow fadeInRight" data-wow-delay=".4s">
+                    <h4>We Grow</h4>
+                    <p>Biggest commiment, in the end: We shall grow with you to help you grow. We shall never stop innovating.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div><!-- /.trans-bg -->
+    </section>
+    <!-- feature end -->
+
+    <!-- description start -->
+    <section id="description" class="description white">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 text-center">
+            <span class="sub-head wow fadeInLeft">think about</span>
+            <div class="title wow fadeInRight">
+              <h2>why TECHASSISTO is the best</h2>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 wow pulse" data-wow-delay=".5s">
+            <img class="img-responsive" src="{% static 'assets/images/BG-2.png' %}" alt="Why to choose us">
+          </div>
+          <div class="col-sm-6">
+            <ul class="description-list">
+              <li class="wow fadeInRight"><span class="des-icon"><i class="fa fa-lightbulb-o"></i></span>We innovate</li>
+              <li class="wow fadeInRight"><span class="des-icon"><i class="fa fa-book"></i></span>We digitize education</li>
+              <li class="wow fadeInRight"><span class="des-icon"><i class="fa fa-level-up"></i></span>We grow with you </li>
+              <li class="wow fadeInRight"><span class="des-icon"><i class="fa fa-money"></i></span>We digitize your accounts and economics </li>
+              <li class="wow fadeInRight"><span class="des-icon"><i class="fa fa-database"></i></span>We provide integrated data-mining with best-in-class reports.</li>
+              <li class="wow fadeInRight"><span class="des-icon"><i class="fa fa-heartbeat"></i></span>And the best: We are affordable! We always will be.</li>
+            </ul>
+            <!-- /.description-list -->
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- description end-->
+
+    <!-- video start -->
+    <!-- <section id="video" class="video">
+      <div id="trans-bg" class="trans-bg">
+      	<div class="video-container"><div id="player"></div><div class="video-mask"></div></div>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <div class="video-mask">
+                <h2 class="wow bounceInDown">how it works</h2>
+					<a href="https://vimeo.com/45830194" class="play wow rollIn animated"></a>
+                <span class="wow bounceInUp">watch video</span>
+              </div>            
+            </div>
+          </div>
+        </div> 
+      </div>
+    </section> -->
+    <!-- video end -->
+
+    <!-- screenshot start -->
+    <!-- <section id="screenshot" class="screenshot white">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12">
+            <span class="sub-head wow fadeInLeft">take a look</span>            
+            <div class="title wow fadeInRight">
+              <h2>screenshots</h2>
+            </div>
+            <div id="owl-demo" class="owl-carousel">
+                <div class="item screenshot-block">
+                  <img src="{% static 'assets/images/screenshot.jpg' %}" alt="GRAPE">
+                  <div class="caption">
+                    <a class="test-popup-link" href="{% static 'assets/images/screenshot.jpg' %}"><i class="fa fa-plus"></i></a>
+                  </div>
+                </div>
+                <div class="item screenshot-block">
+                  <img src="{% static 'assets/images/screenshot.jpg' %}" alt="GRAPE">
+                  <div class="caption">
+                    <a class="test-popup-link" href="{% static 'assets/images/screenshot.jpg' %}"><i class="fa fa-plus"></i></a>
+                  </div>
+                </div>
+                <div class="item screenshot-block">
+                  <img src="{% static 'assets/images/screenshot.jpg' %}" alt="GRAPE">
+                  <div class="caption">
+                    <a class="test-popup-link" href="{% static 'assets/images/screenshot.jpg' %}"><i class="fa fa-plus"></i></a>
+                  </div>
+                </div>
+                <div class="item screenshot-block">
+                  <img src="{% static 'assets/images/screenshot.jpg' %}" alt="GRAPE">
+                  <div class="caption">
+                    <a class="test-popup-link" href="{% static 'assets/images/screenshot.jpg' %}"><i class="fa fa-plus"></i></a>
+                  </div>
+                </div>
+                <div class="item screenshot-block">
+                  <img src="./assets/images/screenshot.jpg" alt="GRAPE">
+                  <div class="caption">
+                    <a class="test-popup-link" href="./assets/images/screenshot.jpg"><i class="fa fa-plus"></i></a>
+                  </div>
+                </div>
+                <div class="item screenshot-block">
+                  <img src="./assets/images/screenshot.jpg" alt="GRAPE">
+                  <div class="caption">
+                    <a class="test-popup-link" href="{% static 'assets/images/screenshot.jpg' %}"><i class="fa fa-plus"></i></a>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </section> -->
+    <!-- screenshot end -->
+
+    <!-- review start -->
+    <!-- <section id="review" class="review">
+      <div class="trans-bg"> 
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <h2 class="wow swing">reviews</h2>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <div id="myCarousel1" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="active item">
+                    <span class="review-img">
+                       <img src="{% static 'assets/images/thumb-1.png' %}" alt="image">
+                     </span>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    <span class="reviewer-name">Maria Jones</span>
+                    <span class="review-comp">CEO, GRAPE Ltd.</span>
+                  </div>
+                  <div class="item">
+                    <span class="review-img">
+                       <img src="{% static 'assets/images/thumb-1.png' %}" alt="image">
+                     </span>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    <span class="reviewer-name">Maria Jones</span>
+                    <span class="review-comp">CEO, GRAPE Ltd.</span>
+                  </div>
+                  <div class="item">
+                    <span class="review-img">
+                       <img src="{% static 'assets/images/thumb-1.png' %}" alt="image">
+                     </span>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    <span class="reviewer-name">Maria Jones</span>
+                    <span class="review-comp">CEO, GRAPE Ltd.</span>
+                  </div>
+                </div>-->
+                <!-- Carousel nav -->
+                <!--<a class="carousel-control left" href="#myCarousel1" data-slide="prev"><i class="fa fa-angle-left"></i></a>
+                <a class="carousel-control right" href="#myCarousel1" data-slide="next"><i class="fa fa-angle-right"></i></a>              
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> 
+    </section> -->
+    <!-- review end -->
+
+    <!-- price start -->
+    <section id="price" class="pricingtable-section white">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 text-center">
+            <span class="sub-head wow fadeInLeft">are you surrprised</span>            
+            <div class="title wow fadeInRight">
+              <h2>unbelievable price</h2>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 wow bounceInUp" data-wow-duration="1s">
+            <div class="price-block">
+              <div class="price-header">
+                <h3>Trial Run - try it</h3>
+                <i class="fa fa-heart"></i>
+              </div>
+              <div class="price-plan">
+                <ul>
+                  <li>
+                    <span class="price">Rs. 0.00</span>
+                    <span class="month">/for one month</span>
+                  </li>
+                  <li>All Our Modules</li>
+                  <li>Except Students, Parents &amp Alumni Login</li>
+                  <li></li>
+                  <li> <a href="{% url 'register' %}" class="btn">sign up</a></li>
+                </ul>
+              </div>
+            </div>
+            <!-- /.price-block -->
+          </div>
+          <div class="col-sm-4 wow bounceInUp" data-wow-duration="2s">
+            <div class="price-block active">
+              <div class="price-header">
+                <h3>basic plan - feel it</h3>
+                <i class="fa fa-cogs"></i>
+              </div>
+              <div class="price-plan">
+                <ul>
+                  <li>
+                    <span class="price">Rs. 3000</span>
+                    <span class="month"> /per month</span>
+                  </li>
+                  <li>All in Trial</li>
+                  <li></li>
+                  <li></li>
+                  <li> <a href="" class="btn">We are yet to start this</a></li>
+                </ul>
+              </div>
+            </div>
+            <!-- /.price-block -->
+          </div>
+          <div class="col-sm-4 wow bounceInUp" data-wow-duration="3s">
+            <div class="price-block">
+              <div class="price-header">
+                <h3>pro plan - it has all</h3>
+                <i class="fa fa-suitcase"></i>
+              </div>
+              <div class="price-plan">
+                <ul>
+                  <li>
+                    <span class="price">Rs. 3000 + Rs. 10 /per student</span>
+                    <span class="month">/per month</span>
+                  </li>
+                  <li>All in Basic</li>
+                  <li>Create Students &amp Parents Profiles</li>
+                  <li>Unlimited Alumni</li>
+                  <li> <a href="" class="btn">We are yet to start this</a></li>
+                </ul>
+              </div>
+            </div>
+            <!-- /.price-block -->
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- price end -->
+
+    <!-- download start -->
+    <!-- <section id="download" class="downlaod">
+      <div class="trans-bg">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <h2 class="wow swing">download</h2>
+              <p>Lorem ipsum dolor sit amet lorem ipsum dolor sit amet</p>
+              <span class="wow fadeInLeft" style="display:inline-block"><a href="" class="btn"><i class="fa fa-apple"></i> app store</a></span>
+              <span class="wow fadeInLeft" style="display:inline-block"><a href="" class="btn"><i class="fa fa-android"></i> play store</a></span>
+              <span class="wow fadeInLeft" style="display:inline-block"><a href="" class="btn"><i class="fa fa-windows"></i> windows</a></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section> -->
+    <!-- download end -->
+
+    <!-- support start -->
+    <section id="support" class="support white">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 text-center">
+            <span class="sub-head wow fadeInLeft">stay close</span>
+            <div class="title wow fadeInRight">
+              <h2>help & support</h2>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <!-- <div class="col-sm-4 wow bounceInUp" data-wow-duration="1s">
+            <div class="support-block">
+              <span class="support-icon"><i class="fa fa-bitbucket"></i></span>
+              <h3>Product Support</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim</p>
+            </div>
+          </div>
+          <div class="col-sm-4 wow bounceInUp" data-wow-duration="2s">
+            <div class="support-block active">
+              <span class="support-icon"><i class="fa fa-bullhorn"></i></span>
+              <h3>Product Support</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim</p>
+            </div>
+          </div> -->
+          <div class="col-sm-4 col-sm-offset-2 wow bounceInUp" data-wow-duration="3s">
+            <div class="support-block">
+              <span class="support-icon"><i class="fa fa-stethoscope"></i></span>
+              <h3>Registration Support</h3>
+              <p>Facing issues with signing up? Drop us a mail at support@techassisto.com. We shall strive to be with you before you shut your eyes.</p>
+            </div>
+          </div>
+          <div class="col-sm-4 wow bounceInUp" data-wow-duration="3s">
+            <div class="support-block">
+              <span class="support-icon"><i class="fa fa-stethoscope"></i></span>
+              <h3>Product Support</h3>
+              <p>We can always be contacted for technical and non-technical supports. Join us to enjoy the best support structure of the country.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- support end --> 
+
+    <!-- subscription start -->
+    <section id="subscription" class="subscription"> 
+      <div class="trans-bg">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-6 col-sm-offset-3 text-center">
+            <h2 class="wow swing">newsletter signup</h2>
+            <form class="newsletter-signup">
+              <p class="newsletter-success"></p>
+              <p class="newsletter-error"></p>
+              <div class="input-group">
+                <input type="email" name="email" placeholder="We are dressing up for awesome newsletters" disabled class="form-control wow fadeInLeft">
+                <span class="input-group-btn wow fadeInRight">
+                <input type="submit" value="we are coming soon" class="btn btn-sub">
+                </span>
+              </div><!-- /.input-group -->
+            </form>
+            </div>
+          </div>
+        </div>
+      </div> <!-- /.trans-bg --> 
+    </section>
+    <!-- subscription end -->
+
+    <!-- contact start -->
+    <section id="contact" class="contact white tab-content">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs text-center" role="tablist">
+              <li class="wow rollIn animated" data-wow-duration="1s"><a href="#contact-info" role="tab" data-toggle="tab"><i class="fa fa-paper-plane"></i>
+                </a></li>
+              <li class="active wow rollIn animated" data-wow-duration="2s"><a href="#contact-form" role="tab" data-toggle="tab"><i class="fa fa-envelope"></i></a></li>
+              <li class="wow rollIn animated" data-wow-duration="3s"><a href="#contact-map" class="contact-map" role="tab" data-toggle="tab"><i class="fa fa-map-marker"></i></a></li>
+            </ul>            
+          </div>
+        </div>
+      </div>
+       <!-- Tab panes -->            
+      <div class="tab-content">
+        <div class="tab-pane contact-info" id="contact-info">
+          <div class="container">
+            <div class="row">
+            <div class="col-sm-12 text-center">            
+              <span class="sub-head">we are here</span>
+              <div class="title">
+                <h2>get in touch</h2>
+              </div>
+            </div>
+          </div>
             <div class="row text-center">
-                <div class="col-lg-10 col-lg-offset-1">
-                    <h2>Why Us</h2>
-                    <hr class="small">
-                    <div class="row">
-                        <div class="col-md-3 col-sm-6">
-                            <div class="service-item">
-                                <span class="fa-stack fa-4x">
-                                <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-cloud fa-stack-1x text-primary"></i>
-                            </span>
-                                <h4>
-                                    <strong>On the cloud</strong>
-                                </h4>
-                                <p>On a vacation? Need data on Sunday evening? Find us on the cloud...ANYTIME, ANYWHERE.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="service-item">
-                                <span class="fa-stack fa-4x">
-                                <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-compass fa-stack-1x text-primary"></i>
-                            </span>
-                                <h4>
-                                    <strong>System Independent</strong>
-                                </h4>
-                                <p>Older windows?New windows? Mac? No problem. We are there for you on ALL SYSTEM.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="service-item">
-                                <span class="fa-stack fa-4x">
-                                <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-flask fa-stack-1x text-primary"></i>
-                            </span>
-                                <h4>
-                                    <strong>Lifetime Updates</strong>
-                                </h4>
-                                <p>Download, install...pay for updates? Nah!! That's not our style. You get lifetime updates, FOR FREE.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="service-item">
-                                <span class="fa-stack fa-4x">
-                                <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-shield fa-stack-1x text-primary"></i>
-                            </span>
-                                <h4>
-                                    <strong>Data Protection</strong>
-                                </h4>
-                                <p>Flood? Virus? Formatting your system? No issues. All your data are on cloud. PROTECTED. ALWAYS.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
-                            </div>
-                        </div>
+              <div class="col-sm-4">
+                <div class="info-holder">
+                  <i class="fa fa-taxi"></i>
+                   <br>
+                   <p>
+                     45B Anath Nath Deblane <br>
+                     Kolkata <br>
+                     West Bengal- 700037 
+                   </p>
+                </div>                
+              </div>
+              <div class="col-sm-4">
+                <div class="info-holder">
+                  <i class="fa fa-mobile"></i>
+                  <br>
+                  <p>+91-9940067159
+                  </p>
+                </div>                
+              </div>
+              <div class="col-sm-4">
+                <div class="info-holder">
+                  <i class="fa fa-reply"></i>
+                  <br>
+                  <p>
+                    support@techassisto.com
+                    <!-- <br>
+                    hello@gmail.com -->
+                  </p>
+                </div>                
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane active contact-info" id="contact-form">
+          <div class="container">
+            <div class="row">
+              <div class="col-sm-12 text-center">            
+                <span class="sub-head">we are here</span>
+                <div class="title">
+                  <h2>get in touch</h2>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12 form">
+                <form class="form-horizontal" role="form">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <div class="span-form">
+                        <input class="form-control first_name" type="text" placeholder="First name" required="required">
+                      </div>
+                      <div class="span-form">
+                        <input type="text" class="form-control last_name" placeholder="Last name" required="required">
+                      </div>
                     </div>
-                    <!-- /.row (nested) -->
-                </div>
-                <!-- /.col-lg-10 -->
-            </div>
-            <!-- /.row -->
-        </div>
-        <!-- /.container -->
-    </section>
-
-    <!-- Callout -->
-    <aside class="callout">
-        <div class="text-vertical-center">
-            <h1>Leave the computing to us</h1>
-        </div>
-    </aside>
-
-    <!-- Portfolio -->
-    <section id="portfolio" class="portfolio">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-10 col-lg-offset-1 text-center">
-                    <h2>Our Work</h2>
-                    <hr class="small">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="portfolio-item">
-                                <a href="#">
-                                    <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-1.jpg' %}">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="portfolio-item">
-                                <a href="#">
-                                    <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-2.jpg' %}">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="portfolio-item">
-                                <a href="#">
-                                    <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-3.jpg' %}">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="portfolio-item">
-                                <a href="#">
-                                    <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-4.jpg' %}">
-                                </a>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                      <div class="span-form">
+                        <input type="email" class="form-control email" placeholder="Email address" required="required">
+                      </div>
+                      <div class="span-form">
+                        <input type="number" class="form-control phone" placeholder="Contact Number" required="required">
+                      </div>
                     </div>
-                    <!-- /.row (nested) -->
-                    <!--<a href="#" class="btn btn-dark">View More Items</a>-->
-                </div>
-                <!-- /.col-lg-10 -->
+                    <div class="form-group">
+                      <input type="text" class="form-control subject" placeholder="Subject" required="required">
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <textarea name="" class="form-control btn-block body" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <input type="submit" class="btn btn-block submit" value="send message">
+                    </div>
+                  </div>
+				        </form>
+              </div>
+            <div class="col-sm-12 result">
+              <p class="contact-success">Your Message has been Successfully Sent!</p>
+              <p class="bg-info ajax" style="display:none;">Hold on, we are sending the info!</p>
+              <p class="contact-error error">Error! Something went wrong!</p>
+              <p class="contact-error message">Error! Please enter all the data!</p>
             </div>
-            <!-- /.row -->
+            </div>
+          </div>
         </div>
-        <!-- /.container -->
-    </section>
-
-    <!-- Call to Action -->
-   <!-- <aside class="call-to-action bg-primary">
-        <div class="container">
+        <div class="tab-pane contact-info" id="contact-map">
+          <div class="container">
             <div class="row">
-                <div class="col-lg-12 text-center">
-                    <h3>Click here to know more</h3>
-                    <a href="#" class="btn btn-lg btn-light">Click Me!</a>
-                    <a href="#" class="btn btn-lg btn-dark">Look at Me!</a>
+              <div class="col-sm-12 text-center">            
+                <span class="sub-head">we are here</span>
+                <div class="title">
+                  <h2>get in touch</h2>
                 </div>
+              </div>
             </div>
+          </div>
+          <div id="map">
+            
+          </div>
         </div>
-    </aside>
--->
-    <!-- Map -->
-
-    <!--45b,+Anath+Nath+Deb+Lane,+MIG+Housing,+Kolkata,+West+Bengal,+India-->
-    <section id="contact" class="map">
-        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=45b,+Anath+Nath+Deb+Lane,+MIG+Housing,+Kolkata,+West+Bengal,+India&amp;aq=0&amp;sll=22.609197, 88.385055&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A&amp;output=embed"></iframe>
-        <br />
-        <small>
-            <a href="https://maps.google.com/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;aq=0&amp;oq=twitter&amp;sll=28.659344,-81.187888&amp;sspn=0.128789,0.264187&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A"></a>
-        </small>
-        </iframe>
+      </div>  
     </section>
+    <!-- contact end -->
 
-    <!-- Footer -->
-    <footer>
+    <!-- footer start -->
+    <footer id="footer">
+      <div class="trans-bg">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-10 col-lg-offset-1 text-center">
-                    <h4><strong>Find Us</strong>
-                    </h4>
-                    <p>45B Anath Nath Deblane<br>Kolkata, West Bengal 700037</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fa fa-phone fa-fw"></i> +91-9940067159</li>
-                        <li><i class="fa fa-envelope-o fa-fw"></i>  <a href="mailto:sayantan@techassisto.com">sayantan@techassisto.com</a>
-                        </li>
-                    </ul>
-                    <br>
-                    <ul class="list-inline">
-                        <li>
-                            <a href="https://www.facebook.com/sgangs.91" target="_blank"><i class="fa fa-facebook fa-fw fa-3x"></i></a>
-                        </li>
-                        <li>
-                            <a href="https://twitter.com/iamsganguly" target="_blank"><i class="fa fa-twitter fa-fw fa-3x"></i></a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-google fa-fw fa-3x"></i></a>
-                        </li>
-                    </ul>
-                    <hr class="small">
-                    <p class="text-muted">Copyright &copy; Tech Assisto 2016</p>
-                </div>
+          <div class="row">
+            <div class="col-sm-12 text-center">
+              <div class="social-icon">
+               <a href="https://www.facebook.com/techassisto" target="_blank" class="wow rollIn animated" data-wow-delay=".1s"><i class="fa fa-facebook"></i></a>
+               <a href="https://twitter.com/iamsganguly" target="_blank" class="wow rollIn animated" data-wow-delay=".3s"><i class="fa fa-twitter"></i></a>
+               <!--  <a href="" class="wow rollIn animated" data-wow-delay=".3s"><i class="fa fa-google-plus"></i></a>
+               <a href="" class="wow rollIn animated" data-wow-delay=".4s"><i class="fa fa-pinterest"></i></a>
+               <a href="" class="wow rollIn animated" data-wow-delay=".5s"><i class="fa fa-rss"></i></a> -->
+               <a href="" class="wow rollIn animated" target="_blank" data-wow-delay=".5s"><i class="fa fa-linkedin"></i></a>
+               <!-- <a href="" class="wow rollIn animated" data-wow-delay=".7s"><i class="fa fa-vimeo-square"></i></a>
+               <a href="" class="wow rollIn animated" data-wow-delay=".8s"><i class="fa fa-youtube-square"></i></a>
+               <a href="" class="wow rollIn animated" data-wow-delay=".9s"><i class="fa fa-dribbble"></i></a> -->
+              </div>
+              <div class="copyright">
+                <p>&copy; <span>TechAssisto</span>2017, all right reserved</p>
+                <!-- <p>Design by <span>CodePassenger</span></p> -->
+              </div>
             </div>
+          </div>
         </div>
+        <div id="go-to-top">
+            <a href="#banner"></a>
+        </div>
+        <!--/.go-to-top end-->
+      </div> <!-- /.trans-bg -->
     </footer>
+    <!-- footer end -->   
+     
 
 
-    <!-- Custom Theme JavaScript -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/smoothscroll.js' %}"></script>
+	  <script src="{% static 'assets/js/jquery.scrollTo.min.js' %}"></script>
+	  <script src="{% static 'assets/js/jquery.localScroll.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.nav.js' %}"></script>
+    <script src="{% static 'assets/js/owl.carousel.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.magnific-popup.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.parallax.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.flexslider-min.js' %}"></script>
+    <!-- <script src="{% static 'assets/js/jquery.ajaxchimp.min.js' %}"></script> -->
+    <script src="{% static 'assets/js/matchMedia.js' %}"></script>
+    <script src="{% static 'assets/js/script.js' %}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script src="{% static 'assets/js/wow.js' %}"></script>
+    <script src="{% static 'assets/js/easing.js' %}"></script>
+    <!-- Submitting contact form -->
+    <script src="{% static 'assets/js/form_submit.js' %}"></script>
+    
     <script>
-    // Closes the sidebar menu
-    $("#menu-close").click(function(e) {
-        e.preventDefault();
-        $("#sidebar-wrapper").toggleClass("active");
-    });
+    	$(document).ready(function() {
+		// "use strict";
+        $('#banner').parallax("50%", 0.5, true);
+    		$('#feature').parallax("50%", 0.5, true);
+    		$('#video').parallax("50%", 0.5, true);
+    		$('#subscription').parallax("50%", 0.5, true);
+    		$('#review').parallax("50%", 0.5, true);
+    		$('#download').parallax("50%", 0.5, true);
+        $('#footer').parallax("50%", 0.5, true);
+    	});
 
-    // Opens the sidebar menu
-    $("#menu-toggle").click(function(e) {
-        e.preventDefault();
-        $("#sidebar-wrapper").toggleClass("active");
-    });
-
-    // Scrolls to the selected menu item on the page
-        $('a[href*=#]:not([href=#])').click(function() {
-    $(function() {
-            if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') || location.hostname == this.hostname) {
-
-                var target = $(this.hash);
-                target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
-                if (target.length) {
-                    $('html,body').animate({
-                        scrollTop: target.offset().top
-                    }, 1000);
-                    return false;
-                }
-            }
-        });
-    });
     </script>
 
-</body>
+    <script>
+      csrf_token='{{csrf_token}}';
+      // --------Google map---------------
+		 var map;
+		 function initialize() {  
+		  // Create an array of styles.
+		  var styles = [
+			{
+			  stylers: [
+				{ hue: "#0AABE1" },
+				{ saturation: 0 }
+			  ]
+			},
+			{
+			  featureType: 'water',
+			  stylers: [
+			   { visibility: "on" },
+			   { color: "#9a9efd" },
+			   { weight: 2.2 },
+			   { gamma: 2.54 }
+			  ] 
+			},
+			{
+			  featureType: "road",
+			  elementType: "geometry",
+			  stylers: [
+				{ lightness: 100 },
+				{ visibility: "simplified" }
+			  ]
+			},{
+			  featureType: "road",
+			  elementType: "labels",
+			  stylers: [
+				{ visibility: "off" }
+			  ]
+			}
+		  ];
 
+		  // Create a new StyledMapType object, passing it the array of styles,
+		  // as well as the name to be displayed on the map type control.
+		  var styledMap = new google.maps.StyledMapType(styles,
+			{name: "Styled Map"});
+
+		  // Create a map object, and include the MapTypeId to add
+		  // to the map type control.
+		  var kolkata = new google.maps.LatLng(22.609571, 88.385549);
+		  var mapOptions = {
+			zoom: 14,
+			center: kolkata,
+			mapTypeControlOptions: {
+			  mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
+			},
+			scrollwheel: false,
+		  };
+		  var map = new google.maps.Map(document.getElementById('map'),
+			mapOptions);
+		  
+
+		  //Associate the styled map with the MapTypeId and set it to display.
+		  map.mapTypes.set('map_style', styledMap);
+		  map.setMapTypeId('map_style');
+
+		  // To add the marker to the map, use the 'map' property
+		  var image = '{% static "assets/images/map_icon_3.png" %}';
+		  var marker = new google.maps.Marker({
+			  position: kolkata,
+			  map: map,
+			  title:"TechAssisto for schools",
+			  icon: image
+		  });
+
+		 }
+		
+    </script>
+       
+  </body>
 </html>

@@ -33,11 +33,9 @@ class Tenant(models.Model):
 	phone=models.CharField(max_length=20)
 	slug=models.SlugField(max_length=20)
 	key=models.CharField("Unique key for School",max_length=20, unique=True)
-	registered_on=models.DateTimeField()
-	#details=models.TextField(blank=True)
-	#email=models.EmailField('e-mail id',blank=True, null=True)
+	registered_on=models.DateTimeField()	
 	#no_of_registered_students_allowed
-	no_of_profile=models.PositiveIntegerField(default=0)
+	no_of_profile=models.PositiveIntegerField(default=0)	
 	account=models.CharField(max_length=12,choices=account,default='Basic')
 	paid=models.BooleanField('Has the tenant paid?')
 	trail=models.BooleanField('Is the tenant under trail?')
@@ -61,9 +59,9 @@ class Tenant(models.Model):
 #This is the individual user module
 class User(AbstractUser):
 	id=models.BigAutoField(primary_key=True)
+	# aadhaar_no=models.CharField("Aadhaar Number", blank=True, max_length=20)
 	tenant = models.ForeignKey(Tenant,default=2,related_name='user_tenant')
 	user_type=models.CharField(max_length=10,choices=user_type)
-    #user_id = models.CharField(max_length=30)
     #registered_on=models.DateTimeField(null=True, blank=True)
 
     # def save(self, *args, **kwargs):

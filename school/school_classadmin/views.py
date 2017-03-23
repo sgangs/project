@@ -33,6 +33,7 @@ def base(request):
 @login_required
 #This function helps in getting list of students in school
 def class_students_list(request):
+	extension='base.html'
 	from school_eduadmin.models import class_section
 	classes = class_section.objects.for_tenant(request.user.tenant)
 	if request.method == 'POST':
@@ -46,7 +47,7 @@ def class_students_list(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-	return render (request, 'classadmin/students_list.html', {'items':classes})
+	return render (request, 'classadmin/students_list.html', {'items':classes, "extension":extension})
 
 @login_required
 @user_passes_test_custom(allow_admin_teacher, redirect_namespace='permission_denied')
@@ -148,6 +149,7 @@ def attendance_view(request):
 @login_required
 #This function helps in addidng exam scores. Error 1- Why do we need to import class section for each function??
 def new_exam_report(request):
+	extension='base.html'
 	from school_eduadmin.models import class_section
 	#For the next line, do remember django does lazy querying.
 	this_tenant=request.user.tenant
@@ -200,9 +202,10 @@ def new_exam_report(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'classadmin/new_examreport.html', {'items':classes, 'exams':exams, \
-					'grades':json.dumps(grades,cls=DjangoJSONEncoder)})
+					'grades':json.dumps(grades,cls=DjangoJSONEncoder), "extension":extension})
 
 def exam_report_edit(request):
+	extension='base.html'
 	from school_eduadmin.models import class_section
 	#For the next line, do remember django does lazy querying.
 	this_tenant=request.user.tenant
@@ -238,13 +241,14 @@ def exam_report_edit(request):
 	grades=list(grade_table.objects.for_tenant(tenant=this_tenant).filter(grade_type='S').\
 			values('min_mark','max_mark','grade','grade_point'))
 	return render (request, 'classadmin/edit_examreport.html', {'items':classes, 'exams':exams, \
-					'grades':json.dumps(grades,cls=DjangoJSONEncoder)})
+					'grades':json.dumps(grades,cls=DjangoJSONEncoder), "extension":extension})
 
 
 
 @login_required
 #Exam Report View
 def exam_report_view(request):
+	extension='base.html'
 	from school_eduadmin.models import class_section
 	#For the next line, do remember django does lazy querying.
 	this_tenant=request.user.tenant
@@ -264,12 +268,13 @@ def exam_report_view(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-	return render (request, 'classadmin/view_examreport_crossfilter.html', {'items':classes, 'exams':exams})
+	return render (request, 'classadmin/view_examreport_crossfilter.html', {'items':classes, 'exams':exams, "extension":extension})
 
 
 @login_required
 #This function helps in addidng new attendance. Error 1- Why do we need to import class section for each function??
 def attendance_edit(request):
+	extension='base.html'
 	from school_eduadmin.models import class_section
 	#For the next line, do remember django does lazy querying.
 	classes = class_section.objects.for_tenant(request.user.tenant)
@@ -312,10 +317,11 @@ def attendance_edit(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-	return render (request, 'classadmin/class_attendance_edit.html', {'items':classes})
+	return render (request, 'classadmin/class_attendance_edit.html', {'items':classes, "extension":extension})
 
 @login_required
 def view_student_attendance(request):
+	extension='base.html'
 	this_tenant=request.user.tenant
 	students=Student.objects.for_tenant(this_tenant).all()
 	if request.method == 'POST':
@@ -349,10 +355,11 @@ def view_student_attendance(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-	return render (request, 'classadmin/attendance_view_student.html',{'items':students})
+	return render (request, 'classadmin/attendance_view_student.html',{'items':students,"extension":extension})
 
 @login_required
 def generate_transcript(request):
+	extension='base.html'
 	this_tenant=request.user.tenant
 	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
 	exam_type=exam_creation.objects.for_tenant(this_tenant).get(year=year).exam_type
@@ -375,7 +382,7 @@ def generate_transcript(request):
 		return HttpResponse(jsondata)
 	classes = class_section.objects.for_tenant(this_tenant)
 	if (exam_type=='CCE'):
-		return render (request, 'classadmin/transcript_exam_cce.html', {'items':classes})
+		return render (request, 'classadmin/transcript_exam_cce.html', {'items':classes, "extension":extension})
 	else:
-		return render (request, 'classadmin/transcript_exam_generic.html', {'items':classes},{'exams':exams})
+		return render (request, 'classadmin/transcript_exam_generic.html', {'items':classes,'exams':exams, "extension":extension})
 

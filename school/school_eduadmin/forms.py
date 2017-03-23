@@ -12,37 +12,37 @@ from school_student.models import Student
 from .models import *
 
 
-class SyllabusForm(forms.ModelForm):
-	def __init__(self,*args,**kwargs):
-		self.tenant=kwargs.pop('tenant',None)
-		super (SyllabusForm,self ).__init__(*args,**kwargs) # populates the post
-		self.fields['class_group'].queryset = class_group.objects.for_tenant(self.tenant).all()
-		self.fields['subject'].queryset = Subject.objects.for_tenant(self.tenant).all()
-		self.helper = FormHelper(self)
-		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
-		self.helper.form_class = 'form-horizontal'
-		self.helper.label_class = 'col-sm-2'
-		self.helper.field_class = 'col-sm-4'
+# class SyllabusForm(forms.ModelForm):
+# 	def __init__(self,*args,**kwargs):
+# 		self.tenant=kwargs.pop('tenant',None)
+# 		super (SyllabusForm,self ).__init__(*args,**kwargs) # populates the post
+# 		self.fields['class_group'].queryset = class_group.objects.for_tenant(self.tenant).all()
+# 		self.fields['subject'].queryset = Subject.objects.for_tenant(self.tenant).all()
+# 		self.helper = FormHelper(self)
+# 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
+# 		self.helper.form_class = 'form-horizontal'
+# 		self.helper.label_class = 'col-sm-2'
+# 		self.helper.field_class = 'col-sm-4'
 
-	class Meta:
-		model=Syllabus
-		fields =('class_group', 'subject', 'topics', 'year', 'is_additional','is_elective')
-	def clean(self):
-		cd= super(SyllabusForm, self).clean()
-		unique_class=cd.get('class_group')
-		unique_subject=cd.get('subject')
-		unique_year=cd.get('year')
-		topics=cd.get('topics')
-		error=[]
-		try:
-			syllabus=Syllabus.objects.for_tenant(self.tenant).filter(class_group=unique_class,subject=unique_subject)\
-					.get(year=unique_year)
-			self.add_error('subject',"Syllabus for same class group, subject and year already exists.")
-			self.add_error('year',"Syllabus for same class group, subject and year already exists.")
-		except:
-			return cd
+# 	class Meta:
+# 		model=Syllabus
+# 		fields =('class_group', 'subject', 'topics', 'year', 'is_additional','is_elective')
+# 	def clean(self):
+# 		cd= super(SyllabusForm, self).clean()
+# 		unique_class=cd.get('class_group')
+# 		unique_subject=cd.get('subject')
+# 		unique_year=cd.get('year')
+# 		topics=cd.get('topics')
+# 		error=[]
+# 		try:
+# 			syllabus=Syllabus.objects.for_tenant(self.tenant).filter(class_group=unique_class,subject=unique_subject)\
+# 					.get(year=unique_year)
+# 			self.add_error('subject',"Syllabus for same class group, subject and year already exists.")
+# 			self.add_error('year',"Syllabus for same class group, subject and year already exists.")
+# 		except:
+# 			return cd
 			
-		return cd
+# 		return cd
 
 class SubjectTeacherForm(forms.ModelForm):
 	def __init__(self,*args,**kwargs):

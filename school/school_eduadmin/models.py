@@ -45,18 +45,11 @@ class classteacher(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='classteacher_classSection')
 	class_teacher=models.ForeignKey(Teacher,db_index=True,related_name='classteacher_eduadmin_teacher_teacher')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
-	# slug=models.SlugField(max_length=42)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classteacher_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item="clt"+" "+self.tenant.key+" "+self.class_section.name+" "+str(self.year)
-	# 		self.slug=slugify(item)
-	# 	super(classteacher, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("class_section", "year","tenant"))
@@ -72,18 +65,9 @@ class subject_teacher(models.Model):
 	class_section=models.ForeignKey(class_section,db_index=True,related_name='subjectTeacher_classSection')
 	teacher=models.ForeignKey(Teacher,db_index=True,related_name='subjectTeacher_eduadmin_teacher_teacher')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
-	# key=models.CharField(db_index=True,max_length=60)
-	# slug=models.SlugField(max_length=85)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='subjectTeacher_eduadmin_user_tenant')
 	objects=TenantManager()
 	
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		# self.key=self.class_section.name+" "+self.subject.name+" "+self.teacher.key+" "+str(self.year)
-	# 		item="suj"+" "+self.tenant.key+" "+self.class_section.name+" "+self.subject.name+" "+self.teacher.key+" "+str(self.year)
-	# 		self.slug=slugify(item)
-	# 	super(subject_teacher, self).save(*args, **kwargs)
-
 	class Meta:
 		unique_together = (("class_section","subject","teacher","year", "tenant"))
 
@@ -133,7 +117,7 @@ class exam_creation(models.Model):
 	objects=TenantManager()
 
 	class Meta:
-		unique_together = (("exam_type", "tenant"))
+		unique_together = (("exam_type","year", "tenant"))
 		# ordering = ('show_from','show_until')
 
 	def __str__(self):
@@ -173,38 +157,44 @@ class Term(models.Model):
 #This is for the syllabus class group wise. 
 class Syllabus(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	class_group=models.ForeignKey(class_group,db_index=True,related_name='syllabus_eduadmin_classGroup_genadmin')
-	subject=models.ForeignKey(Subject,db_index=True,related_name='syllabus_eduadmin_subject_genadmin')
-	key=models.CharField(db_index=True, max_length=40)
-	topics=models.TextField()
+	class_group=models.ForeignKey(class_group,db_index=True,related_name='syllabusSubject_eduadmin_classGroup_genadmin')
+	subject=models.ForeignKey(Subject,db_index=True,related_name='syllabusSubject_eduadmin_subject_genadmin')
 	year=models.PositiveSmallIntegerField(db_index=True)
-	term=models.ForeignKey(Term,blank=True, null=True, related_name='syllabus_term')
+	term=models.ForeignKey(Term,blank=True, null=True, related_name='syllabusSubject_term')
 	weightage=models.PositiveSmallIntegerField("Subject Weightage",default=1)
-	# serial_no=models.PositiveSmallIntegerField()
 	#Additional subjects wont have any effect on final score
 	is_additional=models.BooleanField('Is This Additional (Wont effect total calculation in exam)?',default=False) 
 	is_elective=models.BooleanField('Is This An Elective?',default=False) 
-	# slug=models.SlugField(max_length=45)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='syllabus_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	def save(self, *args, **kwargs):
-		if not self.id:
-			self.key=self.class_group.name+" "+self.subject.name+" "+str(self.year)
-			# item="syl"+" "+self.tenant.key+" "+self.key
-			# self.slug=slugify(item)
-		super(Syllabus, self).save(*args, **kwargs)
+	# def save(self, *args, **kwargs):
+	# 	if not self.id:
+	# 		self.key=self.class_group.name+" "+self.subject.name+" "+str(self.year)
+	# 		# item="syl"+" "+self.tenant.key+" "+self.key
+	# 		# self.slug=slugify(item)
+	# 	super(Syllabus, self).save(*args, **kwargs)
 
 	class Meta:
-		unique_together = (("key", "tenant"))
+		# unique_together = (("class_group", "subject", "year","tenant"))
 		# unique_together = (("key", "term","tenant"))
 		ordering = ('class_group','id')
 		
 	def __str__(self):
 		return self.key
+
+#This is for the syllabus class group wise. 
+class syllabus_topic(models.Model):
+	syllabus=models.ForeignKey(Subject,db_index=True,related_name='syllabusTopic_syllabusSubject')
+	topic=models.TextField()
+	month=models.PositiveSmallIntegerField(db_index=True) #Expected month whe this will be studied
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='syllabusTopic_eduadmin_user_tenant')
+	objects=TenantManager()
+
+
 
 grade_choices=(('S','Scholastic'),
 		('C','Co-scholastic'))

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends extension %}
 
 {%block title%}
 <title>Exam Report</title>
@@ -87,7 +87,6 @@
  -->
 
 <script>
-	redirect_url="{% url 'classadmin:attezndance_view' %}"
 	csrf_token='{{csrf_token}}';
 	var ctx = document.getElementById("myChart");
 

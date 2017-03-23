@@ -23,41 +23,48 @@ from school.settings.base import STATIC_ROOT
 from school_user.models import Tenant
 from school_account.models import Account, Journal, journal_entry, journal_group
 from school_eduadmin.models import class_section, classstudent
-from school_fees.models import student_fee, student_fee_payment
+# from school_fees.models import student_fee, student_fee_payment
 from school_student.models import Student
 from school_genadmin.models import class_group, academic_year
 from school_eduadmin.models import class_section, classstudent
-from .models import monthly_fee, monthly_fee_list, yearly_fee, yearly_fee_list
+# from .models import monthly_fee, monthly_fee_list, yearly_fee, yearly_fee_list
+from .models import *
 from school.school_general import *
 
 def create_fee_structure(request, fee_type):
     with transaction.atomic():
         try:
             total=0
+            month_data=[]
             this_tenant=request.user.tenant
-            #create_fee_structure(request, fee_type)
             feename=request.POST.get('feename')
             fee_lists = json.loads(request.POST.get('details'))
-            # months = json.loads(request.POST.get('months'))
-            if (fee_type == 'Monthly'):
-                fee_create=monthly_fee()
-            else:
-                fee_create=yearly_fee()
-                month=request.POST.get('month')
-                fee_create.month=month
+            # if (fee_type == 'Monthly'):
+            #     fee_create=monthly_fee()
+            # else:
+            # fee_create=yearly_fee()
+            fee_create=generic_fee()
+            month_all=json.loads(request.POST.get('month_all'))
+            for item in month_all:
+                print(item)
+                month_data.append(item)
+            fee_create.month=month_data
             fee_create.name=feename
             fee_create.tenant=this_tenant
             fee_create.save()
             for data in fee_lists:
                 accountid=decoder(data['account'])[0]
                 amount=float(data['amount'])
+                name=data['name']
                 account=Account.objects.for_tenant(this_tenant).get(id=accountid)
-                if (fee_type == 'Monthly'):
-                    fee_list=monthly_fee_list()
-                    fee_list.monthly_fee=fee_create
-                else:
-                    fee_list=yearly_fee_list()
-                    fee_list.yearly_fee=fee_create
+                if name =='':
+                    name=account.name
+                # if (fee_type == 'Monthly'):
+                #     fee_list=monthly_fee_list()
+                #     fee_list.monthly_fee=fee_create
+                # else:
+                fee_list=generic_fee_list()
+                fee_list.generic_fee=fee_create
                 fee_list.account = account
                 fee_list.name = account.name
                 fee_list.amount= amount
@@ -80,29 +87,36 @@ def view_fee_details(request):
     class_selected=class_section.objects.for_tenant(request.user.tenant).get(id=class_input)
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     feelist=student_fee.objects.filter(student=student).get(year=year)
-    monthlyfee=feelist.monthly_fee
-    monthlyfeelist=monthly_fee_list.objects.filter(monthly_fee=monthlyfee)
     paid=student_fee_payment.objects.for_tenant(this_tenant).filter(student=student,year=year,month=month).aggregate(Sum('amount'))
-    try:
-        yearlyfeedetails=feelist.yearly_fee.filter(month=month).all()
-    except:
-        yearlyfeedetails=''
-    response_data.append({'data_type':'Student', 'name':student.first_name+" "+student.last_name, \
-        'class_selected': class_selected.name})
+    genericfeedetails=feelist.generic_fee.filter(month__contains=[month]).all()
     if (paid['amount__sum'] != None):
         if (paid['amount__sum'] > 0):
             response_data.append({'data_type':'Paid', 'amount':str(paid['amount__sum'])})
-    for fee in monthlyfeelist:
-        response_data.append({'data_type':'Monthly','id':fee.id,'name':fee.name, 'account':fee.account.id,\
+    for genericfee in genericfeedetails:
+        genericfeelist=generic_fee_list.objects.filter(generic_fee=genericfee)
+        for fee in genericfeelist:
+            response_data.append({'data_type':'Generic','id':fee.id,'name':fee.name, 'account':fee.account.id,\
             'amount':str(fee.amount)})
+    
+    return response_data
+
+def view_class_fees(request):
+    response_data=[]
+    this_tenant=request.user.tenant
     try:
-        for yearlyfee in yearlyfeedetails:
-            yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
-            for fee in yearlyfeelist:
-                response_data.append({'data_type':'Yearly','id':fee.id,'name':fee.name, 'account':fee.account.id,\
-                    'amount':str(fee.amount)})
+        year=int(request.POST.get('year'))
     except:
-        pass
+        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+    classid=request.POST.get('class_selected')
+    class_selected=class_section.objects.for_tenant(this_tenant).get(id=classid)
+    feelist=group_default_fee.objects.for_tenant(this_tenant).get(year=year, classgroup=class_selected.classgroup)
+    genericfeedetails=feelist.generic_fee.all()
+    for genericfee in genericfeedetails:
+        genericfeelist=generic_fee_list.objects.filter(generic_fee=genericfee).all().select_related('generic_fee')
+        for fee in genericfeelist:
+            response_data.append({'data_type':'Generic','name':fee.name, 'month':fee.generic_fee.month,\
+            'amount':str(fee.amount)})
+    print(response_data)    
     return response_data
 
 
@@ -134,42 +148,19 @@ def save_student_payment(request):
     class_selected = class_section.objects.get(id=student_classid)
     student_name=student.first_name + " " + student.last_name
     feelist=student_fee.objects.for_tenant(this_tenant).get(student=student,year=year)
-    monthlyfee=feelist.monthly_fee
-    monthlyfeelist=monthly_fee_list.objects.filter(monthly_fee=monthlyfee)
     now=datetime.date.today()
     tz_unaware_now=datetime.datetime.strptime(str(now), "%Y-%m-%d")
     tz_aware_now=timezone.make_aware(tz_unaware_now, timezone.get_current_timezone())
     amount_paid=0
     fee_paid=0
+    genericfeedetails=feelist.generic_fee.filter(month__contains=[month]).all()
     try:
         fee_paid=student_fee_payment.objects.for_tenant(this_tenant).filter(student=student,year=year,month=month)\
             .aggregate(Sum('amount'))        
     except:
         pass
-    try:
-        yearlyfeedetails=feelist.yearly_fee.filter(month=month).all()
-    except:
-        yearlyfeedetails=''
     with transaction.atomic():
         try:
-            for fee in monthlyfeelist:
-                account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
-                this_amount=fee.amount
-                amount_paid+=this_amount
-                new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
-            for yearlyfee in yearlyfeedetails:
-                yearlyfeelist=yearly_fee_list.objects.filter(yearly_fee=yearlyfee)
-                for fee in yearlyfeelist:
-                    account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
-                    this_amount=fee.amount
-                    amount_paid+=this_amount
-                    new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
-            if (amount_paid != amount):
-                raise IntegrityError
-                transaction.rollback()
-            if (amount == fee_paid):
-                raise IntegrityError
-                transaction.rollback()
             fee_payment=student_fee_payment()
             fee_payment.student=student
             fee_payment.student_class=class_selected
@@ -179,6 +170,28 @@ def save_student_payment(request):
             fee_payment.amount=amount_paid
             fee_payment.tenant=this_tenant
             fee_payment.save()
+            for genericfee in genericfeedetails:
+                genericfeelist=generic_fee_list.objects.filter(generic_fee=genericfee)
+                for fee in genericfeelist:
+                    print(fee)
+                    account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
+                    this_amount=fee.amount
+                    amount_paid+=this_amount
+                    new_journal_entry(account,this_amount,this_tenant,student_name, tz_aware_now)
+                    lineitem=payment_line_item()
+                    lineitem.fee_payment=fee_payment
+                    lineitem.name=fee.name
+                    lineitem.amount=fee.amount
+                    lineitem.tenant=this_tenant
+                    lineitem.save()
+            if (amount_paid != amount):
+                raise IntegrityError
+                transaction.rollback()
+            if (amount == fee_paid):
+                raise IntegrityError
+                transaction.rollback()
+            fee_payment.amount=amount_paid   
+            fee_payment.save()     
         except:
             transaction.rollback()
     return tz_aware_now
@@ -221,11 +234,8 @@ def view_payment_details (request):
     response_data = []
     studentid=request.POST.get('studentid')
     year=int(request.POST.get('year'))
-    print (year)
-    # month=request.POST.get('month')
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     fee_paid=student_fee_payment.objects.for_tenant(this_tenant).filter(student=student,year=year)
-    print (fee_paid)
     for fee in fee_paid:
         response_data.append({'data_type':'payment','month':fee.month, 'amount':str(fee.amount),'paid_on':fee.paid_on.isoformat()})
     return response_data
@@ -296,7 +306,7 @@ class PdfPrint:
         table_data.append([Paragraph('Fee Structure', styles['TableHeader']), Paragraph('Amount', styles['TableHeader'])])
         total=0.00
         for rd in response_data:
-            if (rd['data_type'] == 'Monthly' or rd['data_type']=='Yearly'):
+            if (rd['data_type'] == 'Generic'):
                 # data.append(Paragraph(wh.observations, styles['Justify']))
                 # data.append(Spacer(1, 24))
                 # add a row to table

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Add New Details</title>
+{% endblock %} 
+
+{% block content%}
+	<div>
+		{% if editable %}
+		<div> <h2> {{item.name}} </h2></div>
+		{% else %}
+			{% if item != 'class_group' %}
+				<div><h2>Add New {{item}}</h2></div>
+			{% else %}	
+				<div><h2>Add New Class Group</h2></div>
+			{% endif %}
+		{%endif%}		
+			<!--<form method="POST">
+				{% csrf_token %}-->
+				{% crispy form form.helper %}
+			<!--	<button type="submit">Save</button>
+			</form> -->		
+	</div>
+
+
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+
+<!-- Bootstrap Datepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+
+
+<script>
+	$('#id_dob').datepicker({
+	    autoclose: true,
+	    // endDate: moment(),
+	    endDate: '0d',
+	    format: 'dd/mm/yyyy',    
+	});		
+	$('#id_joining_date').datepicker({
+	    autoclose: true,
+	    // endDate: moment(),
+	    // endDate: '0d',
+	    format: 'dd/mm/yyyy',
+	    todayHighlight: true
+	});
+	 $("#id_dob").datepicker("update");
+	  $("#id_joining_date").datepicker("update");
+</script>
+
+{% endblock %}
+
+
+

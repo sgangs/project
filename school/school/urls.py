@@ -9,7 +9,8 @@ from .forms import revisedPasswordResetForm
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', views.HomeView.as_view()),
+    # url(r'^$', views.HomeView.as_view()),
+    url(r'^$', views.home, name='home'),
     url(r'^register/$', views.RegisterView, name='register'),
 
     #Login and logout

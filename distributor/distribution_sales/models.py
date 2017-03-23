@@ -68,6 +68,7 @@ class salesLineItem(models.Model):
 	unit=models.CharField(max_length=20)
 	manufacturer=models.CharField(max_length=20)
 	#batch=models.CharField(max_length=200)
+	#Why two discounts?
 	discount1=models.DecimalField(max_digits=4, decimal_places=2)
 	discount2=models.DecimalField(max_digits=4, decimal_places=2)
 	quantity=models.PositiveSmallIntegerField(default=0)
@@ -88,7 +89,7 @@ class salesPayment(models.Model):
 	collected_on=models.DateTimeField(null=True)
 
 
-#This is to add debit notes of two types - Either for return of goods or for excess payment
+#This is to add credit notes of two types - Either for return of goods or for excess payment
 class creditNote(models.Model):
 	note_type=(('Goods Return','Goods Return'),
 			('Payment Adjustment','Payment Adjustment'))
@@ -104,8 +105,7 @@ class creditNote(models.Model):
 	tenant=models.ForeignKey(Tenant,related_name='creditNote_sales_user_tenant')
 	objects = TenantManager()
 	
-		
-	#the save method is overriden to give unique debit note ids, slug
+	#the save method is overriden to give unique debit note ids, slug - Do we need Slug/ID?
 	def save(self, *args, **kwargs):
 		if not self.id:
 			data="cn"
@@ -134,7 +134,7 @@ class creditNote(models.Model):
 		return reverse('sales:invoice_detail', kwargs={'detail':self.slug})
 
 
-#This model is for line items of a debit note for return of goods
+#This model is for line items of a credit note for return of goods
 class creditNoteLineItem(models.Model):
 	inventory_type=(('Reusable','Reusable'),
 			('Returnable','Returnable'),
@@ -151,7 +151,7 @@ class creditNoteLineItem(models.Model):
 	creditnote_no=models.ForeignKey(creditNote, related_name='creditNoteLineItem_creditNote')
 
 
-#This model is for line items of a debit note for excess payment
+#This model is for line items of a credit note for excess payment
 class creditNoteLineDetails(models.Model):
 	details=models.TextField()
 	value=models.DecimalField(max_digits=10, decimal_places=2)

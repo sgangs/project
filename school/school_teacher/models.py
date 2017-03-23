@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
 from school_user.models import Tenant, User
+from school.id_definition import make_id
 #from school_genadmin.models import Branch
 from school_genadmin.models import Subject, class_group
 
@@ -17,7 +18,8 @@ gender_list=(('M','Male'),
 				('F','Female'),
 				('O','Other'),)
 
-staff_type=(('Teacher','Teacher'),
+staff_type=(('Master','Master'),	#Master is owner
+				('Teacher','Teacher'),
 				('Admin','Admin'),
 				('Principal','Principal'),
 				('Accounts','Accounts'),
@@ -41,11 +43,11 @@ class Teacher(models.Model):
 	dob=models.DateField("Date of Birth", blank=True, null=True)
 	staff_type=models.CharField(max_length=12,choices=staff_type)
 	joining_date=models.DateField()
-	key=models.CharField(db_index=True,max_length=12)
+	key=models.CharField(db_index=True,max_length=32)
 	gender=models.CharField(max_length=1,choices=gender_list)
 	blood_group=models.CharField('Blood Group', max_length=3,choices=blood_list, blank=True, null=True)
 	local_id=models.CharField("School teacher ID",blank=True,null=True, max_length=20)
-	slug=models.SlugField(max_length=32)
+	# slug=models.SlugField(max_length=32)
 	contact=models.CharField('Phone Number',max_length=13,blank=True, null=True)
 	#contact_2=models.CharField(max_length=13, blank=True, null=True)
 	email_id=models.EmailField(blank=True, null=True)
@@ -65,19 +67,20 @@ class Teacher(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.id:
-			data="te"
-			tenant=self.tenant.key
-			today=dt.date.today()
-			today_string=today.strftime('%y%m%d')
-			next_teacher_number='001'
-			last_teacher=type(self).objects.filter(tenant=self.tenant).\
-						filter(key__contains=today_string).order_by('key').last()
-			if last_teacher:
-				last_teacher_number=int(last_teacher.key[8:])
-				next_teacher_number='{0:03d}'.format(last_teacher_number + 1)
-			self.key=data+today_string+next_teacher_number
-			toslug=tenant+" " +self.key
-			self.slug=slugify(toslug)
+			self.key=make_id()
+			# data="te"
+			# tenant=self.tenant.key
+			# today=dt.date.today()
+			# today_string=today.strftime('%y%m%d')
+			# next_teacher_number='001'
+			# last_teacher=type(self).objects.filter(tenant=self.tenant).\
+			# 			filter(key__contains=today_string).order_by('key').last()
+			# if last_teacher:
+			# 	last_teacher_number=int(last_teacher.key[8:])
+			# 	next_teacher_number='{0:03d}'.format(last_teacher_number + 1)
+			# self.key=data+today_string+next_teacher_number
+			# toslug=tenant+" " +self.key
+			# self.slug=slugify(toslug)
 
 		super(Teacher, self).save(*args, **kwargs)
 

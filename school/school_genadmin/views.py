@@ -34,6 +34,7 @@ def base(request):
 @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 #For adding new entry for Genadmin models
 def genadmin_new(request, input_type):
+	extension="base.html"
 	if (input_type == "Subject"):
 		importform = SubjectForm
 		name='genadmin:subject_list'
@@ -85,6 +86,7 @@ def genadmin_new(request, input_type):
 #This is the view to provide list
 @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def master_list(request, input_type):
+	extension="base.html"
 	#for the delete button to work - Do we need to have the delete option? 
 	# if request.method == 'POST':
 	# 	itemtype = request.POST.get('type')
@@ -104,20 +106,21 @@ def master_list(request, input_type):
 	#for the list to be displayed	
 	if (input_type=="Subject"):
 		items = Subject.objects.for_tenant(request.user.tenant).all()
-		return render(request, 'genadmin/subject_list.html',{'items':items, 'list_for':"Subjects"})
+		return render(request, 'genadmin/subject_list.html',{'items':items, 'list_for':"Subjects", 'extension':extension})
 	elif (input_type=="Class Group"):
 		items = class_group.objects.for_tenant(request.user.tenant).all()
-		return render(request, 'genadmin/classgroup_list.html',{'items':items, 'list_for':"Class Groups"})
+		return render(request, 'genadmin/classgroup_list.html',{'items':items, 'list_for':"Class Groups", 'extension':extension})
 	elif (input_type=="House"):
 		items = House.objects.for_tenant(request.user.tenant).all()
-		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Houses"})
+		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Houses", 'extension':extension})
 	elif (input_type=="Batch"):
 		items = Batch.objects.for_tenant(request.user.tenant).all()
-		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Batch"})
+		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Batch", 'extension':extension})
 
 @login_required
 #This is a calander and event add view.
 def calendar(request):
+	extension="base.html"
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
@@ -170,13 +173,68 @@ def calendar(request):
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-	return render (request, 'genadmin/calendar.html')
+	return render (request, 'genadmin/calendar.html', {'extension':extension})
 
 @login_required
 #This is a event list view.
 def calendar_list(request):
+	extension="base.html"
 	this_tenant=request.user.tenant
 	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
 	events = annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(period.start,period.end))
-	return render (request, 'genadmin/event_list.html',{'items':events, 'list_for':'Events'})
+	return render (request, 'genadmin/event_list.html',{'items':events, 'list_for':'Events' , 'extension':extension})
 
+#Nothing Done
+@login_required
+def view_gate_passes(request):
+	this_tenant=request.user.tenant
+	if request.method == 'POST':
+		start=datetime.strptime(request.POST.get('start'),"%Y-%m-%d").date()
+		end=datetime.strptime(request.POST.get('end'),"%Y-%m-%d").date()
+		passes= gate_pass.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'genadmin/event_list.html')
+
+#Frontend pending
+@login_required
+def notice_event_delete(request, calltype):
+	this_tenant=request.user.tenant
+	if request.method == 'POST':
+		response_data=[]
+		itemid = request.POST.get('itemid')
+		if (calltype == 'Notice'):
+			notice_board.objects.for_tenant(request.user.tenant).get(id__exact=itemid).delete()
+		elif (calltype == 'EVent'):
+			annual_calender.objects.for_tenant(request.user.tenant).get(id__exact=itemid).delete()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	if (calltype == 'Notice'):
+		notices=notice_board.objects.for_tenant(this_tenant)
+		return render (request, 'genadmin/event_list.html')
+	elif (calltype == 'EVent'):
+		events=annual_calender.objects.for_tenant(this_tenant)
+		return render (request, 'genadmin/event_list.html')
+
+#Frontend yet to be designed
+@login_required
+#This should be an owner only view
+def change_academic_year(request):
+	this_tenant=request.user.tenant
+	years_list=academic_year.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		response_data=[]
+		yearid = request.POST.get('yearid')
+		with transaction.atomic():
+			try:
+				current_year=years_list.get(current_academic_year=True)
+				current_year.current_academic_year=False
+				current_year.save()
+				new_year=years_list.get(id=yearid)
+				new_year.current_academic_year=True
+				new_year.save()				
+			except:
+				transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'genadmin/event_list.html')

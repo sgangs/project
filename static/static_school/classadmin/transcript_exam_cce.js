@@ -1,6 +1,5 @@
 $(function(){
 
-
 $( ".classsection" ).change(function() {
     classsection=parseInt($(".classsection").find(':selected').data('id'));
     (function() {
@@ -13,7 +12,9 @@ $( ".classsection" ).change(function() {
             dataType: 'json',
             // handle a successful response
             success : function(jsondata){
-                console.log(jsondata);
+                $('#student option').remove();
+                $('#student').selectpicker('refresh');
+                $('#student').append($('<option/option selected hidden style="display: none" value>Select Student</option>'))
                 $.each(jsondata, function(){
                     $('#student').append($('<option/>',{
                         'data-id': this.id,
@@ -24,7 +25,7 @@ $( ".classsection" ).change(function() {
             },
             // handle a non-successful response
             error : function() {
-                console.log("Error")                
+                
             }
         });
     }());
@@ -67,7 +68,7 @@ $('.submit').click(function() {
             },
             // handle a non-successful response
             error : function() {
-                console.log("Error")                
+                
             }
         });
     }());

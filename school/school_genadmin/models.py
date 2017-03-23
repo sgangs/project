@@ -17,7 +17,6 @@ class TenantManager(models.Manager):
 class Subject(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField("Subject Name", blank=True, max_length=20)
-	is_additional=models.BooleanField(default=False)
 	slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='subject_genadmin_user_tenant')
 	objects=TenantManager()
@@ -225,7 +224,7 @@ class notice_board(models.Model):
 	title=models.TextField()
 	details=models.TextField()
 	show_from=models.DateField()
-	show_until=models.DateField()
+	show_until=models.DateField(blank=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='noticeBoard_eduadmin_user_tenant')
 	objects=TenantManager()
 
@@ -249,3 +248,33 @@ class notice_board(models.Model):
 # 	date=models.DateField()
 # 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='noticeBoard_eduadmin_user_tenant')
 # 	objects=TenantManager()
+
+
+# This is for multiple services
+
+# class maintainance_type(models.Model):
+# 	id=models.BigAutoField(primary_key=True)
+# 	maintainance_type=models.TextField()
+# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='maintainanceType_genadmin_user_tenant')
+# 	objects=TenantManager()
+	
+# 	class Meta:
+# 		unique_together = (("maintainance_type", "tenant"))
+		
+# 	def __str__(self):
+# 		return self.name
+
+# class maintainance_detail(models.Model):
+# 	id=models.BigAutoField(primary_key=True)
+# 	detail=models.TextField()
+# 	date=models.DateField() #Date of maintainance
+# 	# maintainance_by= #We need to check who will do the maintainance
+# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='maintainanceDetail_genadmin_user_tenant')
+# 	objects=TenantManager()
+	
+# 	class Meta:
+# 		unique_together = (("maintainance_type", "tenant"))
+		
+# 	def __str__(self):
+# 		return self.name
+

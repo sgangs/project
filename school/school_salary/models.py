@@ -66,7 +66,7 @@ class monthly_salary_list(abstract_salary):
 	id=models.BigAutoField(primary_key=True)
 	monthly_salary=models.ForeignKey(monthly_salary,db_index=True,related_name='monthlySalaryList_monthlySalary')
 	account=models.ForeignKey(Account,db_index=True,related_name='monthlySalaryList_salary_account_account')
-	display_payslip=models.BooleanField(default=True)
+	display_payslip=models.BooleanField(default=True, db_index=True,)
 	serial_no=models.PositiveSmallIntegerField(blank=True, null= True)
 	affect_pf=models.BooleanField(default=False)
 	affect_esi=models.BooleanField(default=False)
@@ -109,11 +109,15 @@ class yearly_salary(models.Model):
 
 class yearly_salary_list(abstract_salary):
 	id=models.BigAutoField(primary_key=True)
-	display_payslip=models.BooleanField(default=True)
+	display_payslip=models.BooleanField(default=True, db_index=True,)
 	serial_no=models.PositiveSmallIntegerField(blank=True, null= True)
 	yearly_salary=models.ForeignKey(yearly_salary,db_index=True,related_name='yearlySalaryList_monthlySalary')
 	account=models.ForeignKey(Account,db_index=True,related_name='yearlySalaryList_salary_account_account')
 	amount=models.DecimalField(max_digits=7, decimal_places=2)
+	affect_pf=models.BooleanField(default=False)
+	affect_esi=models.BooleanField(default=False)
+	affect_gratuity=models.BooleanField(default=False)
+	affect_lop=models.BooleanField(default=False)
 	is_active=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='yearlySalaryList_salary_user_tenant')
 	objects=TenantManager()
@@ -284,6 +288,58 @@ class edli_employer(models.Model):
 # 	def __str__(self):
 # 		return '%s' % (self.name)
 
+deduction_type_choices=((1,'Expense'), #Example: Tiffin/Canteen Expense, etc
+			(2,'Liability'),) #Example: TDS
+
+
+#This would be the model for monthly salary
+class monthly_deduction(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	name=models.TextField()
+	# slug=models.SlugField(max_length=50)
+	is_active=models.BooleanField(default=True)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='monthlyDeduction_salary_user_tenant')
+	objects=TenantManager()
+
+	def __str__(self):
+		return '%s' % (self.name)
+
+class monthly_deduction_list(abstract_salary):
+	id=models.BigAutoField(primary_key=True)
+	monthly_deduction=models.ForeignKey(monthly_salary,db_index=True,related_name='monthlyDeductionList_monthlyDeduction')
+	account=models.ForeignKey(Account,db_index=True,related_name='monthlyDeductionList_salary_account_account')
+	display_payslip=models.BooleanField(default=True, db_index=True,)
+	serial_no=models.PositiveSmallIntegerField(blank=True, null= True)
+	deduction_type=models.PositiveSmallIntegerField(choices=deduction_type_choices, db_index=True)
+	# affect_pf=models.BooleanField(default=False)
+	# affect_esi=models.BooleanField(default=False)
+	# affect_gratuity=models.BooleanField(default=False)
+	affect_lop=models.BooleanField(default=False)		#LOP is Loss Of Pay
+	is_active=models.BooleanField(default=True)		
+	amount=models.DecimalField(max_digits=7, decimal_places=2)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='monthlyDeductionList_salary_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	class Meta:
+	# 	unique_together = (("monthly_fee","account"))
+		ordering = ('display_payslip','serial_no','id')
+		
+	def __str__(self):
+		return '%s' % (self.name)
+
+
+
+
+
+
+
+
+
+
+
 
 staff_type=(('Master','Master'),
 			('Teacher','Teacher'),
@@ -353,7 +409,7 @@ class staff_salary_payment(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	staff=models.ForeignKey(Teacher,db_index=True,related_name='staffSalaryPayment_salary_teacher_teacher')
 	year=models.PositiveSmallIntegerField()
-	month=models.CharField(max_length=3)
+	month=models.CharField(max_length=3) #Start Month, Eg: Jun-Jul should be June
 	gross=models.DecimalField(max_digits=12, decimal_places=2)
 	net=models.DecimalField(max_digits=12, decimal_places=2)
 	employee_deduction=models.DecimalField(max_digits=12, decimal_places=2) #This is the employee statutory deduction

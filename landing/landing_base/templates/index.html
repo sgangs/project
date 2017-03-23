@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <title>Assisto: ERP Software - Accounting Inventory Invoicing and HR Software</title>
-    <meta name="description" content="ERP Software, packed with /
+    <meta name="description" content="ERP Software, packed with 
             one stop Accounting, Inventory, Invoicng and HR software">
     
 
@@ -24,7 +24,7 @@
 
     <!-- Custom Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
-    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
 
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
@@ -56,7 +56,7 @@
                 <a href="#services" onclick = $("#menu-close").click(); >Services</a>
             </li>
             <li>
-                <a href="#portfolio" onclick = $("#menu-close").click(); >Portfolio</a>
+                <a href="#portfolio" onclick = $("#menu-close").click(); >Segments</a>
             </li>
             <li>
                 <a href="#contact" onclick = $("#menu-close").click(); >Contact</a>
@@ -72,8 +72,9 @@
             <br>
             <!-- <button type="button" class="btn btn-dark btn-lg register" data-toggle="#modal">Register</button>
             <button type="button" class="btn btn-dark btn-lg login" data-target="#myModal">Login</button> -->
+            <button type="button" class="btn btn-dark btn-lg" id="learn" data-toggle="modal" data-target="#learnModal">Learn More!</button>
             <button type="button" class="btn btn-dark btn-lg" id="register" data-toggle="modal" data-target="#regModal">Try ERP for Free!</button>
-            <button type="button" class="btn btn-dark btn-lg" id="register" data-toggle="modal" data-target="#logModal">Login</button>
+            <button type="button" class="btn btn-dark btn-lg" id="logi" data-toggle="modal" data-target="#logModal">Login</button>
         </div>
     </header>
 
@@ -87,8 +88,8 @@
                 </div>
                 <div class="modal-body text-center">
                     <a href="school/register"><button type="button" class="btn btn-primary distributor">School</button></a>
-                    <a href="distributor/register"><button type="button" class="btn btn-primary school">Distributor</button></a>
-                    
+                    <a href="distributor/register"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Distributor</button></a>
+                    <a href="distributor/register"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Retail</button></a>                    
                 </div>
                 <div class="modal-footer">                    
                 </div>
@@ -104,12 +105,31 @@
                 </div>
                 <div class="modal-body text-center">
                     <a href="school/login"><button type="button" class="btn btn-primary distributor">School</button></a>
-                    <a href="distributor/login"><button type="button" class="btn btn-primary school">Distributor</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Distributor</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Retail</button></a>
                     
                 </div>
                 <div class="modal-footer">
                     <!-- <button type="button" class="btn btn-primary distributor">Distributor</button>
                     <button type="button" class="btn btn-primary school">School</button> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Learn More Modal -->
+    <div class="modal fade learnmodal" id="learnModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Learn More About:</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <a href="school"><button type="button" class="btn btn-primary distributor">School</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Distributor</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Retail</button></a>
+                    
+                </div>
+                <div class="modal-footer">                    
                 </div>
             </div>
         </div>
@@ -123,7 +143,7 @@
                 <div class="col-lg-12 text-center">
                     <h2>We solve your accounting, inventory, invoicing and HR problem with our one stop
                      ERP software, segregated for every business types.</h2>
-                    <p class="lead">Enjoy what yo do best and take vacations. Get your stats on the go with us. Access your business from anywhere, using any system - all you need is a just web browser.</p>
+                    <p class="lead">Enjoy what yo do best and take vacations. Get your stats on the go with us. Access your business from anywhere, using any system - all you need is just a web browser.</p>
                 </div>
             </div>
             <!-- /.row -->
@@ -214,32 +234,32 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-10 col-lg-offset-1 text-center">
-                    <h2>Our Work</h2>
+                    <h2>Our Segments</h2>
                     <hr class="small">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="portfolio-item">
-                                <a href="#">
+                                <a href="school/" title="TECHASSISTO FOR SCHOOL">
                                     <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-1.jpg' %}">
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="portfolio-item">
-                                <a href="#">
+                                <a href="#" title="WE'RE COMING WITH TECHASSISTO FOR DISTRIBUTORS/TRADERS">
                                     <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-2.jpg' %}">
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="portfolio-item">
+                            <div class="portfolio-item" title="WE'RE COMING WITH TECHASSISTO FOR RETAILERS">
                                 <a href="#">
                                     <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-3.jpg' %}">
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="portfolio-item">
+                            <div class="portfolio-item" title="WE'RE COMING WITH SOLUTION OTHERS TOO...">
                                 <a href="#">
                                     <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-4.jpg' %}">
                                 </a>
@@ -297,7 +317,7 @@
                     <br>
                     <ul class="list-inline">
                         <li>
-                            <a href="https://www.facebook.com/sgangs.91" target="_blank"><i class="fa fa-facebook fa-fw fa-3x"></i></a>
+                            <a href="https://www.facebook.com/techassisto" target="_blank"><i class="fa fa-facebook fa-fw fa-3x"></i></a>
                         </li>
                         <li>
                             <a href="https://twitter.com/iamsganguly" target="_blank"><i class="fa fa-twitter fa-fw fa-3x"></i></a>
@@ -307,7 +327,7 @@
                         </li>
                     </ul>
                     <hr class="small">
-                    <p class="text-muted">Copyright &copy; Tech Assisto 2016</p>
+                    <p class="text-muted">Copyright &copy; TechAssisto 2017</p>
                 </div>
             </div>
         </div>

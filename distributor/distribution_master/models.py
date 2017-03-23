@@ -103,15 +103,14 @@ class Unit(models.Model):
 
 #This is the list of Product
 class Product(models.Model):
+	#Change Tax Model
 	VAT_choice=(('No VAT','No VAT'),
 				('On MRP','On MRP'),
 				('On Cost Price','On Cost Price'),)
 	name=models.CharField(max_length =200)
-	#unit = models.ForeignKey(Unit,related_name='product_master_master_unit')
-	#dimension=models.ForeignKey(Dimension,related_name='product_dimension')
 	slug=models.SlugField(max_length=32)
 	key=models.CharField('product-id', max_length=20)
-	manufacturer=models.ForeignKey(Manufacturer,related_name='product_master_master_manufacturer')
+	manufacturer=models.ForeignKey(Manufacturer,blank=True, related_name='product_manufacturer')
 	vat_type=models.CharField('VAT type', max_length=15,choices=VAT_choice,default='on cost_price')
 	vat_percent=models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, default=0)
 	tenant=models.ForeignKey(Tenant,related_name='product_master_user_tenant')
@@ -136,8 +135,8 @@ class Product(models.Model):
 
 
 class subProduct(models.Model):
-	product=models.ForeignKey(Product, related_name='subProduct_master_master_product')
-	unit = models.ForeignKey(Unit,related_name='product_master_master_unit')
+	product=models.ForeignKey(Product, related_name='subProduct_product')
+	unit = models.ForeignKey(Unit,related_name='subProduct_unit')
 	sub_key=models.CharField(max_length=20)
 	batch=models.CharField(max_length=20, blank=True)
 	cost_price=models.DecimalField(max_digits=10, decimal_places=2)
@@ -232,7 +231,6 @@ class Customer (AbstractCustomer):
 
 
 #Vendor Model inherits from AbstractCustomer model
-
 class Vendor (AbstractCustomer):
 	tenant=models.ForeignKey(Tenant,related_name='vendor_master_user_tenant')
 	objects = TenantManager()

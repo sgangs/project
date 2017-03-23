@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends extension %}
 
 {%block title%}
-<title>View Monthly Fees</title>
+<title>View Fee Structure</title>
 
 <!--Chosen (for searchbox in select box) JS and CSS-->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
@@ -15,24 +15,20 @@
 
 {% block content%}
 	
-<h3>View {{fee_type}} Recurring Fees</h3>
+<h3>View Fee Structure</h3>
 <h1></h1>
 <div class="row">
-	<div class="form-group col-xs-4 col-md-3"">
+	<div class="form-group col-xs-12 col-md-7">
 		<select class="form-control monthlyfee">
     	<option disabled selected hidden style='display: none' value>Select Fees</option>
 			{% for item in fees %}
-			{% if fee_type == "Yearly" %}
-  				<option data-id="{{item.id}}">{{item.name}}, Recurring: {{item.month}}</option>
-  			{% elif fee_type == "Monthly" %}
-  				<option data-id="{{item.id}}">{{item.name}}, Recurring: Every Month</option>
-			{% endif %}
-			{% endfor %}
+				<option data-id="{{item.id}}">{{item.name}}, Recurring On: {{item.month}}</option>
+  			{% endfor %}
   	</select> 
 	</div>
 </div>
 
-<button type="button" class='check btn btn-primary btn-sm'>Click for view</button>
+<button type="button" class='check btn btn-primary btn-sm'>Click to view</button>
 <h1></h1>
 
 <div class="table-responsive">	
@@ -40,7 +36,8 @@
 		<thead class="bg-primary">
 	  		<tr>
 	  			<th class="header">Account Name</th>
-	  			<th class="header" title="This is the system generated code/key for student.">Amount</th>
+	  			<th class="header">Structure Name</th>
+	  			<th class="header">Amount</th>
 		    </tr>
 		</thead>
 		<tbody>
@@ -53,10 +50,6 @@
 
 
 <script>
-	$(".select").chosen({
-		no_results_text: "Oops, nothing found!",
-		width: "95%"
-	});
 	csrf_token='{{csrf_token}}';
 </script>
 {% endblock %}

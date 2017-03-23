@@ -22,7 +22,7 @@ class TeacherForm(forms.ModelForm):
 		# self.helper[2:3].wrap_together(Fieldset, 'Other Details')
 		# self.helper[4:10].wrap_together(Fieldset, 'Student Address')
 		# self.helper.layout.insert(4,layout.HTML(
-  # 			'<p><i>Please fill this if you have some other student ID.<i></p>'))
+  		# 	'<p><i>Please fill this if you have some other student ID.<i></p>'))
 		self.helper.add_input(Submit('submit', 'Submit', css_class="btn-xs"))
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-sm-2'
@@ -32,10 +32,10 @@ class TeacherForm(forms.ModelForm):
 		model=Teacher
 		fields =('first_name', 'last_name', 'gender', 'blood_group','dob','joining_date', 'local_id', 'contact',\
 		 			'email_id', 'address_line_1', 'address_line_2','state','pincode' )
-		widgets = {
-            'dob': DateInput(),
-            'joining_date': DateInput(),
-        }
+		# widgets = {
+  #           'dob': DateInput(),
+  #           'joining_date': DateInput(),
+  #       }
 	
 
 class UploadFileForm(forms.Form):

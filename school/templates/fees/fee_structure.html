@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends extension %}
 
 {%block title%}
 <title>Fee Structure Creation</title>
@@ -15,7 +15,7 @@
 
 {% block content%}
 	
-<h3>{{fee_type}} Fee Structure Creation</h3>
+<h3>Fee Structure Creation</h3>
 <h1></h1>
 <div class="row">
 	<div class="form-group col-xs-6 col-md-4">
@@ -25,10 +25,10 @@
 <!-- </div>
 <div class="row"> -->
 
-	<div class="form-group col-xs-6 col-md-4 monthdiv" hidden='true'>
-	<label class="control-label">Select Month when the fee would be repeated </label>
-		<select class='form-control selectpicker month'>
-      		<option data-id="Jan" title="Jan">January</option>
+	<div class="form-group col-xs-6 col-md-4 monthdiv">
+	<label class="control-label">Select Month(s) when the fee would be repeated </label>
+		<select class='form-control selectpicker month' multiple data-actions-box="true"> 
+			<option data-id="Jan" title="Jan">January</option>
 			<option data-id="Feb" title="Feb">February</option>
 			<option data-id="Mar" title="Mar">March</option>
 			<option data-id="Apr" title="Apr">April</option>
@@ -50,6 +50,7 @@
 	  		<tr>
 	  			<th style="text-align: center" class="header" title="Select the rows and press delete to delete the entry.">Select</th>
 	  			<th style="text-align: center" class="header" title = "This is the linked account (under ledger group Fees) for the fee structure.">Select Account (under Ledger Group: Fees)</th>
+		    	<th style="text-align: center" class="header">Name of Fee Structure</th>
 		    	<th style="text-align: center" class="header">Amount</th>
 	    	</tr>
 		</thead>
@@ -57,8 +58,9 @@
 			<tr class='data'>
 	    		<td><input type='checkbox' class='case'/></td>
 	    		<td style='text-align: center'><select class='form-control select account'>
-	      			<option disabled selected hidden style='display: none' value>Select Account Name</option>
+	      			<option disabled selected hidden style='display: none' value>Select Account</option>
 	      		</select></td>
+	    		<td style='text-align: center'><input type='text' class='name'/></td>
 	    		<td style='text-align: center'><input type='number' class='name'/></td>
 	    	</tr>
 		</tbody>
@@ -76,25 +78,12 @@
 
 
 <script>
-	$('.tooltip').tooltip({animation: true, container: 'body'});
-	// $(".select").chosen({
-	// 	no_results_text: "Oops, nothing found!",
-	// 	width: "95%"
-	// });
-	fee_type="{{fee_type}}";
-	if (fee_type == "Monthly"){
-		redirect_url="{% url 'fees:monthly_fee_view' %}";
-	}
-	if (fee_type == "Yearly"){
-		redirect_url="{% url 'fees:yearly_fee_view' %}";
-		$('.monthdiv').attr('hidden', false);
-	}
+	redirect_url="{% url 'fees:generic_fee_view' %}";
 	csrf_token='{{csrf_token}}';
 	var accounts=JSON.parse('{{accounts |escapejs}}');
 	//console.log(accounts);
 	$.each(accounts, function(){
         $('table').find('.account').append($('<option>',{
-        //$('.account').append($('<option>',{
             'data-id': this.id,
             'text': this.name
         }));

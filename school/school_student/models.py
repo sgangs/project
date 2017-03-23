@@ -35,7 +35,8 @@ class Student(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
 	dob=models.DateField("Date of Birth", blank=True, null=True)
-	key=models.CharField(db_index=True,max_length=64)
+	joining_date=models.DateField(blank=True, null=True)
+	key=models.CharField(db_index=True,max_length=32)
 	gender=models.CharField(max_length=1,choices=gender_list)
 	blood_group=models.CharField('Blood Group', max_length=3,choices=blood_list, blank=True, null=True)
 	# slug=models.SlugField(max_length=32)
@@ -55,9 +56,10 @@ class Student(models.Model):
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
+	def save(self, *args, **kwargs):
+		if not self.id:
 	# 		# data="st"
+			self.key=make_id()
 	# 		tenant=self.tenant.key
 	# 		print(self.key)
 	# 		# today=dt.date.today()
@@ -73,7 +75,7 @@ class Student(models.Model):
 	# 		toslug=tenant+" " +str(self.key)
 	# 		self.slug=slugify(toslug)
 
-	# 	super(Student, self).save(*args, **kwargs)
+		super(Student, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("key", "tenant"))

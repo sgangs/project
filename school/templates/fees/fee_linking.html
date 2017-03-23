@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends extension %}
 
 {% load crispy_forms_tags %}
 
@@ -26,7 +26,7 @@
 <form>
 
 	<div class="form-group classgroupdiv">
-		<label for="classgroup" class="control-label">Class Group</label>
+		<label for="classgroup" class="control-label">Select Class Group(s)</label>
 		<select class="form-control selectpicker classgroup" multiple data-live-search="true">
     		{% for group in groups %}
   				<option data-id="{{group.id}}">{{group.name}}</option>
@@ -37,34 +37,26 @@
 
 	<div class="form-group yeardiv">
 		<label for="classname" class="control-label">Year</label>
-			<input type="text" required="" class="form-control year" min="1980" max="9999" step="1" aria-required="true">
+			<input type="text" required="" class="form-control year" disabled value="{{year}}">
 	</div>
 	<p class="bg-danger year-p" hidden="true">...</p>
-	<div class="form-group monthlyfeediv">
-		<label for="classgroup" class="control-label">Select Monthly Fee (Select Only One)</label>
-		<select class="form-control selectpicker monthlyfee" data-live-search="true">
-    		<option disabled selected hidden style='display: none' value>Select Monthly Fee</option>
-				{% for fee in monthly_fee %}
-  					<option data-id="{{fee.id}}">{{fee.name}}</option>
-				{% endfor %}
-  		</select>
-	</div>
-	<div class="form-group yearlyfeediv">
-		<label for="classgroup" class="control-label" >Select Yearly Fee (Select Multiple)</label>
-		<select class="form-control selectpicker yearlyfee" multiple data-live-search="true">
+	
+	<div class="form-group genericfeediv">
+		<label for="classgroup" class="control-label" >Select Fee(s)</label>
+		<select class="form-control selectpicker genericfee" multiple data-live-search="true">
     			{% for fee in yearly_fee %}
   					<option data-id="{{fee.id}}">{{fee.name}}</option>
 				{% endfor %}
   		</select>
 	</div>
-	<div class="form-group addstudentdiv" hidden=true>
+	<!-- <div class="form-group addstudentdiv" hidden=true>
 		<label for="classname" class="control-label">Add fee structure to all students of this class group</label>			
 		<select class="form-control selectpicker addstudent">
     		<option disabled selected hidden style='display: none' value>Select Yes/No</option>
 				<option data-id="Yes">Yes</option>
 				<option data-id="No">No</option>
   		</select>
-	</div>
+	</div> -->
 
 	<button type="button" class="btn btn-primary btn-xs save" data-toggle="confirmation">Submit</button>
 </form>

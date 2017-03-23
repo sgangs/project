@@ -1,14 +1,8 @@
-#from functools import partial, wraps
 import json
-#from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-#from django.db.models import Prefetch
-#from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
-#from django.db.models import F
-
 
 from school_user.models import Tenant
 from .forms import TeacherForm, UploadFileForm
@@ -29,9 +23,10 @@ def teacher_base(request):
 @login_required
 #This function helps in addidng new syllabus and exams
 def teacherprofile_new(request, input_type):
-	if (input_type=="Teacher"):
-		importform=TeacherForm
-		name='teacher:teacher_list'
+	# if (input_type=="Teacher"):
+	importform=TeacherForm
+	# name='teacher:teacher_list'
+	name='landing'
 	current_tenant=request.user.tenant
 	form=importform(tenant=current_tenant)
 	if (request.method == "POST"):
@@ -40,10 +35,15 @@ def teacherprofile_new(request, input_type):
 		if form.is_valid():
 			item=form.save(commit=False)			
 			item.tenant=current_tenant
-			item.staff_type="Teacher"
+			if (input_type=="Teacher"):
+				item.staff_type="Teacher"
+			elif (input_type=="Admin"):
+				item.staff_type="Admin"
+			else:
+				raise IntegrityError()
 			item.save()
 			return redirect(name)
-	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
+	return render(request, 'teacher/new.html',{'form': form, 'item': input_type})
 
 def teacher_list(request):
 	teachers=Teacher.objects.for_tenant(request.user.tenant).filter(staff_type="Teacher")
@@ -73,15 +73,10 @@ def import_teacher(request):
 						initializer=choice_func,
 						mapdict=['first_name', 'last_name', 'dob','joining_date','gender','blood_group', 'local_id','contact',\
 						 'email_id','address_line_1','address_line_2','state','pincode','key', 'slug', 'tenant', 'staff_type'])
-					# messages.success(request, 'Students data uploaded successfully.')
 					return redirect('teacher:teacher_list')
 				except:
 					transaction.rollback()
-					return HttpResponse("Failed")
-			# else:
-			# 	transaction.commit()
-			# finally:
-			# 	transaction.set_autocommit(True)
+					return HttpResponse("Failed")			
 		else:
 			return HttpResponseBadRequest()
 	else:

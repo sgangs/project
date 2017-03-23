@@ -4,8 +4,9 @@ from django.db import IntegrityError
 from school_user.models import User, Tenant
 from school_genadmin.models import class_group, Subject
 from school_student.models import Student
-from school_fees.models import student_fee, group_default_fee, yearly_fee
-from .models import subject_teacher, Syllabus, period, total_period, class_section, classstudent, Term, Exam, grade_table
+from school_fees.models import student_fee, group_default_fee
+from .models import subject_teacher, period, total_period, class_section, classstudent, Term, Exam, grade_table
+                # Syllabus
 
 def period_add(request, class_selected):
     this_tenant=request.user.tenant
@@ -15,10 +16,10 @@ def period_add(request, class_selected):
     subjectid=request.POST.get('subject')
     class_group=class_selected.classgroup
     subject=Subject.objects.for_tenant(this_tenant).get(id=subjectid)    
-    try:
-        class_syllabus=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group,year=year,subject=subject)
-    except:
-        return "Error"
+    # try:
+    #     class_syllabus=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group,year=year,subject=subject)
+    # except:
+    #     return "Error"
     try:
         teacher=subject_teacher.objects.get(class_section=class_selected,subject=subject,year=year).teacher
     except:
@@ -91,14 +92,14 @@ def student_add_fee(student, class_selected, year, this_tenant):
         group_fee=group_default_fee.objects.for_tenant(this_tenant).get(classgroup=class_group, year=year)
         proceed=True
     except:
-        pass
+        proceed=False
     if (proceed):
         new_fee=student_fee()
         new_fee.student=student
         new_fee.year=year
-        new_fee.monthly_fee=group_fee.monthly_fee
+        # new_fee.monthly_fee=group_fee.monthly_fee
         new_fee.tenant=this_tenant
         new_fee.save()
-        yearly_fees=group_fee.yearly_fee.all()
-        for fee in yearly_fees:
-            new_fee.yearly_fee.add(fee)
+        generic_fees=group_fee.generic_fee.all()
+        for fee in generic_fees:
+            new_fee.generic_fee.add(fee)

@@ -29,9 +29,10 @@ def student_validate(row, this_tenant, batch):
         transaction.rollback()
         return HttpResponse("There is error in uploaded excel")
     if (row [2] != None and row [2] != ""):
-        if (type(row [2]) != dt.date):
-            transaction.rollback()
-            return HttpResponse("There is error in uploaded excel")
+        pass
+        # if (type(row [2]) != dt.date):
+        #     transaction.rollback()
+        #     return HttpResponse("There is error in uploaded excel")
     return row
 
 def WriteToExcel(student):
@@ -136,5 +137,55 @@ def WriteToExcel(student):
     workbook.close()
     xlsx_data = output.getvalue()
     return xlsx_data
-        
 
+
+def excel_download():
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output, {'constant_memory': True})
+    worksheet_s = workbook.add_worksheet("Summary")
+
+    # excel styles
+    header = workbook.add_format({
+        'bg_color': '#F7F7F7',
+        'color': 'black',
+        'align': 'center',
+        'valign': 'top',
+        'border': 1
+    })
+    
+    worksheet_s.write(1, 0, ugettext("First Name"), header)
+    worksheet_s.write(1, 1, ugettext("Last Name"), header)
+    worksheet_s.write(1, 2, ugettext("Date of Birth"), header)
+    worksheet_s.write(1, 3, ugettext("Gender (M/F/O)"), header)
+    worksheet_s.write(1, 4, ugettext("Blood Group (A+/B+/AB+/O+/A-/B-/AB-/O-/OT"), header)
+    worksheet_s.write(1, 5, ugettext("Contact"), header)
+    worksheet_s.write(1, 6, ugettext("Email ID"), header)
+    worksheet_s.write(1, 7, ugettext("School/Admission ID"), header)
+    worksheet_s.write(1, 8, ugettext("Address Line 1"), header)
+    worksheet_s.write(1, 9, ugettext("Address Line 2"), header)
+    worksheet_s.write(1, 10, ugettext("State"), header)
+    worksheet_s.write(1, 11, ugettext("Pincode"), header)
+    
+    # column widths definition
+    base_col_width = 15
+    # description_col_width = 10
+    # observations_col_width = 25
+
+    # column widths
+    worksheet_s.set_column('A:A', base_col_width)
+    worksheet_s.set_column('B:B', base_col_width)
+    worksheet_s.set_column('C:C', base_col_width)
+    worksheet_s.set_column('D:D', base_col_width)
+    worksheet_s.set_column('E:E', 30)
+    worksheet_s.set_column('F:F', base_col_width)
+    worksheet_s.set_column('G:G', base_col_width)
+    worksheet_s.set_column('H:H', base_col_width)
+    worksheet_s.set_column('I:I', base_col_width)
+    worksheet_s.set_column('J:J', base_col_width)
+    worksheet_s.set_column('K:K', base_col_width)
+    worksheet_s.set_column('L:L', base_col_width)
+
+    
+    workbook.close()
+    xlsx_data = output.getvalue()
+    return xlsx_data

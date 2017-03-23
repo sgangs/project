@@ -25,6 +25,25 @@ def generate_salary_report(request, sent_for=""):
     gross_salary=0
     net_salary=0
     employee_deduction=0
+
+    #This is to take care of attendance. Take staff attendance and then pay accordingly.
+
+    # from dateutil.relativedelta import relativedelta
+    # Check no _rep in date range: That will be considered absent.
+    # start=datetime.strptime(request.POST.get('start'),"%Y-%m-%d").date() + relativedelta(months=3)
+    # end=datetime.strptime(request.POST.get('end'),"%Y-%m-%d").date() + relativedelta(months=2)
+    # attendance=Attendance.objects.filter(student=student, date__range=(start,end))
+    # total=list(rrule(DAILY, dtstart=start, until=end))
+    # events= annual_calender.objects.filter(date__range=(start,end))
+    # events_hol=events.filter(attendance_type=2)
+    # hol=[]
+    # for event in events_hol:
+    #     hol.append(datetime.strptime(datetime.strftime(event.date,'%Y %m %d'), '%Y %m %d'))
+    # hol=holiday_calculator(start, end, events, hol)
+    # total_working=list(set(total) -set(hol))
+    # no_rep=list(set(total_working)-set(attendace_dates))
+
+
     try:
         yearlysalarydetails=salarylist.yearly_salary.filter(month=month).all()
     except:
@@ -60,15 +79,15 @@ def generate_salary_report(request, sent_for=""):
                 'affect_pf':salary.affect_pf,'affect_esi':salary.affect_esi, 'affect_gratuity':salary.affect_gratuity,\
                 'amount':format(float(salary.amount),'.2f'), 'name':salary.name, 'accountid': salary.account.id}
             response_data[salary.name]=dict_salary
-    pf_salary_float=0
-    esi_salary_float=0
-    for k,v in response_data.items():
-        if v['affect_pf']:
-            pf_salary_float+=float(v['amount'])
-        if v['affect_esi']:
-            esi_salary_float+=float(v['amount'])
-    pf_salary=Decimal(pf_salary_float)
-    esi_salary=Decimal(esi_salary_float)
+    # pf_salary_float=0
+    # esi_salary_float=0
+    # for k,v in response_data.items():
+    #     if v['affect_pf']:
+    #         pf_salary_float+=float(v['amount'])
+    #     if v['affect_esi']:
+    #         esi_salary_float+=float(v['amount'])
+    # pf_salary=Decimal(pf_salary_float)
+    # esi_salary=Decimal(esi_salary_float)
     try:
         for yearlysalary in yearlysalarydetails:
             yearlysalarylist=yearly_salary_list.objects.filter(yearly_salary=yearlysalary)
@@ -81,6 +100,15 @@ def generate_salary_report(request, sent_for=""):
                 response_data[salary.name]=dict_salary
     except:
         pass
+    pf_salary_float=0
+    esi_salary_float=0
+    for k,v in response_data.items():
+        if v['affect_pf']:
+            pf_salary_float+=float(v['amount'])
+        if v['affect_esi']:
+            esi_salary_float+=float(v['amount'])
+    pf_salary=Decimal(pf_salary_float)
+    esi_salary=Decimal(esi_salary_float)
     try:
         rule=epf_eps_employer.rule
         admin_multiplier=epf_eps_employer.epf_admin_multiplier

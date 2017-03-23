@@ -39,7 +39,7 @@ def studentprofile_new(request, input_type):
 		if form.is_valid():
 			item=form.save(commit=False)			
 			item.tenant=current_tenant
-			# item.save()
+			item.save()
 			return redirect(name)
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
 
@@ -102,7 +102,7 @@ def import_student(request):
 		form = UploadFileForm(tenant=this_tenant)
 		
 		
-	return render(request,'upload_form.html',{'form': form,})
+	return render(request,'student/upload_form.html',{'form': form,})
 
 
 						
@@ -114,6 +114,15 @@ def student_export(request):
 	response['Content-Disposition'] = 'attachment; filename=Students.xlsx'
 	student=Student.objects.for_tenant(request.user.tenant).filter(isactive=True).select_related('batch')
 	xlsx_data = WriteToExcel(student)
+	response.write(xlsx_data)
+	return response
+
+@login_required
+def student_import_format(request):
+	# if 'excel' in request.POST:
+	response = HttpResponse(content_type='application/vnd.ms-excel')
+	response['Content-Disposition'] = 'attachment; filename=Students_Import.xlsx'
+	xlsx_data = excel_download()
 	response.write(xlsx_data)
 	return response
 

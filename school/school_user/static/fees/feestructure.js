@@ -10,8 +10,6 @@ function clearmodal(){
 }
 
 var fee_name="";
-var month="";
-
 
 $(".delete").on('click', function() {
     $('.case:checkbox:checked').parents("tr").remove();
@@ -27,7 +25,8 @@ $(".addmore").on('click',function(){
     "<td style='text-align: center'><select class='form-control select account'>"+
       "<option disabled selected hidden style='display: none' value>Select Account Name</option>"+
     "</select></td>"+
-    "<td style='text-align: center'><input type='number' class='name'/></td>"+"</tr>";
+    "<td style='text-align: center'><input type='text' class='name'/></td>"+
+    "<td style='text-align: center'><input type='number' class='amount'/></td>"+"</tr>";
     $('table').append(data);
     
     $.each(accounts, function(){
@@ -43,11 +42,6 @@ $(".addmore").on('click',function(){
 $( ".feename" ).change(function() {
     fee_name=$(".feename").val();
     $( ".submit" ).prop('disabled',false); 
-});
-
-//This is called if month is changed
-$( ".month" ).change(function() {
-    month=$('.month').find(':selected').data('id');
 });
 
 //This is for the reset button to work
@@ -71,41 +65,45 @@ $( ".submit" ).confirm({
     closeAnimation: 'rotateXR',
     animationSpeed: 750,
     confirm: function(){
-            
-    //get all itemcode & quantity pair
-    console.log($('.month').is(":visible")); 
+        var month_all=[]
         var items = [];
         var proceed = true;
-        var month_entered=true
+        var month_entered = true;
         fee_name=$(".feename").val();
-        if ($('.month').is(":visible")){
+        $.each($(".month option:selected"), function(){
+            month=$(this).data('id')
             if (month ==''){
                 month_entered=false
             }
-        }
+            var month_data={
+                month: month
+            };
+            month_all.push(month);
+        });
         if (fee_name != "" && month_entered){
             //console.log("Date: "+date);
             $("tr.data").each(function() {
                 var account = $(this).find('td:nth-child(2)').find(':selected').data('id');
-                var amount = parseInt($(this).find('td:nth-child(3) input').val());
-                if (isNaN(amount) || typeof(account) === "undefined" ){
+                var name = parseInt($(this).find('td:nth-child(3) input').val());
+                var amount = parseInt($(this).find('td:nth-child(4) input').val());
+                if (isNaN(amount) || typeof(account) == "undefined" || account == "" || name == "" ){
                     proceed=false;}
                 var item = {
                     account : account,
                     amount: amount,
+                    name: name,
                     };
                 items.push(item);        
             });
-            console.log(items);
-            if (proceed){
-        //Send ajax function to back-end 
+            if (proceed && month_entered){
+            //Send ajax function to back-end 
                 (function() {
                     $.ajax({
                         url : "", 
                         type: "POST",
                         data:{ details: JSON.stringify(items),
                             feename: fee_name,
-                            month:month,
+                            month_all:JSON.stringify(month_all),
                             csrfmiddlewaretoken: csrf_token},
                             dataType: 'json',               
                             // handle a successful response

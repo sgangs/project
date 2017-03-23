@@ -7,10 +7,14 @@ from calendar import monthrange
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login, password_reset
 from django.db import IntegrityError, transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.views.generic import TemplateView
+
+from django.core.mail import EmailMessage
+from django.template import Context
+from django.template.loader import get_template
+from django.conf import settings
 
 from school_user.forms import UserRegistrationForm,CustomerRegistrationForm
 from school_user.models import User, Tenant
@@ -24,9 +28,64 @@ from .user_util import *
 from .teacher_landing import *
 from .forms import revisedPasswordResetForm, LoginForm
 
-#landing page
-class HomeView(TemplateView):
-    template_name = "index.html"
+#landing page - www.twchassisto.com/school
+def home(request):
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        contact = request.POST.get('contact')
+        subject_input = request.POST.get('subject')
+        body = request.POST.get('body')
+        response_data=[]
+        if (len(first_name)>2 and len(last_name)>2 and len(email)>5 and len(contact)>8 and len(subject_input)>3 and len(body)>5):
+            try:
+                from_email = settings.EMAIL_HOST_USER
+                to_email = 'support@techassisto.com'
+                subject = "Customer Contact: "+subject_input
+                template = get_template('registration/contact_form_email.html')
+                context = Context({'first_name': first_name, 'last_name': last_name, 'email': email, 'contact': contact, 'body': body})
+                content = template.render(context)
+                msg = EmailMessage(subject, content, from_email, to=[to_email])
+                msg.send(fail_silently=False)
+                response_data="Success"
+            except:
+                response_data="Fail"
+        else:
+            response_data="Fail"
+        jsondata = json.dumps(response_data)
+        return HttpResponse(jsondata)
+    return render(request,'index.html')
+
+
+def edit_tenant_settings(request):
+    this_tenant=request.user.tenant
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        number = request.POST.get('affiliation_number')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        body = request.POST.get('body')
+        # response_data=[]
+        # if (len(first_name)>2 and len(last_name)>2 and len(email)>5 and len(contact)>8 and len(subject_input)>3 and len(body)>5):
+        #     try:
+        #         from_email = settings.EMAIL_HOST_USER
+        #         to_email = 'support@techassisto.com'
+        #         subject = "Customer Contact: "+subject_input
+        #         template = get_template('registration/contact_form_email.html')
+        #         context = Context({'first_name': first_name, 'last_name': last_name, 'email': email, 'contact': contact, 'body': body})
+        #         content = template.render(context)
+        #         msg = EmailMessage(subject, content, from_email, to=[to_email])
+        #         msg.send(fail_silently=False)
+        #         response_data="Success"
+        #     except:
+        #         response_data="Fail"
+        # else:
+        #     response_data="Fail"
+        # jsondata = json.dumps(response_data)
+        # return HttpResponse(jsondata)
+    return render(request,'index.html', {'tenant':this_tenant})
+
 
 #Redirect authenticated users to landing page
 def custom_login(request):
@@ -142,36 +201,40 @@ def landing(request):
         attendance=json.dumps(staff_attendance_number(request, teacher, this_tenant))
         return render (request, 'landing_teacher.html', {"attendance":attendance,"events":events, \
                     'classes': class_teacher, 'subjects':subject_teacher})
+    # try:
+    year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+    paid=fee_paid(request, year)
+    total=month_fee(request, year)
+    staff_list=Teacher.objects.for_tenant(this_tenant).all()
+    student_list=Student.objects.for_tenant(this_tenant).all()
+    staffs=staff_list.filter(dob__month=current_day.month,dob__day=current_day.day)
+    today=date.today()
     try:
-        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
-        paid=fee_paid(request, year)
-        total=month_fee(request, year)
-        staff_list=Teacher.objects.for_tenant(this_tenant).all()
-        student_list=Student.objects.for_tenant(this_tenant).all()
-        staffs=staff_list.filter(dob__month=current_day.month,dob__day=current_day.day)
-        today=date.today()
-        try:
-            students_present=Attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
-        except:
-            students_present=0
-        try:
-            staffs_present=teacher_attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
-        except:
-            staffs_present=0
-        total_staffs=staff_list.count()
-        if (total_staffs != 0):
-            percent_staff=round(staffs_present/total_staffs*100)
-        else:
-            percent_staff=100
-        total_students=student_list.count()
-        if (total_students != 0):
-            percent_student=round(students_present/total_students*100)
-        else:
-            percent_student=100
+        students_present=Attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
     except:
-        paid=0
-        total=0
-        return redirect('genadmin:new_academic_year')
+        students_present=0
+    try:
+        staffs_present=teacher_attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
+    except:
+        staffs_present=0
+    total_staffs=staff_list.count()
+    if (total_staffs != 0):
+        percent_staff=round(staffs_present/total_staffs*100)
+    else:
+        percent_staff=100
+    total_students=student_list.count()
+    if (total_students != 0):
+        percent_student=round(students_present/total_students*100)
+    else:
+        percent_student=100
+    # except:
+    #     paid=0
+    #     total=0
+    #     try:
+    #         year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+    #         return render (request, 'error/500.html')
+    #     except:
+    #         return redirect('genadmin:new_academic_year')
     income_expense=yearly_pl(request)
     i_e_json = json.dumps(income_expense)
     return render (request, 'landing.html', {"paid":paid,"events":events,"staffs":staffs,"total":total, 'i_e':i_e_json, \

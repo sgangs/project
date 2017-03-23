@@ -6,7 +6,7 @@ $('.date').datepicker({
     autoclose: true,
     startDate: '-60d',
     // endDate: moment(),
-    endDate: '0d',
+    // endDate: '0d',
     format: 'dd/mm/yyyy',    
     });
 

@@ -40,23 +40,23 @@ def sales_due(request, type):
 
 @login_required
 def salesinvoice(request, type):
+	this_tenant=request.user.tenant
 	date=datetime.now()
-	warehouse=Warehouse.objects.for_tenant(request.user.tenant).get(default="Yes")
+	warehouse=Warehouse.objects.for_tenant(this_tenant).get(default="Yes")
 	warehousekey=warehouse.key
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
-		this_tenant=request.user.tenant
 		
 		#getting Customer Data
 		if (calltype == 'customer'):
 			customerkey = request.POST.get('customer_code')
-			response_data['name'] = Customer.objects.for_tenant(request.user.tenant).get(key__iexact=customerkey).name
+			response_data['name'] = Customer.objects.for_tenant(this_tenant).get(key__iexact=customerkey).name
 
 		#getting Warehouse Data
 		elif (calltype == 'warehouse'):
 			warehousekey = request.POST.get('warehouse_code')
-			response_data['name']=Warehouse.objects.for_tenant(request.user.tenant).get(key__iexact=warehousekey).address
+			response_data['name']=Warehouse.objects.for_tenant(this_tenant).get(key__iexact=warehousekey).address
 			#response_data['key'] = warehouse.key
 					
 		#getting item data
@@ -127,23 +127,6 @@ def salesinvoice(request, type):
 							free_quantity=int(data['itemFree'])
 							LineItem = invoice_new_line_item (Invoice, itemcode, subitemcode, item, unit.symbol,\
 										subitem, invoiceQuantity, free_quantity)
-							# LineItem = salesLineItem()
-							# LineItem.invoice_no = Invoice
-							# LineItem.key= itemcode
-							# LineItem.sub_key= subitemcode							
-							# LineItem.name=item.name
-							# LineItem.unit=unit.symbol
-							# LineItem.discount1=subitem.discount1
-							# LineItem.discount2=subitem.discount2
-							# LineItem.quantity=invoiceQuantity
-							# LineItem.free=int(data['itemFree'])
-							# LineItem.manufacturer=item.manufacturer.key
-							# LineItem.mrp=subitem.mrp
-							# LineItem.selling_price=subitem.selling_price
-							# LineItem.vat_type=item.vat_type
-							# LineItem.vat_percent=item.vat_percent							
-							# LineItem.save()
-							#This is used to calculated to COGS
 							cogs_value=cogs_value+item_cost
 							#This will help reduce the inventory
 							inventory=Inventory.objects.filter(warehouse=warehouse_object).get(item=subitem)							
@@ -332,18 +315,6 @@ def inventory_return(request):
 						#LineItem = creditNoteLineItem()
 						LineItem = note_new_line_item(credit_note, itemcode, subitemcode, item, unit.symbol,\
 								invoiceQuantity, subitem.selling_price, vat_type, vat_percent, inventory_type)
-						# LineItem.creditnote_no = credit_note												
-						# LineItem.key= itemcode
-						# LineItem.sub_key= subitemcode
-						# LineItem.name=item.name
-						# LineItem.unit=unit.symbol					
-						# LineItem.quantity=invoiceQuantity
-						# LineItem.selling_price=subitem.selling_price
-						# LineItem.vat_type=item.vat_type
-						# LineItem.vat_percent=item.vat_percent
-						# LineItem.inventory_type = inventory_type
-						# LineItem.save()
-						#This is used to calculated to COGS
 						item_cost=round((subitem.cost_price*invoiceQuantity),2)
 						if (inventory_type == "Waste"):
 							cogs_waste=cogs_waste+item_cost

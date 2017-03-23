@@ -22,7 +22,7 @@
 		<!-- Latest compiled and minified JavaScript for Bootstrap-->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-		<!--This ccs link is for the home icon-->
+		<!--This ccs link is for font awesome-->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
 
     <!--This is for modernizer-->
@@ -75,7 +75,7 @@
   				<div class="col-md-6" align="right">
   					<h4>
               <ul class="nav pull-right">
-                <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{request.user.first_name}} {{request.user.last_name}} <b class="caret"></b></a>
+                <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-street-view"></i> Welcome, {{request.user.first_name}} {{request.user.last_name}} <b class="caret"></b></a>
                   <ul class="dropdown-menu" style="background-color: #f2f5f7;">
                     <li><a href="{% url 'password_change' %}"><i class="fa fa-user"></i>  Change Password</a></li>
                     <li><a href="/help/support"><i class="fa fa-wrench"></i>  Contact Support</a></li>
@@ -187,8 +187,11 @@
       <ul class="HR">
         <li><a href="#" title="Nav"><span><i class="fa fa-pied-piper-alt"></i></span>HR</a>
           <ul>
-            <li><a href="{% url 'hr:new_leave_type' %}" title="Sub Nav">Create Leave Type</a></li>
-            <li><a href="#" title="Sub Nav">Link Leave to Staff</a></li>
+            <li><a href="{% url 'hr:new_staff_cadre' %}">Create Cadre Type</a></li>
+            <li><a href="{% url 'hr:new_leave_type' %}">Create Leave Type</a></li>
+            <li><a href="{% url 'hr:new_staff_cadre' %}">Link Cadre with Staff</a></li>
+            <li><a href="{% url 'hr:link_leave_type' %}">Link Leave with Cadre</a></li>
+            <li><a href="{% url 'hr:attendance_approval' %}">Approve Attendance</a></li>
             <!--{# <li><a href="{% url 'hr:new_teacher_attendance' %}" title="Sub Nav">Note Teacher Attendance</a></li> #}-->
           </ul>
         </li>
@@ -271,13 +274,14 @@
       <ul class="exam">
         <li><a href="#" title="Nav"><span><i class="fa fa-pencil-square-o"></i></span>Exam</a>
           <ul>
-            <li><a href="#" title="Sub Nav"> Choose Exam Format</a></li>
+            <li><a href="{% url 'eduadmin:new_exam_type' %}" title="Sub Nav"> Choose Exam Format</a></li>
             <li><a href="#" title="Sub Nav"> Create Term</a></li>
             <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add Data</a>
               <ul>
-                <li><a href="#" title="Sub Nav 2">Add New Exam</a></li>
-                <li><a href="#" title="Sub Nav 2">Prepare Subject Score Report</a></li>
+                <li><a href="{% url 'eduadmin:new_exam' %}" title="Sub Nav 2">Add New Exam</a></li>
+                <li><a href="{% url 'classadmin:new_exam_report' %}" title="Sub Nav 2">Prepare Report</a></li>
                 <li><a href="#" title="Sub Nav 2">Prepare Cocurricular Report</a></li>
+                <li></li>
                 <li><a href="#" title="Sub Nav 2">Prepare Final Report</a></li>
               </ul>
             </li>
@@ -285,8 +289,8 @@
               <div>
                 <ul>
                   <li><a href="#" title="Sub Nav 2">List of Exam</a></li>
-                  <li><a href="#" title="Sub Nav 2">Exam Analysis</a></li>
-                  <li><a href="#" title="Sub Nav 2">Student Report</a></li>
+                  <li><a href="{% url 'classadmin:exam_report_view' %}" title="Sub Nav 2">Exam Analysis</a></li>
+                  <li><a href="{% url 'classadmin:view_transcript' %}" title="Sub Nav 2">Student Transcript</a></li>
                 </ul>
               </div>
             </li>
@@ -454,8 +458,7 @@
               <ul>
                 <li><a href="#"><i class="fa fa-plus"></i> Add Data</a>
                   <ul>
-                    <li><a href="{% url 'fees:new_monthly_fee' %}">Monthly Fee Structure</a></li>
-                    <li><a href="{% url 'fees:new_yearly_fee' %}" >Yearly Fee Structure</a></li>
+                    <li><a href="{% url 'fees:new_generic_fee' %}">Fee Structure</a></li>
                     <li><a href="{% url 'fees:group_fee_linking' %}" >Link Class Group To Fees</a></li>
                     <li><a href="#">Student-Fee Linking</a></li>
                   </ul>
@@ -463,8 +466,7 @@
                 <li><a href="#" title="Sub Nav 2"><i class="fa fa-list"></i> Record Details</a>
                   <ul>
                     <li><a href="{% url 'fees:student_payment' %}" >Record Fee Payment</a></li>
-                    <li><a href="{% url 'fees:monthly_fee_view' %}" >View Monthly Fee List</a></li>
-                    <li><a href="{% url 'fees:yearly_fee_view' %}" >View Yearly Fee List</a></li>
+                    <li><a href="{% url 'fees:generic_fee_view' %}" >View Yearly Fee List</a></li>
                     <li><a href="{% url 'fees:student_payment_view' %}">View Student Fee Payment Details</a></li>
                   </ul>
                 </li>
