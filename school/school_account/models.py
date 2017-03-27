@@ -20,7 +20,6 @@ class accounting_period(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	start=models.DateField(db_index=True,auto_now=False)
 	end=models.DateField(db_index=True, auto_now=False)
-	#key=models.CharField(db_index=True, max_length=10)
 	current_period=models.BooleanField('Current Accounting Period?')
 	finalized=models.BooleanField(default=False)
 	#slug=models.SlugField(max_length=45)
@@ -30,12 +29,6 @@ class accounting_period(models.Model):
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
 
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item=self.tenant.key+" "+str(self.start)+" "+str(self.end)
-	# 		self.slug=slugify(item)
-	# 	super(accounting_period, self).save(*args, **kwargs)
-	
 	class Meta:
 		unique_together = (("start","end", "tenant"))
 		ordering = ('start',)
@@ -43,35 +36,6 @@ class accounting_period(models.Model):
 	def __str__(self):
 		return '%s-%s' % (self.start.year, self.end.year)
 		# return self.start
-
-#This creates an accounting period
-# class quarterly_accounting(models.Model):
-# 	start=models.DateField(db_index=True,auto_now=False)
-# 	end=models.DateField(db_index=True, auto_now=False)
-# 	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='quarterlyAccounting_accountingPeriod')
-# 	finalized=models.NullBooleanField()
-# 	slug=models.SlugField(max_length=45)
-# 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='quarterlyAccounting_account_user_tenant')
-# 	objects = TenantManager()
-	
-# 	#def get_absolute_url(self):
-# 	#	return reverse('master_detail', kwargs={'detail':self.slug})
-
-# 	def save(self, *args, **kwargs):
-# 		if not self.id:
-# 			item="qa "+self.tenant.key+" "+str(self.start)+" "+str(self.end)
-# 			self.slug=slugify(item)
-# 		super(accounting_period, self).save(*args, **kwargs)
-	
-# 	class Meta:
-# 		unique_together = (("start","end", "tenant"))
-# 		ordering = ('start',)
-
-# 	def __str__(self):
-# 		return '%s-%s' % (self.start.year, self.end.year)
-# 		# return self.start
-
-
 
 #This is a ledger group. here will be a general ledger. User can add ledger groups thereafter.
 class ledger_group(models.Model):
@@ -123,8 +87,6 @@ class Account(models.Model):
 	remarks=models.TextField(blank=True)
 	account_type=models.CharField('Account type', max_length=30,choices=account_type_general)
 	sub_account_type=models.CharField('Sub Account type', max_length=5,choices=sub_account_type_choices, blank=True, null=True)
-	#opening_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	#opening_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	current_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	slug=models.SlugField(max_length=40)
@@ -151,10 +113,16 @@ class Account(models.Model):
 class account_year(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	account=models.ForeignKey(Account,db_index=True, related_name='accountYear_account')
+	
 	opening_debit=models.DecimalField("Opening Debit Balance", max_digits=12, decimal_places=2, default=0)
 	opening_credit=models.DecimalField("Opening Credit Balance", max_digits=12, decimal_places=2, default=0)
+	
+	current_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	
 	closing_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	closing_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
 	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='accountYear_accountingPeriod')
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountYear_account_user_tenant')
 	objects = TenantManager()
@@ -173,12 +141,6 @@ class journal_group(models.Model):
 
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item=self.tenant.key+" "+self.name
-	# 		self.slug=slugify(item)
-	# 	super(journal_group, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("name", "tenant"))
@@ -234,9 +196,6 @@ class journal_entry(models.Model):
 	account=models.ForeignKey(Account,related_name='journalEntry_account')
 	transaction_type=models.CharField('Transaction type', max_length=6,choices=transaction_type)
 	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
-	#for every journal entry, store the value of the account at the end of the entry. Issue: Journal cannot be deleted/edited.
-	# this_debit=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
-	# this_credit =models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalEntry_account_user_tenant')
 	objects = TenantManager()
 	
@@ -260,15 +219,6 @@ class payment_mode(models.Model):
 	# slug=models.SlugField(max_length=32)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='paymentMode_account_user_tenant')
 	objects = TenantManager()
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item=self.tenant.key+" "+self.name
-	# 		self.slug=slugify(item)
-	# 	super(payment_mode, self).save(*args, **kwargs)
-
-	#def get_absolute_url(self):
-	#	return reverse('master_detail', kwargs={'detail':self.slug})
 
 	class Meta:
 		unique_together = (("payment_account", "name", "tenant"))

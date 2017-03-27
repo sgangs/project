@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.timezone import localtime
 
 from school_user.models import Tenant
-from school_account.models import Account, Journal, journal_entry, journal_group
+from school_account.models import Account, Journal, journal_entry, journal_group, accounting_period,account_year
 from school_teacher.models import Teacher
 from .models import *
 
@@ -71,7 +71,7 @@ def generate_salary_report(request, sent_for=""):
 
 
     for monthlysalary in monthlysalarydetails:
-        monthlysalarylist=monthly_salary_list.objects.filter(monthly_salary=monthlysalary)
+        monthlysalarylist=monthly_salary_list.objects.filter(monthly_salary=monthlysalary).all()
         for salary in monthlysalarylist:
             gross_salary+=salary.amount
             net_salary+=salary.amount
@@ -439,6 +439,7 @@ def salary_journal_entry(this_tenant, salary_lists,name, tz_aware_now, mode, gro
     journal.remarks="Salary for: "+name
     journal.tenant=this_tenant
     journal.save()
+    acct_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
     #Take care of journal entries related to salary (Monthly, yearly, employee & employer contributions)
     for item in salary_lists:    
         entry=journal_entry()
@@ -447,14 +448,16 @@ def salary_journal_entry(this_tenant, salary_lists,name, tz_aware_now, mode, gro
         entry.account=account
         if (item.list_type == "Monthly" or item.list_type=="Yearly"):
             entry.transaction_type="Debit"
-            account.current_debit=account.current_debit+item.amount
+            account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+            account_journal_year.current_debit=account_journal_year.current_debit+item.amount
+            # account.current_debit=account.current_debit+item.amount
         else:
             entry.transaction_type="Credit"
-            account.current_credit=account.current_credit+item.amount
+            account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+            account_journal_year.current_credit=account_journal_year.current_credit+item.amount
+        account_journal_year.save()
         account.save()
         entry.value=item.amount
-        # entry.this_debit=account.current_debit
-        # entry.this_credit=account.current_credit
         entry.tenant=this_tenant
         entry.save()
     i=1
@@ -465,21 +468,23 @@ def salary_journal_entry(this_tenant, salary_lists,name, tz_aware_now, mode, gro
         if (i==1):
             account=Account.objects.for_tenant(this_tenant).get(id=mode.payment_account.id)
             entry.transaction_type="Credit"
-            account.current_credit=account.current_credit+(gross - employee_stat)
-            # if ((account.current_credit - account.current_debit)>0):
-            #     transaction.rollback()
+            account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+            account_journal_year.current_credit=account_journal_year.current_credit+(gross - employee_stat)
+
+            # account.current_credit=account.current_credit+(gross - employee_stat)
             entry.value=(gross - employee_stat)            
         #Employer Liability Expense
         elif (i==2):
             accountid=basic_salary_rule.objects.get(tenant=this_tenant).employer_contribution_expense.id
             account=Account.objects.for_tenant(this_tenant).get(id=accountid)
             entry.transaction_type="Debit"
-            account.current_debit=account.current_debit+(employer_stat)
+            account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+            account_journal_year.current_debit=account_journal_year.current_debit+(employer_stat)
+            # account.current_debit=account.current_debit+(employer_stat)
             entry.value=(employer_stat)
         entry.account=account  
+        account_journal_year.save()
         account.save() 
-        # entry.this_debit=account.current_debit
-        # entry.this_credit=account.current_credit
         entry.tenant=this_tenant
         entry.save()
         i+=1

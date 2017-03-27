@@ -32,6 +32,7 @@ def base(request):
 
 @login_required
 #This function helps in getting list of students in school
+#We need to check who must have control on this
 def class_students_list(request):
 	extension='base.html'
 	from school_eduadmin.models import class_section

@@ -63,18 +63,3 @@ class User(AbstractUser):
 	tenant = models.ForeignKey(Tenant,default=2,related_name='user_tenant')
 	user_type=models.CharField(max_length=10,choices=user_type)
     #registered_on=models.DateTimeField(null=True, blank=True)
-
-    # def save(self, *args, **kwargs):
-    # 	if not self.id:
-    # 		data=self.tenant.key
-    # 		today=dt.date.today()
-    # 		length=len(data)+2
-    # 		today_string=today.strftime('%y')
-    # 		next_user_number='0001'
-    # 		last_user=type(self).objects.filter(tenant=self.tenant).filter(user_id__contains=today_string).order_by('user_id').last()
-    # 		if last_user:
-    # 			last_user_number=int(last_user.user_id[length:])
-    # 			next_user_number='{0:04d}'.format(last_user_number + 1)
-    # 		self.user_id=data + today_string + next_user_number 
-    # 		self.registered_on=timezone.now()
-    # 	super(User, self).save(*args, **kwargs)

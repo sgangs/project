@@ -12,7 +12,7 @@
 .ma-infinitypush-wrapper {
   background-color: #74A8E7;
   position: fixed;
-  width: 300px;
+  width: 320px;
   height: 100%;
   z-index: 9999;
 }
@@ -55,7 +55,7 @@
 .ma-infinitypush-wrapper .ma-infinitypush ul, .ma-infinitypush-wrapper .ma-infinitypush ol {
   background-color: #74A8E7;
   list-style-type: none;
-  width: 250px;
+  width: 300px;
   overflow-x: hidden;
 }
 .ma-infinitypush-wrapper .ma-infinitypush ul li, .ma-infinitypush-wrapper .ma-infinitypush ol li {

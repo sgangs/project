@@ -143,7 +143,7 @@ def journalentry(request):
 	date=datetime.now()	
 	this_tenant=request.user.tenant
 	grouplist=journal_group.objects.for_tenant(this_tenant).all()
-	accounts=Account.objects.for_tenant(this_tenant).values('name','key','current_debit','current_credit')
+	accounts=Account.objects.for_tenant(this_tenant).values('name','key')
 
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
@@ -166,6 +166,7 @@ def journalentry(request):
 					groupid = int(request.POST.get('groupid'))
 					journal.group= grouplist.get(id=groupid)
 					journal.save()
+					acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 				#saving the journal entries and linking them with foreign key to journal
 					for data in journal_data:
 						entry = journal_entry()
@@ -175,17 +176,17 @@ def journalentry(request):
 						accountkey=data['code']
 						trn_type=data['transaction_type']
 						account=Account.objects.for_tenant(this_tenant).get(key__iexact=accountkey)
+						account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
 						if (trn_type == "Debit"):
-							account.current_debit=account.current_debit+value
+							account_journal_year.current_debit=account_journal_year.current_debit+value
 						elif (trn_type == "Credit"):
-							account.current_credit=account.current_credit+value
+							account_journal_year.current_credit=account_journal_year.current_credit+value
 						else:
 							transaction.rollback()
 							raise IntegrityError
+						account_journal_year.save()
 						account.save()
 						entry.value=value
-						# entry.this_debit=account.current_debit
-						# entry.this_credit=account.current_credit
 						entry.account=account
 						entry.transaction_type=trn_type
 						entry.save()

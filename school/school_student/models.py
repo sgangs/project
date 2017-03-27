@@ -35,7 +35,7 @@ class Student(models.Model):
 	first_name=models.CharField(max_length=100)
 	last_name=models.CharField(max_length=100)
 	dob=models.DateField("Date of Birth", blank=True, null=True)
-	joining_date=models.DateField(blank=True, null=True)
+	# joining_date=models.DateField(blank=True, null=True)
 	key=models.CharField(db_index=True,max_length=32)
 	gender=models.CharField(max_length=1,choices=gender_list)
 	blood_group=models.CharField('Blood Group', max_length=3,choices=blood_list, blank=True, null=True)

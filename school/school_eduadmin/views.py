@@ -34,14 +34,12 @@ def base(request):
 @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def class_new(request):
 	extension="base.html"
-	#date=datetime.now()
 	this_tenant=request.user.tenant
 	group=class_group.objects.for_tenant(this_tenant)
 	class_teacher=Teacher.objects.for_tenant(this_tenant).filter(staff_type="Teacher").all()
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
-		#saving the class
 		if (calltype == 'classname'):
 			classname = request.POST.get('classname')
 			try:
@@ -85,32 +83,43 @@ def class_new(request):
 def eduadmin_new(request, input_type):
 	extension="base.html"
 	this_tenant=request.user.tenant
-	# if (input_type=="Syllabus"):
-	# 	importform=SyllabusForm
-	# 	name='eduadmin:class_list'
 	if (input_type=="Exam"):
 		year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
-		exam_type=exam_creation.objects.for_tenant(this_tenant).get(year=year).exam_type
-		if (exam_type == 'CCE'):
-			return render (request, 'error/403.html')
+		#You cannot create exam before selecting exam type
+		try:
+			exam_type=exam_creation.objects.for_tenant(this_tenant).get(year=year).exam_type
+			
+			if (not exam_type):
+				return redirect('eduadmin:new_exam_type')
+		except:
+			return redirect('eduadmin:new_exam_type')
+		#Get a view to create term. Then do a redirect to term.
+		try:
+			terms=term.objects.for_tenant(this_tenant).get(year=year)
+			if (not terms):
+				return render (request, 'error/403.html')
+		except:
+			return redirect('eduadmin:new_exam_type')
+		
 		importform=ExamForm
 		name='eduadmin:class_list'
+	
 	elif (input_type=="ClassTeacher"):
 		importform=ClassTeacherForm
 		name='eduadmin:class_list'
-	elif (input_type=="ClassStudent"):
-		importform=ClassStudentForm
-		name='eduadmin:class_list'
-		input_type="Student (one at a time) To Class"
+	
 	elif (input_type=="Subject Teacher"):
 		importform=SubjectTeacherForm
 		name='eduadmin:subject_teacher_list'
+	
 	elif (input_type=="Total Period"):
 		importform=TotalPeriodForm
 		name='eduadmin:class_list'
+	
 	elif (input_type=="Term"):
 		importform=TermForm
-		name='eduadmin:base'	
+		name='landing'	
+	
 	form=importform(tenant=this_tenant)
 	if (request.method == "POST"):
 		form = importform(request.POST, tenant=this_tenant)
@@ -143,50 +152,67 @@ def eduadmin_new(request, input_type):
 			else:
 				item.save()
 			return redirect(name)
-	#else:
-	#	form=importform(tenant=request.user.tenant)	
-	#return render(request, 'master/new.html',{'formset': formset, 'helper': helper, 'item': type})
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type, 'extension':extension})
 
 
+
 @login_required
-#This is used to add subject teachers - This view is not yet done.
+#This is used to add new syllabus. Corresponding front end yet to be done.
 @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
-def subject_teacher_new(request):
+def new_syllabus(request):
 	extension="base.html"
-	class_section_option=class_section.objects.for_tenant(request.user.tenant)
+	this_tenant=request.user.tenant
+	class_groups=class_group.objects.for_tenant(this_tenant).all()
+	subjects=Subject.objects.for_tenant(this_tenant).all()
 	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
-		response_data = {}
-		this_tenant=request.user.tenant
-		if (calltype == 'class_selection'):
-			class_name=request.POST.get('class_name')
-			classgroup=class_section.get_object_or_404(name=class_name).classgroup
-			subject_options=Syllabus.objects.for_tenant(request.user.tenant).filter(class_group=classgroup).subject
-			response_data['subjects'] = subject_options
-		elif (calltype == 'subject_selection'):
-			subject_name=request.POST.get('subject')
-			teachers=Teacher.objects.for_tenant(request.user.tenant).filter(staff_type="Teacher").all()
-			response_data['teachers']=teachers
-		#saving the class
-		elif (calltype == 'save'):
-			#class_name=request.POST.get('class_name')
-			#subject_name=request.POST.get('subject')
-			teacher_key=request.POST.get('teacher')
-			year=request.POST.get('year')
-			subjectTeacher=subject_teacher()
-			subjectTeacher.class_section=class_name
-			subjectTeacher.subject=subject_name
-			subjectTeacher.teacher=Teacher.objects.for_tenant(request.user.tenant).get(staff_type="Teacher",key=teacher_key)
-			subjectTeacher.year=year
-			subjectTeacher.save()
+		response_data=[]
+		syllabus_data = json.loads(request.POST.get('details'))
+		class_group_id = request.POST.get('class_group_id')
+		subject_id = request.POST.get('subject_id')
+		is_additional = request.POST.get('is_additional')
+		is_elective = request.POST.get('is_elective')
+		year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+		subject_selected = subjects.get(id=subject_id)
+		class_group_selected = class_groups.get(id=class_group_id)
+		if is_additional == 'false':
+			is_additional=False
+		else:
+			is_additional=True
+		if is_elective == 'false':
+			is_elective=False
+		else:
+			is_elective=True
+		try:
+			syllabus=Syllabus.objects.get(class_group=class_group_selected, subject=subject_selected, year=year)
+			if syllabus:
+				return HttpResponse(json.dumps("Data already exist"))
+		except:
+			pass
+		with transaction.atomic():
+			try:
+				syllabus_new=Syllabus()
+				syllabus_new.class_group=class_group_selected
+				syllabus_new.subject=subject_selected
+				syllabus_new.year=year
+				syllabus_new.is_additional=is_additional
+				syllabus_new.is_elective=is_elective
+				syllabus_new.tenant=this_tenant
+				syllabus_new.save()
+				for data in syllabus_data:
+					new_topic=syllabus_topic()
+					new_topic.syllabus=syllabus_new
+					new_topic.topic=data['topic']
+					new_topic.month=data['month']
+					new_topic.tenant=this_tenant
+					new_topic.save()
+			except:
+				transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-	return render (request, 'eduadmin/new_subjectteacher.html', {'classsection':class_section_option, 'extension':extension})
+	return render (request, 'eduadmin/new_syllabus.html', {'class_groups':class_groups,'subjects':subjects, 'extension':extension})
 
 @login_required
-#This is used to add students to class. Complex frontend. Not yet done.
 @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def class_student_add(request):
 	extension="base.html"
@@ -201,27 +227,26 @@ def class_student_add(request):
 			response_data=get_student_list(request,batch,class_sections)
 		if (calltype == 'save'):
 			with transaction.atomic():
-				# try:
-				class_selectedid=request.POST.get('class_selected')
-				class_selected=class_sections.get(id=class_selectedid)
-				year=int(request.POST.get('year'))
-				students_data = json.loads(request.POST.get('details'))
-				for data in students_data:
-					student_id=data['student_id']
-					roll_no=data['roll_no']
-					student=Student.objects.for_tenant(this_tenant).get(id=student_id)
-					student_add_fee(student, class_selected, year, this_tenant)
-					new_student=classstudent()
-					new_student.student=student
-					new_student.class_section=class_selected
-					new_student.roll_no=roll_no
-					new_student.year=year
-					new_student.is_promoted=False
-					new_student.tenant=this_tenant
-					new_student.save()
-				# except:
-				# 	transaction.rollback()
-		
+				try:
+					class_selectedid=request.POST.get('class_selected')
+					class_selected=class_sections.get(id=class_selectedid)
+					year=int(request.POST.get('year'))
+					students_data = json.loads(request.POST.get('details'))
+					for data in students_data:
+						student_id=data['student_id']
+						roll_no=data['roll_no']
+						student=Student.objects.for_tenant(this_tenant).get(id=student_id)
+						student_add_fee(student, class_selected, year, this_tenant)
+						new_student=classstudent()
+						new_student.student=student
+						new_student.class_section=class_selected
+						new_student.roll_no=roll_no
+						new_student.year=year
+						new_student.is_promoted=False
+						new_student.tenant=this_tenant
+						new_student.save()
+				except:
+					transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'eduadmin/class_studentadd.html', {'batch':batch,'classsection':class_sections, 'extension':extension})
@@ -269,24 +294,29 @@ def classdetail(request, detail):
 				for student in students_list:
 					response_data.append({'data_type':'Student','key':student.student.key, 'local_id': student.student.local_id,\
 						'first_name': student.student.first_name, 'last_name': student.student.last_name})
-				#This will help us get the class teacher
-				class_teacher=classteacher.objects.for_tenant(request.user.tenant).\
+			#This will help us get the class teacher
+				try:
+					class_teacher=classteacher.objects.for_tenant(request.user.tenant).\
 							get(class_section=class_selected,year=year)
-				response_data.append({'data_type':'Teacher','key':class_teacher.class_teacher.key, \
+					response_data.append({'data_type':'Teacher','key':class_teacher.class_teacher.key, \
 					'first_name': class_teacher.class_teacher.first_name, 'last_name': class_teacher.class_teacher.last_name})
+				except:
+					pass
 				#This will help us get the syllabus and the related subject teacher
-				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
+				try:
+					class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
 							filter(class_group=class_group,year=year).select_related("subject")
-				for syllabus in class_syllabus:
-					subject=syllabus.subject
+					for syllabus in class_syllabus:
+						subject=syllabus.subject
 					try:
 						teacher=subject_teacher.objects.for_tenant(request.user.tenant).\
 							filter(subject=subject, class_section=class_selected).get(year=year).select_related('teacher')
 						response_data.append({'data_type':'Syllabus','subject': syllabus.subject.name,\
-							'topics': syllabus.topics,'teacher':teacher.teacher.name})
+						'topics': syllabus.topics,'teacher':teacher.teacher.name})
 					except:
 						response_data.append({'data_type':'Syllabus','subject': syllabus.subject.name,'topics': syllabus.topics,})		
-					
+				except:
+					pass					
 			except:
 				pass
 		jsondata=json.dumps(response_data)
@@ -296,8 +326,6 @@ def classdetail(request, detail):
 
 
 @login_required
-#This function is used for viewing period. Adding period has to be done shortly.
-#Student view is separeted out. From student view, prents view will be created.
 @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
 def view_add_period(request, detail):
 	extension="base.html"
@@ -316,16 +344,17 @@ def view_add_period(request, detail):
 					class_teacher=classteacher.objects.for_tenant(request.user.tenant).\
 							get(class_section=class_selected,year=year)
 					response_data.append({'data_type':'Teacher','key':class_teacher.class_teacher.key, \
-							'first_name': class_teacher.class_teacher.first_name, 'last_name': class_teacher.class_teacher.last_name})
+							'first_name': class_teacher.class_teacher.first_name, \
+								'last_name': class_teacher.class_teacher.last_name})
 				except:
 					response_data.append({'data_type':'Error','message': 'Class Teacher not added to class'})
-				#This will help us get the syllabus
 				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
-							filter(class_group=class_group,year=year).select_related("subject")
+							filter(class_group=class_group,year=year).select_related("subject", "syllabus_topic")
+
 				for syllabus in class_syllabus:
 					subject=syllabus.subject
 					response_data.append({'data_type':'Syllabus','subject': subject.name,\
-							'topics': syllabus.topics, 'id': subject.id})
+							'topics': syllabus.syllabusTopic_syllabusSubject.topic, 'id': subject.id})
 				try:
 					periods=period.objects.filter(year=year,class_section=class_selected).select_related('subject', 'teacher')
 					for item in periods:
@@ -391,8 +420,8 @@ def promote_student(request):
 			from_year=int(request.POST.get('from_year'))
 			class_selected=class_section_options.get(id=from_classid)
 			students=classstudent.objects.filter(class_section=class_selected, year=from_year, is_promoted=False)
-			response_data=list(Student.objects.filter(classstudent_eduadmin_student_student__in=students).values('id','first_name',\
-					'last_name','key','local_id'))
+			response_data=list(Student.objects.filter(classstudent_eduadmin_student_student__in=students).\
+				values('id','first_name','last_name','key','local_id'))
 			#jsonify django querysets
 		elif (calltype == 'promote'):
 			from_class=request.POST.get('from_classid')
@@ -415,7 +444,6 @@ def promote_student(request):
 						student_id=data['student_id']
 						roll_no=data['roll_no']
 						is_promoted=data['is_promoted']
-						print(is_promoted)
 						#Doing a validation, if student is actually in class
 						if (is_promoted):
 							if (student_id in students_set):
@@ -449,6 +477,7 @@ def exam_type_new(request):
 	try:
 		exam=exam_creation.objects.for_tenant(current_tenant).get(year=year)
 		if (exam):
+			#Change it to you've already created exam type for the current academic year.
 			return render (request, 'error/403.html')
 	except:
 		pass
@@ -472,39 +501,62 @@ def exam_type_new(request):
 				pass
 			with transaction.atomic():
 				try:
-					if (exam_type == "CCE"):
+					if (exam_type == "CBSE"):
 						create_term("Term 1", year, current_tenant)
 						create_term("Term 2", year, current_tenant)
-						create_exam("Formative Assessments 1", "FA1", 1, year, current_tenant, 0.1,"Term 1")
-						create_exam("Formative Assessments 2", "FA2", 2, year, current_tenant, 0.1,"Term 1")
-						create_exam("Summative Assessments 1", "SA1", 3, year, current_tenant, 0.3,"Term 1")
-						create_exam("Formative Assessments 3", "FA3", 4, year, current_tenant, 0.1,"Term 2")
-						create_exam("Formative Assessments 4", "FA4", 5, year, current_tenant, 0.1,"Term 2")						
-						create_exam("Summative Assessments 2", "SA2", 6, year, current_tenant, 0.3,"Term 2")
+						upto_5=class_group.objects.for_tenant(current_tenant).filter(standard__in=[-5,-4,-3,-2,-1,1,2,3,4,5])
+						class_6_8=class_group.objects.for_tenant(current_tenant).filter(standard__in=[6,7,8])
+						class_9_12=class_group.objects.for_tenant(current_tenant).filter(standard__in=[9,10,11,12])
+						#Upto Class 1-5
+						#Indtead of writing upto 5, just insert the queryset.
+						create_exam("Formative Assessments 1", "FA1", 1, year, current_tenant, "Term 1", "CBSE", upto_5, 10,)
+						create_exam("Formative Assessments 2", "FA2", 2, year, current_tenant, "Term 1", "CBSE", upto_5, 10,)
+						create_exam("Summative Assessments 1", "SA1", 3, year, current_tenant, "Term 1", "CBSE", upto_5, 30,)
+						create_exam("Formative Assessments 3", "FA3", 4, year, current_tenant, "Term 2", "CBSE", upto_5, 10,)
+						create_exam("Formative Assessments 4", "FA4", 5, year, current_tenant, "Term 2", "CBSE", upto_5, 10,)						
+						create_exam("Summative Assessments 2", "SA2", 6, year, current_tenant, "Term 2", "CBSE", upto_5, 30,)
+						#Class 6-8
+						create_exam("Periodic Test 1", "PT1", 1, year, current_tenant, "Term 1", "CBSE",class_6_8, 10,)
+						create_exam("Note Book 1", "NB1", 2, year, current_tenant, "Term 1", "CBSE",class_6_8, 5,)
+						create_exam("Subject Enrichment 2", "SE1", 3, year, current_tenant, "Term 1", "CBSE",class_6_8, 5,)
+						create_exam("Half Yearly Exam", "HYE", 4, year, current_tenant, "Term 1", "CBSE",class_6_8, 80,)
+						create_exam("Periodic Test 2", "PT2", 5, year, current_tenant, "Term 2", "CBSE",class_6_8, 10,)
+						create_exam("Note Book 2", "NB2", 6, year, current_tenant, "Term 2", "CBSE",class_6_8, 5,)
+						create_exam("Subject Enrichment 2", "SE2", 7, year, current_tenant, "Term 2", "CBSE",class_6_8, 5,)
+						create_exam("Yearly Exam", "YE", 8, year, current_tenant, "Term 2", "CBSE",class_6_8, 80,)
+						#Class 9-10
+						create_exam("Periodic Test", "PT", 1, year, current_tenant,"Term 1", "CBSE", class_9_12, 10,)
+						create_exam("Note Book", "NB", 2, year, current_tenant,"Term 1", "CBSE", class_9_12, 5,)
+						create_exam("Subject Enrichment", "SE", 3, year, current_tenant,"Term 1", "CBSE", class_9_12, 5,)
+						create_exam("Annual Exam", "AE", 4, year, current_tenant,"Term 1", "CBSE", class_9_12, 80,)
+
+						grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
 						if (count == 0):
-							create_grade_table('S',1, 100, 91,"A1", 10, current_tenant)
-							create_grade_table('S',2, 90, 81,"A2", 9, current_tenant)
-							create_grade_table('S',3, 80, 71,"B1", 8, current_tenant)
-							create_grade_table('S',4, 70, 61,"B2", 7, current_tenant)
-							create_grade_table('S',5, 60, 51,"C1", 6, current_tenant)
-							create_grade_table('S',6, 50, 41,"C2", 5, current_tenant)
-							create_grade_table('S',7, 40, 33,"D", 4, current_tenant)
-							create_grade_table('S',8, 32, 21,"E1", 0, current_tenant)
-							create_grade_table('S',9, 20, 0,"E2", 0, current_tenant)
-							create_grade_table('C',1, 100, 81,"A+", 5, current_tenant)
-							create_grade_table('C',2, 80, 61,"A", 4, current_tenant)
-							create_grade_table('C',3, 60, 41,"B+", 3, current_tenant)
-							create_grade_table('C',4, 40, 21,"B", 2, current_tenant)
-							create_grade_table('C',5, 20, 0,"C", 1, current_tenant)						
+							create_grade_table(grade_created, 1, 100, 91,"A1", 10, current_tenant)
+							create_grade_table(grade_created, 2, 90, 81,"A2", 9, current_tenant)
+							create_grade_table(grade_created, 3, 80, 71,"B1", 8, current_tenant)
+							create_grade_table(grade_created, 4, 70, 61,"B2", 7, current_tenant)
+							create_grade_table(grade_created, 5, 60, 51,"C1", 6, current_tenant)
+							create_grade_table(grade_created, 6, 50, 41,"C2", 5, current_tenant)
+							create_grade_table(grade_created, 7, 40, 33,"D", 4, current_tenant)
+							create_grade_table(grade_created, 8, 32, 21,"E1", 0, current_tenant)
+							create_grade_table(grade_created, 9, 20, 0,"E2", 0, current_tenant)
+							# create_grade_table('C',1, 100, 81,"A+", 5, current_tenant)
+							# create_grade_table('C',2, 80, 61,"A", 4, current_tenant)
+							# create_grade_table('C',3, 60, 41,"B+", 3, current_tenant)
+							# create_grade_table('C',4, 40, 21,"B", 2, current_tenant)
+							# create_grade_table('C',5, 20, 0,"C", 1, current_tenant)
+
 					elif (exam_type == "MG"):
+						grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
 						if (count == 0):
-							create_grade_table('S',1, 100, 100,"A+", 10, current_tenant)
-							create_grade_table('S',2, 99, 90,"A", 9, current_tenant)
-							create_grade_table('S',3, 89, 80,"B", 8, current_tenant)
-							create_grade_table('S',4, 79, 70,"C", 7, current_tenant)
-							create_grade_table('S',5, 69, 60,"D", 6, current_tenant)
-							create_grade_table('S',6, 59, 40,"E", 5, current_tenant)
-							create_grade_table('S',7, 39, 0,"F", 4, current_tenant)
+							create_grade_table(grade_created, 1, 100, 100,"A+", 10, current_tenant)
+							create_grade_table(grade_created, 2, 99, 90,"A", 9, current_tenant)
+							create_grade_table(grade_created, 3, 89, 80,"B", 8, current_tenant)
+							create_grade_table(grade_created, 4, 79, 70,"C", 7, current_tenant)
+							create_grade_table(grade_created, 5, 69, 60,"D", 6, current_tenant)
+							create_grade_table(grade_created, 6, 59, 40,"E", 5, current_tenant)
+							create_grade_table(grade_created, 7, 39, 0,"F", 4, current_tenant)
 					item.save()
 				except:
 					transaction.rollback()
@@ -564,8 +616,8 @@ def period_free_teachers(request):
 		period_teachers=period.objects.for_tenant(this_tenant).filter(year=year, day=day_selected, period=period_selected).\
 					select_related('teacher')
 		excluded_teachers=Teacher.objects.filter(period_eduadmin_teacher_teacher__in=period_teachers).all()
-		free_teachers=list(Teacher.objects.for_tenant(this_tenant).filter(staff_type="Teacher").exclude(teacher__in=excluded_teachers).\
-					values('id','local_id','first_name','last_name'))
+		free_teachers=list(Teacher.objects.for_tenant(this_tenant).filter(staff_type="Teacher").\
+						exclude(teacher__in=excluded_teachers).values('id','local_id','first_name','last_name'))
 		return HttpResponse(json.dumps(free_teachers))
 	return render (request, 'eduadmin/view_grade_table.html', {'periods':totalperiod})
 
@@ -575,7 +627,7 @@ def view_exam_list(request):
 	extension="base.html"
 	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
 	terms=Term.objects.for_tenant(this_tenant).filter(is_active=True, year=year)
-	exams=Exam.objects.for_tenant(this_tenant).filter(is_active=True, year=year)
+	exams=Exam.objects.for_tenant(this_tenant).filter(year=year)
 	return render (request, 'eduadmin/view_exam_list.html', {'terms':terms, 'exams':exams, 'extension':extension})
 
 @login_required
@@ -584,5 +636,5 @@ def publish_exam(request):
 	this_tenant=request.user.tenant
 	extension="base.html"
 	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
-	exams=Exam.objects.for_tenant(this_tenant).filter(is_active=True, year=year, is_published=False)
+	exams=Exam.objects.for_tenant(this_tenant).filter(year=year, is_published=False)
 	return render (request, 'eduadmin/publish_exam.html', {'exams':exams, 'extension':extension})

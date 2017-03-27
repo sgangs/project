@@ -1,0 +1,89 @@
+{% extends extension %}
+
+{%block title%}
+<title>Grade Table Creation</title>
+
+{% endblock %}
+
+{% block content%}
+	
+<h3> Syllabus</h3>
+<h1></h1>
+
+
+<div class="row">
+	<div class="form-group col-xs-6 col-md-6">
+		<label class="control-label">Select Class Group</label>
+		<select class='form-control select class_group'>
+			<option disabled selected hidden style='display: none' value>Select Class Group</option>
+			{% for i in class_groups %}
+      		<option data-id="{{i.id}}">{{i.name}}</option>
+      		{% endfor %}
+    	</select>		
+	</div>
+
+	<div class="form-group col-xs-6 col-md-6">
+		<label class="control-label">Select Subject</label>
+		<select class='form-control select subject'>
+			<option disabled selected hidden style='display: none' value>Select Subject</option>
+			{% for i in subjects %}
+      		<option data-id="{{i.id}}">{{i.name}}</option>
+      		{% endfor %}
+    	</select>		
+	</div>
+
+	<!-- <div class="form-group col-xs-4 col-md-4 hint1">
+		<label class="control-label">Help!</label>
+		<p></p>
+		<p>Click here to get hints</p>
+	</div> -->
+</div>
+
+<!-- <div class="row">
+	<div class="form-group col-xs-6 col-md-6">
+		<label class="control-label"> <input type="checkbox" class="additional"> Is This An Aditional Subject?</label> <p>(Additional Subject will not be calculated in total)</p>
+		
+	</div>
+
+	<div class="form-group col-xs-6 col-md-6">
+		<label class="control-label"><input type="checkbox" class="elective"> Is This An Elective Subject? </label> <p>(For elective subject you need to choose which students will opt the elective)</p>		
+	</div>
+
+</div> -->
+
+
+<div class="table-responsive">	
+	<table id="student_table" class="table table-striped table-bordered">
+		<thead class="bg-primary">
+	  		<tr>
+	  			<th style="text-align: center" class="header" ></th>
+	  			<th style="text-align: center" class="header" >Topic</th>
+	  			<th style="text-align: center" class="header" >Expected To Be Completed in Month</th>	  			
+	    	</tr>
+		</thead>
+		<tbody>
+			<tr class='data'>
+				<td><input type='checkbox' class='case'/></td>
+	    		<td><input style='text-align: center' type="text" class="form-control"></td>
+	    		<td><input style='text-align: center' type="text" class="form-control"></td>	    		
+	    	</tr>
+		</tbody>
+	</table>
+</div>
+<button type="button" class='delete btn btn-danger btn-xs'>- Delete</button>
+<button type="button" class='addmore btn btn-success btn-xs'>+ Add Row</button>
+<h1></h1>
+<button type="button" class='submit btn btn-primary btn-xs'>Submit</button>
+<!-- <button type="button" class='reset btn btn-primary btn-xs'>Reset</button> -->
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+{% load static from staticfiles %}
+<script src="{% static 'eduadmin/new_syllabus.js' %}"></script>
+
+<script>
+	csrf_token='{{csrf_token}}';		
+</script>
+{% endblock %}

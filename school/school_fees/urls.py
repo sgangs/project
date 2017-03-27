@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^feepaymentmonthwise/$', views.fee_payment_monthwise, name='fee_payment_monthwise'),
     url(r'^studentfeeedit/$', views.student_fee_structure, name='student_fee_structure'),
     url(r'^feeslicingdicing/$', views.fee_collection_graph, name='fee_report'),
+    url(r'^feedefaulter/$', views.fee_defaulter, name='fee_defaulter'),
     url(r'^studentfeepaymentview/$', views.student_payment, {'input_type': 'View'}, name='student_payment_view'),
     # url(r'^printfee/$', views.print_fee_structure, name='student_fee_print'),
     #url(r'^(?P<detail>[-\S]+)/$',views.purchase_detail, {'type': 'Detail'}, name='invoice_detail'),

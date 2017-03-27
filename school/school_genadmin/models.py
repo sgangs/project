@@ -17,7 +17,7 @@ class TenantManager(models.Manager):
 class Subject(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField("Subject Name", blank=True, max_length=20)
-	slug=models.SlugField(max_length=50)
+	# slug=models.SlugField(max_length=50)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='subject_genadmin_user_tenant')
 	objects=TenantManager()
 	
@@ -218,21 +218,15 @@ class annual_holiday_rules(models.Model):
 	def __str__(self):
 		return '%s' % (self.ttile)
 
-#Notice Board. Should the message be deleted?
+#Notice Board. How to run a cron to auto delete these after show_until?
 class notice_board(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	title=models.TextField()
+	title=models.CharField(max_length=100)
 	details=models.TextField()
-	show_from=models.DateField()
-	show_until=models.DateField(blank=True)
+	show_from=models.DateField("Date")
+	show_until=models.DateField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='noticeBoard_eduadmin_user_tenant')
 	objects=TenantManager()
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item="pe"+""+self.tenant.key+" "+str(self.day)+" "+str(self.period)+" "+str(self.year)
-	# 		self.slug=slugify(item)
-	# 	super(period, self).save(*args, **kwargs)
 
 	class Meta:
 		# unique_together = (("day","period","year", "tenant"))
@@ -277,4 +271,3 @@ class notice_board(models.Model):
 		
 # 	def __str__(self):
 # 		return self.name
-

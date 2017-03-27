@@ -61,7 +61,7 @@ def create_term(name, year, tenant):
     term_new.tenant=tenant
     term_new.save()
 
-def create_exam(name, key, sl_no, year, tenant, weightage=1, term_name=""):
+def create_exam(name, key, sl_no, year, tenant, term_name, exam_type, class_group=[], weightage=100):
     exam_new=Exam()
     exam_new.name=name
     if (term_name!= ""):

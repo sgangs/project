@@ -5,9 +5,10 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from school_account.models import Account
 from django.http import HttpResponse
+
 from school_hr.models import staff_cadre
 from school_genadmin.models import academic_year  
-from school_account.models import payment_mode
+from school_account.models import payment_mode, accounting_period, account_year
 from .models import *
 from .create_salary import *
 from .link_salary import *
@@ -249,7 +250,9 @@ def pay_staff(request):
 			modeid = request.POST.get('payment_mode')
 			mode=payment_mode.objects.for_tenant(this_tenant).get(id=modeid)	
 			account=Account.objects.for_tenant(this_tenant).get(id=mode.payment_account.id)
-			response_data=account.current_debit - account.current_credit #To get the total balance available
+			acct_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+			acct_year=account_year,objects.for_tenant(this_tenant).get(account=account, accounting_period = acct_period)
+			response_data=acct_year.current_debit - acct_year.current_credit #To get the total balance available
 		else:
 			payments = json.loads(request.POST.get('details'))
 			modeid = request.POST.get('payment_mode')

@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^viewtranscript/$', views.generate_transcript, name='view_transcript'),
     # url(r'^studentremark/$', views.write_remark, name='student_remark'),
     url(r'^studentlist/$', views.class_students_list, name='student_list'),
+    #This student attendance view has to be changed urgently.
     url(r'^studentattendance/$', views.view_student_attendance, name='student_attendance'),
     #url(r'^classdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
     #url(r'^calender/$', views.calender, name='calender'),

@@ -51,6 +51,10 @@ def genadmin_new(request, input_type):
 		importform = BatchForm
 		name='landing'
 		input_type="Student Batch"
+	elif (input_type == "Notice"):
+		importform = NoticeForm
+		name='landing'
+	
 	# elif (input_type == "Pass"):
 	# 	importform = GatePassForm
 	# 	name='genad,in:gate_pass_list'
@@ -215,6 +219,8 @@ def notice_event_delete(request, calltype):
 	elif (calltype == 'EVent'):
 		events=annual_calender.objects.for_tenant(this_tenant)
 		return render (request, 'genadmin/event_list.html')
+
+
 
 #Frontend yet to be designed
 @login_required

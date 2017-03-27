@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^newclassgroup/$', views.genadmin_new, {'input_type': 'Class Group'}, name='new_class_group'),
     url(r'^newhouse/$', views.genadmin_new, {'input_type': 'House'}, name='new_house'),
     url(r'^newbatch/$', views.genadmin_new, {'input_type': 'Batch'}, name='new_batch'),
+    url(r'^newnotice/$', views.genadmin_new, {'input_type': 'Notice'}, name='new_notice'),
     url(r'^calendar/$', views.calendar, name='calendar'),
     url(r'^subjectlist/$', views.master_list, {'input_type': 'Subject'}, name='subject_list'),
     url(r'^classgrouplist/$', views.master_list, {'input_type': 'Class Group'}, name='class_group_list'),

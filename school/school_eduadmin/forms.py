@@ -129,7 +129,7 @@ class ExamForm(forms.ModelForm):
 
 	class Meta:
 		model=Exam
-		fields = ('name', 'term', 'total', 'weightage','is_active')
+		fields = ('name', 'term', 'total', 'weightage')
 	def clean(self):
 		cd= super(ExamForm, self).clean()
 		unique_name=cd.get('name')
@@ -261,7 +261,7 @@ class TermForm(forms.ModelForm):
 
 	class Meta:
 		model=Term
-		fields =('name', 'number', )
+		fields =('name', 'number', 'year')
 	def clean(self):
 		cd= super(TermForm, self).clean()
 		unique_name=cd.get('name')

@@ -19,9 +19,9 @@ class class_section(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField("Class Name with section", db_index=True,blank=True, max_length=15)
 	room=models.CharField("Room name/no.",blank=True, max_length=10)
-	classgroup=models.ForeignKey(class_group,db_index=True,related_name='classSection_classadmin_classGroup_genadmin')
+	classgroup=models.ForeignKey(class_group,db_index=True,related_name='classSection_eduadmin_classGroup_genadmin')
 	slug=models.SlugField(max_length=40)
-	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classsection_classadmin_user_tenant')
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classsection_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	def get_absolute_url(self):
@@ -81,18 +81,11 @@ class classstudent(models.Model):
 	student=models.ForeignKey(Student,db_index=True,related_name='classstudent_eduadmin_student_student')
 	year=models.PositiveSmallIntegerField(db_index=True,default=datetime.now().year)
 	is_promoted=models.BooleanField(default=False)
-	#slug=models.SlugField(max_length=40)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='classstudent_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item="cls"+" "+self.tenant.key+" "+self.student.key+" "+str(self.year)
-	# 		self.slug=slugify(item)
-	# 	super(classstudent, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("class_section","student","year", "tenant"), ("class_section", "roll_no","year", "tenant"))
@@ -102,7 +95,7 @@ class classstudent(models.Model):
 		return '%s %s - %s' % (self.class_section, self.student, self.year)
 
 
-exam_type=(('CCE','CCE'),
+exam_type=(('CBSE','CBSE'),
 		('M','Marks Only'),
 		('MG','Marks And Grades'))
 
@@ -128,23 +121,16 @@ class exam_creation(models.Model):
 class Term(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(max_length=15)
-	number=models.PositiveSmallIntegerField("Term Number",default=1)
-	year=models.PositiveSmallIntegerField("Academic Year",db_index=True,default=2017)
-	# slug=models.SlugField(max_length=45)
+	number=models.PositiveSmallIntegerField("Term Number")
+	year=models.PositiveSmallIntegerField("Academic Year",db_index=True)
 	weightage=models.PositiveSmallIntegerField("Term Weightage",default=1)
+	total=models.PositiveSmallIntegerField("Term Total",default=100)
 	is_active=models.BooleanField("Is this Term active", default=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='term_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		self.key=self.name+" "+str(self.year)
-	# 		item="exm"+" "+self.tenant.key+" "+self.key
-	# 		self.slug=slugify(item)
-	# 	super(Exam, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("is_active","name", "tenant"))
@@ -157,10 +143,9 @@ class Term(models.Model):
 #This is for the syllabus class group wise. 
 class Syllabus(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	class_group=models.ForeignKey(class_group,db_index=True,related_name='syllabusSubject_eduadmin_classGroup_genadmin')
-	subject=models.ForeignKey(Subject,db_index=True,related_name='syllabusSubject_eduadmin_subject_genadmin')
+	class_group=models.ForeignKey(class_group,db_index=True,related_name='syllabus_eduadmin_classGroup_genadmin')
+	subject=models.ForeignKey(Subject,db_index=True,related_name='syllabus_eduadmin_subject_genadmin')
 	year=models.PositiveSmallIntegerField(db_index=True)
-	term=models.ForeignKey(Term,blank=True, null=True, related_name='syllabusSubject_term')
 	weightage=models.PositiveSmallIntegerField("Subject Weightage",default=1)
 	#Additional subjects wont have any effect on final score
 	is_additional=models.BooleanField('Is This Additional (Wont effect total calculation in exam)?',default=False) 
@@ -171,26 +156,19 @@ class Syllabus(models.Model):
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		self.key=self.class_group.name+" "+self.subject.name+" "+str(self.year)
-	# 		# item="syl"+" "+self.tenant.key+" "+self.key
-	# 		# self.slug=slugify(item)
-	# 	super(Syllabus, self).save(*args, **kwargs)
-
 	class Meta:
-		# unique_together = (("class_group", "subject", "year","tenant"))
+		unique_together = (("class_group", "subject", "year","tenant"))
 		# unique_together = (("key", "term","tenant"))
 		ordering = ('class_group','id')
 		
-	def __str__(self):
-		return self.key
+	# def __str__(self):
+	# 	return self.key
 
 #This is for the syllabus class group wise. 
 class syllabus_topic(models.Model):
-	syllabus=models.ForeignKey(Subject,db_index=True,related_name='syllabusTopic_syllabusSubject')
+	syllabus=models.ForeignKey(Syllabus,db_index=True,related_name='syllabusTopic_syllabusSubject')
 	topic=models.TextField()
-	month=models.PositiveSmallIntegerField(db_index=True) #Expected month whe this will be studied
+	month=models.TextField() #Expected month whe this will be studied
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='syllabusTopic_eduadmin_user_tenant')
 	objects=TenantManager()
 
@@ -202,30 +180,42 @@ grade_choices=(('S','Scholastic'),
 #This is the list of subjects to be taught in school.
 class grade_table(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	# name=models.CharField("Subject Name", blank=True, max_length=20)
 	grade_type=models.CharField("Type of grade?",max_length=1,choices=grade_choices)
-	sl_no=models.PositiveSmallIntegerField()
-	min_mark=models.PositiveSmallIntegerField()
-	max_mark=models.PositiveSmallIntegerField()
-	grade=models.CharField(max_length=4)
-	grade_point=models.DecimalField(max_digits=4, decimal_places=2)
-	tenant=models.ForeignKey(Tenant,db_index=True,related_name='gradeTable_genadmin_user_tenant')
+	table_name=models.CharField("Table Name",max_length=20,choices=grade_choices)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='gradeTable_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 	
 	class Meta:
-		# unique_together = (("grade_type", "tenant"))
-		ordering = ('tenant','sl_no')
+		unique_together = (("table_name", "tenant"))
+		# ordering = ('tenant','sl_no')
 		
 	def __str__(self):
 		return self.name
 
+class grade_item(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	grade_table=models.ForeignKey(grade_table,db_index=True,related_name='gradeItem_gradeTable')
+	sl_no=models.PositiveSmallIntegerField()
+	min_mark=models.PositiveSmallIntegerField()
+	max_mark=models.PositiveSmallIntegerField()
+	grade=models.CharField(max_length=4)
+	grade_point=models.DecimalField(max_digits=4, decimal_places=2)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='gradeItem_eduadmin_user_tenant')
+	objects=TenantManager()
+
+	class Meta:
+		# unique_together = (("grade_type", "tenant"))
+		ordering = ('tenant','sl_no')
+
+
 class Exam(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True,max_length=40)
-	term=models.ForeignKey(Term,blank=True, null=True, related_name='exam_term')
+	term=models.ForeignKey(Term, related_name='exam_term')
+	classgroup=models.ManyToManyField(class_group,db_index=True,related_name='exam_eduadmin_classGroup_genadmin')
 	key=models.CharField("Short Form",max_length=20)
 	total=models.PositiveSmallIntegerField()
 	year=models.PositiveSmallIntegerField(db_index=True)
@@ -233,10 +223,10 @@ class Exam(models.Model):
 	period_from=models.DateField("Exam Class Starts", null=True, blank=True)
 	period_to=models.DateField("Exam Class Ends", null=True, blank=True)
 	is_published=models.BooleanField(default=False)
-	is_active=models.BooleanField(default=True)
+	# is_active=models.BooleanField(default=True)
 	weightage=models.DecimalField("Exam Weightage",max_digits=4, decimal_places=2, default=1)
 	serial_no=models.PositiveSmallIntegerField()
-	tenant=models.ForeignKey(Tenant,db_index=True,related_name='exam_classadmin_user_tenant')
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='exam_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
@@ -256,18 +246,11 @@ class student_house(models.Model):
 	house=models.ForeignKey(House,db_index=True,related_name='studentHouse_eduadmin_genadmin_house')
 	student=models.ForeignKey(Student,db_index=True,related_name='studentHouse_eduadmin_student_student')
 	year=models.PositiveSmallIntegerField(default=datetime.now().year)
-	# slug=models.SlugField(max_length=65)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='studentHouse_eduadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	# def save(self, *args, **kwargs):
-	# 	if not self.id:
-	# 		item="sho"+""+self.tenant.key+" "+self.student.key+" "+self.house.name+" "+self.year
-	# 		self.slug=slugify(item)
-	# 	super(classstudent, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("house","student","year", "tenant"))
@@ -285,10 +268,6 @@ class total_period(models.Model):
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	#class Meta:
-		#unique_together = ("tenant")
-		# ordering = ('name',)
-		
 	def __str__(self):
 		return self.number_periods
 

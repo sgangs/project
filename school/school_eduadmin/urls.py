@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     url(r'^base/$', views.base, name='base'),
     url(r'^newclass/$', views.class_new, name='new_class'),
-    url(r'^newsyllabus/$', views.eduadmin_new, {'input_type': 'Syllabus'}, name='new_syllabus'),
+    url(r'^newsyllabus/$', views.new_syllabus, name='new_syllabus'),
     url(r'^newexam/$', views.eduadmin_new, {'input_type': 'Exam'}, name='new_exam'),
     url(r'^newclassteacher/$', views.eduadmin_new, {'input_type': 'ClassTeacher'}, name='new_classteacher'),
     url(r'^newsubjectteacher/$', views.eduadmin_new, {'input_type': 'Subject Teacher'}, name='new_subject_teacher'),

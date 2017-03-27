@@ -6,9 +6,13 @@
 {% endblock %}
 
 {% block content%}
-	
-<h3>Student Fee Payment Monthwise</h3>
+
+{% if calltype %}
+	<h3>Student Fee Pending Monthwise</h3>
+{% else %}
+	<h3>Student Fee Payment Monthwise</h3>
 <h1></h1>
+{% endif %}
 <div class="row">
 	<div class="form-group col-xs-4 col-md-4 classdiv">
 	<label class="control-label">Select Class</label>

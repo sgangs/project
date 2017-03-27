@@ -21,7 +21,7 @@ from reportlab.graphics.shapes import Line
 
 from school.settings.base import STATIC_ROOT
 from school_user.models import Tenant
-from school_account.models import Account, Journal, journal_entry, journal_group
+from school_account.models import Account, Journal, journal_entry, journal_group, account_year, accounting_period
 from school_eduadmin.models import class_section, classstudent
 # from school_fees.models import student_fee, student_fee_payment
 from school_student.models import Student
@@ -207,6 +207,7 @@ def new_journal_entry(account, amount, this_tenant,name,tz_aware_now):
     journal.tenant=this_tenant
     journal.save()
     account=account
+    acct_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
     i=1
     while (i<3):
         entry=journal_entry()
@@ -214,18 +215,20 @@ def new_journal_entry(account, amount, this_tenant,name,tz_aware_now):
         if (i==1):
             entry.account=account
             entry.transaction_type="Credit"
-            account.current_credit=account.current_credit+amount
+            account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+            account_journal_year.current_credit=account_journal_year.current_credit+amount
+            account_journal_year.save()
             account.save()
         else:
             account=Account.objects.for_tenant(this_tenant).get(key='cash')
             entry.account=account
-            account.current_debit=account.current_debit+amount
+            account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+            account_journal_year.current_debit=account_journal_year.current_debit+amount
+            account_journal_year.save()
             account.save()
             entry.transaction_type="Debit"
         entry.value=amount
         entry.tenant=this_tenant
-        # entry.this_debit=account.current_debit
-        # entry.this_credit=account.current_credit
         entry.save()
         i+=1
 

@@ -19,7 +19,7 @@ def get_subject_data(request, called_for, classes):
     response_data=[]
     try:
         class_group=class_selected.classgroup
-        subjects=Syllabus.objects.filter(class_group=class_group, year=year).select_related("subject")
+        subjects=Syllabus.objects.filter(class_group=class_group, year=year, is_elective=False).select_related("subject")
         for subject in subjects:
             response_data.append({'data_type':'Subject','id':subject.subject.id,'name':subject.subject.name})
         return response_data
@@ -102,36 +102,7 @@ def get_attendance_data(request):
     except:
         pass
 
-# def get_exam_report(request, called_for, classes ):
-#     classid=int(request.POST.get('classid'))
-#     examid=int(request.POST.get('examid'))
-#     subjectid=int(request.POST.get('subjectid'))
-#     exam=Exam.objects.for_tenant(request.user.tenant).get(id__exact=examid)
-#     class_selected=classes.get(id__exact=classid)
-#     subject=Subject.objects.get(id=subjectid)
-#     exam_report_details=exam_report.objects.filter(exam=exam, class_section=class_selected, subject=subject).\
-#                         select_related('student').all()
-#     average=exam_report_details.aggregate(Avg('final_score'))
-#     average_external=exam_report_details.aggregate(Avg('external_score'))
-#     try:
-#         average=round(average['final_score__avg'],2)
-#         response_data=[]
-#         if (average_external['external_score__avg'] != None):
-#             for report in exam_report_details:
-#                 response_data.append({'data_type':'Report w ext','score': report.final_score,'internal': report.internal_score,\
-#                 'average':average,'external':report.external_score,\
-#                 'first_name': report.student.first_name, 'last_name': report.student.last_name})
-#         else:
-#             for report in exam_report_details:
-#                 response_data.append({'data_type':'Report w.o. ext','score': report.final_score,'internal': report.internal_score,\
-#                 'average':average,'first_name': report.student.first_name, 'last_name': report.student.last_name})
-#         return response_data
-#     except:
-#         pass
-
-
 def get_exam_report(request, called_for, classes ):
-    # classid=int(request.POST.get('classid'))
     examid=int(request.POST.get('examid'))
     this_tenant=request.user.tenant
     exam=Exam.objects.for_tenant(this_tenant).get(id__exact=examid)
@@ -160,7 +131,7 @@ def get_studentattendance_data(request, called_for, classes):
     # except:
     #   pass
 
-def get_cce_transcript(request, year):
+def generate_transcript(request, year):
     this_tenant=request.user.tenant
     studentid=int(request.POST.get('student'))
     classid=int(request.POST.get('classsection'))
@@ -176,16 +147,18 @@ def get_cce_transcript(request, year):
         pass
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     this_tenant=request.user.tenant
-    exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(student=student, year=year)
+    exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(student=student, year=year).select_related('exam', 'subject')
     subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected)
-    for report in exam_report_details:
-        exam=report.exam        
-        if (exam.name=='SA2'):
-            try:
-                subject_data=Subject.objects.for_tenant.get(id=report.subject.id)
-                final_subject=exam_year_final.objects.for_tenant(this_tenant).filter(final_report=final_data,subject=subject_data)
-                response_data.append({'data_type':'Final','subject': report.subject.name, 'total':final_subject.final_score})
-            except:
-                pass        
-        response_data.append({'data_type':'Exam','name':exam.key,'grade':report.grade,'subject': report.subject.name})
+    terms=Term.objects.for_tenant(this_tenant).filter(is_active=True)
+    for term in terms:
+        exam_term=Exam.objects.for_tenant(this_tenant).filter(term=term)
+        exam_report_data=exam_report_details.filter(exam__in=exam)
+        for subject in subjects:
+            exam_report_final=exam_report_details.filter(subject=subject)
+            total=0
+            for report in exam_report_data:
+                exam=report.exam        
+                total+=exam.final_score
+                response_data.append({'data_type':'Exam','name':exam.key,'grade':report.grade,'subject': subject.name})
+        response_data.append({'data_type':'Term Total','total':total,'subject': subject.name})
     return response_data

@@ -24,7 +24,7 @@
 		<select class="form-control student">
     	<option disabled selected hidden style='display: none' value>Select Student</option>
 			{% for item in items %}
-  				<option data-id="{{item.id}}">{{item.id}}</option>
+  				<option data-id="{{item.id}}">{{item.first_name}} {{item.last_name}}</option>
 			{% endfor %}
   	</select> 
 	</div>

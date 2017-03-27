@@ -103,6 +103,24 @@ class cadre_leave(models.Model):
 	def __str__(self):
 		return '%s: %s' % (self.cadre, self.teacher)
 
+#This model links cadre to leaves and define the number of leaves
+class staff_leave(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	teacher=models.ForeignKey(Teacher,db_index=True,related_name='staffLeave_hr_teacher_teacher')
+	leave_type=models.ForeignKey(leave_type, related_name='staffLeave_leaveType')
+	year=models.PositiveSmallIntegerField("Please enter start (year) of the academic year")
+	numbers=models.PositiveSmallIntegerField()
+	leaves_taken=models.PositiveSmallIntegerField(default=0)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='staffLeave_hr_user_tenant')
+	objects=TenantManager()
+
+	class Meta:
+		unique_together = (("teacher","leave_type","year",))
+		# ordering = ('name',)
+		
+	def __str__(self):
+		return '%s: %s' % (self.cadre, self.teacher)
+
 
 
 attendance_choices=((1,'Normal'),

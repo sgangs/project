@@ -10,8 +10,41 @@ from num2words import num2words
 from .models import cadre_leave, staff_cadre, leave_type, teacher_attendance
 from school_genadmin.models import annual_calender
 from school_teacher.models import Teacher
-from .models import staff_cadre_linking, cadre_leave
+from .models import staff_cadre_linking, cadre_leave, staff_leave
 from school_genadmin.genadmin_util import holiday_calculator
+
+
+def create_staff_cadre_link(request):
+    with transaction.atomic():
+        try:
+            this_tenant=request.user.tenant
+            year=int(request.POST.get('year'))
+            cadreid=int(request.POST.get('cadre'))
+            cadre=staff_cadre.objects.for_tenant(this_tenant).get(id=cadreid)
+            teachers=json.loads(request.POST.get('details'))
+            response_data=[]
+            print (year)
+            try:
+                cadre_leave_details_all=cadre_leave.objects.for_tenant(this_tenant).filter(cadre=cadre, year=year).all()
+                create_leave=True
+            except:
+                create_leave=False
+            for data in teachers:
+                teacherid=data['teacherid']
+                teacher=Teacher.objects.for_tenant(this_tenant).get(id=teacherid)
+                linking=staff_cadre_linking()
+                linking.cadre=cadre
+                linking.teacher=teacher
+                linking.cadre_type='Teacher'
+                linking.year=year
+                linking.tenant=this_tenant
+                linking.save()
+                if create_leave:
+                    for details in cadre_leave_details_all:
+                        create_leave_staff_link_from_staff(request, details.id, teacher)
+        except:
+            transaction.rollback()
+
 
 #This function is used to link cadre and leave types and set number to these leave types per cadre 
 def create_leave_cadre_link(request):
@@ -21,7 +54,6 @@ def create_leave_cadre_link(request):
             year=int(request.POST.get('year'))
             leave_lists=json.loads(request.POST.get('details'))
             response_data=[]
-            print("Inside Cadre")
             for data in leave_lists:
                 cadreid=data['cadreid']
                 leaveid=data['leaveid']
@@ -35,9 +67,45 @@ def create_leave_cadre_link(request):
                 linking.numbers=numbers
                 linking.tenant=this_tenant
                 linking.save()
-            return response_data
+                create_leave_staff_link_from_cadre(request, linking.id)
+                # return 
         except:
             transaction.rollback()
+
+def create_leave_staff_link_from_staff(request, cadre_leave_details_id, staff):
+    with transaction.atomic():
+        try:
+            this_tenant=request.user.tenant
+            cadre_leaves=cadre_leave.objects.for_tenant(this_tenant).get(id=cadre_leave_details_id)
+            linking=staff_leave()
+            linking.teacher=staff
+            linking.leave_type=cadre_leaves.leave_type
+            linking.year=cadre_leaves.year
+            linking.numbers=cadre_leaves.numbers
+            linking.tenant=this_tenant
+            linking.save()
+        except:
+            transaction.rollback()
+
+def create_leave_staff_link_from_cadre(request, cadre_leave_details_id):
+    with transaction.atomic():
+        try:
+            this_tenant=request.user.tenant
+            cadre_leaves=cadre_leave.objects.for_tenant(this_tenant).get(id=cadre_leave_details_id)
+            cadre=staff_cadre.objects.for_tenant(this_tenant).get(id=cadre_leaves.cadre.id)
+            staffs=staff_cadre_linking.objects.for_tenant(this_tenant).filter(cadre=cadre).all()
+            for item in staffs:
+                staff=Teacher.objects.for_tenant(this_tenant).get(staffCadreLinking_hr_teacher_teacher=item)
+                linking=staff_leave()
+                linking.teacher=staff
+                linking.leave_type=cadre_leaves.leave_type
+                linking.year=cadre_leaves.year
+                linking.numbers=cadre_leaves.numbers
+                linking.tenant=this_tenant
+                linking.save()
+        except:
+            transaction.rollback()
+
 
 def teacher_attendance_details(start, end, teacherid):
     response_data={}
@@ -71,28 +139,3 @@ def teacher_attendance_details(start, end, teacherid):
         response_data['holiday']=holiday
 
     return response_data
-
-#This function is used to link cadre and leave types and set number to these leave types per cadre 
-def create_staff_cadre_link(request):
-    with transaction.atomic():
-        try:
-            this_tenant=request.user.tenant
-            year=int(request.POST.get('year'))
-            cadreid=int(request.POST.get('cadre'))
-            cadre=staff_cadre.objects.for_tenant(this_tenant).get(id=cadreid)
-            teachers=json.loads(request.POST.get('details'))
-            response_data=[]
-            print("Inside Cadre")
-            for data in teachers:
-                teacherid=data['teacherid']
-                teacher=Teacher.objects.for_tenant(this_tenant).get(id=teacherid)
-                linking=staff_cadre_linking()
-                linking.cadre=cadre
-                linking.teacher=teacher
-                linking.cadre_type='Teacher'
-                linking.year=year
-                linking.tenant=this_tenant
-                linking.save()
-            return response_data
-        except:
-            transaction.rollback()
