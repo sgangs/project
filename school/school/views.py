@@ -201,40 +201,40 @@ def landing(request):
         attendance=json.dumps(staff_attendance_number(request, teacher, this_tenant))
         return render (request, 'landing_teacher.html', {"attendance":attendance,"events":events, \
                     'classes': class_teacher, 'subjects':subject_teacher})
-    # try:
-    year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
-    paid=fee_paid(request, year)
-    total=month_fee(request, year)
-    staff_list=Teacher.objects.for_tenant(this_tenant).all()
-    student_list=Student.objects.for_tenant(this_tenant).all()
-    staffs=staff_list.filter(dob__month=current_day.month,dob__day=current_day.day)
-    today=date.today()
     try:
-        students_present=Attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
+        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+        paid=fee_paid(request, year)
+        total=month_fee(request, year)
+        staff_list=Teacher.objects.for_tenant(this_tenant).all()
+        student_list=Student.objects.for_tenant(this_tenant).all()
+        staffs=staff_list.filter(dob__month=current_day.month,dob__day=current_day.day)
+        today=date.today()
+        try:
+            students_present=Attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
+        except:
+            students_present=0
+        try:
+            staffs_present=teacher_attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
+        except:
+            staffs_present=0
+        total_staffs=staff_list.count()
+        if (total_staffs != 0):
+            percent_staff=round(staffs_present/total_staffs*100)
+        else:
+            percent_staff=100
+        total_students=student_list.count()
+        if (total_students != 0):
+            percent_student=round(students_present/total_students*100)
+        else:
+            percent_student=100
     except:
-        students_present=0
-    try:
-        staffs_present=teacher_attendance.objects.for_tenant(this_tenant).filter(date=today, ispresent=True).count()
-    except:
-        staffs_present=0
-    total_staffs=staff_list.count()
-    if (total_staffs != 0):
-        percent_staff=round(staffs_present/total_staffs*100)
-    else:
-        percent_staff=100
-    total_students=student_list.count()
-    if (total_students != 0):
-        percent_student=round(students_present/total_students*100)
-    else:
-        percent_student=100
-    # except:
-    #     paid=0
-    #     total=0
-    #     try:
-    #         year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
-    #         return render (request, 'error/500.html')
-    #     except:
-    #         return redirect('genadmin:new_academic_year')
+        paid=0
+        total=0
+        try:
+            year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+            return render (request, 'error/500.html')
+        except:
+            return redirect('genadmin:new_academic_year')
     income_expense=yearly_pl(request)
     i_e_json = json.dumps(income_expense)
     return render (request, 'landing.html', {"paid":paid,"events":events,"staffs":staffs,"total":total, 'i_e':i_e_json, \

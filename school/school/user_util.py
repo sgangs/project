@@ -54,6 +54,8 @@ def create_account_year(tenant, key, period):
     account.account=account_selected
     account.opening_debit=0
     account.opening_credit=0
+    account.current_debit=0
+    account.current_credit=0
     account.accounting_period=period
     account.tenant=tenant
     account.save()
