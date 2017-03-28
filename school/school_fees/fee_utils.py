@@ -46,7 +46,6 @@ def create_fee_structure(request, fee_type):
             fee_create=generic_fee()
             month_all=json.loads(request.POST.get('month_all'))
             for item in month_all:
-                print(item)
                 month_data.append(item)
             fee_create.month=month_data
             fee_create.name=feename
@@ -55,10 +54,12 @@ def create_fee_structure(request, fee_type):
             for data in fee_lists:
                 accountid=decoder(data['account'])[0]
                 amount=float(data['amount'])
-                name=data['name']
+                name_fee_head=data['name']
+                print(data['name'])
+
                 account=Account.objects.for_tenant(this_tenant).get(id=accountid)
-                if name =='':
-                    name=account.name
+                if name_fee_head =='':
+                    name_fee_head=account.name
                 # if (fee_type == 'Monthly'):
                 #     fee_list=monthly_fee_list()
                 #     fee_list.monthly_fee=fee_create
@@ -66,7 +67,7 @@ def create_fee_structure(request, fee_type):
                 fee_list=generic_fee_list()
                 fee_list.generic_fee=fee_create
                 fee_list.account = account
-                fee_list.name = account.name
+                fee_list.name = name_fee_head
                 fee_list.amount= amount
                 total+=amount
                 fee_list.tenant=this_tenant
@@ -75,7 +76,6 @@ def create_fee_structure(request, fee_type):
             fee_create.save()
         except:
             transaction.rollback()
-
 
 def view_fee_details(request):
     response_data=[]
@@ -96,8 +96,21 @@ def view_fee_details(request):
         genericfeelist=generic_fee_list.objects.filter(generic_fee=genericfee)
         for fee in genericfeelist:
             response_data.append({'data_type':'Generic','id':fee.id,'name':fee.name, 'account':fee.account.id,\
-            'amount':str(fee.amount)})
-    
+            'amount':str(fee.amount)})    
+    return response_data
+
+def view_student_fees(request):
+    response_data=[]
+    this_tenant=request.user.tenant
+    studentid=request.POST.get('student_id')
+    year=int(request.POST.get('year'))
+    student=Student.objects.for_tenant(this_tenant).get(id=studentid)
+    feelist=student_fee.objects.filter(student=student).get(year=year)
+    for genericfee in feelist.generic_fee.all():
+        genericfeelist=generic_fee_list.objects.filter(generic_fee=genericfee)
+        for fee in genericfeelist:
+            response_data.append({'data_type':'Generic','id':fee.id,'name':fee.name, 'account':fee.account.id,\
+            'amount':str(fee.amount)})    
     return response_data
 
 def view_class_fees(request):
@@ -116,7 +129,6 @@ def view_class_fees(request):
         for fee in genericfeelist:
             response_data.append({'data_type':'Generic','name':fee.name, 'month':fee.generic_fee.month,\
             'amount':str(fee.amount)})
-    print(response_data)    
     return response_data
 
 
@@ -141,7 +153,6 @@ def save_student_payment(request):
     studentid=request.POST.get('studentid')
     year=int(request.POST.get('year'))
     month=request.POST.get('month')
-    print(month)
     amount=Decimal(int(request.POST.get('amount')))
     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     student_classid = classstudent.objects.get(year=year, student=student).class_section.id
@@ -173,7 +184,6 @@ def save_student_payment(request):
             for genericfee in genericfeedetails:
                 genericfeelist=generic_fee_list.objects.filter(generic_fee=genericfee)
                 for fee in genericfeelist:
-                    print(fee)
                     account=Account.objects.for_tenant(this_tenant).get(id=fee.account.id)
                     this_amount=fee.amount
                     amount_paid+=this_amount
@@ -195,8 +205,6 @@ def save_student_payment(request):
         except:
             transaction.rollback()
     return tz_aware_now
-
-
 
 def new_journal_entry(account, amount, this_tenant,name,tz_aware_now):
     journal=Journal()

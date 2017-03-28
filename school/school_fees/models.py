@@ -59,8 +59,8 @@ class generic_fee_list(models.Model):
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-	class Meta:
-		unique_together = (("generic_fee","account"))
+	# class Meta:
+		# unique_together = (("generic_fee","account"))
 		# ordering = ('name',)
 		
 	def __str__(self):

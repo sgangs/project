@@ -136,21 +136,22 @@ def student_fee_structure(request):
 	# year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year	
 	classes=class_section.objects.for_tenant(this_tenant).all()
 	generic_fees=generic_fee.objects.for_tenant(this_tenant).all()
-	if request.method == 'POST':		
+	if request.method == 'POST':
+		response_data=[]	
 		calltype=request.POST.get('calltype')
 		if (calltype == 'student'):
 			response_data=view_student(request)
 		elif (calltype == 'details'):			
 			response_data=view_class_fees(request)
-		#This most probably is not needed
-		# elif (calltype == 'details'):
-			# response_data=view_fee_details(request)
+		elif (calltype == 'fee_student'):			
+			response_data=view_student_fees(request)
 		elif (calltype == 'save'):
-			class_selected_id=request.POST.get('class_selected_id')
+			# print(request.POST.get('items'))
+			# class_selected_id=request.POST.get('class_selected_id')
 			year=int(request.POST.get('year'))
-			class_selected=classes.get(id=class_selected_id)
-			students=json.loads(request.POST.get('students'))
-			genericfee_inputs =json.loads(request.POST.get('genericfees'))
+			# class_selected=classes.get(id=class_selected_id)
+			students=json.loads(request.POST.get('items'))
+			genericfee_inputs =json.loads(request.POST.get('generic_fees'))
 			genericfeeall=[]
 			for fees in genericfee_inputs:
 				genericfeeid=fees['fee_id']
@@ -159,7 +160,8 @@ def student_fee_structure(request):
 			with transaction.atomic():
 				try:
 					for data in students:
-							student_fee_data=student_fee.objects.filter(year=year,id=data['id'])
+							student=Student.objects.for_tenant(this_tenant).get(id=data['student_id'])
+							student_fee_data=student_fee.objects.get(year=year,student=student)
 							for fees in genericfeeall:
 								student_fee_data.generic_fee.add(fees)
 				except:

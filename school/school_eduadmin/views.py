@@ -349,12 +349,16 @@ def view_add_period(request, detail):
 				except:
 					response_data.append({'data_type':'Error','message': 'Class Teacher not added to class'})
 				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
-							filter(class_group=class_group,year=year).select_related("subject", "syllabus_topic")
+							filter(class_group=class_group,year=year).select_related("subject").\
+										prefetch_related("syllabusTopic_syllabusSubject")
 
 				for syllabus in class_syllabus:
 					subject=syllabus.subject
-					response_data.append({'data_type':'Syllabus','subject': subject.name,\
-							'topics': syllabus.syllabusTopic_syllabusSubject.topic, 'id': subject.id})
+					topics=syllabus.syllabusTopic_syllabusSubject.all()
+					for topic in topics:
+						response_data.append({'data_type':'Syllabus','subject': subject.name,\
+								'topics': topic.topic, 'id': subject.id})				
+
 				try:
 					periods=period.objects.filter(year=year,class_section=class_selected).select_related('subject', 'teacher')
 					for item in periods:

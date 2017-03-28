@@ -84,7 +84,8 @@ $( ".submit" ).confirm({
             //console.log("Date: "+date);
             $("tr.data").each(function() {
                 var account = $(this).find('td:nth-child(2)').find(':selected').data('id');
-                var name = parseInt($(this).find('td:nth-child(3) input').val());
+                var name = $(this).find('td:nth-child(3) input').val();
+                console.log(name);
                 var amount = parseInt($(this).find('td:nth-child(4) input').val());
                 if (isNaN(amount) || typeof(account) == "undefined" || account == "" || name == "" ){
                     proceed=false;}
