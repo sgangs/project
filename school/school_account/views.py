@@ -26,10 +26,7 @@ def base(request, input_type):
 @login_required
 #For adding new entry for Aoccunting Period or Chart of Account
 def account_new(request, input_type):
-	if (input_type == "Period"):
-		importform=PeriodForm
-		name='accounts:period_list'
-	elif (input_type == "Ledger Group"):
+	if (input_type == "Ledger Group"):
 		importform = LedgerGroupForm
 		name='accounts:ledger_group_list'
 	elif (input_type == "Account"):
@@ -50,6 +47,31 @@ def account_new(request, input_type):
 			item.tenant=current_tenant
 			item.save()
 			return redirect(name)
+	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
+
+@login_required
+#For adding new entry for Aoccunting Period or Chart of Account
+def new_account_period(request, input_type):
+	name='accounts:period_list'
+	form=PeriodForm(tenant=request.user.tenant)
+	if (request.method == "POST"):
+		form = importform(request.POST, tenant=request.user.tenant)
+		if form.is_valid():
+			item=form.save(commit=False)
+			current_tenant=request.user.tenant
+			item.tenant=current_tenant
+			with transaction.atomic():
+				try:
+					data=form.cleaned_data
+					current=data['current_period']
+					if current:
+						ca=accounting_period.objects.for_tenant(current_tenant).get(current_period=True)
+						ca.current_period=False
+						ca.save()
+					item.save()
+					return redirect(name)
+				except:
+					transaction.rollback()
 	return render(request, 'genadmin/new.html',{'form': form, 'item': input_type})
 
 @login_required
@@ -210,7 +232,7 @@ def new_account(request):
 	this_tenant=request.user.tenant
 	periods=accounting_period.objects.for_tenant(this_tenant).filter(finalized=False).values('id','start','end')
 	groups=ledger_group.objects.for_tenant(this_tenant).all()
-	accounts=Account.objects.for_tenant(this_tenant).values('name','current_debit','current_credit')
+	accounts=Account.objects.for_tenant(this_tenant).values('name','key')
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
@@ -389,3 +411,28 @@ def cash_history(request):
 	# 	response_data=[]
 	# jsondata = json.dumps(response_data)
 	return render(request, 'accounts/cash_accountledger.html', {'entries':response_data})
+
+
+@login_required
+#This should be an owner and accountant only view
+def change_accounting_period(request):
+	this_tenant=request.user.tenant
+	extension='base.html'
+	years_list=accounting_period.objects.for_tenant(this_tenant).all()
+	print(years_list)
+	if request.method == 'POST':
+		response_data=[]
+		yearid = request.POST.get('new_acad_year')
+		with transaction.atomic():
+			try:
+				current_year=years_list.get(current_period=True)
+				current_year.current_period=False
+				current_year.save()
+				new_year=years_list.get(id=yearid)
+				new_year.current_period=True
+				new_year.save()				
+			except:
+				transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'accounts/change_accounting_year.html', {'years':years_list, 'extension':extension})

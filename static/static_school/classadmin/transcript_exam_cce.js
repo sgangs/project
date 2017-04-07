@@ -51,20 +51,28 @@ $('.submit').click(function() {
             dataType: 'json',
             // handle a successful response
             success : function(jsondata){
-                console.log(jsondata);
-                $("#student_table .data").remove();
+                $('.details').attr('hidden',true);
+                exam_array=[]
+                $.each(jsondata, function(){
+                    if (this.data_type=="Exam Name"){
+                        exam_array.push(this.id)
+                        $('#header').append($('<td class='+this.id+'>'+this.name+'</td>'));
+                    }
+                })
                 $.each(jsondata, function(){
                     if (this.data_type=="Subject"){
-                        $('#student_table').append($('<tr class="data '+this.name+'">'+
-                            '<td class="name">'+this.name+'</td>'+'<td class="FA1"></td>'+'<td class="FA2"></td>'+
-                            '<td class=SA1></td>'+'<td class=FA3></td>'+'<td class=FA4></td>'+'<td class=SA2></td>'+
-                            '<td class=OFA></td>'+'<td class=OSA></td>'+'<td class=OG></td>'+'<td class=GP></td></tr>'
+                        $('#student_table').append($('<tr class="data '+this.id+'">'+
+                            '<td class="name">'+this.name+'</td></tr>'
                             ));
-                    }            
-                    else if (this.data_type=="Exam"){
-                        $('tr.'+this.subject).find('.'+this.name+'').html('<p>'+this.grade+'</p>')
+                        for (var i=0; i<exam_array.length; i++){
+                            $('.'+this.id+'').append($('<td class='+exam_array[i]+'></td>'))
+                        }
+                    }
+                    else if (this.data_type=="Exam Report"){
+                        $('tr.'+this.subject_id).find('.'+this.exam_id+'').html('<p>'+this.marks+'</p>')
                     }
                 });
+                console.log(exam_array);
             },
             // handle a non-successful response
             error : function() {

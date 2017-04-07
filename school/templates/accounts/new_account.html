@@ -126,16 +126,18 @@
 			<thead class="thead-inverse header-background bg-info">
 				<tr>
 	              	<th class="text-center">Account Name</th>
-	                <th class="text-center">Current Debit Value</th>
-	                <th class="text-center">Current Credit Value</th>
+	              	<th class="text-center">Account Key</th>
+	                <!-- {# <th class="text-center">Current Debit Value</th>
+	                <th class="text-center">Current Credit Value</th> #} -->
 				</tr>
 			</thead>
 			<tbody>
 				{% for account in accounts %}
 				<tr align="center">
 	              <td>{{account.name}}</td>
-	              <td>{{account.current_debit}}</td>
-	              <td>{{account.current_credit}}</td>
+	              <td>{{account.key}}</td>
+	              <!-- {# <td>{{account.current_debit}}</td>
+	              <td>{{account.current_credit}}</td> #} -->
 				</tr>
 				{% endfor %}
 			</tbody>

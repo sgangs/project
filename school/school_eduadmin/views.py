@@ -87,19 +87,18 @@ def eduadmin_new(request, input_type):
 		year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
 		#You cannot create exam before selecting exam type
 		try:
-			exam_type=exam_creation.objects.for_tenant(this_tenant).get(year=year).exam_type
-			
+			exam_type=exam_creation.objects.for_tenant(this_tenant).get(year=year).exam_type			
 			if (not exam_type):
 				return redirect('eduadmin:new_exam_type')
 		except:
 			return redirect('eduadmin:new_exam_type')
 		#Get a view to create term. Then do a redirect to term.
 		try:
-			terms=term.objects.for_tenant(this_tenant).get(year=year)
+			terms=Term.objects.for_tenant(this_tenant).get(year=year)
 			if (not terms):
 				return render (request, 'error/403.html')
 		except:
-			return redirect('eduadmin:new_exam_type')
+			return redirect('eduadmin:new_term')
 		
 		importform=ExamForm
 		name='eduadmin:class_list'
@@ -149,6 +148,9 @@ def eduadmin_new(request, input_type):
 							pass
 					except:
 						transaction.rollback()
+			elif (input_type=="Exam"):
+				item.year=year
+				item.save()
 			else:
 				item.save()
 			return redirect(name)
@@ -351,7 +353,6 @@ def view_add_period(request, detail):
 				class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
 							filter(class_group=class_group,year=year).select_related("subject").\
 										prefetch_related("syllabusTopic_syllabusSubject")
-
 				for syllabus in class_syllabus:
 					subject=syllabus.subject
 					topics=syllabus.syllabusTopic_syllabusSubject.all()
@@ -506,13 +507,12 @@ def exam_type_new(request):
 			with transaction.atomic():
 				try:
 					if (exam_type == "CBSE"):
-						create_term("Term 1", year, current_tenant)
-						create_term("Term 2", year, current_tenant)
-						upto_5=class_group.objects.for_tenant(current_tenant).filter(standard__in=[-5,-4,-3,-2,-1,1,2,3,4,5])
+						create_term("Term 1", 1, year, current_tenant)
+						create_term("Term 2", 2, year, current_tenant)
+						upto_5=class_group.objects.for_tenant(current_tenant).filter(standard__in=[-6, -5,-4,-3,-2,-1,1,2,3,4,5])
 						class_6_8=class_group.objects.for_tenant(current_tenant).filter(standard__in=[6,7,8])
 						class_9_12=class_group.objects.for_tenant(current_tenant).filter(standard__in=[9,10,11,12])
 						#Upto Class 1-5
-						#Indtead of writing upto 5, just insert the queryset.
 						create_exam("Formative Assessments 1", "FA1", 1, year, current_tenant, "Term 1", "CBSE", upto_5, 10,)
 						create_exam("Formative Assessments 2", "FA2", 2, year, current_tenant, "Term 1", "CBSE", upto_5, 10,)
 						create_exam("Summative Assessments 1", "SA1", 3, year, current_tenant, "Term 1", "CBSE", upto_5, 30,)
@@ -522,7 +522,7 @@ def exam_type_new(request):
 						#Class 6-8
 						create_exam("Periodic Test 1", "PT1", 1, year, current_tenant, "Term 1", "CBSE",class_6_8, 10,)
 						create_exam("Note Book 1", "NB1", 2, year, current_tenant, "Term 1", "CBSE",class_6_8, 5,)
-						create_exam("Subject Enrichment 2", "SE1", 3, year, current_tenant, "Term 1", "CBSE",class_6_8, 5,)
+						create_exam("Subject Enrichment 1", "SE1", 3, year, current_tenant, "Term 1", "CBSE",class_6_8, 5,)
 						create_exam("Half Yearly Exam", "HYE", 4, year, current_tenant, "Term 1", "CBSE",class_6_8, 80,)
 						create_exam("Periodic Test 2", "PT2", 5, year, current_tenant, "Term 2", "CBSE",class_6_8, 10,)
 						create_exam("Note Book 2", "NB2", 6, year, current_tenant, "Term 2", "CBSE",class_6_8, 5,)
@@ -536,15 +536,15 @@ def exam_type_new(request):
 
 						grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
 						if (count == 0):
-							create_grade_table(grade_created, 1, 100, 91,"A1", 10, current_tenant)
-							create_grade_table(grade_created, 2, 90, 81,"A2", 9, current_tenant)
-							create_grade_table(grade_created, 3, 80, 71,"B1", 8, current_tenant)
-							create_grade_table(grade_created, 4, 70, 61,"B2", 7, current_tenant)
-							create_grade_table(grade_created, 5, 60, 51,"C1", 6, current_tenant)
-							create_grade_table(grade_created, 6, 50, 41,"C2", 5, current_tenant)
-							create_grade_table(grade_created, 7, 40, 33,"D", 4, current_tenant)
-							create_grade_table(grade_created, 8, 32, 21,"E1", 0, current_tenant)
-							create_grade_table(grade_created, 9, 20, 0,"E2", 0, current_tenant)
+							create_grade_item(grade_created, 1, 100, 91,"A1", 10, current_tenant)
+							create_grade_item(grade_created, 2, 90, 81,"A2", 9, current_tenant)
+							create_grade_item(grade_created, 3, 80, 71,"B1", 8, current_tenant)
+							create_grade_item(grade_created, 4, 70, 61,"B2", 7, current_tenant)
+							create_grade_item(grade_created, 5, 60, 51,"C1", 6, current_tenant)
+							create_grade_item(grade_created, 6, 50, 41,"C2", 5, current_tenant)
+							create_grade_item(grade_created, 7, 40, 33,"D", 4, current_tenant)
+							create_grade_item(grade_created, 8, 32, 21,"E1", 0, current_tenant)
+							create_grade_item(grade_created, 9, 20, 0,"E2", 0, current_tenant)
 							# create_grade_table('C',1, 100, 81,"A+", 5, current_tenant)
 							# create_grade_table('C',2, 80, 61,"A", 4, current_tenant)
 							# create_grade_table('C',3, 60, 41,"B+", 3, current_tenant)
@@ -554,13 +554,13 @@ def exam_type_new(request):
 					elif (exam_type == "MG"):
 						grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
 						if (count == 0):
-							create_grade_table(grade_created, 1, 100, 100,"A+", 10, current_tenant)
-							create_grade_table(grade_created, 2, 99, 90,"A", 9, current_tenant)
-							create_grade_table(grade_created, 3, 89, 80,"B", 8, current_tenant)
-							create_grade_table(grade_created, 4, 79, 70,"C", 7, current_tenant)
-							create_grade_table(grade_created, 5, 69, 60,"D", 6, current_tenant)
-							create_grade_table(grade_created, 6, 59, 40,"E", 5, current_tenant)
-							create_grade_table(grade_created, 7, 39, 0,"F", 4, current_tenant)
+							create_grade_item(grade_created, 1, 100, 100,"A+", 10, current_tenant)
+							create_grade_item(grade_created, 2, 99, 90,"A", 9, current_tenant)
+							create_grade_item(grade_created, 3, 89, 80,"B", 8, current_tenant)
+							create_grade_item(grade_created, 4, 79, 70,"C", 7, current_tenant)
+							create_grade_item(grade_created, 5, 69, 60,"D", 6, current_tenant)
+							create_grade_item(grade_created, 6, 59, 40,"E", 5, current_tenant)
+							create_grade_item(grade_created, 7, 39, 0,"F", 4, current_tenant)
 					item.save()
 				except:
 					transaction.rollback()
@@ -642,3 +642,26 @@ def publish_exam(request):
 	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
 	exams=Exam.objects.for_tenant(this_tenant).filter(year=year, is_published=False)
 	return render (request, 'eduadmin/publish_exam.html', {'exams':exams, 'extension':extension})
+
+@login_required
+def view_syllabus(request):
+	this_tenant=request.user.tenant
+	extension="base.html"
+	class_section_options=class_section.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+		response_data=[]
+		class_selected_id= request.POST.get('classselected')
+		class_selected=class_section_options.get(id=class_selected_id)
+		class_group=class_selected.classgroup
+		class_syllabus=Syllabus.objects.for_tenant(request.user.tenant).\
+						filter(class_group=class_group,year=year).select_related("subject").order_by("subject").\
+						prefetch_related("syllabusTopic_syllabusSubject")
+		for syllabus in class_syllabus:
+			subject=syllabus.subject
+			topics=syllabus.syllabusTopic_syllabusSubject.all()
+			for topic in topics:
+				response_data.append({'subject': subject.name,'topics': topic.topic, 'month': topic.month})
+		jsondata=json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'eduadmin/view_syllabus.html', {'classes':class_section_options, 'extension':extension})

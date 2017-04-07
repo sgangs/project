@@ -146,10 +146,7 @@ def student_fee_structure(request):
 		elif (calltype == 'fee_student'):			
 			response_data=view_student_fees(request)
 		elif (calltype == 'save'):
-			# print(request.POST.get('items'))
-			# class_selected_id=request.POST.get('class_selected_id')
 			year=int(request.POST.get('year'))
-			# class_selected=classes.get(id=class_selected_id)
 			students=json.loads(request.POST.get('items'))
 			genericfee_inputs =json.loads(request.POST.get('generic_fees'))
 			genericfeeall=[]

@@ -62,7 +62,7 @@ class academic_year(models.Model):
 		# ordering = ('name',)
 		
 	def __str__(self):
-		return self.year
+		return str(self.year)
 
 
 standard_choices=((-6,'Lower Nusrsery'),
@@ -168,7 +168,8 @@ class House(models.Model):
 event_type=((1,'Holiday'),
 			(2,'Exam'),
 			(3,'Exception'),
-			(4,'Others'))
+			(4,'Others'),
+			(5,'Vacation'),)
 
 attendance_type=((1,'Working Day'),
 			(2,'Non working day'),)
@@ -178,9 +179,9 @@ attendance_type=((1,'Working Day'),
 class annual_calender(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	date=models.DateTimeField(db_index=True)
-	event=models.CharField(max_length=20)
-	event_type=models.PositiveSmallIntegerField('Event type', choices=event_type, default='1')
-	attendance_type=models.PositiveSmallIntegerField('Attendance type', choices=attendance_type, default='2')
+	event=models.CharField(max_length=60)
+	event_type=models.PositiveSmallIntegerField('Event type', choices=event_type)
+	attendance_type=models.PositiveSmallIntegerField('Attendance type', choices=attendance_type)
 	#key=models.CharField(db_index=True,max_length=10)
 	# slug=models.SlugField(db_index=True, max_length=75)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='annualCalender_genadmin_user_tenant')
@@ -223,7 +224,7 @@ class notice_board(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	title=models.CharField(max_length=100)
 	details=models.TextField()
-	show_from=models.DateField("Date")
+	show_from=models.DateField("Notice Date")
 	show_until=models.DateField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='noticeBoard_eduadmin_user_tenant')
 	objects=TenantManager()

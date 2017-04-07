@@ -131,20 +131,13 @@ $( ".details" ).click(function() {
                         // $( ".year" ).prop('disabled', true);
                         $(".feetable .data").remove();
                         $.each(jsondata, function(){
-                            if (this.data_type=="Monthly"){
-                                $('.feetable').append("<tr class='data monthly'>"+
+                            if (this.data_type=="Generic"){
+                                $('.feetable').append("<tr class='data generic'>"+
                                     "<td hidden='true'>" + this.id + "</td>"+
                                     "<td>" + this.name + "</td>"+
                                     "<td>" + this.amount + "</td></tr>");
                                 fee_total=fee_total+parseFloat(this.amount)
                                 
-                            }
-                            else if (this.data_type=="Yearly"){
-                                $('.feetable').append("<tr class='data yearly'>"+
-                                    "<td hidden='true'>" + this.id + "</td>"+
-                                    "<td>" + this.name + "</td>"+
-                                    "<td>" + this.amount + "</td></tr>");
-                                fee_total=fee_total+parseFloat(this.amount)
                             }
                             else if (this.data_type=="Paid"){
                                 value = parseFloat(this.amount)

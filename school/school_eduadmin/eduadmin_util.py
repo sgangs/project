@@ -1,11 +1,11 @@
 from datetime import date, datetime
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 
 from school_user.models import User, Tenant
 from school_genadmin.models import class_group, Subject
 from school_student.models import Student
 from school_fees.models import student_fee, group_default_fee
-from .models import subject_teacher, period, total_period, class_section, classstudent, Term, Exam, grade_table
+from .models import subject_teacher, period, total_period, class_section, classstudent, Term, Exam, grade_table, grade_item
                 # Syllabus
 
 def period_add(request, class_selected):
@@ -54,30 +54,46 @@ def get_student_list (request,batch,class_sections):
             break
     return response_data
 
-def create_term(name, year, tenant):
+def create_term(name, sl_no, year, tenant, ):
     term_new=Term()
     term_new.name=name
+    term_new.number=sl_no
     term_new.year=year
     term_new.tenant=tenant
     term_new.save()
 
 def create_exam(name, key, sl_no, year, tenant, term_name, exam_type, class_group=[], weightage=100):
-    exam_new=Exam()
-    exam_new.name=name
-    if (term_name!= ""):
-        term=Term.objects.for_tenant(tenant).get(name=term_name)
-        exam_new.term=term
-    exam_new.key=key
-    exam_new.serial_no = sl_no
-    exam_new.year=year
-    exam_new.total=100
-    exam_new.weightage=weightage
-    exam_new.tenant=tenant
-    exam_new.save()
+    with transaction.atomic():
+        try:
+            exam_new=Exam()
+            exam_new.name=name
+            if (term_name!= ""):
+                term=Term.objects.for_tenant(tenant).get(name=term_name)
+                exam_new.term=term
+            exam_new.key=key
+            exam_new.serial_no = sl_no
+            exam_new.year=year
+            exam_new.total=100
+            exam_new.weightage=weightage
+            exam_new.tenant=tenant
+            exam_new.save()
+            for item in class_group:
+                exam_new.classgroup.add(item)
+        except:
+            transaction.rollback()
 
-def create_grade_table (grade_type,sl_no,max_mark,min_mark, grade, grade_point, this_tenant):
+
+def create_grade (grade_type,name,this_tenant):
     new_table=grade_table()
     new_table.grade_type=grade_type
+    new_table.table_name=name
+    new_table.tenant=this_tenant
+    new_table.save()
+    return new_table
+
+def create_grade_item (grade_created,sl_no,max_mark,min_mark, grade, grade_point, this_tenant):
+    new_table=grade_item()
+    new_table.grade_table=grade_created
     new_table.sl_no=sl_no
     new_table.min_mark=min_mark
     new_table.max_mark=max_mark

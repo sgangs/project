@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^totalperiodentry/$', views.eduadmin_new, {'input_type': 'Total Period'}, name='total_period_entry'),
     url(r'^teacherperiod/$', views.view_teacher_period, name='teacher_period'),
     url(r'^viewgradetable/$', views.view_grade_table,name='view_grade_table'),
+    url(r'^viewsyllabus/$', views.view_syllabus,name='view_syllabus'),
     url(r'^classlist/$', views.eduadmin_list, {'input_type': 'Class'}, name='class_list'),
     url(r'^subjectteacherlist/$', views.eduadmin_list, {'input_type': 'Subject Teacher'}, name='subject_teacher_list'),
     url(r'^promotestudent/$', views.promote_student, name='promote_student'),

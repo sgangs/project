@@ -181,7 +181,7 @@ grade_choices=(('S','Scholastic'),
 class grade_table(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	grade_type=models.CharField("Type of grade?",max_length=1,choices=grade_choices)
-	table_name=models.CharField("Table Name",max_length=20,choices=grade_choices)
+	table_name=models.CharField("Table Name",max_length=80,choices=grade_choices)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='gradeTable_eduadmin_user_tenant')
 	objects=TenantManager()
 	
@@ -225,7 +225,7 @@ class Exam(models.Model):
 	is_published=models.BooleanField(default=False)
 	# is_active=models.BooleanField(default=True)
 	weightage=models.DecimalField("Exam Weightage",max_digits=4, decimal_places=2, default=1)
-	serial_no=models.PositiveSmallIntegerField()
+	serial_no=models.PositiveSmallIntegerField("Exam number")
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='exam_eduadmin_user_tenant')
 	objects=TenantManager()
 	

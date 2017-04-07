@@ -17,7 +17,7 @@
     <div class="row">
         
         <div class="col-md-7 col-xs-12">
-            <h4 style="font-size: 30px; font-family: 'Righteous';">Events For The Month:</h4>
+            <h4 style="font-size: 30px; font-family: 'Righteous';"><i class="fa fa-calendar"></i> Events For The Month:</h4>
             <ul>
                 {% for i in events %}
                     <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
@@ -25,12 +25,12 @@
             </ul>
         </div>
         <div class="col-md-7 col-xs-12">
-            <h4 style="font-size: 30px; font-family: 'Righteous';">Notice Board:</h4>
-                <ul>
-                    {% for i in news %}
-                        <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.title}}</li>
-                        {% endfor %}
-                </ul>                    
+            <h4 style="font-size: 30px; font-family: 'Righteous';"><i class="fa fa-bullhorn"></i> Notice Board:</h4>
+            <ul>
+                {% for i in notices %}
+                    <li style="font-size: 20px; font-family: 'Pangolin';">{{i.show_from|date:"d-m-Y"}}: {{i.title}} - {{i.details}}</li>
+                {% endfor %}
+            </ul>                    
         </div>
         <!--<div class="col-md-5">
             <p><img src="{% static 'gif/student_landing.gif' %}" alt="Forgot Password"></p>

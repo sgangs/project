@@ -8,7 +8,7 @@ from . import views
 urlpatterns = [
     url(r'^generic/$', views.base, {'input_type': 'Generic'},name='base'),
     url(r'^accountsbase/$', views.base, {'input_type': 'Accounts'},name='accounts_base'),
-    url(r'^newperiod/$', views.account_new, {'input_type': 'Period'}, name='new_period'),
+    url(r'^newperiod/$', views.new_account_period, {'input_type': 'Period'}, name='new_period'),
     url(r'^newledgergroup/$', views.account_new, {'input_type': 'Ledger Group'}, name='new_ledgergroup'),
     url(r'^newaccount/$', views.new_account, name='new_account'),
     #url(r'^newaccountyear/$', views.account_new, {'input_type': 'Account Year'}, name='new_account_year'),
@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^journalgrouplist/$', views.account_list, {'type': 'Journal Group'}, name='journalgroup_list'),
     url(r'^paymentmodelist/$', views.account_list, {'type': 'Payment Mode'},name='paymentmode_list'),
     url(r'^cashdetails/$', views.cash_history, name='cash_details'),
+    url(r'^changeaccountingperiods/$', views.change_accounting_period, name='change_accounting_period'),
     #Statutory
     url(r'^viewbalancesheet/$', views.balance_sheet, name='view_balance_sheet'),
     url(r'^viewtrailbalance/$', views.trail_balance, name='view_trail_balance'),

@@ -32,31 +32,37 @@
                         <div id="waterfall" ></div>
                     </label>
                 </div>                
-                
+                <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+                    <h6 style="font-size: 25px; font-family: 'Righteous';"><i class="fa fa-birthday-cake"></i> Today's Birthday:</h6>
+                    <div class="ticker">
+                        <ul>
+                            {% for i in staffs %}
+                            <li style="font-size: 20px; font-family: 'Pangolin';">{{i.first_name}} {{i.last_name}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
                     <h5 style="font-size: 25px; font-family: 'Righteous';"><i class="fa fa-calendar"></i> Events For The Month:</h6>
-                    <ul>
-                        {% for i in events %}
-                        <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
-                        {% endfor %}
-                    </ul>                    
+                    <div class="ticker">
+                        <ul>
+                            {% for i in events %}
+                            <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.event}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>                    
                 </div>
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
                     <h6 style="font-size: 25px; font-family: 'Righteous';"><i class="fa fa-bullhorn"></i> Notice Board:</h6>
-                    <ul>
-                        {% for i in news %}
-                        <li style="font-size: 20px; font-family: 'Pangolin';">{{i.date|date:"d-m-Y"}}: {{i.title}}</li>
-                        {% endfor %}
-                    </ul>                    
+                    <div class="note-ticker">
+                        <ul>
+                            {% for i in notices %}
+                            <li style="font-size: 20px; font-family: 'Pangolin';">{{i.show_from|date:"d-m-Y"}}: {{i.title}} - {{i.details}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>                    
                 </div>
-                <div class="col-lg-8 col-md-8 col-xs-12 thumb">
-                    <h6 style="font-size: 25px; font-family: 'Righteous';"><i class="fa fa-birthday-cake"></i> Today's Birthday:</h6>
-                    <ul>
-                    {% for i in staffs %}
-                    <li style="font-size: 20px; font-family: 'Pangolin';">{{i.first_name}} {{i.last_name}}</li>
-                    {% endfor %}
-                </ul>
-                </div>
+                
             </div>            
             <div class="col-lg-4 col-md-4 col-xs-12 ">
             <a href="{% url 'fees:fee_report' %}">
@@ -107,6 +113,7 @@
     <script src="{% static 'landing/landing_salary_full_chart.js' %}"></script>   
     <script src="{% static 'landing/landing_waterfall.js' %}"></script>   
     <script src="{% static 'landing/fancycharts.min.js' %}"></script>
+    <script src="{% static 'landing/jquery.easy-ticker.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'landing/landing.css' %}">
 
     <script type="text/javascript">
@@ -119,37 +126,38 @@
         var percent_student = parseInt('{{percent_student}}');
         chart.circles("#teacherattendanceChart", percent_staff, colors[0]);
         chart.circles("#studentattendanceChart", percent_student, colors[1]);
+        $('.ticker').easyTicker({
+            direction: 'up',
+            speed: 'slow',
+            interval: 2000,
+            height: 'auto',
+            visible: 2,
+            mousePause: 1,
+            // controls: {
+            //     up: '',
+            //     down: '',
+            //     toggle: '',
+            //     playText: 'Play',
+            //     stopText: 'Stop'
+            // }
+        });
+
+        $('.note-ticker').easyTicker({
+            direction: 'up',
+            speed: 'slow',
+            interval: 2000,
+            height: 'auto',
+            // visible: 1,
+            mousePause: 1,
+            // controls: {
+            //     up: '',
+            //     down: '',
+            //     toggle: '',
+            //     playText: 'Play',
+            //     stopText: 'Stop'
+            // }
+        });
     </script>
 	
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

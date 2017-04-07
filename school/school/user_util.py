@@ -89,7 +89,8 @@ def month_fee(request, year):
     return fee_total
 	
 def yearly_pl(request):
-    account_list=Account.objects.for_tenant(request.user.tenant).filter(account_type__in=('Revenue','Fees',\
+    this_tenant=request.user.tenant
+    account_list=Account.objects.for_tenant(this_tenant).filter(account_type__in=('Revenue','Fees',\
                     'Indirect Revenue','Direct Expense', 'Salary','Indirect Expense'))
     response_data=[]
     income=0
@@ -97,27 +98,30 @@ def yearly_pl(request):
     other_income=0
     other_expense=0
     profit=0
-    period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+    period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
     start=period.start
-    end=period.end
+    current_dataset=account_year.objects.for_tenant(this_tenant).filter(accounting_period=period)
     for item in account_list:
     	total=0
     	if (item.account_type in ('Revenue','Fees','Indirect Revenue')):
-            total-=item.current_debit
-            total+=item.current_credit
+            current_data=current_dataset.get(account=item)
+            total-=current_data.current_debit + current_data.opening_debit
+            total+=current_data.current_credit + current_data.opening_credit
             if(item.account_type in ('Revenue','Fees')):
                 income+=total
             else:
                 other_income+=total
     	elif (item.account_type in ('Direct Expense', 'Salary','Indirect Expense')):
-    		total+=item.current_debit
-    		total-=item.current_credit
-    		if(item.account_type in ('Direct Expense', 'Salary')):
-    			expense+=total
-    		else:
-    			other_expense+=total
+            current_data=current_dataset.get(account=item)
+            total+=current_data.current_debit + current_data.opening_debit
+            total-=current_data.current_credit + current_data.opening_credit
+            if(item.account_type in ('Direct Expense', 'Salary')):
+                expense+=total
+            else:
+                other_expense+=total
 
     profit=(income-expense)+other_income-other_expense
+    print(str(income))
     response_data.append({'data_type':'other_income','amount':str(other_income)})
     response_data.append({'data_type':'other_expense','amount':str(other_expense)})
     response_data.append({'data_type':'income','amount':str(income)})

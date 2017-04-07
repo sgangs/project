@@ -105,7 +105,7 @@ $('.submit').click(function(e) {
 });
 
 
-function get_data(){            
+function get_data(){
     items=[];
     total_present=0;
     total_absent=0;
@@ -150,22 +150,10 @@ function reconfirm() {
 }
 
 function save_data(){            
-    //get all itemcode & quantity pair 
     // var items = [];
     // date=$('.date').val()
     if (date != ""){
-        // $("tr.data").each(function() {
-        //     var student_id = $(this).find('td:nth-child(1)').html();
-        //     var is_present = $(this).find('td:nth-child(6) input').is(":checked");
-        //     var remarks = $(this).find('td:nth-child(7) input').val();
-        //     var item = {
-        //         student_id : student_id,
-        //         is_present: is_present,
-        //         remarks: remarks,
-        //     };
-        //     items.push(item);        
-        // });
-        // console.log(items);
+        // Get data function defined earlier gets the attendance.
         //Send ajax function to back-end 
         (function() {
             $.ajax({

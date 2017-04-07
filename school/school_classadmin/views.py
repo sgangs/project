@@ -17,7 +17,7 @@ from .models import *
 from .class_admin_support import *
 from school_teacher.models import Teacher
 from school_student.models import Student
-from school_eduadmin.models import classstudent, Exam, exam_creation, grade_table, classteacher, subject_teacher
+from school_eduadmin.models import classstudent, Exam, exam_creation, grade_table, grade_item,  classteacher, subject_teacher
 from school_genadmin.models import class_group, Subject, annual_calender, academic_year
 from school_genadmin.genadmin_util import holiday_calculator
 
@@ -156,7 +156,8 @@ def new_exam_report(request):
 	this_tenant=request.user.tenant
 	classes = class_section.objects.for_tenant(this_tenant)
 	exams = Exam.objects.for_tenant(this_tenant)
-	grades=list(grade_table.objects.for_tenant(tenant=this_tenant).filter(grade_type='S').\
+	grade_name=grade_table.objects.get(tenant=this_tenant)
+	grades=list(grade_item.objects.for_tenant(tenant=this_tenant).filter(grade_table=grade_name).\
 			values('min_mark','max_mark','grade','grade_point'))
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
@@ -377,13 +378,13 @@ def generate_transcript(request):
 					'first_name': student.student.first_name, 'last_name': student.student.last_name})
 		elif calltype=='student':
 			#Getting student details based on selection
-			if (exam_type=='CCE'):
-				response_data=get_cce_transcript(request, year)
-		jsondata = json.dumps(response_data)
+			# if (exam_type=='CCE'):
+			response_data=generate_student_transcript(request, year)
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 	classes = class_section.objects.for_tenant(this_tenant)
-	if (exam_type=='CCE'):
-		return render (request, 'classadmin/transcript_exam_cce.html', {'items':classes, "extension":extension})
-	else:
-		return render (request, 'classadmin/transcript_exam_generic.html', {'items':classes,'exams':exams, "extension":extension})
+	# if (exam_type=='CCE'):
+	return render (request, 'classadmin/transcript_exam_cce.html', {'items':classes, "extension":extension})
+	# else:
+		# return render (request, 'classadmin/transcript_exam_generic.html', {'items':classes,'exams':exams, "extension":extension})
 

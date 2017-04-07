@@ -9,15 +9,6 @@ function clearmodal(){
     }, 3000);
 }
 
-var year='';
-var add_student="";
-var monthly_fee="";
-
-
-//This is called if month is changed
-$( ".year" ).change(function() {
-    year=parseInt($('.year').val());
-});
 
 //This is for the reset button to work
 // $( ".reset" ).click(function() {
@@ -49,14 +40,15 @@ $('.save').click(function(e) {
 });
     
 function save_data(){
-    var yearly_fees=[];
+    var generic_fees=[];
     var class_group = [];
-    $.each($(".yearlyfee option:selected"), function(){
+    var add_student = "Yes"
+    $.each($(".genericfee option:selected"), function(){
         feeid=$(this).data('id')
         var fee={
             fee_id: feeid
         };
-        yearly_fees.push(fee);
+        generic_fees.push(fee);
     });
     $.each($(".classgroup option:selected"), function(){            
         classgroupid=$(this).data('id')
@@ -65,22 +57,16 @@ function save_data(){
         }
         class_group.push(classgroup);
     });
-    monthly_fee=$(".monthlyfee").find(':selected').data('id');
-        //add_student=$(".addstudent").find(':selected').data('id');
-    add_student="Yes"
-    if (year !='' && add_student != '' && class_group.length!=0){
-            //console.log("Date: "+date);
-            //Send ajax function to back-end 
-        if (yearly_fees.length != 0 || typeof(monthly_fee) != "undefined" )
+    if (class_group.length!=0){
+        //Send ajax function to back-end 
+        if (generic_fees.length != 0)
         {
             (function() {
                 $.ajax({
                     url : "", 
                     type: "POST",
                     data:{ classgroups: JSON.stringify(class_group),
-                        monthlyfee: monthly_fee,
-                        yearlyfees: JSON.stringify(yearly_fees),
-                        year: year,
+                        genericfees: JSON.stringify(generic_fees),
                         addstudent: add_student,
                         csrfmiddlewaretoken: csrf_token},
                     dataType: 'json',               

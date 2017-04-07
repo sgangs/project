@@ -795,7 +795,7 @@
     <!-- <script src="{% static 'assets/js/jquery.ajaxchimp.min.js' %}"></script> -->
     <script src="{% static 'assets/js/matchMedia.js' %}"></script>
     <script src="{% static 'assets/js/script.js' %}"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAC0mLeNlnWC5lmYhNl4VKbRaii5buJoYs&v=3.exp"></script>
     <script src="{% static 'assets/js/wow.js' %}"></script>
     <script src="{% static 'assets/js/easing.js' %}"></script>
     <!-- Submitting contact form -->
@@ -856,14 +856,14 @@
 		  // Create a new StyledMapType object, passing it the array of styles,
 		  // as well as the name to be displayed on the map type control.
 		  var styledMap = new google.maps.StyledMapType(styles,
-			{name: "Styled Map"});
+			{name: "TechAssisto"});
 
 		  // Create a map object, and include the MapTypeId to add
 		  // to the map type control.
-		  var kolkata = new google.maps.LatLng(22.609571, 88.385549);
+		  var home = new google.maps.LatLng(22.609571, 88.385549);
 		  var mapOptions = {
 			zoom: 14,
-			center: kolkata,
+			center: home,
 			mapTypeControlOptions: {
 			  mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
 			},
@@ -880,7 +880,7 @@
 		  // To add the marker to the map, use the 'map' property
 		  var image = '{% static "assets/images/map_icon_3.png" %}';
 		  var marker = new google.maps.Marker({
-			  position: kolkata,
+			  position: home,
 			  map: map,
 			  title:"TechAssisto for schools",
 			  icon: image

@@ -20,7 +20,7 @@ from school_user.forms import UserRegistrationForm,CustomerRegistrationForm
 from school_user.models import User, Tenant
 from school_account.models import payment_mode, accounting_period
 from school_classadmin.models import Attendance
-from school_genadmin.models import academic_year, annual_calender
+from school_genadmin.models import academic_year, annual_calender, notice_board
 from school_teacher.models import Teacher
 from school_student.models import Student
 from school_hr.models import teacher_attendance
@@ -101,7 +101,7 @@ def custom_password_reset(request, from_email, subject_template_name, password_r
     if request.method == 'POST':
         form = revisedPasswordResetForm(request.POST)
         if form.is_valid():
-            return password_reset(request)
+            return password_reset(request,html_email_template_name='registration/password_reset_email.html',)
             # return HttpResponse("Wow")
     else:
         form = revisedPasswordResetForm()        
@@ -187,12 +187,13 @@ def landing(request):
     current_day=dt.now()
     start=dt(year=current_day.year, month=current_day.month, day=1)
     end=dt(year=current_day.year, month=current_day.month, day=(monthrange(current_day.year,current_day.month)[1]))
+    notices=notice_board.objects.for_tenant(this_tenant).values('show_from','title','details')
     try:
         events=annual_calender.objects.for_tenant(this_tenant).filter(date__range=(start,end))
     except:
         pass
     if (request.user.user_type == "Student"):
-        return render (request, 'landing_student.html', {"events":events,})    
+        return render (request, 'landing_student.html', {"events":events,'notices':notices})    
     elif (request.user.user_type == "Teacher"):
         teacher=Teacher.objects.get(user=request.user)
         year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
@@ -200,7 +201,7 @@ def landing(request):
         subject_teacher=get_subject_teacher(request, teacher, year, this_tenant)
         attendance=json.dumps(staff_attendance_number(request, teacher, this_tenant))
         return render (request, 'landing_teacher.html', {"attendance":attendance,"events":events, \
-                    'classes': class_teacher, 'subjects':subject_teacher})
+                    'classes': class_teacher, 'subjects':subject_teacher, 'notices':notices})
     try:
         year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
         paid=fee_paid(request, year)
@@ -239,7 +240,7 @@ def landing(request):
     i_e_json = json.dumps(income_expense)
     return render (request, 'landing.html', {"paid":paid,"events":events,"staffs":staffs,"total":total, 'i_e':i_e_json, \
         'total_staffs': total_staffs, 'staffs_present':staffs_present, 'percent_staff':percent_staff,\
-        'total_students':total_students, 'students_present':students_present,'percent_student':percent_student})
+        'total_students':total_students, 'students_present':students_present,'percent_student':percent_student, 'notices':notices})
 
 #400 error
 def bad_request(request):

@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from .models import Attendance, exam_report
 #from school_eduadmin.models import * #class_section
 from school_student.models import Student
-from school_eduadmin.models import class_section, classstudent, Exam, Syllabus
+from school_eduadmin.models import class_section, classstudent, Exam, Syllabus, Term
 from school_genadmin.models import class_group, Subject, academic_year
 from school.school_general import *
 
@@ -20,6 +20,7 @@ def get_subject_data(request, called_for, classes):
     try:
         class_group=class_selected.classgroup
         subjects=Syllabus.objects.filter(class_group=class_group, year=year, is_elective=False).select_related("subject")
+        print(subjects)
         for subject in subjects:
             response_data.append({'data_type':'Subject','id':subject.subject.id,'name':subject.subject.name})
         return response_data
@@ -131,34 +132,69 @@ def get_studentattendance_data(request, called_for, classes):
     # except:
     #   pass
 
-def generate_transcript(request, year):
+# def generate_transcript(request, year):
+#     this_tenant=request.user.tenant
+#     studentid=int(request.POST.get('student'))
+#     classid=int(request.POST.get('classsection'))
+#     response_data=[]
+#     class_group_selected=class_group.objects.for_tenant(this_tenant).\
+#                     get(classSection_classadmin_classGroup_genadmin=classid)
+#     subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected,year=year).select_related('subject')
+#     for item in subjects:
+#         response_data.append({'data_type':'Subject','name': item.subject.name, 'id':item.subject.id})
+#     try:
+#         final_data=exam_year_final.objects.for_tenant(this_tenant).get(year=year,class_section=classid)
+#     except:
+#         pass
+#     student=Student.objects.for_tenant(this_tenant).get(id=studentid)
+#     this_tenant=request.user.tenant
+#     exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(student=student, year=year).\
+#                 select_related('exam', 'subject')
+#     subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected)
+#     terms=Term.objects.for_tenant(this_tenant).filter(is_active=True)
+#     for term in terms:
+#         exam_term=Exam.objects.for_tenant(this_tenant).filter(term=term)
+#         exam_report_data=exam_report_details.filter(exam__in=exam)
+#         for subject in subjects:
+#             exam_report_final=exam_report_details.filter(subject=subject)
+#             total=0
+#             for report in exam_report_data:
+#                 exam=report.exam        
+#                 total+=exam.final_score
+#                 response_data.append({'data_type':'Exam','name':exam.key,'grade':report.grade,'subject': subject.name})
+#         response_data.append({'data_type':'Term Total','total':total,'subject': subject.name})
+#     return response_data
+
+def generate_student_transcript(request, year):
     this_tenant=request.user.tenant
     studentid=int(request.POST.get('student'))
     classid=int(request.POST.get('classsection'))
+    student=Student.objects.for_tenant(this_tenant).get(id=studentid)
     response_data=[]
     class_group_selected=class_group.objects.for_tenant(this_tenant).\
-                    get(classSection_classadmin_classGroup_genadmin=classid)
-    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected,year=year).select_related('subject')
-    for item in subjects:
-        response_data.append({'data_type':'Subject','name': item.subject.name, 'id':item.subject.id})
-    try:
-        final_data=exam_year_final.objects.for_tenant(this_tenant).get(year=year,class_section=classid)
-    except:
-        pass
-    student=Student.objects.for_tenant(this_tenant).get(id=studentid)
-    this_tenant=request.user.tenant
-    exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(student=student, year=year).select_related('exam', 'subject')
-    subjects=Syllabus.objects.for_tenant(this_tenant).filter(class_group=class_group_selected)
+            filter(classSection_eduadmin_classGroup_genadmin=classid)
     terms=Term.objects.for_tenant(this_tenant).filter(is_active=True)
+    exam_report_details=exam_report.objects.for_tenant(this_tenant).filter(student=student, year=year).\
+                select_related('exam', 'subject')
+    subjects=list(exam_report_details.distinct('subject'))
+    exams=list(exam_report_details.distinct('exam'))
+    for i in subjects:
+        response_data.append({'data_type':'Subject','id':i.subject.id, 'name':i.subject.name})
+    for i in exams:
+        response_data.append({'data_type':'Exam Name','id':i.exam.id, 'name':i.exam.name})    
+    # for s in subjects:
+    #     print(s.subject)
+    # for e in exams:
+    #     print(e.exam)
+    exam_class=Exam.objects.for_tenant(this_tenant).filter(classgroup__in=class_group_selected)
+    exam_all=Exam.objects.for_tenant(this_tenant).all()
     for term in terms:
-        exam_term=Exam.objects.for_tenant(this_tenant).filter(term=term)
-        exam_report_data=exam_report_details.filter(exam__in=exam)
-        for subject in subjects:
-            exam_report_final=exam_report_details.filter(subject=subject)
-            total=0
-            for report in exam_report_data:
-                exam=report.exam        
-                total+=exam.final_score
-                response_data.append({'data_type':'Exam','name':exam.key,'grade':report.grade,'subject': subject.name})
-        response_data.append({'data_type':'Term Total','total':total,'subject': subject.name})
+        exam_term=exam_class.filter(term=term)
+        exam_report_data=exam_report_details.filter(exam__in=exam_term).order_by('exam')
+        for report in exam_report_data:
+            # response_data.append({'data_type':'Exam','key':report.exam.key, 'name':report.exam.name,\
+            #         'grade':report.grade,'marks':report.final_score, 'subject': report.subject.name})
+            response_data.append({'data_type':'Exam Report','exam_id':report.exam.id,\
+                    'grade':report.grade,'marks':report.final_score, 'subject': report.subject.name, 'subject_id': report.subject.id})
+        # response_data.append({'data_type':'Term Total','total':total,'subject': subject.name})
     return response_data

@@ -12,11 +12,12 @@ $('#calendar').fullCalendar({
     header: {
         left: 'myCustomButton',
         center: 'title',
-        right: 'prev,next, month, agendaWeek, today'
+        right: 'prev,next, month, agendaWeek, today',        
     },
-
+    // dayClick: function(date, jsEvent, view) {
+    //     alert('Clicked on: ' + date.format());
+    // },
     height:400,
-
     events: function(start,end, timezone, callback){
         $.ajax({
             url: "",
@@ -29,19 +30,49 @@ $('#calendar').fullCalendar({
                 events=[]
                 var source={}
                 $.each(JSON.parse(jsondata), function(){
-                    events.push({           
-                            title: this.title,
-                            start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
-                            end: moment(this.start).format('YYYY/MM/DD hh:mm'),
-                            allDay: true,
-                            })
+                    if (this.event_type == 1){
+                        events.push({           
+                                title: this.title,
+                                color: '#ea4d62',
+                                start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
+                                end: moment(this.start).format('YYYY/MM/DD hh:mm'),
+                                allDay: true,                                
+                                })
+                    }
+                    else if (this.event_type == 2){
+                        events.push({           
+                                title: this.title,
+                                color: '#96bc6b',
+                                start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
+                                end: moment(this.start).format('YYYY/MM/DD hh:mm'),
+                                allDay: true,                                
+                                })
+                    }
+                    else if (this.event_type == "Weekly"){
+                        events.push({           
+                                title: this.title,
+                                color: '#9b000c',
+                                start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
+                                end: moment(this.start).format('YYYY/MM/DD hh:mm'),
+                                allDay: true,    
+                                })
+                    }
+                    else{
+                        events.push({           
+                                title: this.title,                                
+                                start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
+                                end: moment(this.start).format('YYYY/MM/DD hh:mm'),
+                                allDay: true,
+                                })
+                    }
                 });
-                var source={events};
-
                 callback(events)
             }
         });
     },    
+    eventRender: function(event, element) {
+        element.prop('title', event.title);
+    }
 })
 
 // $('.fc-myCustomButton-button').append('<i class="glyphicon glyphicon-plus"</i>')
@@ -50,24 +81,6 @@ $('.event').attr('data-target',"#event")
 
 $('.annualrule').attr('data-toggle',"modal")
 $('.annualrule').attr('data-target',"#annualrule")
-
-//This variable will store the student list added via json
-
-// $( ".submitevent" ).confirm({
-//     title: 'Confirm!',
-//     icon: 'fa fa-spinner fa-spin',
-//     theme: 'black',
-//     backgroundDismiss: true,
-//     content: 'Are you sure to record the event?',
-//     confirmButton: 'Yes!',
-//     cancelButton: 'No!',
-//     autoClose: 'cancel|6000',
-//     confirmButtonClass: 'btn-success',
-//     cancelButtonClass: 'btn-danger',
-//     animation: 'rotateY',
-//     closeAnimation: 'rotateXR',
-//     animationSpeed: 750,
-//     confirm: });
 
 
 $('.submitevent').click(function(e) {
@@ -126,7 +139,9 @@ function eventadd(){
     eventname=$(".eventname").val();
     date=$(".date").val();
     eventtype=$(".eventtype").find(':selected').data('id');
+    console.log(eventtype);
     atttype=$("#attendance").find(':selected').data('id');
+    console.log(atttype);
     if (eventname=="" || date=="" || atttype == "" || eventtype =="" || eventname==undefined 
             || date==undefined || atttype == undefined || eventtype ==undefined ){
             swal("Uhhh..", "All the four inputs shall be filled!", "error");
@@ -147,7 +162,7 @@ function eventadd(){
                         // handle a successful response
                     success : function(jsondata) {
                         setTimeout(function(){swal("Hooray..", "Event added successfully!", "success")},1000);
-                        location.reload();
+                        // location.reload();
                         //location.href = redirect_url;
                         //console.log(jsondata);
                     },

@@ -109,8 +109,9 @@
       <ul class="Acad Year">
         <li><a href="#" title="Nav"><span><i class="fa fa-calendar-o"></i></span>Academic Year</a>
           <ul>
-            <li><a href="{% url 'genadmin:new_academic_year' %}" title="Sub Nav"><i class="fa fa-plus"></i> Add Academic Year</a></li>
-            <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> View Academic Year</a></li>
+            <li><a href="{% url 'genadmin:new_academic_year' %}"><i class="fa fa-plus"></i> Add Academic Year</a></li>
+            <li><a href="#"><i class="fa fa-list"></i> View Academic Year</a></li>
+            <li><a href="{% url 'genadmin:change_academic_year' %}"><i class="fa fa-joomla"></i> Change current academic year</a></li>
           </ul>
         </li>
       </ul>
@@ -230,19 +231,19 @@
       </ul>
       <!-- Subject & Syllabus -->
       <ul class="sub n syl">
-        <li><a href="#" title="Nav"><span><i class="fa fa-language"></i></span>Subject</a>
+        <li><a href="#"><span><i class="fa fa-language"></i></span>Subject</a>
           <ul>
-            <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Subject</a>
+            <li><a href="#"><i class="fa fa-plus"></i> Add To Subject</a>
               <ul>
-                <li><a href="{% url 'genadmin:new_subject' %}" title="Sub Nav 2">Add Subject</a></li>
-                <li><a href="{% url 'eduadmin:new_syllabus' %}" title="Sub Nav 2">Add Syllabus</a></li>
+                <li><a href="{% url 'genadmin:new_subject' %}">Add Subject</a></li>
+                <li><a href="{% url 'eduadmin:new_syllabus' %}">Add Syllabus</a></li>
               </ul>
             </li>
-            <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> Subject List</a>
+            <li><a href="#"><i class="fa fa-list"></i> Subject List</a>
               <div>
                 <ul>
-                  <li><a href="{% url 'genadmin:subject_list' %}" title="Sub Nav 2">View Subject List</a></li>
-                  <li><a href="#" title="Sub Nav 2">View Syllabus</a></li>
+                  <li><a href="{% url 'genadmin:subject_list' %}">View Subject List</a></li>
+                  <li><a href="{% url 'eduadmin:view_syllabus' %}">View Syllabus</a></li>
                 </ul>
               </div>
             </li>
@@ -283,11 +284,12 @@
               <ul>
                 <!-- <li><a href="{% url 'eduadmin:new_exam' %}" title="Sub Nav 2">Add New Exam</a></li>
                 <li><a href="{% url 'classadmin:new_exam_report' %}" title="Sub Nav 2">Prepare Report</a></li> -->
-                <li><a href="#" title="Sub Nav 2">Create New Exam</a></li>
-                <li><a href="#" title="Sub Nav 2">Prepare Report</a></li>
-                <li><a href="#" title="Sub Nav 2">Prepare Cocurricular Report</a></li>
+                <li><a href="#">Create New Exam</a></li>
+                <li><a href="#">Link Exam &amp Class</a></li>
+                <li><a href="#">Prepare Report</a></li>
+                <li><a href="#">Prepare Cocurricular Report</a></li>
                 <li></li>
-                <li><a href="#" title="Sub Nav 2">Prepare Final Report</a></li>
+                <li><a href="#">Prepare Final Report</a></li>
               </ul>
             </li>
             <li><a href="#" title="Sub Nav"><i class="fa fa-bar-chart"></i> View List</a>
@@ -306,27 +308,30 @@
       </ul>
       <!-- Calendar -->
       <ul class="calendar">
-        <li><a href="#" title="Nav"><span><i class="fa fa-calendar"></i></span>Events</a>
+        <li><a href="#" title="Nav"><span><i class="fa fa-calendar"></i></span> Events &amp Notices</a>
           <ul>
-            <li><a href="{% url 'genadmin:calendar' %}" title="Sub Nav"><i class="fa fa-calendar-o"></i> View Calendar</a></li>
-            <li><a href="{% url 'genadmin:event_list' %}" title="Sub Nav"><i class="fa fa-list"></i> View Event List</a></li>
+            <li><a href="{% url 'genadmin:calendar' %}"><i class="fa fa-calendar-o"></i> View Calendar</a></li>
+            <li><a href="{% url 'genadmin:event_list' %}"><i class="fa fa-list"></i> View Event List</a></li>
+            <li><a href="{% url 'genadmin:event_delete' %}"><i class="fa  fa-eraser"></i> Delete Events</a></li>
+            <li><a href="{% url 'genadmin:new_notice' %}"><i class="fa fa-align-justify "></i> New Notice</a></li>
+            <li><a href="{% url 'genadmin:notice_delete' %}"><i class="fa  fa-eraser"></i> Delete Notice</a></li>
           </ul>
         </li>
       </ul>
       <!-- Period and time table -->
       <ul class="peirod">
-        <li><a href="#" title="Nav"><span><i class="fa fa-table"></i></span>Period and Time Table</a>
+        <li><a href="#" title="Nav"><span><i class="fa fa-table"></i></span> Period and Time Table</a>
           <ul>
             <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add To Period</a>
               <ul>
-                <li><a href="{% url 'eduadmin:total_period_entry' %}" title="Sub Nav 2">Add Total Number of Periods</a></li>
-                <li><a href="{% url 'eduadmin:class_list' %}" title="Sub Nav 2">Add Class Schedule</a></li>
+                <li><a href="{% url 'eduadmin:total_period_entry' %}"> Add Total Number of Periods</a></li>
+                <li><a href="{% url 'eduadmin:class_list' %}"> Add Class Schedule</a></li>
               </ul>
             </li>
             <li><a href="#" title="Sub Nav"><i class="fa fa-list"></i> View Period</a>
               <ul>
-                <li><a href="{% url 'eduadmin:class_list' %}" title="Sub Nav 2">View class wise period</a></li>
-                <li><a href="{% url 'eduadmin:teacher_period' %}" title="Sub Nav 2">View teacher wise period</a></li>
+                <li><a href="{% url 'eduadmin:class_list' %}"> View class wise period</a></li>
+                <li><a href="{% url 'eduadmin:teacher_period' %}"> View teacher wise period</a></li>
               </ul>
             </li>
           </ul>
@@ -427,7 +432,7 @@
               <ul>
                 <li><a href="#" title="Sub Nav 2"><i class="fa fa-plus"></i> Add to accounts</a>
                   <ul>
-                    <li><a href="{% url 'accounts:new_period' %}" title="Sub Nav 3">Add accounting period</a></li>
+                    <!-- <li><a href="{% url 'accounts:new_period' %}" title="Sub Nav 3">Add accounting period</a></li> -->
                     <li><a href="{% url 'accounts:new_ledgergroup' %}" title="Sub Nav 3">Add ledger group</a></li>
                     <li><a href="{% url 'accounts:new_account' %}" title="Sub Nav 3">Add account</a></li>
                     <li><a href="{% url 'accounts:new_journalgroup' %}" title="Sub Nav 3">Add Journal Group</a></li>
@@ -435,6 +440,7 @@
                     <li><a href="{% url 'accounts:new_paymentmode' %}" title="Sub Nav 3">Add payment mode</a></li>
                   </ul>
                 </li>
+                <li><a href="{% url 'accounts:change_accounting_period' %}"><i class="fa fa-joomla"></i> Change current accounting period</a></li>
                 <li><a href="#" title="Sub Nav 2"><i class="fa fa-list"></i> View Records</a>
                   <ul>
                     <li><a href="{% url 'accounts:period_list' %}" title="Sub Nav 3">Accouting Period List</a></li>

@@ -129,7 +129,7 @@ class ExamForm(forms.ModelForm):
 
 	class Meta:
 		model=Exam
-		fields = ('name', 'term', 'total', 'weightage')
+		fields = ('name', 'term', 'total', 'weightage','serial_no')
 	def clean(self):
 		cd= super(ExamForm, self).clean()
 		unique_name=cd.get('name')

@@ -6,7 +6,7 @@ $('.date').datepicker({
     autoclose: true,
     startDate: '-60d',
     // endDate: moment(),
-    // endDate: '0d',
+    endDate: '+60d',
     format: 'dd/mm/yyyy',    
     });
 
@@ -15,6 +15,7 @@ $( ".entry_type" ).change(function() {
     entry_type=$(".entry_type").find(':selected').data('id');
     if (entry_type == 'Mispunch'){
         $('.submit').attr('disabled', false);
+        $('.leave').attr('hidden', true);
         $('.mispunch').attr('hidden', false);
     }
     else{

@@ -131,7 +131,7 @@ $( ".table" ).on('change', '.final',function() {
 $('.submit').click(function(e) {
     swal({
         title: "Record Marks/Grade?",
-        text: "You cannot undo student fee payment!",
+        text: "You cannot undo student exam report creation!",
         type: "info",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",

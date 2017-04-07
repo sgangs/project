@@ -67,7 +67,6 @@ def genadmin_new(request, input_type):
 		if form.is_valid():
 			with transaction.atomic():
 				try:
-					print("Valid")
 					if (input_type == "academic_year"):
 						data=form.cleaned_data
 						current=data['current_academic_year']
@@ -139,7 +138,7 @@ def calendar(request):
 			datetime_final=datetime.combine(date_formatted, datetime.min.time())
 			calendar_event.date=timezone.make_aware(datetime_final, timezone.get_current_timezone())
 			calendar_event.tenant=request.user.tenant
-			calendar_event.eventtype=eventtype
+			calendar_event.event_type=eventtype
 			if (eventtype == 1):
 				calendar_event.attendance_type=2
 			elif (eventtype == 3):
@@ -167,25 +166,26 @@ def calendar(request):
 			#Appends all events
 			events= annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
 			for event in events:
-				response_data.append({'title':event.event, 'start': localtime(event.date).isoformat(), 'allDay':True})
+				response_data.append({'event_type':event.event_type,'title':event.event, 'start': localtime(event.date).isoformat(),\
+									'allDay':True})
 			rules=annual_holiday_rules.objects.for_tenant(request.user.tenant)
 			hol=[] #To store all holidays here.
 			hol=holiday_calculator(start, end, events, hol)
 			#Appends working holidays
 			for i in hol:
-				response_data.append({'title':"Weekly Holiday", 'start': i.isoformat(), 'allDay':True})
+				response_data.append({'event_type':"Weekly",'title':"Weekly Holiday", 'start': i.isoformat(), 'allDay':True})
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'genadmin/calendar.html', {'extension':extension})
 
 @login_required
-#This is a event list view.
+#This is a event list view - Change period to academic year period
 def calendar_list(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
-	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
-	events = annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(period.start,period.end))
+	period=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+	events=annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(period.start,period.end))
 	return render (request, 'genadmin/event_list.html',{'items':events, 'list_for':'Events' , 'extension':extension})
 
 #Nothing Done
@@ -204,33 +204,54 @@ def view_gate_passes(request):
 @login_required
 def notice_event_delete(request, calltype):
 	this_tenant=request.user.tenant
+	extension='base.html'
 	if request.method == 'POST':
 		response_data=[]
-		itemid = request.POST.get('itemid')
+		details = json.loads(request.POST.get('details'))
 		if (calltype == 'Notice'):
-			notice_board.objects.for_tenant(request.user.tenant).get(id__exact=itemid).delete()
-		elif (calltype == 'EVent'):
-			annual_calender.objects.for_tenant(request.user.tenant).get(id__exact=itemid).delete()
+			for item in details:
+				notice_board.objects.for_tenant(request.user.tenant).get(id__exact=item['item_id']).delete()
+		elif (calltype == 'Event'):
+			for item in details:
+				annual_calender.objects.for_tenant(request.user.tenant).get(id__exact=item['item_id']).delete()			
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	if (calltype == 'Notice'):
-		notices=notice_board.objects.for_tenant(this_tenant)
-		return render (request, 'genadmin/event_list.html')
-	elif (calltype == 'EVent'):
-		events=annual_calender.objects.for_tenant(this_tenant)
-		return render (request, 'genadmin/event_list.html')
+		items=notice_board.objects.for_tenant(this_tenant)
+	elif (calltype == 'Event'):
+		items=annual_calender.objects.for_tenant(this_tenant)
+	return render (request, 'genadmin/delete_event_notice.html', {'items':items,'calltype':calltype, 'extension':extension})
 
 
+#Frontend pending
+@login_required
+def change_class_name(request):
+	extension='base.html'
+	this_tenant=request.user.tenant
+	classgroups=class_group.objects.for_tenant(this_tenant)
+	if request.method == 'POST':
+		response_data=[]
+		classid = request.POST.get('classid')
+		new_name=request.POST.get('new_name')
+		class_group_selected=class_group.objects.for_tenant(this_tenant).get(id=classid)
+		class_group_selected.name=new_name
+		class_group_selected.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)	
+	class_groups=class_group.objects.for_tenant(this_tenant).all()
+	return render (request, 'genadmin/change_class_name.html', {'classgroups':classgroups, 'extension':extension})
 
 #Frontend yet to be designed
 @login_required
 #This should be an owner only view
 def change_academic_year(request):
 	this_tenant=request.user.tenant
+	extension='base.html'
 	years_list=academic_year.objects.for_tenant(this_tenant).all()
+	print(years_list)
 	if request.method == 'POST':
 		response_data=[]
-		yearid = request.POST.get('yearid')
+		yearid = request.POST.get('new_acad_year')
 		with transaction.atomic():
 			try:
 				current_year=years_list.get(current_academic_year=True)
@@ -243,4 +264,4 @@ def change_academic_year(request):
 				transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-	return render (request, 'genadmin/event_list.html')
+	return render (request, 'genadmin/change_academic_year.html', {'years':years_list, 'extension':extension})
