@@ -269,8 +269,8 @@ def eduadmin_list(request, input_type):
 			return render(request, 'eduadmin/classsection_list.html',{'items':items, 'list_for':"Classes", 'extension':extension})
 	elif (input_type=="Subject Teacher"):
 		items = subject_teacher.objects.for_tenant(request.user.tenant).select_related('teacher').all()
-		return render(request, 'eduadmin/subjectteacher_list.html',{'items':items, 'list_for':"Subjet Teachers, Year and Class Wise",\
-						'extension':extension, })
+		return render(request, 'eduadmin/subjectteacher_list.html',{'items':items, \
+						'list_for':"Subjet Teachers, Year and Class Wise",'extension':extension, })
 	elif (input_type=="House"):
 		items = House.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Houses", 'extension':extension})
@@ -316,7 +316,7 @@ def classdetail(request, detail):
 						response_data.append({'data_type':'Syllabus','subject': syllabus.subject.name,\
 						'topics': syllabus.topics,'teacher':teacher.teacher.name})
 					except:
-						response_data.append({'data_type':'Syllabus','subject': syllabus.subject.name,'topics': syllabus.topics,})		
+						response_data.append({'data_type':'Syllabus','subject': syllabus.subject.name,'topics': syllabus.topics,})
 				except:
 					pass					
 			except:
@@ -364,7 +364,7 @@ def view_add_period(request, detail):
 					periods=period.objects.filter(year=year,class_section=class_selected).select_related('subject', 'teacher')
 					for item in periods:
 						response_data.append({'data_type':'Period','day': item.day,'period': item.period,\
-							'subject': item.subject.name, 'teacher':item.teacher.first_name+" "+item.teacher.last_name})					
+							'subject': item.subject.name, 'teacher':item.teacher.first_name+" "+item.teacher.last_name})
 				except:
 					pass
 			except:
@@ -517,7 +517,7 @@ def exam_type_new(request):
 						create_exam("Formative Assessments 2", "FA2", 2, year, current_tenant, "Term 1", "CBSE", upto_5, 10,)
 						create_exam("Summative Assessments 1", "SA1", 3, year, current_tenant, "Term 1", "CBSE", upto_5, 30,)
 						create_exam("Formative Assessments 3", "FA3", 4, year, current_tenant, "Term 2", "CBSE", upto_5, 10,)
-						create_exam("Formative Assessments 4", "FA4", 5, year, current_tenant, "Term 2", "CBSE", upto_5, 10,)						
+						create_exam("Formative Assessments 4", "FA4", 5, year, current_tenant, "Term 2", "CBSE", upto_5, 10,)
 						create_exam("Summative Assessments 2", "SA2", 6, year, current_tenant, "Term 2", "CBSE", upto_5, 30,)
 						#Class 6-8
 						create_exam("Periodic Test 1", "PT1", 1, year, current_tenant, "Term 1", "CBSE",class_6_8, 10,)
@@ -533,34 +533,39 @@ def exam_type_new(request):
 						create_exam("Note Book", "NB", 2, year, current_tenant,"Term 1", "CBSE", class_9_12, 5,)
 						create_exam("Subject Enrichment", "SE", 3, year, current_tenant,"Term 1", "CBSE", class_9_12, 5,)
 						create_exam("Annual Exam", "AE", 4, year, current_tenant,"Term 1", "CBSE", class_9_12, 80,)
-
-						grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
-						if (count == 0):
-							create_grade_item(grade_created, 1, 100, 91,"A1", 10, current_tenant)
-							create_grade_item(grade_created, 2, 90, 81,"A2", 9, current_tenant)
-							create_grade_item(grade_created, 3, 80, 71,"B1", 8, current_tenant)
-							create_grade_item(grade_created, 4, 70, 61,"B2", 7, current_tenant)
-							create_grade_item(grade_created, 5, 60, 51,"C1", 6, current_tenant)
-							create_grade_item(grade_created, 6, 50, 41,"C2", 5, current_tenant)
-							create_grade_item(grade_created, 7, 40, 33,"D", 4, current_tenant)
-							create_grade_item(grade_created, 8, 32, 21,"E1", 0, current_tenant)
-							create_grade_item(grade_created, 9, 20, 0,"E2", 0, current_tenant)
-							# create_grade_table('C',1, 100, 81,"A+", 5, current_tenant)
-							# create_grade_table('C',2, 80, 61,"A", 4, current_tenant)
-							# create_grade_table('C',3, 60, 41,"B+", 3, current_tenant)
-							# create_grade_table('C',4, 40, 21,"B", 2, current_tenant)
-							# create_grade_table('C',5, 20, 0,"C", 1, current_tenant)
+						try:
+							table_existing =grade_table.objects.for_tenant(current_tenant)
+						except:
+							grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
+							if (count == 0):
+								create_grade_item(grade_created, 1, 100, 91,"A1", 10, current_tenant)
+								create_grade_item(grade_created, 2, 90, 81,"A2", 9, current_tenant)
+								create_grade_item(grade_created, 3, 80, 71,"B1", 8, current_tenant)
+								create_grade_item(grade_created, 4, 70, 61,"B2", 7, current_tenant)
+								create_grade_item(grade_created, 5, 60, 51,"C1", 6, current_tenant)
+								create_grade_item(grade_created, 6, 50, 41,"C2", 5, current_tenant)
+								create_grade_item(grade_created, 7, 40, 33,"D", 4, current_tenant)
+								create_grade_item(grade_created, 8, 32, 21,"E1", 0, current_tenant)
+								create_grade_item(grade_created, 9, 20, 0,"E2", 0, current_tenant)
+								# create_grade_table('C',1, 100, 81,"A+", 5, current_tenant)
+								# create_grade_table('C',2, 80, 61,"A", 4, current_tenant)
+								# create_grade_table('C',3, 60, 41,"B+", 3, current_tenant)
+								# create_grade_table('C',4, 40, 21,"B", 2, current_tenant)
+								# create_grade_table('C',5, 20, 0,"C", 1, current_tenant)
 
 					elif (exam_type == "MG"):
-						grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
-						if (count == 0):
-							create_grade_item(grade_created, 1, 100, 100,"A+", 10, current_tenant)
-							create_grade_item(grade_created, 2, 99, 90,"A", 9, current_tenant)
-							create_grade_item(grade_created, 3, 89, 80,"B", 8, current_tenant)
-							create_grade_item(grade_created, 4, 79, 70,"C", 7, current_tenant)
-							create_grade_item(grade_created, 5, 69, 60,"D", 6, current_tenant)
-							create_grade_item(grade_created, 6, 59, 40,"E", 5, current_tenant)
-							create_grade_item(grade_created, 7, 39, 0,"F", 4, current_tenant)
+						try:
+							table_existing =grade_table.objects.for_tenant(current_tenant)
+						except:
+							grade_created=create_grade('S', "Scholastic Grade Table", current_tenant)
+							if (count == 0):
+								create_grade_item(grade_created, 1, 100, 100,"A+", 10, current_tenant)
+								create_grade_item(grade_created, 2, 99, 90,"A", 9, current_tenant)
+								create_grade_item(grade_created, 3, 89, 80,"B", 8, current_tenant)
+								create_grade_item(grade_created, 4, 79, 70,"C", 7, current_tenant)
+								create_grade_item(grade_created, 5, 69, 60,"D", 6, current_tenant)
+								create_grade_item(grade_created, 6, 59, 40,"E", 5, current_tenant)
+								create_grade_item(grade_created, 7, 39, 0,"F", 4, current_tenant)
 					item.save()
 				except:
 					transaction.rollback()
@@ -665,3 +670,84 @@ def view_syllabus(request):
 		jsondata=json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'eduadmin/view_syllabus.html', {'classes':class_section_options, 'extension':extension})
+
+# @login_required
+# @user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
+# def link_exam_class(request):
+# 	this_tenant=request.user.tenant
+# 	extension="base.html"
+# 	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+# 	exams = Exam.objects.for_tenant(this_tenant).filter(year=year)
+# 	class_groups = class_group.objects.for_tenant(this_tenant)
+# 	if request.method == 'POST':
+# 		calltype = request.POST.get('calltype')
+# 		response_data = []
+# 		# classid=int(request.POST.get('classid'))
+# 		examid=request.POST.get('examid')
+# 		subjectid=request.POST.get('subjectid')
+# 		# class_final=classes.get(id__exact=classid)
+# 		exam=Exam.objects.get(id__exact=examid)
+# 		subject=Subject.objects.get(id__exact=subjectid)
+# 		class_list = json.loads(request.POST.get('details'))
+# 		with transaction.atomic():
+# 			try:
+# 				for data in class_list:
+# 					group_id=data['group_id']
+# 					class_group_final=class_groups.get(id__exact=group_id)
+# 					exam.classgroup.add(class_group_final)				
+# 			except:
+# 				transaction.rollback()
+
+# 	return render (request, 'eduadmin/publish_exam.html', {'exams':exams, 'classes':class_groups,'extension':extension})
+
+@login_required
+@user_passes_test_custom(allow_admincontrol, redirect_namespace='permission_denied')
+def new_exam(request):
+	this_tenant=request.user.tenant
+	extension="base.html"
+	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+	exams=Exam.objects.for_tenant(this_tenant).filter(year=year).select_related('term')
+	terms=Term.objects.for_tenant(this_tenant).filter(year=year)
+	class_groups = class_group.objects.for_tenant(this_tenant)
+	if request.method == 'POST':
+		response_data={}
+		calltype = request.POST.get('calltype')
+		if (calltype == "Exam Key"):
+			exam_key = request.POST.get('exam_key')
+			try:
+				is_key=exams.get(key=exam_key)
+				response_data['name']="This item exists"
+			except:
+				pass
+		else:
+			exam_name = request.POST.get('exam_name')
+			term_id = int(request.POST.get('term_id'))
+			exam_key = request.POST.get('exam_key')
+			exam_total = request.POST.get('exam_total')
+			exam_weightage = request.POST.get('exam_weightage')
+			exam_serial = request.POST.get('exam_serial')
+			exam_term=terms.get(id=term_id)
+			classgroup_links =json.loads(request.POST.get('classgroups'))
+			response_data = []
+			# subject=Subject.objects.get(id__exact=subjectid)
+			# class_list = json.loads(request.POST.get('details'))
+			with transaction.atomic():
+				try:
+					new_exam=Exam()
+					new_exam.name=exam_name
+					new_exam.term=exam_term
+					new_exam.key=exam_key
+					new_exam.total=exam_total
+					new_exam.year=year
+					new_exam.serial_no=exam_serial
+					new_exam.tenant=this_tenant
+					new_exam.save()
+					for item in classgroup_links:
+						group_id=item['group_id']
+						group=class_groups.get(id=group_id)
+						new_exam.classgroup.add(group)
+				except:
+					transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'eduadmin/new_exam.html', {'exams':exams, 'classes':class_groups,'terms':terms,'extension':extension})

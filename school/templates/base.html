@@ -105,15 +105,13 @@
 	  	</ul>
 
     <nav id="primary-navigation">
+      <!-- Tenant -->
+      <ul class="Tenant NAme">
+        <li><a href="#" title="Welcome to school"><b>{{request.user.tenant.name}}</b></a></li>
+      </ul>
       <!-- Academic Year -->
       <ul class="Acad Year">
-        <li><a href="#" title="Nav"><span><i class="fa fa-calendar-o"></i></span>Academic Year</a>
-          <ul>
-            <li><a href="{% url 'genadmin:new_academic_year' %}"><i class="fa fa-plus"></i> Add Academic Year</a></li>
-            <li><a href="#"><i class="fa fa-list"></i> View Academic Year</a></li>
-            <li><a href="{% url 'genadmin:change_academic_year' %}"><i class="fa fa-joomla"></i> Change current academic year</a></li>
-          </ul>
-        </li>
+        <li><a href="{% url 'genadmin:academic_year' %}" title="Nav"><span><i class="fa fa-calendar-o"></i></span>Academic Year</a></li>
       </ul>
       <!-- Profile -->
       <ul class="Profile">
@@ -149,7 +147,8 @@
                 <div>
                   <ul>
                     <li><a href="{% url 'student:new_student' %}" >New Student</a></li>
-                    <li><a href="{% url 'student:studet_import' %}">Upload Student List</a></li>
+                    <li><a href="{% url 'student:student_import' %}">Upload Student List</a></li>
+                    <li><a href="{% url 'student:student_edit' %}" >Edit Student Data</a></li>
                     <li><a href="{% url 'student:new_education' %}" >Student's Previous Education</a></li>
                     <li></li>
                     <li><a href="#" title="Sub Nav 2">Add/Link Guardian/Parents</a></li>
@@ -231,18 +230,13 @@
       </ul>
       <!-- Subject & Syllabus -->
       <ul class="sub n syl">
-        <li><a href="#"><span><i class="fa fa-language"></i></span>Subject</a>
+        <li><a href="#"><span><i class="fa fa-language"></i></span>Subject-Syllabus</a>
           <ul>
-            <li><a href="#"><i class="fa fa-plus"></i> Add To Subject</a>
-              <ul>
-                <li><a href="{% url 'genadmin:new_subject' %}">Add Subject</a></li>
-                <li><a href="{% url 'eduadmin:new_syllabus' %}">Add Syllabus</a></li>
-              </ul>
-            </li>
-            <li><a href="#"><i class="fa fa-list"></i> Subject List</a>
+            <li><a href="{% url 'genadmin:subject_data' %}"><i class="fa fa-plus"></i>Subject</a></li>
+            <li><a href="#"><i class="fa fa-list"></i> Syllabus</a>
               <div>
                 <ul>
-                  <li><a href="{% url 'genadmin:subject_list' %}">View Subject List</a></li>
+                  <li><a href="{% url 'eduadmin:new_syllabus' %}">Add Syllabus</a></li>
                   <li><a href="{% url 'eduadmin:view_syllabus' %}">View Syllabus</a></li>
                 </ul>
               </div>
@@ -274,32 +268,33 @@
         </li>
       </ul> -->
       <!-- Exam -->
-      <ul class="exam">
+      <ul class="exams">
         <li><a href="#" title="Nav"><span><i class="fa fa-pencil-square-o"></i></span>Exam</a>
           <ul>
             <!-- <li><a href="{% url 'eduadmin:new_exam_type' %}" title="Sub Nav"> Choose Exam Format</a></li> -->
-            <li><a href="#" title="Sub Nav"> Choose Exam Format</a></li>
-            <li><a href="#" title="Sub Nav"> Create Term</a></li>
             <li><a href="#" title="Sub Nav"><i class="fa fa-plus"></i> Add Data</a>
               <ul>
                 <!-- <li><a href="{% url 'eduadmin:new_exam' %}" title="Sub Nav 2">Add New Exam</a></li>
                 <li><a href="{% url 'classadmin:new_exam_report' %}" title="Sub Nav 2">Prepare Report</a></li> -->
-                <li><a href="#">Create New Exam</a></li>
-                <li><a href="#">Link Exam &amp Class</a></li>
-                <li><a href="#">Prepare Report</a></li>
-                <li><a href="#">Prepare Cocurricular Report</a></li>
+                <li><a href="{% url 'eduadmin:new_exam_type' %}" title="Select exam format at the begining of academic year"> Choose Exam Format</a></li>
+                <li><a href="{% url 'eduadmin:new_term' %}" title="Create Terms, eg: Term 1 &amp Term 2, etc"> Create Term</a></li>
+                <li><a href="{% url 'eduadmin:new_exam' %}" title="Create new exams, eg: Unit Test, Half Yearly,etc">Create New Exam</a></li>
+                <li><a href="{% url 'classadmin:new_exam_report' %}" title="Enter the marks obtained by students, class-wise">Prepare Report</a></li>
+                <li><a href="#" title="As of now, this feature is for CBSE boards only.">Prepare Cocurricular Report(Only for CBSE)</a></li>
                 <li></li>
-                <li><a href="#">Prepare Final Report</a></li>
+                <li><a href="#" title="Only published exam report visible to students">Publish Exam Report</a></li>
+                <li></li>
+                <!-- {# <li><a href="#">Prepare Final Report</a></li> #} -->
               </ul>
             </li>
-            <li><a href="#" title="Sub Nav"><i class="fa fa-bar-chart"></i> View List</a>
+            <li><a href="#"><i class="fa fa-bar-chart"></i> View List</a>
               <div>
                 <ul>
-                  <li><a href="#" title="Sub Nav 2">List of Exam</a></li>
+                  <li><a href="#">List of Exam</a></li>
                   <!-- <li><a href="{% url 'classadmin:exam_report_view' %}" title="Sub Nav 2">Exam Analysis</a></li>
                   <li><a href="{% url 'classadmin:view_transcript' %}" title="Sub Nav 2">Student Transcript</a></li> -->
-                  <li><a href="#" title="Sub Nav 2">Exam Analysis</a></li>
-                  <li><a href="#" title="Sub Nav 2">Student Transcript</a></li>
+                  <li><a href="{% url 'classadmin:exam_report_view' %}">Exam Analysis</a></li>
+                  <li><a href="{% url 'classadmin:view_transcript' %}">Student Transcript</a></li>
                 </ul>
               </div>
             </li>
@@ -375,7 +370,7 @@
           <ul>
             <li><a href="#" title="Sub Nav"><i class="fa fa-bullhorn"></i> New Library</a>
               <ul>
-                <li><a href="{% url 'library:new_library' %}" title="Sub Nav">Add Library</a></li>
+                <!-- <li><a href="{% url 'library:new_library' %}" title="Sub Nav">Add Library</a></li> -->
                 <li><a href="#" title="Sub Nav">Add Librarian</a></li>
                 <li><a href="{% url 'library:new_period' %}" title="Sub Nav">Add Book Holding Period</a></li>
               </ul>
@@ -387,11 +382,38 @@
                 <li><a href="{% url 'library:book_issue' %}">Issue Book</a></li>
               </ul>
             </li>
+            <li><a href="#" title="Sub Nav"><i class="fa fa-bar-chart"></i> Reports</a>
+              <ul>
+                <li><a href="{% url 'library:new_book' %}">Student Issue History</a></li>
+                <li><a href="{% url 'library:book_list' %}">Book Issue History</a></li>
+              </ul>
+            </li>
           </ul>
         </li>
       </ul>
-      <!-- Login Profile -->
-      <ul class="Login Profile">
+      <!-- Services -->
+      <ul class="service">
+        <li><a href="#" title="Nav"><span><i class="fa  fa-balance-scale"></i></span>Service Management</a>
+          <ul>
+            <li><a href="#" title="Sub Nav"><i class="fa fa-bullhorn"></i> New Data</a>
+              <ul>
+                <li><a href="#" title="Sub Nav">New Service Group</a></li>
+                <li><a href="#" title="Sub Nav">New Agency</a></li>
+                <li><a href="#" title="Sub Nav">Schedule Service</a></li>
+              </ul>
+            </li>
+            <li><a href="#" title="Sub Nav"><i class="fa fa-cogs"></i> Service Management</a>
+              <ul>
+                <li><a href="{% url 'library:new_book' %}">Pay to service</a></li>
+                <li><a href="{% url 'library:book_list' %}">Finalize payment</a></li>
+                <li><a href="{% url 'library:book_issue' %}">Service History</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <!-- Salary -->
+      <ul class="Salary">
         <li><a href="#" title="Nav"><span><i class="fa fa-mail-reply"></i></span>Salary</a>
           <ul>
             <li><a href="#" title="Sub Nav"> Create Salary Structure</a>
@@ -432,12 +454,13 @@
               <ul>
                 <li><a href="#" title="Sub Nav 2"><i class="fa fa-plus"></i> Add to accounts</a>
                   <ul>
-                    <!-- <li><a href="{% url 'accounts:new_period' %}" title="Sub Nav 3">Add accounting period</a></li> -->
-                    <li><a href="{% url 'accounts:new_ledgergroup' %}" title="Sub Nav 3">Add ledger group</a></li>
-                    <li><a href="{% url 'accounts:new_account' %}" title="Sub Nav 3">Add account</a></li>
-                    <li><a href="{% url 'accounts:new_journalgroup' %}" title="Sub Nav 3">Add Journal Group</a></li>
-                    <li><a href="{% url 'accounts:journalentry_new' %}" title="Sub Nav 3">Record Journal Entry</a></li>
-                    <li><a href="{% url 'accounts:new_paymentmode' %}" title="Sub Nav 3">Add payment mode</a></li>
+                    <li><a href="{% url 'accounts:new_period' %}">Add accounting period</a></li>
+                    <li><a href="{% url 'accounts:new_ledgergroup' %}">Add ledger group</a></li>
+                    <li><a href="{% url 'accounts:new_account' %}">Add account</a></li>
+                    <li><a href="{% url 'accounts:change_opening_balance' %}">Update Opening Balance</a></li>
+                    <li><a href="{% url 'accounts:new_journalgroup' %}">Add Journal Group</a></li>
+                    <li><a href="{% url 'accounts:journalentry_new' %}">Record Journal Entry</a></li>
+                    <li><a href="{% url 'accounts:new_paymentmode' %}">Add payment mode</a></li>
                   </ul>
                 </li>
                 <li><a href="{% url 'accounts:change_accounting_period' %}"><i class="fa fa-joomla"></i> Change current accounting period</a></li>
@@ -452,7 +475,7 @@
                 </li>
                 <li><a href="#" title="Sub Nav 2"><i class="fa fa-bar-chart"></i> Reports, Compliances</a>
                   <ul>
-                    <li><a href="{% url 'accounts:view_trail_balance' %}" title="Sub Nav 3">Trail Balance</a></li>
+                    <li><a href="{% url 'accounts:view_trail_balance' %}" title="Sub Nav 3">Trial Balance</a></li>
                     <li><a href="{% url 'accounts:view_balance_sheet' %}" title="Sub Nav 3">Balance Sheet</a></li>
                     <li><a href="{% url 'accounts:view_income_expenditure' %}" title="Sub Nav 3">Income-Expenditure Statement</a></li>
                     <li></li>
@@ -472,14 +495,16 @@
                 <li><a href="#"><i class="fa fa-plus"></i> Add Data</a>
                   <ul>
                     <li><a href="{% url 'fees:new_generic_fee' %}">Fee Structure</a></li>
+                    <li><a href="#">Late Fee Structure</a></li>
                     <li><a href="{% url 'fees:group_fee_linking' %}" >Link Class Group To Fees</a></li>
-                    <li><a href="#">Student-Fee Linking</a></li>
+                    <li><a href="{% url 'fees:student_fee_structure' %}">Student-Fee Linking</a></li>
                   </ul>
                 </li>
-                <li><a href="#" title="Sub Nav 2"><i class="fa fa-list"></i> Record Details</a>
+                <li><a href="#"><i class="fa fa-list"></i> Record/View Details</a>
                   <ul>
                     <li><a href="{% url 'fees:student_payment' %}" >Record Fee Payment</a></li>
-                    <li><a href="{% url 'fees:generic_fee_view' %}" >View Yearly Fee List</a></li>
+                    <li><a href="{% url 'fees:generic_fee_view' %}" >View Fee List</a></li>
+                    <li><a href="{% url 'fees:generic_fee_view' %}" >View Late Fee List</a></li>
                     <li><a href="{% url 'fees:student_payment_view' %}">View Student Fee Payment Details</a></li>
                   </ul>
                 </li>

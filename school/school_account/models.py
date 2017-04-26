@@ -112,17 +112,13 @@ class Account(models.Model):
 
 class account_year(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	account=models.ForeignKey(Account,db_index=True, related_name='accountYear_account')
-	
+	account=models.ForeignKey(Account,db_index=True, related_name='accountYear_account')	
 	opening_debit=models.DecimalField("Opening Debit Balance", max_digits=12, decimal_places=2, default=0)
-	opening_credit=models.DecimalField("Opening Credit Balance", max_digits=12, decimal_places=2, default=0)
-	
+	opening_credit=models.DecimalField("Opening Credit Balance", max_digits=12, decimal_places=2, default=0)	
 	current_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	
+	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)	
 	closing_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	closing_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-
 	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='accountYear_accountingPeriod')
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountYear_account_user_tenant')
 	objects = TenantManager()

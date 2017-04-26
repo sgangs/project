@@ -265,10 +265,12 @@ class TermForm(forms.ModelForm):
 	def clean(self):
 		cd= super(TermForm, self).clean()
 		unique_name=cd.get('name')
+		unique_year=cd.get('year')
 		# unique_subject=cd.get('subject')
 		error=[]
+		# year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
 		try:
-			data=Term.objects.for_tenant(self.tenant).get(name=unique_name, is_active=True)
+			data=Term.objects.for_tenant(self.tenant).get(name=unique_name, is_active=True, year=year)
 			self.add_error('name',"Active term with same name already exists.")
 		except:
 			return cd

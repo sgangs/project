@@ -1,11 +1,5 @@
 $(function(){
 
-function clearmodal(){
-    window.setTimeout(function(){
-        bootbox.hideAll();
-    }, 2500);
-}
-
 // page is now ready, initialize the calendar...
 $('#calendar').fullCalendar({
 // put your options and callbacks here
@@ -33,6 +27,7 @@ $('#calendar').fullCalendar({
                     if (this.event_type == 1){
                         events.push({           
                                 title: this.title,
+                                id: this.id,
                                 color: '#ea4d62',
                                 start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
                                 end: moment(this.start).format('YYYY/MM/DD hh:mm'),
@@ -42,6 +37,7 @@ $('#calendar').fullCalendar({
                     else if (this.event_type == 2){
                         events.push({           
                                 title: this.title,
+                                id: this.id,
                                 color: '#96bc6b',
                                 start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
                                 end: moment(this.start).format('YYYY/MM/DD hh:mm'),
@@ -60,6 +56,7 @@ $('#calendar').fullCalendar({
                     else{
                         events.push({           
                                 title: this.title,                                
+                                id: this.id,
                                 start: moment(this.start).format('YYYY/MM/DD hh:mm'), // will be parsed . Error here.
                                 end: moment(this.start).format('YYYY/MM/DD hh:mm'),
                                 allDay: true,
@@ -72,8 +69,72 @@ $('#calendar').fullCalendar({
     },    
     eventRender: function(event, element) {
         element.prop('title', event.title);
+    },
+    eventClick: function(calEvent) {
+        // alert('Event: ' + calEvent.title);
+        swal({
+        title: "Want to delete?",
+        text: "Please confirm if you want to delete the event: <p><b>" + calEvent.title+"<b><p>",
+        type: "warning",
+        showCancelButton: true,
+        // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete event!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true
+    }, function(isConfirm){
+        // swal("Deleted!",
+        // "Your imaginary file has been deleted.",
+        // "success");
+        if (isConfirm){
+            // $('#calendar').fullCalendar('removeEvents', calEvent._id);
+            setTimeout(function(){delete_event(calEvent.id, calEvent.start)},600)
+            
+        }
+    })
     }
 })
+
+function delete_event(event_id, start){
+    var proceed = true;        
+    var items = [];    
+    var curDate=new Date();
+    var startDate=new Date(start);
+    if (curDate>=startDate){
+        proceed=false;
+    }
+
+    // console.log(event_id);
+    if (proceed){
+    //Send ajax function to back-end 
+    (function() {
+        $.ajax({
+            url : "", 
+            type: "POST",
+            data:{ event_id:event_id,
+                calltype: 'delete',
+                csrfmiddlewaretoken: csrf_token},
+            dataType: 'json',               
+            // handle a successful response
+            success : function(jsondata) {
+                // location.href = redirect_url;
+                // console.log(jsondata);
+                swal("Hooray..", "Event deleted successfully.", "success");
+                $('#calendar').fullCalendar('removeEvents', event_id);
+            },
+            // handle a non-successful response
+            error : function() {
+                swal("Oops..", "There were some errors. Note you cannot delete event rules from here.", "error");                            
+            }
+        });
+    }());    
+    }
+    else{
+        swal("Bluhhh..", "You cannot delete events of previous dates.", "error");
+    }
+}
+
+
 
 // $('.fc-myCustomButton-button').append('<i class="glyphicon glyphicon-plus"</i>')
 $('.event').attr('data-toggle',"modal")
@@ -175,8 +236,6 @@ function eventadd(){
             })();
         }        
 }// close of function eventadd
-
-
 
 
 function ruleadd(){            

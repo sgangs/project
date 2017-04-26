@@ -18,5 +18,4 @@ urlpatterns = [
     #This student attendance view has to be changed urgently.
     url(r'^studentattendance/$', views.view_student_attendance, name='student_attendance'),
     #url(r'^classdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
-    #url(r'^calender/$', views.calender, name='calender'),
 ]

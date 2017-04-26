@@ -8,7 +8,7 @@ from school_genadmin.models import class_group, Subject, academic_year
 from school.school_general import *
 
 #This function is used to provide students' data for attendance/exam score entry
-def get_subject_data(request, called_for, classes):
+def get_subject_data(request, called_for, classes, this_tenant):
     classid=request.POST.get('classid')
     examid=int(request.POST.get('examid'))
     try:
@@ -20,7 +20,7 @@ def get_subject_data(request, called_for, classes):
     try:
         class_group=class_selected.classgroup
         subjects=Syllabus.objects.filter(class_group=class_group, year=year, is_elective=False).select_related("subject")
-        print(subjects)
+        # print(subjects)
         for subject in subjects:
             response_data.append({'data_type':'Subject','id':subject.subject.id,'name':subject.subject.name})
         return response_data

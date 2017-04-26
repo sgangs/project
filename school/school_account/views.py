@@ -55,7 +55,7 @@ def new_account_period(request, input_type):
 	name='accounts:period_list'
 	form=PeriodForm(tenant=request.user.tenant)
 	if (request.method == "POST"):
-		form = importform(request.POST, tenant=request.user.tenant)
+		form = PeriodForm(request.POST, tenant=request.user.tenant)
 		if form.is_valid():
 			item=form.save(commit=False)
 			current_tenant=request.user.tenant
@@ -69,6 +69,7 @@ def new_account_period(request, input_type):
 						ca.current_period=False
 						ca.save()
 					item.save()
+					create_new_accounts_year(item, current_tenant)
 					return redirect(name)
 				except:
 					transaction.rollback()
@@ -376,7 +377,6 @@ def balance_sheet(request):
 
 
 @login_required
-#Show Balance Sheet
 def cash_history(request):
 	this_tenant=request.user.tenant
 	response_data=[]
@@ -436,3 +436,29 @@ def change_accounting_period(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'accounts/change_accounting_year.html', {'years':years_list, 'extension':extension})
+
+
+@login_required
+#This should be an owner and accountant only view
+def change_opening_balance(request):
+	this_tenant=request.user.tenant
+	extension='base.html'
+	years_list=accounting_period.objects.for_tenant(this_tenant).all()
+	accounts_list=Account.objects.for_tenant(this_tenant).all()
+	print(years_list)
+	if request.method == 'POST':
+		response_data=[]
+		yearid = request.POST.get('acad_year')
+		accountid = request.POST.get('account')
+		opening_debit = request.POST.get('open_debit')
+		opening_credit = request.POST.get('open_credit')
+		account_selected=accounts_list.get(id=accountid)
+		period_selected=years_list.get(id=yearid)
+		acct_year_selected=account_year.objects.get(account=account_selected, accounting_period=period_selected)
+		acct_year_selected.opening_debit=opening_debit
+		acct_year_selected.opening_credit=opening_credit
+		acct_year_selected.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'accounts/change_opening_balance.html', {'years':years_list,'accounts':accounts_list,\
+					'extension':extension})

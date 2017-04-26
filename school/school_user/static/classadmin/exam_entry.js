@@ -1,7 +1,7 @@
 $(function(){
 
-var classid=0, examid=0, subjectid=0, year=0;
-
+var classid=0, examid=0, subjectid=0, year=0, total=0;
+var exam_data={}
 
 //This is for the reset button to work
 $( ".reset" ).click(function() {
@@ -13,37 +13,69 @@ $( ".classsection" ).change(function() {
     classid=parseInt($(".classsection").find(':selected').data('id'));
     $( ".classsection" ).prop('disabled',true); 
     $( ".year" ).prop('disabled',false);
-    // $('.subjectdiv').attr('hidden', false);
-});
-
-$( ".year" ).change(function() {
-    year=parseInt($(".year").val());
-    if (!isNaN(year)){
-        if (year<2080 && year >1980){
-            $( ".exam" ).prop('disabled',false);
-            $('.subjectdiv').attr('hidden', false);
-        }
-        else{
-            $( ".exam" ).prop('disabled',true);
-            $('.subjectdiv').attr('hidden', true);   
-        }
-    }
-    else{
-        $( ".exam" ).prop('disabled',true);
-        $('.subjectdiv').attr('hidden', true);
-    }
-});
-
-//This is called after the exam data are entered
-$( ".exam" ).change(function() {
-    examid =parseInt($(".exam").find(':selected').data('id'));
     (function() {
         $.ajax({
             url : "", 
             type : "POST", 
             data : { examid: examid,
                 classid: classid,
-                year: year,
+                calltype: 'getexam',
+                csrfmiddlewaretoken: csrf_token}, // data sent with the post request
+            dataType: 'json',
+            // handle a successful response
+            success : function(jsondata){
+                $( ".exam" ).prop('disabled',false);
+                $('.subjectdiv').attr('hidden', false);
+                //console.log(jsondata);
+                // $('.submit').attr('disabled', false);
+                $.each(jsondata, function(){
+                    exam_data[this.id]=this.total;
+                    $('.exam').append($('<option>',{
+                        'data-id': this.id,
+                        'text': this.name
+                    }));
+                })
+            },
+            // handle a non-successful response
+            error : function() {
+                $( ".exam" ).prop('disabled',true);
+                $('.subjectdiv').attr('hidden', true);
+                swal("Bluhh..", "Class and exam combination doesn't exist.", "error");
+            }
+        });
+    }());
+    // $('.subjectdiv').attr('hidden', false);
+});
+
+// $( ".year" ).change(function() {
+//     year=parseInt($(".year").val());
+//     if (!isNaN(year)){
+//         if (year<2080 && year >1980){
+//             $( ".exam" ).prop('disabled',false);
+//             $('.subjectdiv').attr('hidden', false);
+//         }
+//         else{
+//             $( ".exam" ).prop('disabled',true);
+//             $('.subjectdiv').attr('hidden', true);   
+//         }
+//     }
+//     else{
+//         $( ".exam" ).prop('disabled',true);
+//         $('.subjectdiv').attr('hidden', true);
+//     }
+// });
+
+//This is called after the exam data are entered
+$( ".exam" ).change(function() {
+    examid =parseInt($(".exam").find(':selected').data('id'));
+    total=exam_data[examid];
+    (function() {
+        $.ajax({
+            url : "", 
+            type : "POST", 
+            data : { examid: examid,
+                classid: classid,
+                // year: year,
                 calltype: 'details',
                 csrfmiddlewaretoken: csrf_token}, // data sent with the post request
             dataType: 'json',
@@ -80,7 +112,7 @@ $( ".subject" ).change(function() {
             type : "POST", 
             data : { examid: examid,
                 classid: classid,
-                year:year,
+                // year:year,
                 subjectid: subjectid,
                 calltype: 'subject',
                 csrfmiddlewaretoken: csrf_token}, // data sent with the post request
@@ -117,7 +149,11 @@ $( ".subject" ).change(function() {
 
 
 $( ".table" ).on('change', '.final',function() {
-    score=$(this).val()
+    raw_score=$(this).val();
+    if (raw_score>total){
+        swal("Oops..", "Exam total is: "+total+". Please ensure marks obtained is less than that.", "error");
+    }
+    score=raw_score/total*100;
     table=$(this)
     $.each(grades, function(){
         if (score<=this.max_mark && score>=this.min_mark){

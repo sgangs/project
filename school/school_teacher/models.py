@@ -56,6 +56,7 @@ class Teacher(models.Model):
 	address_line_2=models.TextField("Address Line 2",blank=True, null=True)
 	state=models.CharField(blank=True, null=True,max_length=30)
 	pincode=models.PositiveIntegerField(blank=True, null=True)
+	is_librarian=models.BooleanField(default=False)
 	#subject = models.ManyToManyField(Subject)
 	#class_group = models.ManyToManyField(class_group)
 	#branch=models.ForeignKey(Branch,db_index=True,related_name='teacher_schoolTeacher_genadmin_branch')

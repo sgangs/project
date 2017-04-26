@@ -120,6 +120,110 @@ def master_list(request, input_type):
 		items = Batch.objects.for_tenant(request.user.tenant).all()
 		return render(request, 'genadmin/house_list.html',{'items':items, 'list_for':"Batch", 'extension':extension})
 
+
+@login_required
+#This is a event list view - Change period to academic year period
+def academic_year_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	years=academic_year.objects.for_tenant(this_tenant).all().order_by('start','end')
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newacadyear'):
+			year=int(request.POST.get('year'))
+			start=request.POST.get('start')
+			end=request.POST.get('end')
+			current=request.POST.get('current')
+			if (current=='true'):
+				current=True
+			else:
+				current=False
+			# exist_start=years.get(start=start)
+			# response_data['start']="Start Exists"
+			# proceed=False
+			with transaction.atomic():
+				try:
+					proceed=True
+					try:
+						exist_year=years.get(year=year)
+						response_data['year']="Year Exists"
+						proceed=False
+					except:
+						pass
+					try:
+						exist_start=years.get(start=start)
+						response_data['start']="Start Exists"
+						proceed=False
+					except:
+						pass
+					try:
+						exist_end=years.get(end=end)
+						response_data['end']="End Exists"
+						proceed=False
+					except:
+						pass
+					if (start>end):
+						response_data['start-end']="Start gt End"
+						proceed=False
+					if (proceed):
+						new_year=academic_year()
+						new_year.year=year
+						new_year.start=start
+						new_year.end=end
+						new_year.current_academic_year=current
+						new_year.tenant=this_tenant
+						if (current):
+							current_year=years.get(current_academic_year=True)
+							current_year.current_academic_year=False
+							current_year.save()
+						new_year.save()
+				except:
+					pass
+		if (calltype == 'changeacadyear'):
+			yearid = request.POST.get('new_acad_year')
+			with transaction.atomic():
+				try:
+					current_year=years.get(current_academic_year=True)
+					current_year.current_academic_year=False
+					current_year.save()
+					new_year=years.get(id=yearid)
+					new_year.current_academic_year=True
+					new_year.save()
+				except:
+					transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'genadmin/academic_year.html',{'items':years , 'extension':extension})
+
+
+@login_required
+def subject_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	subjects=Subject.objects.for_tenant(this_tenant).all().order_by('name')
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}		
+		name=request.POST.get('name')
+		proceed=True
+		try:
+			is_subject=subjects.get(name=name)
+			proceed=False
+			response_data['name']='Name exists'
+		except:
+			pass
+		print(proceed)
+		if (proceed):
+			new_subject=Subject()
+			new_subject.name=name
+			new_subject.tenant=this_tenant
+			new_subject.save()			
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'genadmin/subject.html',{'items':subjects , 'extension':extension})
+
+
 @login_required
 #This is a calander and event add view.
 def calendar(request):
@@ -145,7 +249,7 @@ def calendar(request):
 				calendar_event.attendance_type=1
 			else:
 				calendar_event.attendance_type=attendance_type			
-			calendar_event.save()
+			calendar_event.save()			
 		elif (calltype == 'rulesave'):
 			title=request.POST.get('title')
 			week=json.loads(request.POST.get('week'))
@@ -167,13 +271,16 @@ def calendar(request):
 			events= annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(start,end))
 			for event in events:
 				response_data.append({'event_type':event.event_type,'title':event.event, 'start': localtime(event.date).isoformat(),\
-									'allDay':True})
+									'id':event.id,'allDay':True})
 			rules=annual_holiday_rules.objects.for_tenant(request.user.tenant)
 			hol=[] #To store all holidays here.
 			hol=holiday_calculator(start, end, events, hol)
 			#Appends working holidays
 			for i in hol:
 				response_data.append({'event_type':"Weekly",'title':"Weekly Holiday", 'start': i.isoformat(), 'allDay':True})
+		if (calltype == 'delete'):
+			event_id=request.POST.get('event_id')
+			annual_calender.objects.for_tenant(request.user.tenant).get(id=event_id).delete()
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
@@ -185,7 +292,7 @@ def calendar_list(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
 	period=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
-	events=annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(period.start,period.end))
+	events=annual_calender.objects.for_tenant(request.user.tenant).filter(date__range=(period.start,period.end)).order_by('date')
 	return render (request, 'genadmin/event_list.html',{'items':events, 'list_for':'Events' , 'extension':extension})
 
 #Nothing Done
@@ -217,9 +324,9 @@ def notice_event_delete(request, calltype):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	if (calltype == 'Notice'):
-		items=notice_board.objects.for_tenant(this_tenant)
+		items=notice_board.objects.for_tenant(this_tenant).order_by('show_from')
 	elif (calltype == 'Event'):
-		items=annual_calender.objects.for_tenant(this_tenant)
+		items=annual_calender.objects.for_tenant(this_tenant).order_by('date')
 	return render (request, 'genadmin/delete_event_notice.html', {'items':items,'calltype':calltype, 'extension':extension})
 
 
@@ -248,7 +355,6 @@ def change_academic_year(request):
 	this_tenant=request.user.tenant
 	extension='base.html'
 	years_list=academic_year.objects.for_tenant(this_tenant).all()
-	print(years_list)
 	if request.method == 'POST':
 		response_data=[]
 		yearid = request.POST.get('new_acad_year')

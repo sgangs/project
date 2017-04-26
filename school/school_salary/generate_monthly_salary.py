@@ -28,6 +28,9 @@ def generate_salary_report(request, sent_for=""):
 
     #This is to take care of attendance. Take staff attendance and then pay accordingly.
 
+    # salary_rule = basic_salary_rule.objects.for_tenant(this_tenant)
+    # total_working=salary_rule.working_days
+
     # from dateutil.relativedelta import relativedelta
     # Check no _rep in date range: That will be considered absent.
     # start=datetime.strptime(request.POST.get('start'),"%Y-%m-%d").date() + relativedelta(months=3)
@@ -42,6 +45,11 @@ def generate_salary_report(request, sent_for=""):
     # hol=holiday_calculator(start, end, events, hol)
     # total_working=list(set(total) -set(hol))
     # no_rep=list(set(total_working)-set(attendace_dates))
+    # check_lop
+    # loss_days=no_rep+check_lop
+
+
+    #Will loss of pay for current month be checked?
 
 
     try:
@@ -73,8 +81,14 @@ def generate_salary_report(request, sent_for=""):
     for monthlysalary in monthlysalarydetails:
         monthlysalarylist=monthly_salary_list.objects.filter(monthly_salary=monthlysalary).all()
         for salary in monthlysalarylist:
+            #Check out for loss of pay
+            # if (salary.affect_lop):
+            #     gross_salary+=salary.amount*((total_working-loss_days)/total_working)
+            #     net_salary+=salary.amount*((total_working-loss_days)/total_working)
+            # else:
             gross_salary+=salary.amount
             net_salary+=salary.amount
+
             dict_salary={'data_type':'Monthly','display_payslip':salary.display_payslip,'serial_no':salary.serial_no,\
                 'affect_pf':salary.affect_pf,'affect_esi':salary.affect_esi, 'affect_gratuity':salary.affect_gratuity,\
                 'amount':format(float(salary.amount),'.2f'), 'name':salary.name, 'accountid': salary.account.id}
@@ -92,6 +106,11 @@ def generate_salary_report(request, sent_for=""):
         for yearlysalary in yearlysalarydetails:
             yearlysalarylist=yearly_salary_list.objects.filter(yearly_salary=yearlysalary)
             for salary in yearlysalarylist:
+                #Check out for loss of pay
+                # if (salary.affect_lop):
+                #     gross_salary+=salary.amount*((total_working-loss_days)/total_working)
+                #     net_salary+=salary.amount*((total_working-loss_days)/total_working)
+                # else:
                 gross_salary+=salary.amount
                 net_salary+=salary.amount
                 dict_salary={'data_type':'Yearly','display_payslip':salary.display_payslip,'serial_no':salary.serial_no,\

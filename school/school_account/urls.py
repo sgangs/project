@@ -22,9 +22,10 @@ urlpatterns = [
     url(r'^paymentmodelist/$', views.account_list, {'type': 'Payment Mode'},name='paymentmode_list'),
     url(r'^cashdetails/$', views.cash_history, name='cash_details'),
     url(r'^changeaccountingperiods/$', views.change_accounting_period, name='change_accounting_period'),
+    url(r'^changeopeningbalance/$', views.change_opening_balance, name='change_opening_balance'),
     #Statutory
     url(r'^viewbalancesheet/$', views.balance_sheet, name='view_balance_sheet'),
-    url(r'^viewtrailbalance/$', views.trail_balance, name='view_trail_balance'),
+    url(r'^viewtrialbalance/$', views.trail_balance, name='view_trail_balance'),
     url(r'^viewincomeexpenditure/$', views.profit_loss, name='view_income_expenditure'),
     url(r'^viewbalancesheet/$', views.balance_sheet, name='view_balance_sheet'),
     url(r'^accountsexcel/$', views.account_export, name='download_accounts_excel'),

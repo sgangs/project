@@ -23,6 +23,7 @@
         <th class="text-center">Transaction Id</th>
         <th class="text-center">Date</th>
         <th class="text-center">Transaction Type</th>
+        <th class="text-center">Transaction Remarks</th>
       	<th class="text-center">Debit Value</th>
         <th class="text-center">Credit Value</th>
       </tr>
@@ -34,10 +35,12 @@
          <td>{{item.journal.date|date:'d-m-Y'}}</td>
          {% if item.transaction_type == "Debit" %}
          <td align="left">Debit</td>
+         <td>{{item.journal.remarks}}</td>
          <td>{{item.value}}</td>
          <td align="left"></td>
          {% else %}
          <td align="right">Credit</td>
+         <td>{{item.journal.remarks}}</td>
          <td></td>
          <td>{{item.value}}</td>
          {% endif %}

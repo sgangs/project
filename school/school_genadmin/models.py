@@ -16,19 +16,12 @@ class TenantManager(models.Manager):
 #This is the list of subjects to be taught in school.
 class Subject(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	name=models.CharField("Subject Name", blank=True, max_length=20)
-	# slug=models.SlugField(max_length=50)
+	name=models.CharField("Subject Name", db_index=True, blank=True, max_length=40)
 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='subject_genadmin_user_tenant')
 	objects=TenantManager()
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-	def save(self, *args, **kwargs):
-		if not self.id:
-			item="sub"+" "+self.tenant.key+" "+self.name
-			self.slug=slugify(item)
-		super(Subject, self).save(*args, **kwargs)
 
 	class Meta:
 		unique_together = (("name", "tenant"))
@@ -40,7 +33,7 @@ class Subject(models.Model):
 
 class academic_year(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	year=models.PositiveSmallIntegerField("Academic Year: If year is 2016-17, enter 2016")
+	year=models.PositiveSmallIntegerField("Academic Year: If year is 2017-18, enter 2017")
 	start=models.DateField()
 	end=models.DateField()
 	slug=models.SlugField(max_length=50)

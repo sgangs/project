@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Add New Exam</title>
+
+{% endblock %} 
+
+{% block content%}
+	
+
+<h3>Add New Exam</h3>
+
+<div class="col-xs-12 col-md-6 form-group new_class row">
+<form>
+	<div class="alert alert-danger" role="alert" hidden='true'>
+		
+	</div>
+	<div class="form-group termdiv">
+		<label for="classgroup" class="control-label">Select Term</label>
+		<select class="form-control selectpicker term" data-live-search="true">
+    		<option disabled selected hidden style='display: none' value>Select Term</option>
+				{% for item in terms %}
+  					<option data-id="{{item.id}}">{{item.name}}</option>
+				{% endfor %}
+  		</select>	
+	</div>
+	
+	<div class="form-group namediv">
+		<label for="classname" class="control-label">Exam Name</label>
+			<input type="text" required="" class="form-control name" placeholder="Eg: Half Yearly">
+	</div>
+
+	<div class="form-group keydiv">
+		<label for="classname" class="control-label">Exam Key</label>
+		<input type="text" required="" class="form-control key" placeholder="For example, if exam name is Half Yearly, key can be: HY">
+	</div>
+
+	<div class="form-group totaldiv">
+		<label for="classname" class="control-label">Exam Total</label>
+			<input type="number" required="" class="form-control total" placeholder="Eg: 100">
+	</div>
+
+	<div class="form-group serialdiv">
+		<label for="classname" class="control-label">Exam Serial Number</label>
+			<input type="number" required="" class="form-control serial" placeholder="For example, if this is the 1st exam of academic year enter 1; if 2nd enter 2 ">
+	</div>
+	<div class="form-group groupdiv">
+		<label for="classgroup" class="control-label">Select Class Groups for which the exam is applicable</label>
+		<select class="form-control selectpicker classgroup" multiple data-live-search="true">
+    		{% for item in classes %}
+  				<option data-id="{{item.id}}">{{item.name}}</option>
+			{% endfor %}
+  		</select>
+	</div>
+	
+<button type="button" class="btn btn-primary btn-xs submit" data-toggle="confirmation" disabled>Submit</button>
+
+</form>
+</div>
+<div class="col-xs-12 col-md-1 form-group new_class row">
+</div>
+<div class="col-xs-12 col-md-5 offset-md-1 form-group new_class row">
+	<h4>List of exams for current year</h4>
+	{% if exams %}
+	<div class="table-responsive">
+		<table class="table table-striped table-bordered table-hover" id="master_table">
+			<thead class="thead-inverse header-background bg-info">
+				<tr>
+	              	<th class="text-center">Exam Name</th>
+	              	<th class="text-center">Exam Key</th>
+	              	<th class="text-center">Exam Total</th>
+	              	<th class="text-center">Exam Term</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in exams %}
+				<tr align="center">
+	              <td>{{item.name}}</td>
+	              <td>{{item.key}}</td>
+	              <td>{{item.total}}</td>
+	              <td>{{item.term}}</td>
+	              <!-- {# <td>{{account.current_debit}}</td>
+	              <td>{{account.current_credit}}</td> #} -->
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% else %}
+		<p>You don't have any exam registered for the current academic year. Once registered they'll be visible here.</p>
+		{% endif %}
+	</div>
+</div>		
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'eduadmin/new_exam.js' %}"></script>
+
+<script>
+	csrf_token='{{csrf_token}}';
+	redirect_url= "{% url 'eduadmin:view_exam_list' %}" 
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

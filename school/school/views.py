@@ -203,9 +203,12 @@ def landing(request):
         return render (request, 'landing_teacher.html', {"attendance":attendance,"events":events, \
                     'classes': class_teacher, 'subjects':subject_teacher, 'notices':notices})
     try:
-        year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
-        paid=fee_paid(request, year)
-        total=month_fee(request, year)
+        current_academic=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
+        current_account=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+        year=current_academic.year
+        if (request.user.user_type == "Master" or request.user.user_type == "Collector" or request.user.user_type == "Account"):
+            paid=fee_paid(request, year)
+            total=month_fee(request, year)
         staff_list=Teacher.objects.for_tenant(this_tenant).all()
         student_list=Student.objects.for_tenant(this_tenant).all()
         staffs=staff_list.filter(dob__month=current_day.month,dob__day=current_day.day)
@@ -238,9 +241,16 @@ def landing(request):
             return redirect('genadmin:new_academic_year')
     income_expense=yearly_pl(request)
     i_e_json = json.dumps(income_expense)
-    return render (request, 'landing.html', {"paid":paid,"events":events,"staffs":staffs,"total":total, 'i_e':i_e_json, \
-        'total_staffs': total_staffs, 'staffs_present':staffs_present, 'percent_staff':percent_staff,\
-        'total_students':total_students, 'students_present':students_present,'percent_student':percent_student, 'notices':notices})
+    if (request.user.user_type == "Admin"):
+        return render (request, 'landing.html', {"current_academic":current_academic,"current_account": current_account,\
+            "events":events,"staffs":staffs,'i_e':i_e_json, \
+            'total_staffs': total_staffs, 'staffs_present':staffs_present, 'percent_staff':percent_staff,\
+            'total_students':total_students, 'students_present':students_present,'percent_student':percent_student, 'notices':notices})
+    elif (request.user.user_type == "Master" or request.user.user_type == "Collector" or request.user.user_type == "Account"):
+        return render (request, 'landing.html', {"current_academic":current_academic,"current_account": current_account,"paid":paid,\
+            "events":events,"staffs":staffs,"total":total, 'i_e':i_e_json, \
+            'total_staffs': total_staffs, 'staffs_present':staffs_present, 'percent_staff':percent_staff,\
+            'total_students':total_students, 'students_present':students_present,'percent_student':percent_student, 'notices':notices})
 
 #400 error
 def bad_request(request):

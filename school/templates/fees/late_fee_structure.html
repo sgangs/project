@@ -1,7 +1,7 @@
 {% extends extension %}
 
 {%block title%}
-<title>Fee Structure Creation</title>
+<title>Late Fee Structure Creation</title>
 
 <!--Chosen (for searchbox in select box) JS and CSS-->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.css" rel="stylesheet" />
@@ -15,32 +15,19 @@
 
 {% block content%}
 	
-<h3>Fee Structure Creation</h3>
+<h3>Late Fee Structure Creation</h3>
 <h1></h1>
 <div class="row">
 	<div class="form-group col-xs-6 col-md-4">
-		<label class="control-label">Fee Group Name</label>
-		<input type="text" required="" class="form-control feename"  placeholder="Please input name of fee structure. Eg: Primary Fees"> 
+		<label class="control-label">Late Fee Group Name</label>
+		<input type="text" required="" class="form-control feename"  placeholder="Please input name of fee structure. Eg: Primary Late Fees"> 
 	</div>
 <!-- </div>
 <div class="row"> -->
 
 	<div class="form-group col-xs-6 col-md-4 monthdiv">
-	<label class="control-label">Select Month(s) when the fee would be repeated </label>
-		<select class='form-control selectpicker month' multiple data-actions-box="true"> 
-			<option data-id="Jan" title="Jan">January</option>
-			<option data-id="Feb" title="Feb">February</option>
-			<option data-id="Mar" title="Mar">March</option>
-			<option data-id="Apr" title="Apr">April</option>
-			<option data-id="May" title="May">May</option>
-			<option data-id="Jun" title="Jun">June</option>
-			<option data-id="Jul" title="Jul">July</option>
-			<option data-id="Aug" title="Aug">August</option>
-			<option data-id="Sep" title="Sep">September</option>
-			<option data-id="Oct" title="Oct">October</option>
-			<option data-id="Nov" title="Nov">November</option>
-			<option data-id="Dec" title="Dec">December</option>
-    	</select>
+	<label class="control-label">Enter Due Date for Fee Payment</label>
+		<input type='text' class='name'/>
 	</div>
 </div>
 <h4>Enter Fee Heads</h4>
@@ -50,8 +37,8 @@
 	  		<tr>
 	  			<th style="text-align: center" class="header" title="Select the rows and press delete to delete the entry.">Select</th>
 	  			<th style="text-align: center" class="header" title = "This is the linked account (under ledger group Fees) for the fee structure.">Select Account (under Ledger Group: Fees)</th>
-		    	<th style="text-align: center" class="header">Name of Fee Structure</th>
-		    	<th style="text-align: center" class="header">Amount</th>
+		    	<th style="text-align: center" class="header">Days after Due Date</th>
+		    	<th style="text-align: center" class="header">Fine Amount</th>
 	    	</tr>
 		</thead>
 		<tbody>
@@ -68,8 +55,8 @@
 
 </div>
 
-<button type="button" class='delete btn btn-danger btn-xs'>- Delete Slab</button>
-<button type="button" class='addmore btn btn-success btn-xs'>+ Add More Fee Slab</button>
+<button type="button" class='delete btn btn-danger btn-xs'>- Delete Selected Fine Slab</button>
+<button type="button" class='addmore btn btn-success btn-xs'>+ Add Fine Slab</button>
 <h1></h1>
 
 <button type="button" class='submit btn btn-primary btn-xs' disabled="true" title="Click submit to record fee structure.">Submit</button>

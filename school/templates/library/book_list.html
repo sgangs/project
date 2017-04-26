@@ -1,6 +1,8 @@
 {% extends "library/list_base.html" %}
 
 {% block table %}
+<a href="{% url 'library:new_book' %}"><button type="button" class='submit btn btn-primary btn-xs'>+ Add new book</button></a>
+<h1></h1>
 <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover" id="account">
       <thead class="thead-inverse header-background bg-info">
@@ -11,33 +13,29 @@
             <th class="text-center">Publisher</th>
             <th class="text-center">Edition</th>
             <th class="text-center">ISBN</th>
-            <th class="text-center">Remarks</th>
-            <th class="text-center">Subject</th>
-            <th class="text-center">Stack Location</th>
-            <th class="text-center">Purchased on</th>
-            <th class="text-center">Price</th>
+            <th class="text-center">Subject</th>            
             <th class="text-center">Internal Book Code</th>
             <th class="text-center">System Key</th>
-            <th class="text-center">Is Issued?</th>
+            <th class="text-center">Stack Location</th>            
+            <th class="text-center">Total Quantities</th>
+            <th class="text-center">Quantities Issued</th>
           </tr>
           {% endblock %}
         </thead>
         <tbody>
           {% for item in books %}
             <tr align="center">
-              <td><a href="#">{{item.name}}</a></td>
+              <td><a href="book/{{item.id}}">{{item.name}}</a></td>
               <td>{{item.author}}</td>
               <td>{{item.publisher}}</td>
               <td>{{item.edition}}</td>
               <td>{{item.isbn}}</td>
-              <td>{{item.remark}}</td>
               <td>{{item.subject.name}}</td>
-              <td>{{item.location}}</td>
-              <td>{{item.purchased_on}}</td>
-              <td>{{item.price}}</td>
               <td>{{item.school_book_code}}</td>
               <td>{{item.key}}</td>
-              <td>{{item.book_issued}}</td>
+              <td>{{item.location}}</td>
+              <td>{{item.quantity}}</td>
+              <td>{{item.quantity_issued}}</td>
             </tr>
           {% endfor %}
         </tbody>

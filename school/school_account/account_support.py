@@ -5,7 +5,18 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext
 
-from .models import Account, accounting_period, journal_entry
+from .models import Account, account_year, accounting_period, journal_entry
+
+def create_new_accounts_year(new_period, this_tenant):
+    acoounts_list=Account.objects.for_tenant(this_tenant).all()
+    for item in acoounts_list:
+        year=account_year()
+        year.account=item
+        year.accounting_period=new_period
+        year.opening_debit=0
+        year.opening_credit=0
+        year.tenant=this_tenant
+        year.save()
 
 #This function is used to provide trail balance details
 def get_trail_balance(request, start, end):

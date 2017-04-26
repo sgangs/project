@@ -1,0 +1,179 @@
+{% extends extension %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+
+<title>Academic Year</title>
+
+{% endblock %} 
+
+{% block content%}
+	
+<div>
+	<button type="submit" class="btn btn-primary btn-sm new"><i class="fa fa-star"></i> Add Academic Year</button>
+	<button type="button" class="btn btn-primary btn-sm change"><i class="glyphicon glyphicon-pushpin"></i> Change Current Academic Year</button>
+</div>
+<h1></h1>
+<!-- <div class="col-md-4  alert alert-danger">
+	
+</div>
+<div class="col-md-4  alert alert-danger">
+	
+</div> -->
+
+<div class="table-responsive">
+    	<table class="table table-striped table-bordered table-hover" id="account">
+      	<thead class="thead-inverse header-background">
+        	<tr>
+	            <th class="text-center">Sl. No</th>
+	            <th class="text-center">Session Start</th>
+	            <th class="text-center">Session End</th>
+	            <th class="text-center">Session Year</th>
+	            <th class="text-center"></th>
+          	</tr>
+		</thead>
+        <tbody>
+        	{% for item in items %}
+        		{% if item.current_academic_year == True %}
+		        	<tr align="center" class="danger">
+		              <td>{{forloop.counter}}</td>
+		              <td>{{item.start}}</td>
+		              <td>{{item.end}}</td>
+		              <td>{{item.year}}</td>
+		              <td>Current Academic Year</td>
+		            </tr>
+	           	{% else %}
+	           		<tr align="center">
+		              <td>{{forloop.counter}}</td>
+		              <td>{{item.start}}</td>
+		              <td>{{item.end}}</td>
+		              <td>{{item.year}}</td>
+		              <td></td>
+		            </tr>
+		        {% endif %}
+
+	        {% endfor %}
+        </tbody>
+  	</table> 
+</div>
+<!-- Modal -->
+<div class="modal fade" id="event" tabindex="-1" role="dialog" aria-labelledby="eventLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Add New Academic Year</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div>
+					<div class="error_box alert alert-danger" hidden>
+						<p class='year_error' hidden>Academic year with same starting year data exist</p>
+						<p class='start_error' hidden>Academic year with same start date exist</p>
+						<p class='end_error' hidden>Academic year with same end date exist</p>
+						<p class='start_end' hidden>Start Date should be before end date</p>
+					</div>
+				</div>
+				<div class="form-group yeardiv">
+					<label for="classname" class="control-label">Starting Year of the new academic year</label>
+					<input type="number"class="form-control year" min="1960" max="2040">
+				</div>
+				<div class="form-group startdiv">
+					<label for="classname" class="control-label">Academic Session Start Date</label>
+					<input type="text"class="form-control start">						
+				</div>
+				<div class="form-group enddiv">
+					<label for="classname" class="control-label">Academic Session End Date</label>
+					<input type="text"class="form-control end">						
+				</div>
+				<div class="form-group currentdiv">
+					<label for="classname" class="control-label">Will this be the current academic year</label>
+					<input type="checkbox" class="current" checked>
+				</div>
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary submitnew">Submit</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="annualrule" tabindex="-1" role="dialog" aria-labelledby="annualruleLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Change Current Academic Year</h4>
+		    </div>
+	    <div class="modal-body">
+			<form action="" method="post">
+				<div class="form-group academicdiv">
+					<label>Select Academic year from the dropdown list</label>
+					<select class="form-control academic">
+			    	<option disabled selected hidden style='display: none' value>Select Other Acadmic Year</option>
+						{% for item in items %}
+						{% if item.current_academic_year == False %}
+			  				<option data-id="{{item.id}}">{{item.start}} to {{item.end}}</option>
+						{% endif %}
+						{% endfor %}
+			  		</select> 
+				</div>				
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary submitchange">Submit</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+<!-- Moment JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<!-- Bootstrap Datepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'genadmin/academic_year.js' %}"></script>
+
+<script>
+$('.new').attr('data-toggle',"modal")
+$('.new').attr('data-target',"#event")
+
+$('.change').attr('data-toggle',"modal")
+$('.change').attr('data-target',"#annualrule")
+
+$('.start').datepicker({
+	    autoclose: true,
+	    todayHighlight: true,
+	    format: 'dd/mm/yyyy',    
+});
+
+$('.end').datepicker({
+	    autoclose: true,
+	    todayHighlight: true,
+	    format: 'dd/mm/yyyy',    
+});
+
+csrf_token='{{csrf_token}}';
+// $(function(){
+// 	if (!Modernizr.inputtypes.date) {
+// 		$('input[type=date]').datepicker({
+// 			dateFormat : 'yy-mm-dd'
+// 		}
+// 		);
+// 	}
+// });
+</script>
+{% endblock %}
+
+
+

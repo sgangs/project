@@ -39,28 +39,6 @@
   </tbody>
 </table>
 
-<!--{# {% if students.has_other_pages %}
-  <ul class="pagination">
-    {% if students.has_previous %}
-      <li><a href="?page={{ students.previous_page_number }}">&laquo;</a></li>
-    {% else %}
-      <li class="disabled"><span>&laquo;</span></li>
-    {% endif %}
-    {% for i in students.paginator.page_range %}
-      {% if students.number == i %}
-        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-      {% else %}
-        <li><a href="?page={{ i }}">{{ i }}</a></li>
-      {% endif %}
-    {% endfor %}
-    {% if students.has_next %}
-      <li><a href="?page={{ students.next_page_number }}">&raquo;</a></li>
-    {% else %}
-      <li class="disabled"><span>&raquo;</span></li>
-    {% endif %}
-  </ul>
-{% endif %} #}-->
-
 <div class="prev_next">
 <ul>
     {% if students.has_previous %}

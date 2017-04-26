@@ -87,7 +87,8 @@ $( ".details" ).click(function() {
                                     "<td hidden='true'></td>"+
                                     "<td>" + this.month + "</td>"+
                                     "<td>" + this.amount + "</td>"+
-                                    "<td>" + date.getDate()+"-"+date.getMonth()+"-"+date.getFullYear() + "</td></tr>");
+                                    // "<td>" + date.getDate()+"-"+date.getMonth()+"-"+date.getFullYear() + "</td></tr>");
+                                    "<td>" + this.paid_on + "</td></tr>");
                                 console.log(typeof(this.paid_on))
                             }
                         });

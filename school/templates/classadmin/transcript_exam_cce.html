@@ -11,7 +11,7 @@
 
 {% block content%}
 	
-<h3>View Transcript</h3>
+<h3 class='details'>View Transcript</h3>
 <h1></h1>
 
 <div class="row details">
@@ -31,7 +31,12 @@
   		</select> 
 	</div>
 </div>
-<div class="table-responsive">	
+<div class="table-responsive report" hidden>	
+	<h3 style="text-align: center;"><b>{{request.user.tenant.name}}<b></h3>
+	<p class="name" style="text-align: left;"><b>Name: <b></p>
+	<p class="roll" style="text-align: left;"><b>Roll No: <b></p>
+	<p class="class" style="text-align: left;"><b>Class: <b></p>
+	<p class="admission" style="text-align: left;" hidden><b>Admission No: <b></p>
 	<table id="student_table" class="table table-striped table-bordered">
 		<thead class="bg-primary">
 	  		<tr id="header">
@@ -44,7 +49,7 @@
 
 </div>
 
-<button type="button" class='submit btn btn-primary btn-xs'>Submit</button>
+<button type="button" class='submit btn btn-primary btn-xs details'>Submit</button>
 
 
 

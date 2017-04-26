@@ -61,7 +61,7 @@ def group_fee_linking(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
 	group=class_group.objects.for_tenant(this_tenant).all()
-	generic=generic_fee.objects.for_tenant(this_tenant).all()
+	generic=generic_fee.objects.for_tenant(this_tenant).filter(is_active=True).all()
 	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
 	if request.method == 'POST':
 		response_data = []
@@ -81,7 +81,7 @@ def group_fee_linking(request):
 				try:
 					exist=group_default_fee.objects.for_tenant(this_tenant).filter(classgroup=group, year=year).exists()
 					if (exist):
-						transaction.rollback()						
+						transaction.rollback()			
 					else:
 						pass
 					group_fee=group_default_fee()
@@ -89,6 +89,8 @@ def group_fee_linking(request):
 					group_fee.year=int(year)
 					group_fee.tenant=this_tenant
 					group_fee.save()
+					for fees in genericfeeall:
+						group_fee.generic_fee.add(fees)
 					if (addstudent == "Yes"):
 						classlist=class_section.objects.for_tenant(this_tenant).filter(classgroup=group).all()
 						for classdata in classlist:
@@ -101,7 +103,6 @@ def group_fee_linking(request):
 								studentfee.tenant=this_tenant
 								studentfee.save()
 								for fees in genericfeeall:
-									group_fee.generic_fee.add(fees)
 									studentfee.generic_fee.add(fees)								
 				except:
 					transaction.rollback()
@@ -115,7 +116,7 @@ def group_fee_linking(request):
 def fee_view(request, input_type):
 	extension="base.html"
 	fee_type='Yearly'
-	fees=generic_fee.objects.for_tenant(request.user.tenant).all()
+	fees=generic_fee.objects.for_tenant(request.user.tenant).filter(is_active=True)
 	if request.method == 'POST':
 		response_data = []
 		feeid=request.POST.get('feeid')
@@ -135,7 +136,7 @@ def student_fee_structure(request):
 	this_tenant=request.user.tenant
 	# year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year	
 	classes=class_section.objects.for_tenant(this_tenant).all()
-	generic_fees=generic_fee.objects.for_tenant(this_tenant).all()
+	generic_fees=generic_fee.objects.for_tenant(this_tenant).filter(is_active=True)
 	if request.method == 'POST':
 		response_data=[]	
 		calltype=request.POST.get('calltype')
@@ -171,7 +172,6 @@ def student_fee_structure(request):
 @login_required
 #For fees payment
 def student_payment(request, input_type):
-	classsection=class_section.objects.for_tenant(request.user.tenant).all()
 	extension="base.html"
 	if request.method == 'POST':
 		response_data = []
@@ -202,8 +202,9 @@ def student_payment(request, input_type):
 				response.write(pdf)					
 				response_data=[]				
 			return response
-		jsondata = json.dumps(response_data)
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
+	classsection=class_section.objects.for_tenant(request.user.tenant).all()
 	return render(request, 'fees/student_fee_payment.html',{'input_type':input_type,\
 					'classsection':classsection, 'extension':extension})
 
@@ -232,7 +233,7 @@ def fee_collected_between(request):
 		response_data.append({'data':'Total', 'collected':str(total_collected)})
 		jsondata=json.dumps(response_data)
 		return HttpResponse(jsondata)
-	return render(request, 'fees/fee_collection.html',{'min':min_date,'max':max_date})	
+	return render(request, 'fees/fee_collection.html',{'min':min_date,'max':max_date, 'extension':extension})	
 
 
 @login_required
@@ -266,27 +267,28 @@ def fee_collection_graph(request):
 # 	response.write(pdf)
 # 	return response
 
-@login_required
-#Change this in a way that it is also a student view
-#This view is a fee history of the student
-def fee_payment_history(request):
-	extension="base.html"
-	this_tenant=request.user.tenant
-	classes=class_section.objects.for_tenant(this_tenant).all()
-	if request.method == 'POST':		
-		calltype=request.POST.get('calltype')
-		if (calltype == 'student'):
-			response_data=view_student(request)
-		elif (calltype == 'details'):
-			start=request.POST.get('start')
-			end=request.POST.get('end')
-			studentid=request.POST.get('studentid')
-			response_data=list(student_fee_payment.objects.for_tenant(this_tenant).\
-							filter(student=studentid).order_by('paid_on').\
-							values('year','month','paid_on','amount'))
-		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
-		return HttpResponse(jsondata)
-	return render(request, 'fees/student_fee_history.html',{'classes':classes, "extension":extension})
+#Check the requirement of this view
+
+# @login_required
+# #This view is a fee history of the student
+# def fee_payment_history(request):
+# 	extension="base.html"
+# 	this_tenant=request.user.tenant
+# 	classes=class_section.objects.for_tenant(this_tenant).all()
+# 	if request.method == 'POST':		
+# 		calltype=request.POST.get('calltype')
+# 		if (calltype == 'student'):
+# 			response_data=view_student(request)
+# 		elif (calltype == 'details'):
+# 			start=request.POST.get('start')
+# 			end=request.POST.get('end')
+# 			studentid=request.POST.get('studentid')
+# 			response_data=list(student_fee_payment.objects.for_tenant(this_tenant).\
+# 							filter(student=studentid).order_by('paid_on').\
+# 							values('year','month','paid_on','amount'))
+# 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+# 		return HttpResponse(jsondata)
+# 	return render(request, 'fees/student_fee_history.html',{'classes':classes, "extension":extension})
 
 @login_required
 #Fron end is yet to be completed
@@ -334,3 +336,37 @@ def fee_defaulter(request):
 		return HttpResponse(jsondata)
 	return render(request, 'fees/fee_collection_month.html',{'classes':classes, "extension":extension, 'calltype':'Defaulter'})
 
+@login_required
+#Fron end is yet to be completed
+def fee_deactivate(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	fee_list=generic_fee.objects.for_tenant(this_tenant).filter(is_active=True)
+	if request.method == 'POST':
+		response_data=[]
+		feeid=int(request.POST.get('classid'))
+		fee_selected=fee_list.get(id=classid)
+		fee_selected.is_active=False
+		fee_selected.save()
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+	return render(request, 'fees/fee_collection_month.html',{'fee_list':fee_list, "extension":extension})
+
+#Create a fee view structure
+# @login_required
+# #For fees payment
+# def student_payment(request, input_type):
+# 	extension="base.html"
+# 	if request.method == 'POST':
+# 		response_data = []
+# 		calltype=request.POST.get('calltype')
+# 		if (calltype == 'student'):
+# 			response_data=view_student(request)
+# 		elif (calltype == 'details'):
+# 			response_data=view_fee_details(request)
+# 			# print (response_data)
+# 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+# 		return HttpResponse(jsondata)
+# 	classsection=class_section.objects.for_tenant(request.user.tenant).all()
+# 	return render(request, 'fees/student_fee_payment.html',{'input_type':input_type,\
+# 					'classsection':classsection, 'extension':extension})

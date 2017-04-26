@@ -13,5 +13,5 @@ urlpatterns = [
     url(r'^editstudent/$', views.student_edit, name='student_edit'),
     url(r'^exportstudentlist/$', views.student_export, name='export_student_list'),
     url(r'^studentimportformat/$', views.student_import_format, name='student_import_format'),
-    url(r'^import/', views.import_student, name="studet_import"),
+    url(r'^import/', views.import_student, name="student_import"),
 ]

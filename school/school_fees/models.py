@@ -15,15 +15,6 @@ class TenantManager(models.Manager):
 		return self.get_queryset().filter(tenant=tenant)
 
 
-#This is an abstract class for fee lists.
-class abstract_fee(models.Model):
-	id=models.BigAutoField(primary_key=True)
-	name=models.CharField(max_length=80)
-	amount=models.DecimalField(max_digits=7, decimal_places=2)
-	
-	class Meta:
-		abstract = True
-
 
 #This would be the model for yearly fee
 class generic_fee(models.Model):
@@ -39,7 +30,7 @@ class generic_fee(models.Model):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
 	class Meta:
-		unique_together = (("name","tenant",))
+		unique_together = (("name","is_active","tenant",))
 		# ordering = ('name',)
 		
 	def __str__(self):
@@ -62,6 +53,72 @@ class generic_fee_list(models.Model):
 	# class Meta:
 		# unique_together = (("generic_fee","account"))
 		# ordering = ('name',)
+		
+	def __str__(self):
+		return '%s' % (self.name)
+
+#Late fee calculation model
+class late_fee_calculation(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	name=models.CharField(max_length=80, db_index=True)
+	last_payment_date=models.PositiveSmallIntegerField(db_index=True)
+	year=models.PositiveSmallIntegerField(db_index=True)
+	account=models.ForeignKey(Account,db_index=True,related_name='lateFeeCalculation_fees_account_account')
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='lateFeeCalculation_fees_user_tenant')
+	objects=TenantManager()
+	name=models.CharField(max_length=80, default="Late Fee")
+
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	# class Meta:
+	# 	unique_together = (("name", "year","tenant",))
+	# 	ordering = ('name',)
+		
+	def __str__(self):
+		return '%s' % (self.name)
+
+#This would be the line item for each late fee.
+class late_fee_slab(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	late_fee=models.ForeignKey(late_fee_calculation,db_index=True,related_name='lateFeeSlab_lateFeeCalculation')
+	days_after_due=models.PositiveSmallIntegerField(db_index=True, null=True, blank=True)
+	amount=models.DecimalField(max_digits=7, decimal_places=2)
+	last_slab=models.BooleanField(db_index=True, default=False)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='lateFeeSlab_fees_user_tenant')
+	objects=TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	# class Meta:
+		# unique_together = (("late_fee","account"))
+		# ordering = ('tenant','days_after_due',)
+		
+	def __str__(self):
+		return '%s' % (self.days_after_due)
+
+
+#Late fee model - register the late fees payed by student
+class student_late_fee(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	student=models.ForeignKey(Student,db_index=True,related_name='studentLateFee_fees_student_student')
+	student_class=models.ForeignKey(class_section,db_index=True,related_name='studentLateFee_fees_eduadmin_classSection')
+	month=models.PositiveSmallIntegerField(db_index=True)
+	year=models.PositiveSmallIntegerField(db_index=True)
+# 	# slug=models.SlugField(max_length=56)
+	tenant=models.ForeignKey(Tenant,db_index=True,related_name='studentLateFee_fees_user_tenant')
+	objects=TenantManager()
+	name=models.CharField(max_length=80, default="Late Fee")
+	amount=models.DecimalField(max_digits=7, decimal_places=2)
+	paid_on=models.DateField()
+
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+	# class Meta:
+	# 	unique_together = (("student","month","year","tenant",))
+	# 	ordering = ('name',)
 		
 	def __str__(self):
 		return '%s' % (self.name)
@@ -142,29 +199,3 @@ class payment_line_item(models.Model):
 		# ordering = ('name',)
 		
 	
-
-# #Late fee model
-# class student_late_fee(models.Model):
-# 	student=models.ForeignKey(Student,db_index=True,related_name='studentLateFee_fees_student_student')
-# 	month=models.PositiveSmallIntegerField(db_index=True)
-# 	year=models.PositiveSmallIntegerField(db_index=True)
-# 	# slug=models.SlugField(max_length=56)
-# 	tenant=models.ForeignKey(Tenant,db_index=True,related_name='studentLateFee_fees_user_tenant')
-# 	objects=TenantManager()
-
-# 	# def get_absolute_url(self):
-# 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-# 	# def save(self, *args, **kwargs):
-# 	# 	if not self.id:
-# 	# 		item=self.tenant.key+" "+self.student.key+" "+self.monthly_fee.key
-# 	# 		self.slug=slugify(item)
-
-# 		# super(student_fee, self).save(*args, **kwargs)
-
-# 	# class Meta:
-# 	# 	unique_together = (("student","month","year","tenant",))
-# 	# 	ordering = ('name',)
-		
-# 	def __str__(self):
-# 		return '%s' % (self.name)

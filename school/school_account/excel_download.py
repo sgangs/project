@@ -107,7 +107,7 @@ def account_excel(items, data_type):
 def trail_balance_excel(items, data_type):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output, {'constant_memory': True})
-    worksheet_s = workbook.add_worksheet("Trail Balance")
+    worksheet_s = workbook.add_worksheet("Trial Balance")
     title=title_format(workbook)
     header=header_format(workbook)
     cell=cell_format(workbook)

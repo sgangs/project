@@ -133,7 +133,7 @@ class Term(models.Model):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
 	class Meta:
-		unique_together = (("is_active","name", "tenant"))
+		unique_together = (("is_active","name","year", "tenant"))
 		ordering = ('name',)
 
 	def __str__(self):
@@ -233,7 +233,7 @@ class Exam(models.Model):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
 	class Meta:
-		unique_together = (("key", "tenant"))
+		unique_together = (("key","year", "tenant"))
 		ordering = ('year','term','serial_no')
 
 	def __str__(self):

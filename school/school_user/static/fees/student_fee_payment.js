@@ -1,7 +1,5 @@
 $(function(){
 
-$( ".fee-pay" ).prop('hidden', false);
-
 //This will help to remove the error modal.
 function clearmodal(){
     window.setTimeout(function(){
@@ -13,10 +11,10 @@ var class_selected="";
 var year="";
 var month="";
 var fee_total=0.00;
-var fee_paid=0.00;
 var studentid="";
 var studentdetails="";
 var paid=0;
+var month_list=[];
 
 //This is called after the class is entered
 $( ".class" ).change(function() {
@@ -107,7 +105,7 @@ $( ".details" ).click(function() {
     $( ".nowpaydiv" ).removeClass('has-warning');
     $( ".nowpaydiv" ).removeClass('has-success');
     $( ".nowpaydiv" ).removeClass('has-error');
-    if (studentid != "" && month !=""){
+    if (studentid != "" ){
         //Send ajax function to back-end 
             (function() {
                 $.ajax({
@@ -116,48 +114,52 @@ $( ".details" ).click(function() {
                     data:{ studentid: studentid,
                         class_selected: class_selected,
                         year: year,
-                        month:month,
+                        // month:month,
                         calltype: 'details',
                         csrfmiddlewaretoken: csrf_token},
                     dataType: 'json',               
                                 // handle a successful response
                     success : function(jsondata) {
+                        $( ".fee-pay" ).prop('hidden', false);
                         fee_total=0;
-                        fee_paid=0;
                         var value=0;
-                        // console.log(jsondata);
-                        // $( ".class" ).prop('disabled', true);
-                        // $( ".month" ).prop('disabled', true);
-                        // $( ".year" ).prop('disabled', true);
+                        month_list=[];
                         $(".feetable .data").remove();
+                        var month_now=''
                         $.each(jsondata, function(){
-                            if (this.data_type=="Generic"){
-                                $('.feetable').append("<tr class='data generic'>"+
-                                    "<td hidden='true'>" + this.id + "</td>"+
-                                    "<td>" + this.name + "</td>"+
-                                    "<td>" + this.amount + "</td></tr>");
-                                fee_total=fee_total+parseFloat(this.amount)
-                                
-                            }
-                            else if (this.data_type=="Paid"){
-                                value = parseFloat(this.amount)
-                                // fee_total=fee_total-value
-                                fee_paid+=value;
-                                if (value>0){
-                                    $('.alreadypaiddiv').attr('hidden',false);
-                                    $('.alreadypaid').val(value)
-                                }
-                            }
+                            if (this.data_type == "Month"){
+                                month_now=this.month
+                                var month_add={month:this.month,
+                                                is_late:"No"}
+                                $('.feetable').append("<tr class='data month'>"+
+                                    "<td hidden='true'></td>"+
+                                    "<td colspan='2'><p><b>Fee for the month of: "+this.month+"</p><b></td></tr>");
+                                $.each(jsondata, function(){                            
+                                    if (this.data_type=="Generic"){
+                                        if (this.month_full==month_now){
+                                            $('.feetable').append("<tr class='data generic'>"+
+                                                "<td hidden='true'>" + this.id + "</td>"+
+                                                "<td>" + this.name + "</td>"+
+                                                "<td>" + this.amount + "</td></tr>");
+                                            fee_total=fee_total+parseFloat(this.amount)
+                                        }
+                                    }
+                                    if (this.data_type=="Late Fee"){
+                                        if (this.month_full==month_now){
+                                            $('.feetable').append("<tr class='data generic'>"+
+                                                "<td hidden='true'>" + this.id + "</td>"+
+                                                "<td>" + this.name + "</td>"+
+                                                "<td>" + this.amount + "</td></tr>");
+                                            fee_total=fee_total+parseFloat(this.amount)
+                                            month_add={month:this.month,
+                                                        is_late:"Yes",
+                                                        slab:this.id}                                            
+                                        }
+                                    }                                    
+                                });
+                                month_list.push(month_add)
+                            }                            
                         });
-                        if (fee_paid > 0){
-                            $('.alreadypaiddiv').attr('hidden', false);
-                            $('.alreadypaid').val(value)
-                        }
-                        else{
-                            $('.alreadypaiddiv').attr('hidden', true);
-                            $('.alreadypaid').val(value)
-                        }
-                        fee_total=fee_total-fee_paid;
                         if (fee_total >0){
                             $( ".submit" ).prop('disabled', false);
                             $( ".download" ).prop('disabled', false);
@@ -165,7 +167,7 @@ $( ".details" ).click(function() {
                         $('.feetable').append("<tr class='data total'>"+
                             "<td hidden='true'></td>"+
                             "<th>" + "Total Fee Payable" + "</th>"+
-                            "<th>" + parseFloat(fee_total).toFixed(2) + "</th></tr>");
+                            "<th>" + parseFloat(fee_total).toFixed(2) + "</th></tr>");                        
                         },
                     // handle a non-successful response
                     error : function() {
@@ -176,7 +178,7 @@ $( ".details" ).click(function() {
             }());
         }
     else{
-        swal("Bluhh..", "Select Student and month!", "error");
+        swal("Bluhh..", "Select Student!!", "error");
         student="";
     }
 });
@@ -296,7 +298,7 @@ function reconfirm() {
             setTimeout(function(){save_data("saving")},600)            
         }
         else{
-            console.log("Not confirmed")
+            
         }
     })
 }
@@ -317,14 +319,14 @@ function reconfirm_print() {
             setTimeout(function(){save_data("print")},600)            
         }
         else{
-            console.log("Not confirmed")
+            
         }
     })
 }
 
 
 function save_data(called_for){
-    if (studentid != "" && paid !=0 && month !="" && year != "" && paid<=fee_total){
+    if (studentid != "" && paid ==fee_total && year != "" ){
         if (called_for == "saving")
             {
             // Send ajax function to back-end 
@@ -337,6 +339,7 @@ function save_data(called_for){
                         month:month,
                         year:year,
                         amount:paid,
+                        month_list: JSON.stringify(month_list),
                         calltype: 'save',
                         csrfmiddlewaretoken: csrf_token},
                     dataType: 'json',               
@@ -363,6 +366,7 @@ function save_data(called_for){
                         month:month,
                         year:year,
                         amount:paid,
+                        month_list: JSON.stringify(month_list),
                         calltype: 'pdf',
                         csrfmiddlewaretoken: csrf_token},
                     dataType: 'html',               
@@ -387,7 +391,7 @@ function save_data(called_for){
         }
     }
     else{
-        swal("Ehhh..", "Check these again: Year, Month, Student and Amount Paid ", "error");
+        swal("Ehhh..", "Check these again: Year, Student and Amount Paid ", "error");
     }
             
 }

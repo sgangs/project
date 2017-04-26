@@ -10,7 +10,6 @@ from django.db.models import Prefetch
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
-
 from school.user_util import user_passes_test_custom
 from app_control.view_control import *
 from .models import *
@@ -152,22 +151,26 @@ def attendance_view(request):
 def new_exam_report(request):
 	extension='base.html'
 	from school_eduadmin.models import class_section
-	#For the next line, do remember django does lazy querying.
 	this_tenant=request.user.tenant
 	classes = class_section.objects.for_tenant(this_tenant)
-	exams = Exam.objects.for_tenant(this_tenant)
+	year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True).year
+	# exams = Exam.objects.for_tenant(this_tenant).filter(year=year)
 	grade_name=grade_table.objects.get(tenant=this_tenant)
 	grades=list(grade_item.objects.for_tenant(tenant=this_tenant).filter(grade_table=grade_name).\
 			values('min_mark','max_mark','grade','grade_point'))
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = []
+		if (calltype == 'getexam'):
+			classid=int(request.POST.get('classid'))
+			class_selected=classes.get(id__exact=classid)
+			response_data = list(Exam.objects.for_tenant(this_tenant).filter(year=year).values('id','name', 'total')) #  Filter class over here			
 		#Getting subject details based on selection
-		if (calltype == 'details'):
+		elif (calltype == 'details'):
 			called_for='Exam'
-			response_data=get_subject_data(request, called_for, classes)
+			response_data=get_subject_data(request, called_for, classes, this_tenant)
 		#Getting student details based on selection
-		if (calltype == 'subject'):
+		elif (calltype == 'subject'):
 			called_for='Exam'
 			response_data=get_student_data(request, called_for, classes)
 		#saving the exam report
@@ -203,7 +206,7 @@ def new_exam_report(request):
 				exam_report_entry.save()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-	return render (request, 'classadmin/new_examreport.html', {'items':classes, 'exams':exams, \
+	return render (request, 'classadmin/new_examreport.html', {'items':classes,\
 					'grades':json.dumps(grades,cls=DjangoJSONEncoder), "extension":extension})
 
 def exam_report_edit(request):

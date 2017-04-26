@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^newperiod/$', views.library_new, {'input_type': 'Period'}, name='new_period'),
     url(r'^booklist/$', views.library_list, {'input_type': 'Book'}, name='book_list'),
     url(r'^bookissue/$', views.book_issue, name='book_issue'),
+    url(r'^booklist/book/(?P<detail>[-\S]+)/$',views.library_edit, name='library_edit'),
     #url(r'^(?P<detail>[-\S]+)/$',views.purchase_detail, {'type': 'Detail'}, name='invoice_detail'),
 ]
 

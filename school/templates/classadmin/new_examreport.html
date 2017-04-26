@@ -22,17 +22,17 @@
 	</div>
 </div>
 <div class="row">
-	<div class="form-group col-xs-4 col-md-3">
+	<!-- <div class="form-group col-xs-4 col-md-3">
 		<label for="year" class="control-label">Academic Year</label>
 		<input type="number" required="" class="form-control year"  min="1990" max="2080" placeholder="Please enter the academic year." disabled="True"> 
-	</div>
+	</div> -->
 	<div class="form-group col-xs-4 col-md-3">
 		<label class="control-label">Select Exam</label>
 		<select class="form-control exam" disabled="true">
     		<option disabled selected hidden style='display: none' value>Select Exam</option>
-			{% for exam in exams %}
+			<!-- {# {% for exam in exams %}
   				<option data-id="{{exam.id}}">{{exam.name}}</option>
-			{% endfor %}
+			{% endfor %} #} -->
   		</select>
 	</div>
 	<div class="form-group col-xs-4 col-md-3 subjectdiv" hidden='true'>
