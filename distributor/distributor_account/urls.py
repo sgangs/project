@@ -1,0 +1,23 @@
+from django.conf.urls import url
+from django.contrib import admin
+from . import views
+
+urlpatterns = [
+    url(r'^getaccounttype/$', views.get_account_type, name='get_account_type'),
+    url(r'^payment-mode/getdata/$', views.payment_mode_view, name='payment_mode_view'),
+    url(r'^payment-mode/$', views.payment_mode_data, name='payment_mode_data'),
+    url(r'^account/data/$', views.account_details_view, name='account_details_view'),
+    url(r'^openingdata/$', views.account_opening_data, name='account_opening_data'),
+    url(r'^tax-report/getdata/$', views.get_tax_report, name='get_tax_report'),
+    url(r'^tax-report/$', views.new_tax_report, name='new_tax_report'),
+    url(r'^account/$', views.account_data, name='account_data'),
+    url(r'^info/$', views.account_info_view, name='account_info_view'),
+    url(r'^ledgergroup/getdata/$', views.ledger_group_view, name='ledger_group_view'),
+    url(r'^journalgroup/getdata/$', views.journal_group_view, name='journal_group_view'),
+    url(r'^newjournalentry/$', views.new_journal_entry, name='new_journal_entry'),
+    url(r'^newjournalentry/data/$', views.journal_entry_data, name='journal_entry_data'),
+    url(r'^accountperiod/$', views.account_period_view, name='account_period_view'),
+    url(r'^accountperiod/data/$', views.account_period_data, name='account_period_data'),
+    # url(r'^invoice/api/getproduct$', views.get_product, name='get_product'),
+    # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
+]

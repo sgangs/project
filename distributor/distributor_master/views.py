@@ -1,0 +1,707 @@
+import django_excel as excel
+from datetime import date, datetime
+from dateutil.rrule import *
+from dateutil.parser import *
+
+from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
+from django.utils.timezone import localtime
+import json
+#from datetime import datetime
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import IntegrityError, transaction
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+
+from rest_framework.decorators import api_view
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from .serializers import *
+
+from distributor_user.models import Tenant
+from distributor.variable_list import state_list
+from .models import *
+from .forms import *
+from .customer_support import *
+
+@api_view(['GET'],)
+def get_state_list(request):
+	state_dict=dict((x, y) for x, y in state_list)
+	jsondata = json.dumps(state_dict)
+	return HttpResponse(jsondata)
+
+
+# @login_required
+@api_view(['GET','POST'],)
+def customer_view(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		if (calltype == 'one_customer'):
+			customerid = request.GET.get('customerid')
+			customer=Customer.objects.for_tenant(this_tenant).get(id=customerid)
+			serializer = VendorSerializers(customer)
+		else:
+			customers=Customer.objects.for_tenant(this_tenant).all()
+			serializer = VendorSerializers(customers, many=True)
+		return Response(serializer.data)
+	elif request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newcustomer'):
+			name=request.data.get('name')
+			key=request.data.get('key')
+			address_1=request.data.get('address_1')
+			address_2=request.data.get('address_2')
+			state=request.data.get('state')
+			city=request.data.get('city')
+			pin=request.data.get('pin')
+			phone_no=request.data.get('phone')
+			cst=request.data.get('cst')
+			tin=request.data.get('tin')
+			gst=request.data.get('gst')
+			details=request.data.get('details')
+			zone_id=request.data.get('zone')
+			if (zone_id):
+				zone_selected=Zone.objects.for_tenant(this_tenant).get(id=zone_id)
+			new_customer=Customer()
+			new_customer.name=name
+			new_customer.key=key
+			new_customer.address_1=address_1
+			new_customer.address_2=address_2
+			new_customer.state=state
+			new_customer.city=city
+			new_customer.pin=pin
+			new_customer.phone_no=phone_no
+			new_customer.cst=cst
+			new_customer.tin=tin
+			new_customer.gst=gst
+			new_customer.details=details
+			if (zone_id):
+				new_customer.zone=zone_selected
+			new_customer.tenant=this_tenant
+			new_customer.save()			
+		
+		elif (calltype == 'updatecustomer'):
+			response_data = {}
+			pk=request.data.get('pk')
+			name=request.data.get('name')
+			key=request.data.get('key')
+			address_1=request.data.get('address_1')
+			address_2=request.data.get('address_2')
+			# state=request.data.get('state')
+			city=request.data.get('city')
+			pin=request.data.get('pin')
+			phone_no=request.data.get('phone')
+			cst=request.data.get('cst')
+			tin=request.data.get('tin')
+			gst=request.data.get('gst')
+			details=request.data.get('details')
+			# zone_id=request.data.get('zone')
+			# if (zone_id):
+				# zone_selected=Zone.objects.for_tenant(this_tenant).get(id=zone_id)
+			old_customer=Customer.objects.for_tenant(this_tenant).get(id=pk)
+			old_customer.name=name
+			old_customer.key=key
+			old_customer.address_1=address_1
+			old_customer.address_2=address_2
+			# old_customer.state=state
+			old_customer.city=city
+			old_customer.pin=pin
+			old_customer.phone_no=phone_no
+			old_customer.cst=cst
+			old_customer.tin=tin
+			old_customer.gst=gst
+			old_customer.details=details
+			# if (zone_id):
+			# 	old_customer.zone=zone_selected
+			# # old_customer.tenant=this_tenant
+			old_customer.save()			
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+# @login_required
+@api_view(['GET','POST'],)
+def vendor_view(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		if (calltype == 'one_vendor'):
+			vendorid = request.GET.get('vendorid')
+			vendor=Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
+			serializer = VendorSerializers(vendor)
+		else:
+			vendors=Vendor.objects.for_tenant(this_tenant).all()
+			serializer = VendorSerializers(vendors, many=True)
+		return Response(serializer.data)
+	elif request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newvendor'):
+			name=request.data.get('name')
+			key=request.data.get('key')
+			ismanufac=request.data.get('ismanufac')
+			address_1=request.data.get('address_1')
+			address_2=request.data.get('address_2')
+			state=request.data.get('state')
+			city=request.data.get('city')
+			pin=request.data.get('pin')
+			phone_no=request.data.get('phone')
+			cst=request.data.get('cst')
+			tin=request.data.get('tin')
+			gst=request.data.get('gst')
+			details=request.data.get('details')
+			if (ismanufac == 'true'):
+				ismanufac=True
+			elif (ismanufac == 'false'):
+				ismanufac=False
+			with transaction.atomic():
+				try:
+					new_vendor=Vendor()
+					new_vendor.name=name
+					new_vendor.key=key
+					new_vendor.address_1=address_1
+					new_vendor.address_2=address_2
+					new_vendor.state=state
+					new_vendor.city=city
+					new_vendor.pin=pin
+					new_vendor.phone_no=phone_no
+					new_vendor.cst=cst
+					new_vendor.tin=tin
+					new_vendor.gst=gst
+					new_vendor.details=details
+					new_vendor.tenant=this_tenant
+					new_vendor.save()
+					if ismanufac:	
+						new_manufacturer=Manufacturer()
+						new_manufacturer.name=name
+						new_manufacturer.tenant=this_tenant
+						new_manufacturer.save()		
+				except:
+					transaction.rollback()
+		elif (calltype == 'updatevendor'):
+			response_data = {}
+			pk=request.data.get('pk')
+			name=request.data.get('name')
+			key=request.data.get('key')
+			address_1=request.data.get('address_1')
+			address_2=request.data.get('address_2')
+			# state=request.data.get('state')
+			city=request.data.get('city')
+			pin=request.data.get('pin')
+			phone_no=request.data.get('phone')
+			cst=request.data.get('cst')
+			tin=request.data.get('tin')
+			gst=request.data.get('gst')
+			details=request.data.get('details')
+			old_vendor=Vendor.objects.for_tenant(this_tenant).get(id=pk)
+			old_vendor.name=name
+			old_vendor.key=key
+			old_vendor.address_1=address_1
+			old_vendor.address_2=address_2
+			# old_customer.state=state
+			old_vendor.city=city
+			old_vendor.pin=pin
+			old_vendor.phone_no=phone_no
+			old_vendor.cst=cst
+			old_vendor.tin=tin
+			old_vendor.gst=gst
+			old_vendor.details=details
+			old_vendor.save()			
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	
+# @login_required
+@api_view(['GET','POST'],)
+def zone_view(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		zones=Zone.objects.for_tenant(request.user.tenant).all()
+		serializer = ZoneSerializers(zones, many=True)
+		# print(JSONRenderer().render(serializer.data))
+		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newzone'):
+			name=request.POST.get('name')
+			key=request.POST.get('key')
+			details=request.POST.get('details')
+			new_zone=Zone()
+			new_zone.name=name
+			new_zone.key=key
+			new_zone.details=details
+			new_zone.tenant=this_tenant
+			new_zone.save()			
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+# @login_required
+@api_view(['GET','POST'],)
+def tax_view(request):
+	if request.method == 'GET':
+		taxes=tax_structure.objects.for_tenant(request.user.tenant).all()
+		serializer = TaxSerializers(taxes, many=True)		
+		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newtax'):
+			name=request.POST.data('name')
+			percentage=request.data.get('percentage')
+			new_tax=tax_structure()
+			new_tax.name=name
+			new_tax.percentage=percentage
+			new_tax.tenant=this_tenant
+			new_tax.save()			
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+
+# @login_required
+@api_view(['GET','POST'],)
+def individual_tax_view(request,pk):
+	if request.method == 'GET':
+		tax=tax_structure.objects.get(id=pk)
+		serializer = TaxSerializers(tax, )		
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+	
+# @login_required
+@api_view(['GET','POST'],)
+def dimension_view(request):
+	if request.method == 'GET':
+		dimensions=Dimension.objects.for_tenant(request.user.tenant).all()
+		serializer = DimensionSerializers(dimensions, many=True)		
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newdimension'):
+			name=request.data.get('name')
+			details=request.data.get('details')
+			new_dim=Dimension()
+			new_dim.name=name
+			new_dim.details=details
+			new_dim.tenant=this_tenant
+			new_dim.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)			
+	
+# @login_required
+@api_view(['GET','POST'],)
+def unit_view(request):
+	if request.method == 'GET':
+		units=Unit.objects.for_tenant(request.user.tenant).all().order_by('dimension','multiplier')
+		serializer = UnitSerializers(units, many=True)		
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newunit'):
+			name=request.data.get('name')
+			symbol=request.data.get('symbol')
+			multiplier=request.data.get('multiplier')
+			dim_id=request.data.get('dimension')
+			dim_selected=Dimension.objects.for_tenant(this_tenant).get(id=dim_id)
+			new_unit=Unit()
+			new_unit.name=name
+			new_unit.symbol=symbol
+			new_unit.multiplier=multiplier
+			new_unit.dimension=dim_selected
+			new_unit.tenant=this_tenant
+			new_unit.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+# @login_required
+@api_view(['GET','POST'],)
+def attribute_view(request):
+	if request.method == 'GET':
+		attributes=Attribute.objects.for_tenant(request.user.tenant).all().order_by('name')
+		serializer = AttributeSerializers(attributes, many=True)		
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+
+# @login_required
+@api_view(['GET','POST'],)
+def warehouse_view(request):
+	if request.method == 'GET':
+		warehouses=Warehouse.objects.for_tenant(request.user.tenant).filter(is_active=True).order_by('default')
+		serializer = WarehouseSerializers(warehouses, many=True)
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+
+# @login_required
+@api_view(['GET','POST'],)
+def product_view(request):
+	if request.method == 'GET':
+		products=Product.objects.for_tenant(request.user.tenant).filter(is_active=True)
+		serializer = ProductSerializers(products, many=True)
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+
+@api_view(['GET','POST'],)
+def product_details(request):
+	if request.method == 'GET':
+		productid=request.GET.get('productid')
+		product=Product.objects.for_tenant(request.user.tenant).filter(is_active=True).get(id=productid)
+		serializer = ProductDetailSerializers(product)
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+
+# @login_required
+@api_view(['GET','POST'],)
+def manufacturer_view(request):
+	if request.method == 'GET':
+		manufacturers=Manufacturer.objects.for_tenant(request.user.tenant)
+		serializer = ManufacturerSerializers(manufacturers, many=True)
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newmanufacturer'):
+			name=request.data.get('name')
+			new_manufacturer=Manufacturer()
+			new_manufacturer.name=name
+			new_manufacturer.tenant=this_tenant
+			new_manufacturer.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+# @login_required
+@api_view(['GET','POST'],)
+def brand_view(request):
+	if request.method == 'GET':
+		brands=Brand.objects.for_tenant(request.user.tenant)
+		serializer = BrandSerializers(brands, many=True)
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newbrand'):
+			name=request.data.get('name')
+			manufacturer_id=request.data.get('manufacturer')
+			manufacturer=Manufacturer.objects.for_tenant(this_tenant).get(id=manufacturer_id)
+			new_brand=Brand()
+			new_brand.name=name
+			new_brand.manufacturer=manufacturer
+			new_brand.tenant=this_tenant
+			new_brand.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	
+#This sets of data of saving to master needs to be converted to api system. 
+
+@login_required
+def zone_data(request):
+	extension="base.html"
+	return render (request, 'master/zone_list.html',{'extension':extension})
+
+@login_required
+def customer_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	zones=Zone.objects.for_tenant(this_tenant).all()
+	return render (request, 'master/customer_list.html',{'zone':zones,'states':state_list, 'extension':extension})
+
+
+
+@login_required
+#View API-ed
+def manufacbrand_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	zones=Zone.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newmanufacturer'):
+			name=request.POST.get('name')
+			new_manufacturer=Manufacturer()
+			new_manufacturer.name=name
+			new_manufacturer.tenant=this_tenant
+			new_manufacturer.save()
+		elif (calltype == 'newbrand'):
+			name=request.POST.get('name')
+			manufacturer_id=request.POST.get('manufacturer')
+			manufacturer=Manufacturer.objects.for_tenant(this_tenant).get(id=manufacturer_id)
+			new_brand=Brand()
+			new_brand.name=name
+			new_brand.manufacturer=manufacturer
+			new_brand.tenant=this_tenant
+			new_brand.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'master/manufacturer_brand_list.html',{'extension':extension})
+
+
+@login_required
+def vendor_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	zones=Zone.objects.for_tenant(this_tenant).all()
+	# if request.method == 'POST':
+	# 	calltype = request.POST.get('calltype')
+	# 	response_data = {}
+	# 	if (calltype == 'newvendor'):
+	# 		name=request.POST.get('name')
+	# 		key=request.POST.get('key')
+	# 		ismanufac=request.POST.get('ismanufac')
+	# 		address_1=request.POST.get('address_1')
+	# 		address_2=request.POST.get('address_2')
+	# 		state=request.POST.get('state')
+	# 		city=request.POST.get('city')
+	# 		pin=request.POST.get('pin')
+	# 		phone_no=request.POST.get('phone')
+	# 		cst=request.POST.get('cst')
+	# 		tin=request.POST.get('tin')
+	# 		gst=request.POST.get('gst')
+	# 		details=request.POST.get('details')
+	# 		if (ismanufac == 'true'):
+	# 			ismanufac=True
+	# 		elif (ismanufac == 'false'):
+	# 			ismanufac=False
+	# 		with transaction.atomic():
+	# 			try:
+	# 				new_vendor=Vendor()
+	# 				new_vendor.name=name
+	# 				new_vendor.key=key
+	# 				new_vendor.address_1=address_1
+	# 				new_vendor.address_2=address_2
+	# 				new_vendor.state=state
+	# 				new_vendor.city=city
+	# 				new_vendor.pin=pin
+	# 				new_vendor.phone_no=phone_no
+	# 				new_vendor.cst=cst
+	# 				new_vendor.tin=tin
+	# 				new_vendor.gst=gst
+	# 				new_vendor.details=details
+	# 				new_vendor.tenant=this_tenant
+	# 				new_vendor.save()
+	# 				if ismanufac:	
+	# 					new_manufacturer=Manufacturer()
+	# 					new_manufacturer.name=name
+	# 					new_manufacturer.tenant=this_tenant
+	# 					new_manufacturer.save()		
+	# 			except:
+	# 				transaction.rollback()
+	# 	jsondata = json.dumps(response_data)
+	# 	return HttpResponse(jsondata)
+	return render (request, 'master/vendor_list.html',{'states':state_list, 'extension':extension})
+
+
+
+
+@login_required
+def import_customer(request):
+	this_tenant=request.user.tenant
+	if request.method == "POST":
+		form = UploadFileForm(request.POST, request.FILES)
+		def choice_func(row):
+			data=customer_validate(row, this_tenant)
+			return data		
+		if form.is_valid():
+			# data = form.cleaned_data
+			# batch_data= data['batch']
+			# batch_selected=Batch.objects.for_tenant(this_tenant).get(id=batch_data)
+			
+			with transaction.atomic():
+				try:
+					request.FILES['file'].save_to_database(
+						model=Customer,
+						initializer=choice_func,
+						mapdict=['name', 'key', 'address_1','address_2','state', 'city', 'pin', \
+						'phone_no','cst','tin','gst','details','tenant'])
+					return redirect('master:customer_data')
+				except:
+					transaction.rollback()
+					return HttpResponse("Error")
+		else:
+			return HttpResponseBadRequest()
+	else:
+		form = UploadFileForm()
+	return render(request,'master/upload_customer.html',{'form': form,})
+
+
+
+@login_required
+#View API-ed
+def tax_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newtax'):
+			name=request.POST.get('name')
+			percentage=request.POST.get('percentage')
+			new_tax=tax_structure()
+			new_tax.name=name
+			new_tax.percentage=percentage
+			new_tax.tenant=this_tenant
+			new_tax.save()			
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'master/tax_list.html',{'extension':extension})
+
+
+@login_required
+#Already API-ed
+def dimension_unit_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	dimensions=Dimension.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newdimension'):
+			name=request.POST.get('name')
+			details=request.POST.get('details')
+			new_dim=Dimension()
+			new_dim.name=name
+			new_dim.details=details
+			new_dim.tenant=this_tenant
+			new_dim.save()			
+		elif (calltype == 'newunit'):
+			name=request.POST.get('name')
+			symbol=request.POST.get('symbol')
+			multiplier=request.POST.get('multiplier')
+			dim_id=request.POST.get('dimension')
+			dim_selected=Dimension.objects.for_tenant(this_tenant).get(id=dim_id)
+			new_unit=Unit()
+			new_unit.name=name
+			new_unit.symbol=symbol
+			new_unit.multiplier=multiplier
+			new_unit.dimension=dim_selected
+			new_unit.tenant=this_tenant
+			new_unit.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'master/dimension_unit_list.html',{'extension':extension, 'dimensions':dimensions})
+
+
+@login_required
+#This is a event list view - Change period to academic year period
+def product_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	# dimensions=Dimension.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newproduct'):
+			name=request.POST.get('name')
+			sku=request.POST.get('sku')
+			vat_type=request.POST.get('vat_type')
+			tax=request.POST.get('tax')
+			reorder_point=request.POST.get('reorder')
+			if not reorder_point:
+				reorder_point=0
+			unit_id=request.POST.get('unit')
+			brand_id=request.POST.get('brand')
+			manufacturer_id=request.POST.get('manufacturer')
+			group_id=request.POST.get('group')
+			has_batch=request.POST.get('has_batch')
+			has_instance=request.POST.get('has_instance')
+			has_attribute=request.POST.get('has_attribute')
+			if (has_batch == 'true'):
+				has_batch=True
+			elif(has_batch == 'false'):
+				has_batch=False
+			if (has_instance == 'true'):
+				has_instance=True
+			elif(has_instance == 'false'):
+				has_instance=False
+			if (has_attribute == 'true'):
+				has_attribute=True
+			elif(has_attribute == 'false'):
+				has_attribute=False
+			# remarks=request.POST.get('remarks')
+			tax_selected=tax_structure.objects.for_tenant(this_tenant).get(id=tax)
+			unit_selected=Unit.objects.for_tenant(this_tenant).get(id=unit_id)
+			if (brand_id):
+				brand_selected=Brand.objects.for_tenant(this_tenant).get(id=brand_id)
+			if (group_id):
+				group_selected=Group.objects.for_tenant(this_tenant).get(id=group_id)
+			if (has_attribute):
+				attributes = json.loads(request.POST.get('attributes'))
+			with transaction.atomic():
+				try:
+					new_product=Product()
+					new_product.name=name
+					new_product.sku=sku
+					new_product.vat_type=vat_type
+					new_product.tax=tax_selected			
+					new_product.reorder_point=reorder_point
+					new_product.default_unit=unit_selected
+					if (brand_id):
+						new_product.brand=brand_selected
+					if (group_id):
+						new_product.group=group_selected
+					new_product.has_batch=has_batch
+					new_product.has_attribute=has_attribute
+					new_product.has_instance=has_instance
+					new_product.tenant=this_tenant
+					# new_product.remarks=remarks
+					new_product.save()
+					# new_product.tax.add(tax_selected)
+					if (has_attribute):
+						for data in attributes:
+							attr_id=int(data['attribute_id'])
+							value=data['value']
+							attr_selected=Attribute.objects.for_tenant(this_tenant).get(id=attr_id)
+							product_attr=product_attribute()
+							product_attr.product=new_product
+							product_attr.attribute=attr_selected
+							product_attr.value=value
+							product_attr.tenant=this_tenant
+				except:
+					transaction.rollback()
+		elif (calltype == 'newattribute'):
+			name=request.POST.get('name')
+			new_attr=Attribute()
+			new_attr.name=name
+			new_attr.tenant=this_tenant
+			new_attr.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'master/product_list.html',{'extension':extension})
+
+
+@login_required
+#This is a event list view - Change period to academic year period
+def warehouse_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	# dimensions=Dimension.objects.for_tenant(this_tenant).all()
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newwarehouse'):
+			name=request.POST.get('name')
+			address_1=request.POST.get('address_1')
+			address_2=request.POST.get('address_2')
+			state=request.POST.get('state')
+			city=request.POST.get('city')
+			pin=request.POST.get('pin')
+			remarks=request.POST.get('remarks')
+			default=request.POST.get('default')
+			new_warehouse=Warehouse()
+			new_warehouse.name=name
+			new_warehouse.address_1=address_1
+			new_warehouse.address_2=address_2
+			new_warehouse.state=state
+			new_warehouse.city=city
+			new_warehouse.pin=pin
+			new_warehouse.remarks=remarks
+			new_warehouse.default=default
+			new_warehouse.save()			
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+	return render (request, 'master/warehouse_list.html',{'extension':extension,'states':state_list })

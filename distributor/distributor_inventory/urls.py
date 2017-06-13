@@ -1,0 +1,15 @@
+from django.conf.urls import url
+from django.contrib import admin
+from . import views
+
+urlpatterns = [
+    url(r'^getcurrentdata$', views.inventory_data, name='inventory_data'),
+    url(r'^currentinventory/$', views.inventory_template, name='inventory_template'),
+    url(r'^openinginventory/$', views.opening_inventory, name='opening_inventory'),
+    url(r'^openinginventory/data/$', views.opening_inventory_data, name='opening_inventory_data'),
+    url(r'^getproduct/$', views.get_product, name='get_product'),
+    url(r'^getproductinventory/$', views.get_product_inventory, name='get_product_inventory'),
+    url(r'^inventorytransfer/$', views.inventory_transfer_template, name='inventory_transfer_template'),
+    url(r'^inventorytransfer/data/$', views.inventory_transfer_data, name='inventory_transfer_data'),
+    # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
+]

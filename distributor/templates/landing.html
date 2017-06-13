@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% load static from staticfiles %}
+
+{% block title %}
+<title>
+    Dashboard 
+</title>
+    <!-- This is for the animation to work -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    <!-- Google Fonts Load Pangolin-->
+    <link href="https://fonts.googleapis.com/css?family=Pangolin" rel="stylesheet">
+    <!-- Google Fonts Load Righteous-->
+    <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
+{% endblock %}
+
+<!-- Dashboard block contains the home icon. We dont want to show it on the landing/dashboard page. -->
+{% block dashboard %}
+{% endblock %}
+
+{%block content%}
+
+<div class="container">
+        <div class="row">
+            <div class="col-md-8 col-xs-12 ">
+                <div>
+                    <h5><b>Current Accounting Period: {{current_account.start}} to {{current_account.end}}</b></h5>
+                </div>
+                <div >
+                    <label title="Sales for last 30 days">Sales for last 30 days
+                        <canvas id="sales" width="600" height="300"></canvas>
+                    </label>
+                </div>
+                <br>
+                <br>
+                <div class="col-lg-8 col-md-8 col-xs-12 thumb">
+                    <h6 style="font-size: 25px; font-family: 'Righteous';">Collection Pending:</h6>
+                </div>
+                
+            </div>            
+            <div class="col-lg-4 col-md-4 col-xs-12 ">
+                <div>
+                    <label title="Invoiced vs Collected: Pie chart">Invoiced vs Collected (last 30 days)<small></small>
+                        <canvas id="invoice-collection"  height="250"></canvas>
+                    </label>
+                </div>      
+                <!-- <div style="color:#008062;">
+                    <h3> Something here </h3>
+                    <h1 id="teacherattendanceText">0%</h1>
+                    <div id ="teacherattendanceChart" class="chart bar" data-value="0"></div>
+                </div> -->
+            </div>
+        </div>
+</div>
+
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Signika:300,400,600,700' rel='stylesheet' type='text/css'>
+
+    <!-- <script src="{% static 'landing/fancycharts.min.js' %}"></script> -->
+
+    <!-- D3, Dc and Crossfilter.js -->
+    <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+    <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/d3.js"></script>
+    <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/dc.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/reductio/0.6.3/reductio.min.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js"></script>
+    <!-- Moment JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+
+    <!--Chart.js (for pie chart)-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
+
+    
+    
+    <script>
+        csrf_token='{{csrf_token}}';
+        var sales_daily='{{sales_daily|escapejs}}'
+        var invoice_value=parseFloat(JSON.parse('{{invoice_value|escapejs}}'));
+        var payment_value=parseFloat(JSON.parse('{{payment_value|escapejs}}'))
+        // var colors = ["#008062", "#68367c"];
+        // var chart = new Fancychart(200, payment_value, colors, '#e5e5e5');
+        // var percent_staff = 0;
+        // var percent_student = 50;
+        // chart.circles("#teacherattendanceChart", percent_staff, colors[0]);
+        // chart.circles("#studentattendanceChart", percent_student, colors[1]);
+        
+    </script>
+
+    <script src="{% static 'landing/sales_30days_chart.js' %}"></script>
+    <script src="{% static 'landing/invoiced_payment_chart.js' %}"></script>
+    <!-- <script src="{% static 'landing/monthly_sales_dimple.js' %}"></script> -->
+    
+{% endblock %}
+

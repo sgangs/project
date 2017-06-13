@@ -1,0 +1,61 @@
+{% extends "landingbase.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+
+{% load static from staticfiles %}
+
+
+<title>Assisto - Register</title>
+
+{% endblock %}
+
+{% block content %}
+    <p>Please use the following form to register. In case you are already registered, <a style="color:#6bd4fa;" href='{% url 'login' %}'>click here</a> to login</p>
+
+    {% if error == "Yes" %}
+    <div class="alert alert-danger">There are some errors. Please look below</div>
+    
+    {% endif %}
+       
+    <form action="." method="post">
+    <div class="login-form col-md-5 text-left">
+        <div class="form">
+            {{ userform|crispy }}
+            {% csrf_token %}            
+        </div>
+    </div>
+    <div class="login-form col-md-2">            
+    </div>
+    <div class="login-form col-md-5">
+        <div class="form">
+            {{ customerform|crispy }}
+            {% csrf_token %}
+        </div>
+    </div>
+    <div class="login-form col-md-1 col-md-offset-5  ">
+        <p><input type="submit" class="btn btn-primary btn-lg" value="Register"></p>
+        <input type="hidden" name="next" value="." />
+    </div>
+
+    </form>
+
+<style type="text/css">
+    form {
+        overflow:auto;
+    }
+    .form{
+        height:auto;
+        max-height:70vh;
+        overflow:auto;
+        padding:1.5em;
+        align-content: left;
+    }
+</style>    
+    
+{% endblock %}
+
+
+
+

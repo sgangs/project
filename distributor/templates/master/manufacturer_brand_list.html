@@ -1,0 +1,148 @@
+{% extends extension %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+
+<title>Dimension &amp Unit</title>
+
+
+{% endblock %} 
+
+{% block content%}
+	
+<div>
+	<button type="submit" class="btn btn-primary btn-sm newdim"><i class="fa fa-star"></i> Add New Manufacturer</button>
+	<button type="submit" class="btn btn-primary btn-sm newunit"><i class="fa fa-star"></i> Add New Brand</button>
+</div>
+<h1></h1>
+<!-- <div class="col-md-4  alert alert-danger">
+	
+</div>
+<div class="col-md-4  alert alert-danger">
+	
+</div> -->
+
+<div class="table-responsive">
+    	<table class="table table-striped table-bordered table-hover" id="manufacturer">
+      	<thead class="thead-inverse header-background">
+      		<tr>
+      			<th class="text-center" colspan="2"><strong>MANUFACTURER TABLE</strong></th>
+      		</tr>
+        	<tr>
+	            <th class="text-center" hidden>ID</th>
+	            <th class="text-center">Name</th>
+          	</tr>
+		</thead>
+        <tbody>        	
+        </tbody>
+  	</table> 
+</div>
+
+<div class="table-responsive">
+    	<table class="table table-striped table-bordered table-hover" id="brand">
+      	<thead class="thead-inverse header-background">
+      		<tr>
+      			<th class="text-center" colspan="4"><strong>BRAND TABLE</strong></th>
+      		</tr>
+        	<tr>
+	            <th class="text-center" hidden>ID</th>
+	            <th class="text-center">Name</th>
+	            <th class="text-center">Manufacturer</th>
+          	</tr>
+		</thead>
+        <tbody>        	
+        </tbody>
+  	</table> 
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="newdim" tabindex="-1" role="dialog" aria-labelledby="newdimLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Add New Manufacturer</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div>
+					<div class="error_box alert alert-danger" hidden>
+						<p class='year_error' hidden>Manufacturer with same name already exist</p>						
+					</div>
+				</div>
+				<div class="form-group namediv">
+					<label for="classname" class="control-label">Manufacturer name</label>
+					<input type="text" class="form-control manname" placeholder="Name: Eg: Hindustan Unilever">
+				</div>
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary submitman">Submit</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="newunit" tabindex="-1" role="dialog" aria-labelledby="newunitLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Add New Brand</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div>
+					<div class="error_box alert alert-danger" hidden>
+						<p class='year_error' hidden>Brand with same name already exist</p>
+						<p class='year_error' hidden>Brand with same code/symbol already exist</p>
+					</div>
+				</div>
+				<div class="form-group namediv">
+					<label class="control-label">Brand name</label>
+					<input type="text" class="form-control brandname" placeholder="Name: Eg: Axe">
+				</div>
+				<div class="form-group dimdiv">
+					<label class="control-label">Manufacturer</label>
+					<select class="form-control selectpicker manufac" data-live-search="true">
+						<option disabled selected hidden style='display: none' value>Select Manufacturer</option>
+						<!-- {# {% for item in dimensions %}
+  							<option data-id="{{item.id}}">{{item.name}}</option>
+						{% endfor %} #} -->
+					</select>
+				</div>				
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary submitunit">Submit</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+
+{% load static from staticfiles %}
+
+<script src="{% static 'master/manufacbrand.js' %}"></script>
+
+<script>
+
+$('.newdim').attr('data-toggle',"modal")
+$('.newdim').attr('data-target',"#newdim")
+
+$('.newunit').attr('data-toggle',"modal")
+$('.newunit').attr('data-target',"#newunit")
+
+csrf_token='{{csrf_token}}';
+</script>
+
+{% endblock %}
+
+
+

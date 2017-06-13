@@ -1,0 +1,35 @@
+{% extends "landingbase.html" %}
+
+{% block title %}
+
+{% load static from staticfiles %}
+
+<!--<link rel="stylesheet" href="{% static 'bill/loggingstyle.css' %}">
+
+<link rel="stylesheet" href="{% static 'bill/style.css' %}"> -->
+
+<title>Assisto - Registration Successful</title>
+
+{% endblock %}
+
+{% block content %}
+	<div>
+		<p></p>
+	</div>
+	<h1></h1>
+    <div class="alert alert-success">
+	    <label>Congrats!! You have successfully registered.</label>
+	    <p>You'll be redirected to the login page.</p>
+	    <p>If you're not redirected, <a href="{% url 'login' %}">click here</a></p>
+   	</div>
+
+<script type="text/javascript">
+	redirect_url="{% url 'login' %}"
+	setTimeout(function(){location.href = redirect_url;},6000)
+</script>
+
+{% endblock %}
+
+
+
+

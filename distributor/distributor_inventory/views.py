@@ -1,0 +1,260 @@
+import django_excel as excel
+from decimal import Decimal
+
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Sum
+from django.utils import timezone
+from django.utils.timezone import localtime
+import json
+#from datetime import datetime
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import IntegrityError, transaction
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+
+from rest_framework.decorators import api_view
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+
+from distributor_master.models import Unit, Product, Warehouse
+from distributor_user.models import Tenant
+from distributor_account.models import Account, accounting_period, account_year
+from .models import *
+from .serializers import *
+
+
+
+@login_required
+def inventory_template(request):
+	extension="base.html"
+	return render (request, 'inventory/inventory_list.html',{'extension':extension})
+
+
+# @login_required
+@api_view(['GET', 'POST', ])
+def inventory_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	calltype = request.GET.get('calltype')
+	if (calltype == 'stockwise'):
+		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+					select_related('product', 'warehouse').values('product__name','product__sku','purchase_date','expiry_date',\
+					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
+					annotate(available=Sum('quantity_available')).order_by('purchase_date'))
+	if (calltype == 'current'):
+		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+					select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
+					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
+					annotate(available=Sum('quantity_available')).order_by('product__sku'))
+	jsondata = json.dumps(current_inventory, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@login_required
+def opening_inventory(request):
+	extension="base.html"
+	return render (request, 'inventory/opening_inventory.html',{'extension':extension})
+
+@api_view(['GET', 'POST', ])
+def opening_inventory_data(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		inventories=initial_inventory.objects.for_tenant(this_tenant).all()
+		serializer = initialInventorySerializers(inventories, many=True)
+		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newinventory'):
+			productid=int(request.POST.get('productid'))
+			warehouseid=int(request.POST.get('warehouse'))
+			unitid=request.POST.get('unit')
+			unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
+			multiplier=unit.multiplier
+			quantity=Decimal(request.POST.get('quantity'))*multiplier
+			# batch=request.POST.get('batch')
+			# manufacturing_date=request.POST.get('manufacturing_date')
+			# expiry_date=request.POST.get('expiry_date')
+			# serial_no=request.POST.get('serial_no')
+			purchase_price=Decimal(request.POST.get('purchase'))
+			tentative_sales_price=request.POST.get('tsp')
+			mrp=request.POST.get('mrp')
+
+			product=Product.objects.for_tenant(this_tenant).get(id=productid)
+			warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=warehouseid)
+			total_inventory_value=quantity*purchase_price
+			with transaction.atomic():
+				try:
+					new_initial_inventory=initial_inventory()
+					new_initial_inventory.product=product
+					new_initial_inventory.warehouse=warehouse
+					new_initial_inventory.quantity=quantity
+					# new_initial_inventory.batch=batch
+					# new_initial_inventory.manufacturing_date=manufacturing_date
+					# new_initial_inventory.expiry_date=expiry_date
+					# new_initial_inventory.serial_no=serial_no
+					new_initial_inventory.purchase_price=purchase_price
+					new_initial_inventory.tentative_sales_price=tentative_sales_price
+					new_initial_inventory.mrp=mrp
+					new_initial_inventory.tenant=this_tenant
+					new_initial_inventory.save()
+
+					new_inventory=Inventory()
+					new_inventory.product=product
+					new_inventory.warehouse=warehouse
+					new_inventory.purchase_date=this_tenant.registered_on
+					new_inventory.purchase_quantity=quantity
+					new_inventory.quantity_available=quantity
+					# new_inventory.batch=batch
+					# new_inventory.manufacturing_date=manufacturing_date
+					# new_inventory.expiry_date=expiry_date
+					# new_inventory.serial_no=serial_no
+					new_inventory.purchase_price=purchase_price
+					new_inventory.tentative_sales_price=tentative_sales_price
+					new_inventory.mrp=mrp
+					new_inventory.tenant=this_tenant
+					new_inventory.save()
+
+					try:
+						this_inventory_warehouse=inventory_warehouse.objects.for_tenant(this_tenant).\
+													get(product=product, warehouse=warehouse)
+						this_inventory_warehouse.quantity_in_hand+=quantity
+						this_inventory_warehouse.save()
+					except:
+						new_inventory_warehouse=inventory_warehouse()
+						new_inventory_warehouse.product=product
+						new_inventory_warehouse.warehouse=warehouse
+						new_inventory_warehouse.quantity_in_hand=quantity
+						new_inventory_warehouse.tenant=this_tenant
+						new_inventory_warehouse.save()
+
+					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+					warehouse_valuation_change.valuation+=total_inventory_value
+					warehouse_valuation_change.save()
+
+					inventory_account=Account.objects.for_tenant(this_tenant).get(name='Inventory')
+					current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+					inventory_account_data=account_year.objects.for_tenant(this_tenant).get(account=inventory_account, \
+											accounting_period=current_period)
+					inventory_account_data.first_debit=total_inventory_value
+					inventory_account_data.current_debit+=total_inventory_value
+					inventory_account_data.save()
+				except:
+					transaction.rollback()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+
+@api_view(['GET','POST'],)
+def get_product(request):
+	this_tenant=request.user.tenant
+	if request.is_ajax():
+		q = request.GET.get('term', '')
+		products = Product.objects.for_tenant(this_tenant).filter(name__istartswith  = q )[:10].select_related('default_unit', 'tax')
+		response_data = []
+		for item in products:
+			item_json = {}
+			item_json['id'] = item.id
+			item_json['label'] = item.name
+			response_data.append(item_json)
+		data = json.dumps(response_data)
+	else:
+		data = 'fail'
+	mimetype = 'application/json'
+	return HttpResponse(data, mimetype)
+
+@api_view(['GET'],)
+def get_product_inventory(request):
+	this_tenant=request.user.tenant
+	if request.is_ajax():
+		product_id = request.GET.get('product_id')
+		warehouse_id = request.GET.get('warehouse_id')
+		product_quantity=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
+					product=product_id, warehouse=warehouse_id).values('id','purchase_price','tentative_sales_price','mrp',\
+					'purchase_date','quantity_available'))
+		print(product_quantity)
+	jsondata = json.dumps(product_quantity,  cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@login_required
+def inventory_transfer_template(request):
+	extension="base.html"
+	return render (request, 'inventory/inventory_transfer.html',{'extension':extension})
+
+
+@api_view(['GET', 'POST'],)
+def inventory_transfer_data(request):
+	this_tenant=request.user.tenant
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newtransfer'):
+			from_warehouseid=int(request.POST.get('warehouse'))
+			to_warehouseid=int(request.POST.get('warehouse'))
+			date=request.POST.get('date')
+			all_data = json.loads(request.POST.get('bill_details'))
+			total=0
+			if (from_warehouseid == to_warehouseid):
+				raise IntegrityError
+			# unitid=request.POST.get('unit')
+			# unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
+			# multiplier=unit.multiplier
+			# quantity=Decimal(request.POST.get('quantity'))*multiplier
+			# batch=request.POST.get('batch')
+			# manufacturing_date=request.POST.get('manufacturing_date')
+			# expiry_date=request.POST.get('expiry_date')
+			# serial_no=request.POST.get('serial_no')
+			from_warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=from_warehouseid)
+			to_warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=to_warehouseid)
+			total_inventory_value=quantity*purchase_price
+			with transaction.atomic():
+				try:
+					new_inventory_transfer=inventory_transfer()
+					new_inventory_transfer.from_warehouse=from_warehouse
+					new_inventory_transfer.to_warehouse=to_warehouse
+					new_inventory_transfer.initiated_on=date
+					new_inventory_transfer.total_value=total
+					new_inventory_transfer.in_transit=True
+					new_inventory_transfer.tenant=this_tenant
+					new_inventory_transfer.save()
+
+					for data in bill_data:
+						inventory_id=data['inventory_id']
+						unit_id=data['unit_id']
+						original_qty=data['original_qty']
+						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
+						multiplier=unit.multiplier
+						actual_qty=Decimal(request.POST.get('quantity'))*multiplier
+						inventory_item=Inventory.objects.for_tenant(this_tenant).get(id=inventory_id)
+						if (actual_qty>inventory_item.quantity_available):
+							raise IntegrityError
+						inventory_item.quantity_available-=actual_qty
+						inventory_item.save()
+
+						new_item=inventory_transfer_items()
+						new_item.transfer=new_inventory_transfer
+						new_item.product=product
+						new_item.quantity=original_qty
+						new_item.unit=unit
+						# new_inventory.batch=batch
+						# new_inventory.manufacturing_date=manufacturing_date
+						# new_inventory.expiry_date=expiry_date
+						# new_inventory.serial_no=serial_no
+						new_item.purchase_date=inventory_item.purchase_date
+						new_item.purchase_price=inventory_item.purchase_price
+						new_item.tentative_sales_price=inventory_item.tentative_sales_price
+						new_item.mrp=inventory_item.mrp
+						new_item.tenant=this_tenant
+						new_item.save()
+
+						total+=inventory_item.purchase_price*actual_qty
+
+					new_inventory_transfer.total_value=total
+					new_inventory_transfer.save()
+					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=from_warehouse)
+					warehouse_valuation_change.valuation-=total
+					warehouse_valuation_change.save()
+
+				except:
+					transaction.rollback()
