@@ -132,12 +132,14 @@ def RegisterView(request):
                     
                     #This account will consider COGS return - as we store purchase value only in COGS
                     #this contra is something like purchase contra
-                    # create_accountChart(new_tenant,"Cost of Goods Sold Contra",\
-                    #     "Direct Expense", "Parent COGS Contra Accounts", "cogs contra", period, new_ledger, is_first_year=True)
+                    create_accountChart(new_tenant,"Cost of Goods Sold Contra", "Direct Expense",\
+                        "Parent COGS Contra Accounts", "cogs contra", period, new_ledger, is_first_year=True, is_contra=True)
                         #This is used to consider sales return - check if it should be expense or revenue
-                    # create_accountChart(new_tenant,"Sales Contra",\
-                    #     "Direct Revenue", "Contra Sales Account", "sales contra", period, new_ledger, is_first_year=True)
-                        #This is used for considering purchases.
+                    create_accountChart(new_tenant,"Sales Contra", "Direct Revenue",\
+                        "Contra Sales Account", "sales contra", period, new_ledger, is_first_year=True, is_contra=True)
+                        
+                    create_accountChart(new_tenant,"Inventory Waste Expense", "Direct Expense",\
+                        "Parent Inventory Wastage", "inventory waste", period, new_ledger, is_first_year=True, is_contra=True)
                     
 
                     #Purchase account only if user choses not to maintain inventory
@@ -150,6 +152,12 @@ def RegisterView(request):
 
                     bank_account=create_accountChart(new_tenant,"Bank","Current Assets", \
                         "Bank account", "bank", period, new_ledger, is_first_year=True)
+
+                    vendor_debit=create_accountChart(new_tenant, "Vendor Debit","Current Liabilities",\
+                        "Debit Note Vendor Debit", "vd", period, new_ledger, is_first_year=True, is_contra=True)
+
+                    customer_credit=create_accountChart(new_tenant, "Customer Credit","Current Assets",\
+                        "Credit Note Customer Credit", "cc", period, new_ledger, is_first_year=True, is_contra=True)
                     
                     create_accountChart(new_tenant, "Inventory","Current Assets",\
                         "Parent Inventory Account", "inventory", period, new_ledger, is_first_year=True)
@@ -163,18 +171,16 @@ def RegisterView(request):
                         period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"Sales","Direct Revenue", "Parent Sales Accounts", "sales",\
                         period, new_ledger, is_first_year=True)
-                    i=3
-                    while (i>0):
-                        if (i==3):
-                            dimension=create_dimension(new_tenant, "Number", "For numbers")
-                            create_unit(new_tenant, dimension, "Number", "No", 1)
-                        if (i==2):
-                            dimension=create_dimension(new_tenant, "Length", "For measuring length")
-                            create_unit(new_tenant, dimension, "Metre", "Mtr", 1)
-                        if (i==1):
-                            dimension=create_dimension(new_tenant, "Weight", "For measuring weight")
-                            create_unit(new_tenant, dimension, "Gram", "gm", 1)
-                        i=i-1
+                    
+                    dimension=create_dimension(new_tenant, "Number", "For numbers")
+                    create_unit(new_tenant, dimension, "Number", "No", 1)
+                    
+                    dimension=create_dimension(new_tenant, "Length", "For measuring length")
+                    create_unit(new_tenant, dimension, "Metre", "Mtr", 1)
+                    
+                    dimension=create_dimension(new_tenant, "Weight", "For measuring weight")
+                    create_unit(new_tenant, dimension, "Gram", "gm", 1)
+                    
                     payment= payment_mode()
                     payment.name="Cash"
                     payment.default=True
@@ -195,14 +201,28 @@ def RegisterView(request):
                     payment.tenant=new_tenant
                     payment.payment_account=bank_account
                     payment.save()
+
+                    payment= payment_mode()
+                    payment.name="Vendor Debit"
+                    payment.default=False
+                    payment.tenant=new_tenant
+                    payment.payment_account=vendor_debit
+                    payment.save()
+
+                    payment= payment_mode()
+                    payment.name="Customer Credit"
+                    payment.default=False
+                    payment.tenant=new_tenant
+                    payment.payment_account=customer_credit
+                    payment.save()
                 except:
                     transaction.rollback()
 
             return render(request,'registration_success.html')
         else:
             error = "Yes"
-            return render(request, 'registration.html' , {'userform': userform, \
-                        'customerform': customerform, 'error':error, })
+            return render(request, 'registration.html',{'userform': userform, \
+                        'customerform': customerform,'error':error,})
     else:
         customerform = CustomerRegistrationForm()
         userform = UserRegistrationForm()

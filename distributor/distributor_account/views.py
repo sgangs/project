@@ -21,6 +21,7 @@ from distributor.variable_list import account_type_general
 from distributor_user.models import Tenant
 from .models import *
 from .journalentry import *
+from .account_support import *
 # from .excel_download import *
 
 # @login_required
@@ -59,9 +60,57 @@ def new_tax_report(request):
 @api_view(['GET'],)
 def get_tax_report(request):
 	this_tenant=request.user.tenant
-	taxes=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type','tax_percent',\
-		'tax_value','product_name','transaction_bill_id','date',).order_by('transaction_type','date','tax_type','tax_percent'))
-	jsondata = json.dumps(taxes,cls=DjangoJSONEncoder)
+	calltype=request.GET.get('calltype')
+	response_data={}
+	if (calltype == 'all_list'):
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type','tax_percent',\
+			'tax_value','transaction_bill_no','date',).order_by('transaction_type','date','tax_type','tax_percent'))
+	elif (calltype == 'short_summary'):
+		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='CGST').\
+					aggregate(Sum('tax_value'))['tax_value__sum']
+		response_data['sgst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='SGST').\
+					aggregate(Sum('tax_value'))['tax_value__sum']
+		response_data['igst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='IGST').\
+					aggregate(Sum('tax_value'))['tax_value__sum']
+		
+		response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='CGST').\
+					aggregate(Sum('tax_value'))['tax_value__sum']
+		response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='SGST').\
+					aggregate(Sum('tax_value'))['tax_value__sum']
+		response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='IGST').\
+					aggregate(Sum('tax_value'))['tax_value__sum']
+
+
+		if not response_data['cgst_input']:
+			response_data['cgst_input']=0
+		if not response_data['sgst_input']:
+			response_data['sgst_input']=0
+		if not response_data['igst_input']:
+			response_data['igst_input']=0
+
+		if not response_data['cgst_output']:
+			response_data['cgst_output']=0
+		if not response_data['sgst_output']:
+			response_data['sgst_output']=0
+		if not response_data['igst_output']:
+			response_data['igst_output']=0
+		
+		# jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
+		# return HttpResponse(jsondata)
+	elif (calltype == 'apply_filter'):
+		tax_percent=int(request.GET.get('tax_percent'))
+		tax_type=request.GET.get('tax_type')
+		# response_data=tax_transaction.objects.for_tenant(request.user.tenant).order_by('transaction_type','date',\
+		# 	'tax_type','tax_percent')
+		response_data=tax_transaction.objects.for_tenant(request.user.tenant).all()
+		if (tax_percent):
+			response_data=response_data.filter(tax_percent=tax_percent).all()
+		if (tax_type):
+			response_data=response_data.filter(tax_type=tax_type).all()
+		response_data=list(response_data.values('transaction_type','tax_type','tax_percent',\
+			'tax_value','transaction_bill_no','date',).order_by('transaction_type','date','tax_type','tax_percent'))
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
 
@@ -85,8 +134,9 @@ def account_details_view(request):
 	response_data = []
 	type_dict={p:q for (p,q) in account_type_general}
 	if request.method == 'GET':
-		accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["igstin","igstout","igstpay", \
-			 "sgstin","sgstout", "sgstpay", "cgstin","cgstout", "cgstpay"])
+		# accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["igstin","igstout","igstpay", \
+		# 	 "sgstin","sgstout", "sgstpay", "cgstin","cgstout", "cgstpay"])
+		accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["vatin","vatout","vatpay",])
 		for item in accounts:
 			this_account_year=account_year.objects.get(account=item, accounting_period=current_year)
 			response_data.append({'id':item.id,'name':item.name,'key':item.key, 'type':type_dict[item.account_type], \
@@ -300,3 +350,65 @@ def account_period_data(request):
 		periods=accounting_period.objects.for_tenant(this_tenant).all()
 		serializer = AccountingPeriodSerializers(periods, many=True)
 		return Response(serializer.data)
+
+
+@api_view(['GET'],)
+#This is one option
+def tax_short_summary(request):
+	this_tenant=request.user.tenant
+	response_data = {}
+	if request.method == 'GET':
+		# calltype = request.GET.get('calltype')
+		account=Account.objects.for_tenant(this_tenant).get(name='CGST Input')
+		response_data['cgst_input']=journal_entry.objects.for_tenant(this_tenant).filter(transaction_type=1,account=account).\
+					aggregate(Sum('value'))['value__sum']
+		
+		account=Account.objects.for_tenant(this_tenant).get(name='SGST Input')
+		response_data['sgst_input']=journal_entry.objects.for_tenant(this_tenant).filter(transaction_type=1,account=account).\
+					aggregate(Sum('value'))['value__sum']
+
+		account=Account.objects.for_tenant(this_tenant).get(name='GST Input')
+		response_data['igst_input']=journal_entry.objects.for_tenant(this_tenant).filter(transaction_type=1,account=account).\
+					aggregate(Sum('value'))['value__sum']
+
+		
+		if not response_data['cgst_input']:
+			response_data['cgst_input']=0
+		if not response_data['sgst_input']:
+			response_data['sgst_input']=0
+		if not response_data['igst_input']:
+			response_data['igst_input']=0
+		
+		jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+		
+
+@login_required
+def trial_balance_view(request):
+	date=datetime.now()
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	try:
+		response_data=get_trial_balance(request, start, end)
+	except:
+		response_data=[]
+	jsondata = json.dumps(response_data)
+	return render(request, 'account/trial_balance.html', {'accounts':jsondata, "start":start, "date":date})
+	# return render(request, 'account/trial_balance.html')
+
+
+@api_view(['GET', 'POST'],)
+def trial_balance_data(request):
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	tenant=request.user.tenant
+	account_list=Account.objects.for_tenant(tenant).all()
+	response_data=[]
+	try:
+		response_data=get_trial_balance(request, start, end)
+	except:
+		response_data=[]
+	jsondata = json.dumps(response_data)
+	return HttpResponse(jsondata)

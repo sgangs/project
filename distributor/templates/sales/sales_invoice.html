@@ -52,9 +52,9 @@
         	<th colspan="3"><h5>Item</h5></th>
             <th colspan="1"><h5>Qty</h5></th>
             <th colspan="1" hidden></th>
-            <th colspan="1"><h5>Free w/o tax</h5></th>
-            <th colspan="1"><h5>Free with tax</h5></th>
-            <th colspan="2"><h5>Unit</h5></th>
+            <!-- <th colspan="1"><h5>Free w/o tax</h5></th>
+            <th colspan="1"><h5>Free with tax</h5></th> -->
+            <th colspan="1"><h5>Unit</h5></th>
             <th colspan="1" hidden></th>
             <th colspan="1" hidden></th>
             <th colspan="1" hidden></th>
@@ -64,8 +64,12 @@
             <th colspan="1"><h5>Disc. Type-2</h5></th>
             <th colspan="1"><h5>Disc. Value-2</h5></th>
             <th colspan="1"><h5>Taxable Total</h5></th>
-            <th colspan="1"><h5>VAT Type</h5></th>
-            <th colspan="1"><h5>VAT %</h5></th>
+            <th colspan="1"><h5>CGST %</h5></th>
+            <th colspan="1"><h5>CGST Amt</h5></th>
+            <th colspan="1"><h5>SGST %</h5></th>
+            <th colspan="1"><h5>SGST Amt</h5></th>
+            <th colspan="1"><h5>IGST %</h5></th>
+            <th colspan="1"><h5>IGST Amt</h5></th>
             <th colspan="1"><h5>Total</h5></th>
         </tr>
 	</thead>
@@ -76,9 +80,9 @@
 			<td colspan="3"><input class="form-control name"></td>
             <td colspan="1"><input class="form-control qty"></td>
             <td colspan="1" class="qty_avl" hidden>0</td>
-            <td colspan="1"><input class="form-control free"></td>
-            <td colspan="1"><input class="form-control freet"></td>
-			<td colspan="2">
+            <!-- <td colspan="1"><input class="form-control free"></td>
+            <td colspan="1"><input class="form-control freet"></td> -->
+			<td colspan="1">
 				<select class="form-control selectpicker unit" id='unit'>
 				</select>
 			</td>
@@ -101,8 +105,12 @@
 			</td>
             <td colspan="1"><input class="form-control dv2"></td>
             <td colspan="1" class="total">0.00</td>
-            <td colspan="1" class="vt"></td>
-            <td colspan="1" class="vp"></td>
+            <td colspan="1"><input class="form-control cgstp"></td>
+            <td colspan="1" class="cgstv"></td>
+            <td colspan="1"><input class="form-control sgstp"></td>
+            <td colspan="1" class="sgstv"></td>
+            <td colspan="1"><input class="form-control igstp"></td>
+            <td colspan="1" class="igstv"></td>
             <td colspan="1" class="tv">0.00</td>
 		</tr>
 	</tbody>
@@ -176,11 +184,11 @@
 				<td>Rs.</td>
 		        <td><span class='subtotal_receipt'>0.00</span></td>
 			</tr>
-			<tr>
+			<!-- <tr>
 				<td>Grand Discount</td>
 				<td>Rs.</td>
 		        <td class='grand_discount'>0.00</td>
-			</tr>
+			</tr> -->
 			<tr>
 				<td>Tax Total</td>
 				<td>Rs.</td>

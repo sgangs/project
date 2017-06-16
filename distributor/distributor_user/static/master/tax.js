@@ -29,7 +29,7 @@ $("#tax").on("click", ".name", function(){
     pk=$(this).closest('tr').find('td:nth-child(1)').html()
     console.log(pk);
     el=this;
-    url="individual/"+pk+"/"
+    var url="individual/"+pk+"/";
     (function() {
         $.ajax({
             url : url, 
@@ -41,13 +41,12 @@ $("#tax").on("click", ".name", function(){
             },
             // handle a non-successful response
             error : function() {
-                console.log("here")
+                // console.log("here")
                 swal("Oops...", "There were some error.", "error");
             }
         });
     }());
 });
-
 
 
 var name ='', key='', details ='';
@@ -72,8 +71,10 @@ $('.submit').click(function(e) {
     
 function new_data(){
     var proceed=true;
-    name=$('.name').val()
-    percentage=$('.percent').val()
+    var name=$('.newname').val();
+    var percentage=parseFloat($('.newpercent').val());
+    console.log(name);
+    console.log(percentage);
     
     if (name == '' || name =='undefined' || percentage == '' || percentage =='undefined' || isNaN(percentage)){
         proceed = false;

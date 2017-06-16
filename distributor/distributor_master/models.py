@@ -22,6 +22,7 @@ class Dimension(models.Model):
 	details=models.TextField(blank=True)
 	tenant=models.ForeignKey(Tenant,related_name='dimension_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -43,6 +44,7 @@ class Unit(models.Model):
 	multiplier=models.DecimalField(max_digits=6, decimal_places=2)	
 	tenant=models.ForeignKey(Tenant,related_name='unit_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -60,6 +62,7 @@ class tax_structure(models.Model):
 	percentage=models.PositiveSmallIntegerField()
 	tenant=models.ForeignKey(Tenant,related_name='taxStructure_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -78,6 +81,7 @@ class Manufacturer(models.Model):
 	name=models.CharField(db_index=True, max_length=50)
 	tenant=models.ForeignKey(Tenant,related_name='manufacturer_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -97,6 +101,7 @@ class Attribute(models.Model):
 	name=models.CharField(db_index=True, max_length=50)
 	tenant=models.ForeignKey(Tenant,related_name='attribute_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -115,6 +120,7 @@ class Group(models.Model):
 	name=models.CharField(db_index=True, max_length=50)
 	tenant=models.ForeignKey(Tenant,related_name='group_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -134,6 +140,7 @@ class Brand(models.Model):
 	manufacturer=models.ForeignKey(Manufacturer,related_name='brand_manufacturer')
 	tenant=models.ForeignKey(Tenant,related_name='brand_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -176,6 +183,7 @@ class Product(models.Model):
 	is_active=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,related_name='product_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	
 	# def get_absolute_url(self):
@@ -196,6 +204,7 @@ class product_attribute(models.Model):
 	value=models.CharField(db_index=True, max_length=50)
 	tenant=models.ForeignKey(Tenant,related_name='productAttribute_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -217,6 +226,7 @@ class product_price(models.Model):
 	tentative_mrp=models.DecimalField(max_digits=12, decimal_places=2)
 	tenant=models.ForeignKey(Tenant,related_name='productPrice_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -238,6 +248,7 @@ class Zone (models.Model):
 	details=models.TextField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='zone_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -266,6 +277,7 @@ class AbstractCustomer(models.Model):
 	gst=models.CharField(max_length=20, blank=True, null=True)
 	details=models.TextField(blank=True, null=True)
 	is_active=models.BooleanField(default=True)
+	updated = models.DateTimeField(auto_now=True)
 	#vat_license_no=models.PositiveSmallIntegerField(blank=True, null=True)
 
 	class Meta:
@@ -320,6 +332,7 @@ class retail_customer(models.Model):
 	age=models.PositiveSmallIntegerField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='retailCustomer_master_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -345,6 +358,7 @@ class Warehouse(models.Model):
 	is_retail_channel=models.BooleanField(default=False)
 	tenant=models.ForeignKey(Tenant,related_name='warehouse_master_user_tenant')
 	objects=TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
@@ -363,4 +377,5 @@ class warehouse_user(models.Model):
 	user=models.ForeignKey(User,related_name='warehouseUser_master_user_user')
 	tenant=models.ForeignKey(Tenant,related_name='warehouseUser_master_user_tenant')
 	objects=TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	

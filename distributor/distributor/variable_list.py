@@ -77,3 +77,17 @@ account_type_general=(('ca','Current Assets'),
 activity_type_choces=((1,'Operating Activity'),
 			(2,'Investing Activity'),
 			(3,'Financing Activity'))
+
+
+gst_invoice_type=((1,'B2BR'), #B2B Registered
+			(2,'B2BUR'), #B2B Unregistered
+			(3,'B2BRA'), #B2B Registered Amendmend
+			(4,'B2BURA'), #B2B Unregistered Amendmend
+			(5,'B2BIN'), #B2B Interstate
+			(6,'B2BINA'), #B2B Interstate Amendment
+			(7,'B2CL'), #B2C Large
+			(8,'B2CS'), #B2C Small
+			(9,'B2BSSUPD'), #B2B Supplementary Debit Note
+			(10,'B2BSSUPC'), #B2B Supplementary Credit Note
+			(11,'B2CSSUPD'), #B2C Supplementary Debit Note
+			(12,'B2CSSUPC'),) #B2C Supplementary Credit Note

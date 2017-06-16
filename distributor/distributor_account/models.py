@@ -27,7 +27,7 @@ class accounting_period(models.Model):
 	is_first_year=models.BooleanField(default=False)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountingPeriod_account_user_tenant')
 	objects = TenantManager()
-	
+	updated = models.DateTimeField(auto_now=True)	
 	
 	class Meta:
 		unique_together = (("start","end", "tenant"))
@@ -43,6 +43,7 @@ class ledger_group(models.Model):
 	name=models.CharField(db_index=True, max_length=20)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='ledgergroup_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	class Meta:
 		unique_together = (("name", "tenant"))
@@ -62,8 +63,10 @@ class Account(models.Model):
 	# current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	# slug=models.SlugField(max_length=40)
 	key=models.CharField(db_index=True, max_length=15)
+	is_contra=models.BooleanField(default=False)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='account_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	
 	class Meta:
@@ -90,6 +93,7 @@ class account_year(models.Model):
 	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='accountYear_accountingPeriod')
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountYear_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	class Meta:
 		unique_together = (("account","accounting_period", "tenant"))
@@ -102,6 +106,7 @@ class journal_group(models.Model):
 	# slug=models.SlugField(max_length=32)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalGroup_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
@@ -120,6 +125,7 @@ class Journal(models.Model):
 	remarks=models.CharField(max_length=80, blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journal_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	# def get_absolute_url(self):
 	# 	return reverse('accounts:journal_detail', kwargs={'detail':self.slug})
@@ -143,6 +149,7 @@ class journal_entry(models.Model):
 	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalEntry_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	#def get_absolute_url(self):
 	#	return reverse('master_detail', kwargs={'detail':self.slug})
@@ -163,6 +170,7 @@ class payment_mode(models.Model):
 	default=models.BooleanField('Default Payment Mode ?', default=False)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='paymentMode_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	class Meta:
 		unique_together = (("name", "tenant"))
@@ -181,6 +189,7 @@ class inventory_value(models.Model):
 	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='inventoryValue_accountingPeriod')
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='inventoryValue_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	class Meta:
 		unique_together = (("inventory_type","accounting_period", "tenant"))
@@ -194,14 +203,13 @@ class tax_transaction(models.Model):
 	tax_type=models.CharField(db_index=True, max_length=5) #VAT/CGST/SGST/IGST
 	tax_percent=models.DecimalField(max_digits=5, db_index=True, decimal_places=2, default=0)
 	tax_value=models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	product=models.ForeignKey(Product,db_index=True, blank=True, null=True,\
-					related_name='taxTransaction_account_master_product', on_delete=models.SET_NULL)
-	product_name=models.CharField(db_index=True, max_length =200)
 	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
 	transaction_bill_no=models.BigIntegerField(blank=True, null=True)
 	date=models.DateField(db_index=True)
+	# is_conciled=models.BooleanField(default=False)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='taxTransaction_account_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	# class Meta:
 	# 	unique_together = (("inventory_type","accounting_period", "tenant"))

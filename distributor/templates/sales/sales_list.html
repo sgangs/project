@@ -48,13 +48,14 @@
 
 
 <div>
+	<button type="submit" class="btn btn-primary btn-sm all"><i class="fa fa-star"></i> View All Invoices</button>
 	<button type="submit" class="btn btn-primary btn-sm unpaid"><i class="fa fa-star"></i> View Unpaid Invoices</button>
 	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa--exclamation-circle"></i> View Overdue Invoices</button>
-	<button type="submit" class="btn btn-primary btn-sm purpay"><i class="fa fa-rupee"></i> Sales Collection</button>
+	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
 </div>
 <br>
 <div>
-	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
+	<button type="submit" class="btn btn-primary btn-sm purpay"><i class="fa fa-rupee"></i> Sales Collection</button>
 </div>
 <br>
 
@@ -76,9 +77,9 @@
   	</table> 
 </div>
 
-<!-- <div class="prev_next">
-<ul>
-    {# {% if students.has_previous %}
+<div class="prev_next">
+<ul class='add_nav'>
+    <!-- {# {% if students.has_previous %}
         <a class="prev btn btn-info" href="?page={{1}}">First</a>
         <a class="prev btn btn-info" href="?page={{students.previous_page_number}}">Prev</a>
     {% endif %}
@@ -94,10 +95,10 @@
     {% if students.has_next %}
         <a class="next btn btn-info" href="?page={{students.next_page_number}}">Next</a>
         <a class="next btn btn-info" href="?page={{num_page}}">Last</a>
-    {% endif %} #}
+    {% endif %} #} -->
     <span class="clear_both"></span>
 </ul>
-</div> -->
+</div>
 
 <!-- Modal -->
 <div class="modal fade" id="payment" tabindex="-1" role="dialog" aria-labelledby="paymentLabel" aria-hidden="true">

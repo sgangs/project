@@ -1,8 +1,16 @@
 $(function(){
 
-var total_payment=0;
+var total_payment=0, all_receipts = true, unpaid_receipts = false, overdue_receipts=false;
 
 load_receipts()
+
+$('.all').click(function(){
+    load_receipts();
+});
+
+$('.apply_reset').click(function(){
+    load_receipts();
+});
 
 function load_receipts(){
     $.ajax({
@@ -12,6 +20,12 @@ function load_receipts(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $("#receipt_table .data").remove();
+            $('.all').hide();
+            $('.unpaid').show();
+            $('.overdue').show();
+            $('#filter').modal('hide');
+            all_receipts=true, unpaid_receipts = false; overdue_receipts = false;
             $.each(jsondata, function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
                 date=this.date
@@ -35,6 +49,126 @@ function load_receipts(){
     });
 }
 
+$('.unpaid').click(function(e) {
+    $.ajax({
+        url : "listall/", 
+        type: "GET",
+        data:{ calltype:"unpaid_receipt"},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $('.all').show();
+            $('.unpaid').hide();
+            $('.overdue').show();
+            $("#receipt_table .data").remove();
+            all_receipts=false, unpaid_receipts = true; overdue_receipts = false;
+            $.each(jsondata, function(){
+                var url='/purchase/receipt/detailview/'+this.id+'/'
+                date=this.date
+                date=date.split("-").reverse().join("-")
+                $('#receipt_table').append("<tr class='data' align='center'>"+
+                "<td hidden='true'>"+url+"</td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
+                "<td>"+this.supplier_invoice+"</td>"+
+                "<td>"+date+"</td>"+
+                "<td>"+$.trim(this.payable_by)+"</td>"+
+                "<td>"+this.vendor_name+"</td>"+
+                "<td>"+this.total+"</td>"+
+                "<td>"+this.amount_paid+"</td>"+
+                "</tr>");
+            })
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No purchase receipt exist.", "error");
+        }
+    });
+
+});
+
+var end = moment();
+var start = moment(end).subtract(60, 'days');
+var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
+// console.log(start.format('DD-MM-YYYY'));
+
+$('.date_range').daterangepicker({
+    'showDropdowns': true,
+    'locale': {
+        format: 'DD/MM/YYYY',
+    },
+    "dateLimit": {
+        "days": 90
+    },
+    'autoApply':true,
+    // 'minDate': moment(start),
+    // 'maxDate': moment(end)  
+    'startDate' : start,
+    'endDate' : end,
+    },
+    function(start, end, label) {
+        startdate=start.format('YYYY-MM-DD');
+        enddate=end.format('YYYY-MM-DD');
+        $('.details').attr('disabled', false);
+});
+
+$('.apply_filter').click(function(e) {
+    var vendors=[];
+    $.each($(".vendor_filter option:selected"), function(){
+        vendorid=$(this).data('id')
+        var vendor={
+            vendorid: vendorid
+        };
+        vendors.push(vendor);
+    });
+    console.log(vendors);
+    console.log(startdate);
+    if (unpaid_receipts){
+        sent_with='unpaid_receipts'
+    }
+    else if(all_receipts){
+        sent_with='all_receipts'
+    }
+    else if(overdue_receipts){
+        sent_with='overdue_receipts'
+    }
+
+    $.ajax({
+        url : "listall/", 
+        type: "GET",
+        data:{ calltype:"apply_filter",
+            sent_with: sent_with,
+            start: startdate,
+            end: enddate,
+            vendors: JSON.stringify(vendors),
+            csrfmiddlewaretoken: csrf_token},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $("#receipt_table .data").remove();
+            $('#filter').modal('hide');
+            $.each(jsondata, function(){
+                var url='/purchase/receipt/detailview/'+this.id+'/'
+                date=this.date
+                date=date.split("-").reverse().join("-")
+                $('#receipt_table').append("<tr class='data' align='center'>"+
+                "<td hidden='true'>"+url+"</td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
+                "<td>"+this.supplier_invoice+"</td>"+
+                "<td>"+date+"</td>"+
+                "<td>"+$.trim(this.payable_by)+"</td>"+
+                "<td>"+this.vendor_name+"</td>"+
+                "<td>"+this.total+"</td>"+
+                "<td>"+this.amount_paid+"</td>"+
+                "</tr>");
+            })
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No purchase receipt exist.", "error");
+        }
+    });
+
+});
 
 $("#receipt_table").on("click", ".link", function(){
     // console.log('here');
@@ -72,31 +206,6 @@ function load_metadata(){
     });
 }
 
-// var end = new Date();
-var end = moment();
-var start = moment(end).subtract(60, 'days');
-
-// console.log(start.format('DD-MM-YYYY'));
-
-$('.date_range').daterangepicker({
-    'showDropdowns': true,
-    'locale': {
-        format: 'DD/MM/YYYY',
-    },
-    "dateLimit": {
-        "days": 90
-    },
-    'autoApply':true,
-    // 'minDate': moment(start),
-    // 'maxDate': moment(end)  
-    'startDate' : start,
-    'endDate' : end,
-    },
-    function(start, end, label) {
-        startdate=start.format('YYYY-MM-DD');
-        enddate=end.format('YYYY-MM-DD');
-        $('.details').attr('disabled', false);
-});
 
 
 load_vendor()

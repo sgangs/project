@@ -27,6 +27,7 @@
         	<tr>
 	            <th class="text-center" hidden>ID</th>
 	            <th class="text-center">Name</th>
+	            <th class="text-center">HSN Code</th>
 	            <th class="text-center">SKU</th>
 	            <th class="text-center">Default Unit</th>
 	            <th class="text-center">Brand</th>
@@ -57,10 +58,14 @@
 					<input type="text"class="form-control name" placeholder="Complete name, eg: Cotton Round Tee XL">
 				</div>
 				<div class="form-group skudiv">
+					<label class="control-label">Product HSN Code</label>
+					<input type="text" class="form-control hsn" placeholder="Product HSN Code">		
+				</div>
+				<div class="form-group skudiv">
 					<label class="control-label">Product SKU/Code</label>
 					<input type="text" class="form-control sku" placeholder="Proper SKU, eg: CRTXL (for Cotton Round Tee XL)">		
 				</div>
-				<div class="form-group vattypediv">
+				<!-- <div class="form-group vattypediv">
 					<label class="control-label">VAT Type</label>
 					<select class="form-control selectpicker vattype" data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select VAT Type</option>
@@ -68,14 +73,23 @@
 						<option data-id="1">VAT on MRP</option>
 						<option data-id="2">VAT on Actual Price</option>
 					</select>
+				</div> -->
+				<div class="form-group taxdiv">
+					<label class="control-label">CGST</label>
+					<select class="form-control selectpicker cgst" id='tax_cgst' data-live-search="true">
+						<option disabled selected hidden style='display: none' value>Select CGST</option>
+					</select>
 				</div>
 				<div class="form-group taxdiv">
-					<label class="control-label">Tax</label>
-					<select class="form-control selectpicker tax" id='tax' data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Tax Structure</option>
-						<!-- {% for item in dimensions %}
-  							<option data-id="{{item.id}}">{{item.name}}</option>
-						{% endfor %} -->
+					<label class="control-label">SGST</label>
+					<select class="form-control selectpicker sgst" id='tax_sgst' data-live-search="true">
+						<option disabled selected hidden style='display: none' value>Select SGST</option>
+					</select>
+				</div>
+				<div class="form-group taxdiv">
+					<label class="control-label">IGST</label>
+					<select class="form-control selectpicker igst" id='tax_igst' data-live-search="true">
+						<option disabled selected hidden style='display: none' value>Select IGST</option>
 					</select>
 				</div>
 				<div class="form-group reorderdiv">

@@ -29,6 +29,7 @@ class Inventory (models.Model):
 	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='inventory_inventory_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# class Meta:
 		# ordering = ('warehouse','item', )
@@ -55,6 +56,7 @@ class initial_inventory (models.Model):
 	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='initialInventory_inventory_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 	# class Meta:
 		# ordering = ('warehouse','item', )
@@ -82,6 +84,7 @@ class inventory_reserve (models.Model):
 	# transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True) #This item has to be added as well.
 	tenant=models.ForeignKey(Tenant,related_name='inventoryReserve_inventory_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 	# class Meta:
 		# ordering = ('warehouse','item', )
@@ -90,24 +93,6 @@ class inventory_reserve (models.Model):
 	# def __str__(self):
 	# 	return self.product
 
-
-#This is to maintain inventory product wise data, including current price for average price calculation
-class inventory_warehouse (models.Model):
-	id=models.BigAutoField(primary_key=True)
-	product=models.ForeignKey(Product, related_name='inventoryWarehouse_inventory_master_product')
-	warehouse=models.ForeignKey(Warehouse, related_name='inventoryWarehouse_inventory_master_warehouse')
-	quantity_in_hand=models.PositiveSmallIntegerField(db_index=True)
-	quantity_po=models.PositiveSmallIntegerField(default=0)
-	quantity_reserve=models.PositiveSmallIntegerField(default=0)
-	tenant=models.ForeignKey(Tenant,related_name='inventoryWarehouse_inventory_user_tenant')
-	objects = TenantManager()
-	
-	# class Meta:
-		# ordering = ('warehouse','item', )
-		# unique_together=("item","warehouse")
-	
-	# def __str__(self):
-	# 	return self.product
 
 #Transaction choices registered in variable list file
 #This is inventory ledger of all inventories, product wise. This model stores every inventory movement.
@@ -127,6 +112,7 @@ class inventory_ledger (models.Model):
 	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='inventoryLedger_inventory_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	# class Meta:
 		# ordering = ('warehouse','item', )
 		# unique_together=("item","warehouse")
@@ -142,6 +128,7 @@ class warehouse_valuation (models.Model):
 	valuation=models.DecimalField(max_digits=10, decimal_places=2, default=0)
 	tenant=models.ForeignKey(Tenant,related_name='warehouseValuation_inventory_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 	
 
 #Transfer of inventory from one warehoude to another
@@ -157,6 +144,7 @@ class inventory_transfer (models.Model):
 	in_transit=models.BooleanField(db_index=True, default=True)
 	tenant=models.ForeignKey(Tenant,related_name='inventoryTransfer_inventory_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 
 class inventory_transfer_items (models.Model):
@@ -176,6 +164,6 @@ class inventory_transfer_items (models.Model):
 	inventory_average_cost=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
-
 	tenant=models.ForeignKey(Tenant,related_name='inventoryTransferItem_inventory_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)

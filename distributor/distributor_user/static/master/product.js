@@ -1,4 +1,7 @@
 $(function(){
+var has_attribute=false, attr_name, product_name, sku, vat_type, tax
+var has_attribute=false, attr_name, product_name, sku, vat_type, tax
+var has_attribute=false, attr_name, product_name, sku, vat_type, tax
 var has_attribute=false, attr_name, product_name, sku, vat_type, tax, reorder, unit, brand, group, has_batch, 
     has_instance;
 
@@ -11,11 +14,12 @@ function load_products(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
+            // console.log(jsondata);
             $.each(jsondata, function(){
                 $('#product_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+this.id+"</td>"+
                 "<td>"+this.name+"</td>"+
+                "<td>"+$.trim(this.hsn)+"</td>"+
                 "<td>"+this.sku+"</td>"+
                 "<td>"+$.trim(this.default_unit)+"</td>"+
                 "<td>"+$.trim(this.brand)+"</td>"+
@@ -65,12 +69,22 @@ function load_tax(){
         // handle a successful response
         success : function(jsondata) {
             $.each(jsondata, function(){
-                    $('#tax').append($('<option/>',{
-                        'data-id': this.id,
-                        'text': this.name
-                        }));
-                    $('#tax').selectpicker('refresh')
-                })
+                $('#tax_cgst').append($('<option/>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+                $('#tax_sgst').append($('<option/>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+                $('#tax_igst').append($('<option/>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+            })
+            $('#tax_cgst').selectpicker('refresh');
+            $('#tax_sgst').selectpicker('refresh');
+            $('#tax_igst').selectpicker('refresh');
         },
         // handle a non-successful response
         error : function() {
@@ -176,8 +190,12 @@ function new_product(){
     var proceed=true, attributes=[];
     product_name=$('.name').val()
     sku=$('.sku').val()
-    vat_type=$(".vattype").find(':selected').data('id');
-    tax=$(".tax").find(':selected').data('id');
+    hsn=$('.hsn').val()
+    // vat_type=$(".vattype").find(':selected').data('id');
+    // tax=$(".tax").find(':selected').data('id');
+    cgst=$(".cgst").find(':selected').data('id');
+    sgst=$(".sgst").find(':selected').data('id');
+    igst=$(".igst").find(':selected').data('id');
     reorder=$('.reorder').val()
     unit=$(".unit").find(':selected').data('id');
     brand=$(".brand").find(':selected').data('id');
@@ -224,8 +242,12 @@ function new_product(){
                 type: "POST",
                 data:{name: product_name,
                     sku: sku,
-                    vat_type: vat_type,
-                    tax:tax,
+                    hsn: hsn,
+                    // vat_type: vat_type,
+                    // tax:tax,
+                    cgst:cgst,
+                    sgst:sgst,
+                    igst:igst,
                     reorder:reorder,
                     unit:unit,
                     brand:brand,

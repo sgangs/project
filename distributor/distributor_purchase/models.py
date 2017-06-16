@@ -27,6 +27,7 @@ class purchase_receipt(models.Model):
 	vendor_state=models.CharField(max_length=4,blank=True, null=True)
 	vendor_city=models.CharField(max_length=50, blank=True, null=True)
 	vendor_pin=models.CharField(max_length=8, blank=True, null=True)
+	vendor_gst=models.CharField(max_length=20, blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse,blank=True, null=True, \
 						related_name='purchaseReceipt_purchase_master_warehouse', on_delete=models.SET_NULL)
@@ -35,6 +36,7 @@ class purchase_receipt(models.Model):
 	warehouse_city=models.CharField(max_length=50)
 	warehouse_pin=models.CharField(max_length=8)
 	
+	gst_type=models.PositiveSmallIntegerField(default=1)
 	grand_discount_type=models.PositiveSmallIntegerField(default=0)
 	grand_discount=models.DecimalField(max_digits=8, decimal_places=2, default=0)
 	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
@@ -50,7 +52,8 @@ class purchase_receipt(models.Model):
 	# purchase_order=models.ForeignKey(purchase_order, blank=True, null=True related_name='purchaseReceipt_purchaseOrder')
 	tenant=models.ForeignKey(Tenant,related_name='purchaseReceipt_purchase_user_tenant')
 	objects = TenantManager()
-	
+	updated = models.DateTimeField(auto_now=True)
+
 #	def get_absolute_url(self):
 #		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
 
@@ -128,6 +131,7 @@ class receipt_line_item(models.Model):
 	
 	tenant=models.ForeignKey(Tenant,related_name='receiptLineItem_purchase_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 
 #This stores all the individual payments made againt the invoice(s), like a ledger
@@ -143,6 +147,18 @@ class purchase_payment(models.Model):
 	# final_payment_delay=models.PositiveSmallIntegerField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='purchasePayment_purchase_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+
+#This stores all the individual payments made againt the invoice(s), like a ledger
+class payment_line_item(models.Model):
+	payment_mode=models.ForeignKey(payment_mode,related_name='paymentLineItem_paymentMode')
+	purchase_receipt=models.ForeignKey(purchase_receipt, related_name='paymentLineItem_purchaseReceipt')
+	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
+	tenant=models.ForeignKey(Tenant,related_name='paymentLineItem_purchase_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
 
 # #This is to add debit notes of two types - Either for return of goods or for excess payment
 class debit_note(models.Model):
@@ -178,6 +194,7 @@ class debit_note(models.Model):
 
 	tenant=models.ForeignKey(Tenant,related_name='debitNote_purchase_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 		
 	#the save method is overriden to give unique debit note ids, slug
 	def save(self, *args, **kwargs):
@@ -238,6 +255,7 @@ class debit_note_line_item(models.Model):
 	
 	tenant=models.ForeignKey(Tenant,related_name='debitNoteLineItem_purchase_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 # #This model is for line items of a debit note for excess payment
 # class debitNoteLineDetails(models.Model):

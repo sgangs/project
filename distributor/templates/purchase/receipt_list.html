@@ -48,13 +48,14 @@
 
 
 <div>
+	<button type="submit" class="btn btn-primary btn-sm all"><i class="fa fa-star"></i> View All Receipts</button>
 	<button type="submit" class="btn btn-primary btn-sm unpaid"><i class="fa fa-star"></i> View Unpaid Receipts</button>
 	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa--exclamation-circle"></i> View Overdue Receipts</button>
-	<button type="submit" class="btn btn-primary btn-sm purpay"><i class="fa fa-rupee"></i> Purchase Payment</button>
+	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
 </div>
 <br>
 <p>
-	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
+	<button type="submit" class="btn btn-primary btn-sm purpay"><i class="fa fa-rupee"></i> Purchase Payment</button>
 </p>
 <div></div>
 <br>
@@ -141,7 +142,6 @@
 		    	<div class="form-group vendordiv">
 					<label for="classname" class="control-label">Select Vendor</label>
 					<select class="form-control selectpicker vendor_filter" id="vendor_filter" multiple data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Vendor(s)</option>				
 					</select>
 				</div>
 				<div class="form-group invoicediv">
@@ -155,7 +155,8 @@
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
-		    	<button type="button" class="btn btn-primary apply">Apply Filters</button>
+		    	<button type="button" class="btn btn-primary btn-sm apply_filter">Apply Filters</button>
+		    	<button type="button" class="btn btn-primary btn-sm apply_reset">Reset all</button>
 		    </div>
 	    </div>
 	</div>

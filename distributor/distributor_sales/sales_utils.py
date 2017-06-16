@@ -31,6 +31,7 @@ def new_sales_invoice(tenant, customer, warehouse, date, duedate,
 	new_receipt.customer_state=customer_state
 	new_receipt.customer_city=customer_city
 	new_receipt.customer_pin=customer_pin
+	new_receipt.customer_gst=customer.gst
 
 	new_receipt.warehouse=warehouse
 	new_receipt.warehouse_address=ware_address

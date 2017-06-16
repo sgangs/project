@@ -10,6 +10,7 @@ def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, dued
 	ven_state=vendor.state
 	ven_city=vendor.city
 	ven_pin=vendor.pin
+	ven_gst=vendor.gst
 
 
 	ware_address=warehouse.address_1+", "+warehouse.address_2
@@ -29,6 +30,12 @@ def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, dued
 	new_receipt.vendor_state=ven_state
 	new_receipt.vendor_city=ven_city
 	new_receipt.vendor_pin=ven_pin
+	new_receipt.vendor_gst=ven_gst
+
+	if (ven_gst):
+		new_receipt.gst_type=1
+	else:
+		new_receipt.gst_type=2
 
 	new_receipt.warehouse=warehouse
 	new_receipt.warehouse_address=ware_address
@@ -36,8 +43,8 @@ def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, dued
 	new_receipt.warehouse_city=ware_city
 	new_receipt.warehouse_pin=ware_pin
 	
-	new_receipt.grand_discount_type=grand_discount_type
-	new_receipt.grand_discount_value=grand_discount_value
+	# new_receipt.grand_discount_type=grand_discount_type
+	# new_receipt.grand_discount_value=grand_discount_value
 	new_receipt.subtotal=subtotal
 	new_receipt.taxtotal=taxtotal
 	new_receipt.total = total

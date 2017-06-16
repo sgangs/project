@@ -325,6 +325,17 @@ def attribute_view(request):
 		serializer = AttributeSerializers(attributes, many=True)		
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)
+	if request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newattribute'):
+			name=request.data.get('name')
+			new_attr=Attribute()
+			new_attr.name=name
+			new_attr.tenant=this_tenant
+			new_attr.save()
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
 
 # @login_required
 @api_view(['GET','POST'],)
@@ -587,19 +598,21 @@ def dimension_unit_data(request):
 
 
 @login_required
-#This is a event list view - Change period to academic year period
 def product_data(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
-	# dimensions=Dimension.objects.for_tenant(this_tenant).all()
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
 		if (calltype == 'newproduct'):
 			name=request.POST.get('name')
 			sku=request.POST.get('sku')
-			vat_type=request.POST.get('vat_type')
-			tax=request.POST.get('tax')
+			hsn=request.POST.get('hsn')
+			# vat_type=request.POST.get('vat_type')
+			# tax=request.POST.get('tax')
+			cgst=request.POST.get('cgst')
+			sgst=request.POST.get('sgst')
+			igst=request.POST.get('igst')
 			reorder_point=request.POST.get('reorder')
 			if not reorder_point:
 				reorder_point=0
@@ -623,7 +636,8 @@ def product_data(request):
 			elif(has_attribute == 'false'):
 				has_attribute=False
 			# remarks=request.POST.get('remarks')
-			tax_selected=tax_structure.objects.for_tenant(this_tenant).get(id=tax)
+			# tax_selected=tax_structure.objects.for_tenant(this_tenant).get(id=tax)
+			tax_all=tax_structure.objects.for_tenant(this_tenant).all()
 			unit_selected=Unit.objects.for_tenant(this_tenant).get(id=unit_id)
 			if (brand_id):
 				brand_selected=Brand.objects.for_tenant(this_tenant).get(id=brand_id)
@@ -636,8 +650,18 @@ def product_data(request):
 					new_product=Product()
 					new_product.name=name
 					new_product.sku=sku
-					new_product.vat_type=vat_type
-					new_product.tax=tax_selected			
+					new_product.hsn_code=hsn
+					# new_product.vat_type=vat_type
+					# new_product.tax=tax_selected
+					if (cgst):
+						cgst_selected=tax_all.get(id=cgst)
+						new_product.cgst=cgst_selected
+					if (sgst):
+						sgst_selected=tax_all.get(id=sgst)
+						new_product.sgst=sgst_selected
+					if (igst):
+						igst_selected=tax_all.get(id=igst)
+						new_product.igst=igst_selected			
 					new_product.reorder_point=reorder_point
 					new_product.default_unit=unit_selected
 					if (brand_id):
@@ -663,6 +687,7 @@ def product_data(request):
 							product_attr.tenant=this_tenant
 				except:
 					transaction.rollback()
+		#Attribute API-ed
 		elif (calltype == 'newattribute'):
 			name=request.POST.get('name')
 			new_attr=Attribute()

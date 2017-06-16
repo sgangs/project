@@ -116,19 +116,6 @@ def opening_inventory_data(request):
 					new_inventory.tenant=this_tenant
 					new_inventory.save()
 
-					try:
-						this_inventory_warehouse=inventory_warehouse.objects.for_tenant(this_tenant).\
-													get(product=product, warehouse=warehouse)
-						this_inventory_warehouse.quantity_in_hand+=quantity
-						this_inventory_warehouse.save()
-					except:
-						new_inventory_warehouse=inventory_warehouse()
-						new_inventory_warehouse.product=product
-						new_inventory_warehouse.warehouse=warehouse
-						new_inventory_warehouse.quantity_in_hand=quantity
-						new_inventory_warehouse.tenant=this_tenant
-						new_inventory_warehouse.save()
-
 					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 					warehouse_valuation_change.valuation+=total_inventory_value
 					warehouse_valuation_change.save()

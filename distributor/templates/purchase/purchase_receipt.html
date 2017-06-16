@@ -5,7 +5,7 @@
 
 {%block title%}
 
-<title>Purchase Receipt</title>
+<title>Purchase Invoice</title>
 
 
 {% endblock %} 
@@ -19,7 +19,7 @@
 <!--   </h3>
 </div> -->
 <div class="col-xs-12 text-center">
-  <h3>PURCHASE RECEIPT</h3>
+  <h3>PURCHASE INVOICE</h3>
   <!-- <h3><small>Receipt No #001</small></h3> -->
 </div>
 <br>
@@ -75,7 +75,7 @@
 		</select>		 
 	</div>
 	<div class="form-group col-xs-3">
-		<label class="control-label">Receipt Date</label>				 
+		<label class="control-label">Invoice Date</label>				 
 		<input class="form-control date">
 	</div>	
 </div>
@@ -89,8 +89,8 @@
         	<th colspan="1"><h5></h5></th>
         	<th colspan="3"><h5>Item</h5></th>
             <th colspan="1"><h5>Qty</h5></th>
-            <th colspan="1"><h5>Free w/o tax</h5></th>
-            <th colspan="1"><h5>Free with tax</h5></th>
+            <!-- <th colspan="1"><h5>Free w/o tax</h5></th>
+            <th colspan="1"><h5>Free with tax</h5></th> -->
             <th colspan="1" hidden></th>
             <th colspan="1"><h5>Unit</h5></th>
             <th colspan="1"><h5>Purchase Rate</h5></th>
@@ -101,8 +101,14 @@
             <th colspan="1"><h5>Disc. Type-2</h5></th>
             <th colspan="1"><h5>Disc. Value-2</h5></th>
             <th colspan="1"><h5>Taxable Total</h5></th>
-            <th colspan="1"><h5>VAT Type</h5></th>
-            <th colspan="1"><h5>VAT %</h5></th>
+            <th colspan="1"><h5>CGST %</h5></th>
+            <th colspan="1"><h5>CGST Val</h5></th>
+            <th colspan="1"><h5>SGST %</h5></th>
+            <th colspan="1"><h5>SGST Val</h5></th>
+            <th colspan="1"><h5>IGST %</h5></th>
+            <th colspan="1"><h5>IGST Val</h5></th>
+            <!-- <th colspan="1"><h5>VAT Type</h5></th>
+            <th colspan="1"><h5>VAT %</h5></th> -->
             <!-- <th colspan="1"><h5>CGST %</h5></th>
             <th colspan="1"><h5>SGST %</h5></th>
             <th colspan="1"><h5>IGST %</h5></th> -->
@@ -115,8 +121,8 @@
 			<td colspan="1" class='first'><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>
 			<td colspan="3"><input class="form-control name"></td>
             <td colspan="1"><input class="form-control qty"></td>
-            <td colspan="1"><input class="form-control free"></td>
-            <td colspan="1"><input class="form-control freet"></td>
+            <!-- <td colspan="1"><input class="form-control free"></td>
+            <td colspan="1"><input class="form-control freet"></td> -->
 			<td colspan="1" hidden><input class="unitid"></td>
 			<td colspan="1">
 				<select class="form-control selectpicker unit" id='unit'>
@@ -140,8 +146,14 @@
 			</td>
             <td colspan="1"><input class="form-control dv2"></td>
             <td colspan="1" class="total">0.00</td>
-            <td colspan="1" class="vt"></td>
-            <td colspan="1" class="vp"></td>
+            <!-- <td colspan="1" class="vt"></td>
+            <td colspan="1" class="vp"></td> -->
+            <td colspan="1"><input class="form-control cgstp"></td>
+            <td colspan="1" class="cgstv">0.00</td>
+            <td colspan="1"><input class="form-control sgstp"></td>
+            <td colspan="1" class="sgstv">0.00</td>
+            <td colspan="1"><input class="form-control igstp"></td>
+            <td colspan="1" class="igstv">0.00</td>
             <td colspan="1" class="tv">0.00</td>
 		</tr>
 	</tbody>

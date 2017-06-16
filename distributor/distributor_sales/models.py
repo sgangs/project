@@ -26,6 +26,7 @@ class sales_invoice(models.Model):
 	customer_state=models.CharField(max_length=4,blank=True, null=True)
 	customer_city=models.CharField(max_length=50, blank=True, null=True)
 	customer_pin=models.CharField(max_length=8, blank=True, null=True)
+	customer_gst=models.CharField(max_length=20, blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse, blank=True, null=True,\
 						related_name='salesInvoice_sales_master_warehouse', on_delete=models.SET_NULL)
@@ -49,7 +50,8 @@ class sales_invoice(models.Model):
 	# purchase_order=models.ForeignKey(purchase_order, blank=True, null=True related_name='purchaseReceipt_purchaseOrder')
 	tenant=models.ForeignKey(Tenant,related_name='salesInvoice_sales_user_tenant')
 	objects = TenantManager()
-	
+	updated = models.DateTimeField(auto_now=True)
+
 #	def get_absolute_url(self):
 #		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
 
@@ -129,6 +131,7 @@ class invoice_line_item(models.Model):
 	
 	tenant=models.ForeignKey(Tenant,related_name='invoiceLineItem_sales_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
 
 
 #This stores all the individual payments made againt the invoice(s), like a ledger
@@ -144,3 +147,12 @@ class sales_payment(models.Model):
 	final_payment_delay=models.PositiveSmallIntegerField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='salesPayment_sales_user_tenant')
 	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+class payment_line_item(models.Model):
+	sales_payment=models.ForeignKey(sales_payment,related_name='paymentLineItem_salesPayment')
+	sales_invoice=models.ForeignKey(sales_invoice, related_name='paymentLineItem_salesInvoice')
+	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
+	tenant=models.ForeignKey(Tenant,related_name='paymentLineItem_sales_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)

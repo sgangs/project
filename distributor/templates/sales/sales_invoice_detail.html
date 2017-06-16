@@ -12,6 +12,11 @@
 
 {% block content%}
 
+<div class="row col-md-12 hidden-print">
+    <a href="{% url 'sales:new_sales_invoice' %}"><button type="button" class="btn btn-primary btn-sm" id="not_print">New Sales Invoice</button></a>
+</div>
+
+
 <div id='print' class="print">
 <div class="row">
         <div class="col-md-12">
@@ -48,10 +53,10 @@
     	<tr class="text-center" id='pos_print'> 
         	<th class="text-center"><h5>Item</h5></th>
             <th class="text-center"><h5>Qty</h5></th>
-            <th class="text-center hidden-print"><h5>Free w/o tax</h5></th>
-            <th class="text-center hidden-print"><h5>Free with tax</h5></th>
+            <!-- <th class="text-center hidden-print"><h5>Free w/o tax</h5></th>
+            <th class="text-center hidden-print"><h5>Free with tax</h5></th> -->
             <th class="text-center" id='not_pos_print'><h5>Unit</h5></th>
-            <th class="text-center visible-print-block"><h5>Free</h5></th>
+            <!-- <th class="text-center visible-print-block"><h5>Free</h5></th> -->
             <th class="text-center" id='not_pos_print'><h5>Sales Price</h5></th>
             <th class="text-center" id='not_pos_print'><h5>Disc. Type-1</h5></th>
             <th class="text-center" id='not_pos_print'><h5>Disc. Value-1</h5></th>
@@ -59,7 +64,13 @@
             <th class="text-center" id='not_pos_print'><h5>Disc. Value-2</h5></th>
             <th class="text-center" id='not_pos_print'><h5>Taxable Total</h5></th>
             <!-- <th class="text-center" id='not_pos_print'><h5>VAT Type</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>VAT %</h5></th>
+            <!-- <th class="text-center" id='not_pos_print'><h5>VAT %</h5></th> -->
+            <th class="text-center" id='not_pos_print'><h5>CGST %</h5></th>
+            <th class="text-center" id='not_pos_print'><h5>CGST Amt</h5></th>
+            <th class="text-center" id='not_pos_print'><h5>SGST %</h5></th>
+            <th class="text-center" id='not_pos_print'><h5>SGST Amt</h5></th>
+            <th class="text-center is_igst" id='not_pos_print'><h5>IGST %</h5></th>
+            <th class="text-center is_igst" id='not_pos_print'><h5>IGST Amt</h5></th>
             <th class="text-center"><h5>Total</h5></th>
         </tr>
 	</thead>

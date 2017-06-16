@@ -19,7 +19,7 @@ from distributor_master.models import Unit, Product, Customer, Warehouse
 from distributor_inventory.models import Inventory
 from distributor_account.models import Account, tax_transaction
 from distributor_account.journalentry import new_journal, new_journal_entry
-from distributor_inventory.models import Inventory, inventory_warehouse, inventory_ledger, warehouse_valuation
+from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 
 from .sales_utils import *
 from .models import *
@@ -40,8 +40,19 @@ def get_product(request):
 			item_json['label'] = item.name
 			item_json['unit_id'] = item.default_unit.id
 			item_json['unit'] = item.default_unit.symbol
-			item_json['vat_type'] = item.vat_type
-			item_json['tax'] = item.tax.percentage
+			# item_json['vat_type'] = item.vat_type
+			try:
+				item_json['cgst'] = item.cgst.percentage
+			except:
+				item_json['cgst'] = 0
+			try:
+				item_json['sgst'] = item.sgst.percentage
+			except:
+				item_json['sgst'] = 0
+			try:
+				item_json['igst'] = item.igst.percentage
+			except:
+				item_json['igst'] = 0
 			response_data.append(item_json)
 		data = json.dumps(response_data)
 	else:
@@ -123,6 +134,7 @@ def sales_invoice_save(request):
 					new_invoice.customer_state=customer_state
 					new_invoice.customer_city=customer_city
 					new_invoice.customer_pin=customer_pin
+					new_invoice.customer_gst=customer.gst
 
 					new_invoice.warehouse=warehouse
 					new_invoice.warehouse_address=ware_address
@@ -139,24 +151,18 @@ def sales_invoice_save(request):
 					new_invoice.amount_paid = 0
 					new_invoice.save()
 					
-					#One more journal entry for COGS needs to be done
-					remarks="Sales Invoice No: "+str(new_invoice.invoice_id)
-					journal=new_journal(this_tenant, date,"Sales",remarks)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
-					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="VAT Output")
-					new_journal_entry(this_tenant, journal, taxtotal, account, 2, date)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
-					new_journal_entry(this_tenant, journal, total, account, 1, date)
-					
-					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-					if (debit != credit):
-						raise IntegrityError
-
 					products_cost=0
 					
-			#saving the receipt_line_item and linking them with foreign key to receipt
+					vat_paid={}
+					cgst_paid={}
+					sgst_paid={}
+					igst_paid={}
+
+					cgst_total=0
+					sgst_total=0
+					igst_total=0
+					
+			#saving the invoice_line_item and linking them with foreign key to receipt
 					for data in bill_data:
 						productid=data['product_id']
 						unitid=data['unit_id']
@@ -181,6 +187,19 @@ def sales_invoice_save(request):
 						discount_value_2=Decimal(data['disc_2'])
 						line_taxable_total=Decimal(data['taxable_total'])
 						line_total=Decimal(data['line_total'])
+
+						cgst_p=Decimal(data['cgst_p'])
+						cgst_v=Decimal(data['cgst_v'])
+						sgst_p=Decimal(data['sgst_p'])
+						sgst_v=Decimal(data['sgst_v'])
+						igst_p=Decimal(data['igst_p'])
+						igst_v=Decimal(data['igst_v'])
+
+						cgst_total+=cgst_v
+						sgst_total+=sgst_v
+						igst_total+=igst_v
+
+
 						product=Product.objects.for_tenant(this_tenant).select_related('tax').get(id=productid)
 								
 						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
@@ -194,14 +213,13 @@ def sales_invoice_save(request):
 						mrp=original_mrp/multiplier
 
 						original_quantity=int(data['quantity'])
-						original_free_without_tax=int(data['free'])
-						original_free_with_tax=int(data['free_tax'])
+						# original_free_without_tax=int(data['free'])
+						# original_free_with_tax=int(data['free_tax'])
 
 						quantity=original_quantity*multiplier
-						free_without_tax=original_free_without_tax*multiplier
-						free_with_tax=original_free_with_tax*multiplier
-						total_free=free_without_tax+free_with_tax
-						total_free=free_without_tax+free_with_tax
+						# free_without_tax=original_free_without_tax*multiplier
+						# free_with_tax=original_free_with_tax*multiplier
+						# total_free=free_without_tax+free_with_tax
 
 						product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
 								product=productid, warehouse=warehouse, \
@@ -218,7 +236,7 @@ def sales_invoice_save(request):
 								item.quantity_available=0
 								products_cost+=item.purchase_price*original_available
 								item.save()
-								price_list[str(i)]={'date':item.purchase_date, \
+								price_list[i]={'date':item.purchase_date, \
 											'quantity':original_available, 'pur_rate':item.purchase_price}
 								total_purchase_price+=original_available*item.purchase_price
 								quantity_updated-=original_available
@@ -227,7 +245,7 @@ def sales_invoice_save(request):
 								item.quantity_available-=quantity_updated
 								products_cost+=item.purchase_price*quantity_updated
 								item.save()
-								price_list[str(i)]={'date':item.purchase_date, \
+								price_list[i]={'date':item.purchase_date, \
 											'quantity':quantity_updated, 'pur_rate':item.purchase_price}
 								total_purchase_price+=quantity_updated*item.purchase_price
 								quantity_updated=0								
@@ -240,14 +258,20 @@ def sales_invoice_save(request):
 						LineItem.product= product
 						LineItem.product_name= product.name
 						LineItem.product_sku=product.sku
-						LineItem.vat_type=product.vat_type
-						LineItem.tax_percent=product.tax.percentage
+						# LineItem.vat_type=product.vat_type
+						# LineItem.tax_percent=product.tax.percentage
+						LineItem.cgst_percent=cgst_p
+						LineItem.cgst_value=cgst_v
+						LineItem.sgst_percent=sgst_p
+						LineItem.sgst_value=sgst_v
+						LineItem.igst_percent=igst_p
+						LineItem.igst_value=igst_v
 
 						LineItem.unit=unit.symbol
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
-						LineItem.free_without_tax=original_free_without_tax
-						LineItem.free_with_tax=original_free_with_tax
+						# LineItem.free_without_tax=original_free_without_tax
+						# LineItem.free_with_tax=original_free_with_tax
 						if (product.has_batch):
 							LineItem.batch=batch
 							LineItem.manufacturing_date=manufacturing_date
@@ -268,12 +292,6 @@ def sales_invoice_save(request):
 						LineItem.tenant=this_tenant
 						LineItem.save()
 						
-						# There will be multiple effects in the inventory
-						# inventory_warehouse_data=inventory_warehouse.objects.for_tenant(this_tenant).\
-						# 						get(product=product, warehouse=warehouse)
-						# inventory_warehouse_data.quantity_in_hand-=quantity+total_free
-						# inventory_warehouse_data.save()
-						
 						#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
 						for k,v in price_list.items():
 							new_inventory_ledger=inventory_ledger()
@@ -292,21 +310,121 @@ def sales_invoice_save(request):
 						warehouse_valuation_change.valuation-=total_purchase_price
 						warehouse_valuation_change.save()
 
-						new_tax_transaction=tax_transaction()
-						new_tax_transaction.transaction_type=2
-						new_tax_transaction.tax_type="VAT"
-						new_tax_transaction.product=product
-						new_tax_transaction.product_name=product.name
-						new_tax_transaction.tax_percent=product.tax.percentage
-						new_tax_transaction.tax_value=line_total-line_taxable_total
-						new_tax_transaction.transaction_bill_id=new_invoice.id
-						new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-						new_tax_transaction.date=date
-						new_tax_transaction.tenant=this_tenant
-						new_tax_transaction.save()
+						# new_tax_transaction=tax_transaction()
+						# new_tax_transaction.transaction_type=2
+						# new_tax_transaction.tax_type="VAT"
+						# new_tax_transaction.product=product
+						# new_tax_transaction.product_name=product.name
+						# new_tax_transaction.tax_percent=product.tax.percentage
+						# new_tax_transaction.tax_value=line_total-line_taxable_total
+						# new_tax_transaction.transaction_bill_id=new_invoice.id
+						# new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+						# new_tax_transaction.date=date
+						# new_tax_transaction.tenant=this_tenant
+						# new_tax_transaction.save()
+
+						# if (product.tax.percentage in vat_paid):
+						# 	vat_paid[product.tax.percentage]+=line_total-line_taxable_total
+						# else:
+						# 	vat_paid[product.tax.percentage]=line_total-line_taxable_total
+
+						if (cgst_p in sgst_paid):
+							cgst_paid[cgst_p]+=cgst_v
+						else:
+							cgst_paid[cgst_p]=cgst_v
+						if (sgst_p in sgst_paid):
+							sgst_paid[sgst_p]+=sgst_v
+						else:
+							sgst_paid[sgst_p]=sgst_v
+						if (igst_p in igst_paid):
+							igst_paid[igst_p]+=igst_v
+						else:
+							igst_paid[igst_p]=igst_v
+
+					#Storing Tax paid in a separate table
+					# for k,v in vat_paid.items():
+					# 	new_tax_transaction=tax_transaction()
+					# 	new_tax_transaction.transaction_type=2
+					# 	new_tax_transaction.tax_type="VAT"
+					# 	new_tax_transaction.tax_percent=k
+					# 	new_tax_transaction.tax_value=v
+					# 	new_tax_transaction.transaction_bill_id=new_invoice.id
+					# 	new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+					# 	new_tax_transaction.date=date
+					# 	new_tax_transaction.tenant=this_tenant
+					# 	new_tax_transaction.save()
+
+					for k,v in cgst_paid.items():
+						if v>0:
+							new_tax_transaction=tax_transaction()
+							new_tax_transaction.transaction_type=2
+							new_tax_transaction.tax_type="CGST"
+							new_tax_transaction.tax_percent=k
+							new_tax_transaction.tax_value=v
+							new_tax_transaction.transaction_bill_id=new_invoice.id
+							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+							new_tax_transaction.date=date
+							new_tax_transaction.tenant=this_tenant
+							new_tax_transaction.save()
+
+					for k,v in sgst_paid.items():
+						if v>0:
+							new_tax_transaction=tax_transaction()
+							new_tax_transaction.transaction_type=2
+							new_tax_transaction.tax_type="SGST"
+							new_tax_transaction.tax_percent=k
+							new_tax_transaction.tax_value=v
+							new_tax_transaction.transaction_bill_id=new_invoice.id
+							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+							new_tax_transaction.date=date
+							new_tax_transaction.tenant=this_tenant
+							new_tax_transaction.save()
+
+					for k,v in igst_paid.items():
+						if v>0:
+							new_tax_transaction=tax_transaction()
+							new_tax_transaction.transaction_type=2
+							new_tax_transaction.tax_type="IGST"
+							new_tax_transaction.tax_percent=k
+							new_tax_transaction.tax_value=v
+							new_tax_transaction.transaction_bill_id=new_invoice.id
+							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+							new_tax_transaction.date=date
+							new_tax_transaction.tenant=this_tenant
+							new_tax_transaction.save()
+
+					#One more journal entry for COGS needs to be done
+					remarks="Sales Invoice No: "+str(new_invoice.invoice_id)
+					journal=new_journal(this_tenant, date,"Sales",remarks)
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
+					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
+					
+					# account= Account.objects.for_tenant(this_tenant).get(name__exact="VAT Output")
+					# new_journal_entry(this_tenant, journal, taxtotal, account, 2, date)
+					if (cgst_total>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
+						new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
+
+					if (sgst_total>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
+						new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
+
+					if (igst_total>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
+						new_journal_entry(this_tenant, journal, igst_total, account, 2, date)
+						
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
+					new_journal_entry(this_tenant, journal, total, account, 1, date)
+					
+					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+
+					print(debit)
+					print(credit)
+					if (debit != credit):
+						raise IntegrityError
 
 					#COGS Journal Entry
-					
 					if (total_purchase_price<1):
 						raise IntegrityError
 					journal=new_journal(this_tenant, date,"Sales",remarks)
@@ -318,6 +436,7 @@ def sales_invoice_save(request):
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
 					if (debit != credit):
 						raise IntegrityError
+					response_data=new_invoice.id
 				except:
 					transaction.rollback()
 
@@ -347,7 +466,16 @@ def all_invoices(request):
 		if (calltype == 'all_invoices'):
 			# page_no = request.GET.get('page')
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
-				'date','customer_name','total', 'amount_paid', 'payable_by').order_by('date')
+				'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', 'invoice_id')
+			# page_no=1
+			# paginator = Paginator(invoices, 3)
+			# receipts_paginated=paginator.page(page_no)
+			# for item in receipts_paginated:
+			# 	print(item)
+		elif (calltype == 'unpaid_invoices'):
+			# page_no = request.GET.get('page')
+			invoices=sales_invoice.objects.for_tenant(this_tenant).all().filter(final_payment_date__isnull=True)\
+			.values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', 'invoice_id')
 			# page_no=1
 			# paginator = Paginator(invoices, 3)
 			# receipts_paginated=paginator.page(page_no)
@@ -387,9 +515,9 @@ def invoice_details(request, pk):
 		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','taxtotal','total','amount_paid').get(id=pk)
 		
 		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('product_name','vat_type',\
-			'tax_percent','unit','unit_multi','quantity','free_without_tax','free_with_tax','sales_price',\
-			'tentative_sales_price','mrp','discount_type','discount_value','discount2_type','discount2_value',\
-			'line_tax','line_total','tax_percent'))
+			'tax_percent','unit','unit_multi','quantity','sales_price', 'tentative_sales_price','mrp','discount_type',\
+			'discount_value','discount2_type','discount2_value', 'line_tax','line_total','cgst_percent','sgst_percent',\
+			'igst_percent','cgst_value','sgst_value','igst_value',))
 		invoice['line_items']=line_items
 		
 		jsondata = json.dumps(invoice, cls=DjangoJSONEncoder)

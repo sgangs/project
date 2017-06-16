@@ -1,10 +1,16 @@
 $(function(){
 
-var total_payment=0;
+var total_payment=0, page_no=0, incerease = true, decrease=false, all_invoices = true,
+    unpaid_invoices = false, overdue_invoices=false;
 
-load_receipts()
+load_invoices()
 
-function load_receipts(){
+$('.all').click(function(){
+    load_invoices();
+    page_no+=1;
+});
+
+function load_invoices(){
     $.ajax({
         url : "listall/", 
         type: "GET",
@@ -12,6 +18,17 @@ function load_receipts(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $("#receipt_table .data").remove();
+            if (incerease == true){
+                page_no+=1;
+            }
+            else{
+                page_no-=1;
+            }
+            all_invoices = true; unpaid_invoices = false; overdue_invoices=false;
+            $('.all').hide();
+            $('.unpaid').show();
+            $('.overdue').show();
             $.each(jsondata, function(){
                 var url='/sales/invoice/detailview/'+this.id+'/'
                 date=this.date
@@ -33,6 +50,54 @@ function load_receipts(){
         }
     });
 }
+
+// Taking care of navigation
+
+function navigation(){
+    if (all_invoices == true){
+        load_invoices
+    }
+    else if (unpaid_invoices == true){
+        
+    }
+}
+
+$('.unpaid').click(function(e) {
+    $.ajax({
+        url : "listall/", 
+        type: "GET",
+        data:{ calltype:"unpaid_invoices"},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $("#receipt_table .data").remove();
+            all_invoices = true; unpaid_invoices = false; overdue_invoices=false;
+            $('.all').show();
+            $('.unpaid').hide();
+            $('.overdue').show();
+            $.each(jsondata, function(){
+                var url='/sales/invoice/detailview/'+this.id+'/'
+                date=this.date
+                date=date.split("-").reverse().join("-")
+                $('#receipt_table').append("<tr class='data' align='center'>"+
+                "<td hidden='true'>"+url+"</td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                "<td>"+date+"</td>"+
+                "<td>"+$.trim(this.payable_by)+"</td>"+
+                "<td>"+this.customer_name+"</td>"+
+                "<td>"+this.total+"</td>"+
+                "<td>"+this.amount_paid+"</td>"+
+                "</tr>");
+            })
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No sales invoice exist.", "error");
+        }
+    });
+
+});
+
 
 $("#receipt_table").on("click", ".link", function(){
     // console.log('here');
