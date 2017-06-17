@@ -26,14 +26,14 @@ from .models import *
 from .serializers import *
 
 
-@login_required
 @api_view(['GET','POST'],)
 def get_product(request):
 	this_tenant=request.user.tenant
 	print(request.method)
 	if request.is_ajax():
 		q = request.GET.get('term', '')
-		products = Product.objects.for_tenant(this_tenant).filter(name__istartswith  = q )[:10].select_related('default_unit', 'tax')
+		products = Product.objects.for_tenant(this_tenant).filter(name__istartswith  = q )[:10].select_related('default_unit', \
+			'cgst','sgst','igst')
 		response_data = []
 		for item in products:
 			item_json = {}

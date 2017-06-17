@@ -77,12 +77,14 @@
             <th colspan="1"><h5>Qty</h5></th>
             <th colspan="1" hidden></th>
             <th colspan="1"><h5>Unit</h5></th>
-            <th colspan="1" hidden></th>
-            <th colspan="1" hidden></th>
-            <th colspan="1" hidden></th>
+            <th colspan="1" hidden><h5>Unit ID</h5></th>
             <th colspan="1"><h5>Sales Price</h5></th>
-            <th colspan="1"><h5>Disc. Type-1</h5></th>
-            <th colspan="1"><h5>Disc. Value-1</h5></th>
+            <th colspan="1"><h5>Disc. Value</h5></th>
+            <td colspan="1" hidden>Total</td>
+            <td colspan="1" hidden>CGST %</td>
+            <td colspan="1" hidden>CGST V</td>
+            <td colspan="1" hidden>SGST %</td>
+            <td colspan="1" hidden>SGST V</td>
             <th colspan="1"><h5>Total</h5></th>
         </tr>
 	</thead>
@@ -93,28 +95,15 @@
 			<td colspan="3"><input class="form-control name"></td>
             <td colspan="1"><input class="form-control qty"></td>
             <td colspan="1" class="qty_avl" hidden>0</td>
-            <td colspan="1">
-				<select class="form-control selectpicker unit" id='unit'>
-				</select>
-			</td>
-			<td colspan="1" hidden="" class="unit_multi"></td>
-            <td colspan="1" hidden class="tsr"></td> <!-- Tentative Sales Price-->
-            <td colspan="1" hidden class="mrp"></td> <!-- MRP-->
-            <td colspan="1"><input hidden class="form-control sr"></td>
-            <td colspan="1"><select class="form-control selectpicker dt">
-					<option data-id=0 title="-">No Discount</option>
-					<option data-id=1 title=%>Percent(%)</option>
-					<option data-id=2 title="V">Value(V)</option>
-				</select>
-			</td>
-            <td colspan="1"><input class="form-control dv"></td>
-            <!-- <td colspan="1" class="total">0.00</td>
-            <td colspan="1"><input class="form-control cgstp"></td>
-            <td colspan="1" class="cgstv"></td>
-            <td colspan="1"><input class="form-control sgstp"></td>
-            <td colspan="1" class="sgstv"></td>
-            <td colspan="1"><input class="form-control igstp"></td>
-            <td colspan="1" class="igstv"></td> -->
+            <td colspan="1"><input class="form-control unit_symbol"></td>
+            <td colspan="1" hidden><input class="form-control unit_id"></td>
+			<td colspan="1"><input hidden class="form-control sr"></td>
+            <td colspan="1"><input class="form-control da"></td>
+            <td colspan="1" class="total" hidden>0.00</td>
+            <td colspan="1" hidden><input class="form-control cgstp"></td>
+            <td colspan="1" class="cgstv" hidden></td>
+            <td colspan="1" hidden><input class="form-control sgstp"></td>
+            <td colspan="1" class="sgstv" hidden></td>
             <td colspan="1" class="tv">0.00</td>
 		</tr>
 	</tbody>
@@ -216,7 +205,7 @@
 
 {% load static from staticfiles %}
 
-<!-- <script src="{% static 'sales/invoice.js' %}"></script> -->
+<script src="{% static 'retail_sales/invoice.js' %}"></script>
 
 <style type="text/css">
 	.boderless td, .boderless th{

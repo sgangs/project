@@ -25,6 +25,7 @@ function load_products(){
                 "<td>"+$.trim(this.brand)+"</td>"+
                 "<td>"+$.trim(this.group)+"</td>"+
                 "<td>"+$.trim(this.remarks)+"</td>"+
+                "<td class='add_price'>Click to add sales rate</td>"+
                 "</tr>");
             })
         },
@@ -340,4 +341,76 @@ function new_attribute(){
     }
 }
 
+
+$("#product_table").on("click", ".add_price", function(){
+    productid=$(this).closest('tr').find('td:nth-child(1)').html();
+    productname=$(this).closest('tr').find('td:nth-child(2)').html();
+    productsku=$(this).closest('tr').find('td:nth-child(4)').html();
+    $('#modal_product_rate').modal('show');
+    $('.id_rate_prod').val(productid)
+    $('.name_rate_prod').val(productname)
+    $('.sku_rate_prod').val(productsku)
+    $('.sales_rate_prod').val('')
+});
+
+
+$('.submitrate').click(function(e) {
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure to add a sales rate?",
+        type: "warning",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, add new rate!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){new_rate()},600)            
+        }
+    })
+});
+
+    
+function new_rate(){
+    var proceed=true;
+    productid=$('.id_rate_prod').val()
+    rate=parseFloat($('.sales_rate_prod').val());
+    is_tax = $( ".tax_rate_prod" ).is(":checked");
+    if (isNaN(rate) || rate<0){
+        proceed = false;
+    }
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "" , 
+                type: "POST",
+                data:{productid: productid,
+                    rate: rate,
+                    is_tax: is_tax,
+                    calltype: "newrate",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // contentType: "application/json",
+                        // handle a successful response
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "New sales rate added", "success");
+                        setTimeout(location.reload(true),1000);
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }
+    else{
+        swal("Oops...", "Please note that sales rate must be greater than zero.", "error");
+    }
+}
 });

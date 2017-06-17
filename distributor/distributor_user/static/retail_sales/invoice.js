@@ -14,39 +14,38 @@ $(document).on('keydown.autocomplete', '.name', function() {
             $(el).closest('tr').addClass("updating");
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
             default_unit=ui['item']['unit']
-            $(el).closest('tr').find('td:nth-child(6) .unit').val(ui['item']['unit_id']);
-            $(el).closest('tr').find('td:nth-child(7)').html(unit_multi[ui['item']['unit_id']]);
+            $(el).closest('tr').find('td:nth-child(6) .unit').val(ui['item']['unit']);
+            $(el).closest('tr').find('td:nth-child(7)').html(ui['item']['unit_id']);
             // $(el).closest('tr').find('td:nth-child(18) ').html(vat_type[ui['item']['vat_type']]);
             // vat_percent=ui['item']['tax']
-            $(el).closest('tr').find('td:nth-child(16) input').val(ui['item']['cgst']);
-            $(el).closest('tr').find('td:nth-child(18) input').val(ui['item']['sgst']);
-            $(el).closest('tr').find('td:nth-child(20) input').val(ui['item']['igst']);
-            $('.unit').selectpicker('refresh');
-            get_product_warehouse(el, ui['item']['id'])
+            $(el).closest('tr').find('td:nth-child(11) input').val(ui['item']['cgst']);
+            $(el).closest('tr').find('td:nth-child(13) input').val(ui['item']['sgst']);
+            get_product_rate(el, ui['item']['id'])
         }
     });
 });
 
-function get_product_warehouse(el, product_id){
+function get_product_rate(el, product_id){
     warehouse_id=$('.warehouse').find(':selected').data('id');
     $.ajax({
-        url : "api/getproductwarehouse", 
+        url : "api/getproductrate", 
         type: "GET",
         data:{product_id: product_id,
             warehouse_id: warehouse_id},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            $(".prod_data .prod_indi_data").remove();
-            $.each(jsondata, function(){
-                $('.prod_data').append("<tr class='prod_indi_data'>"+
-                "<td class='prod_tsp'>"+this.tentative_sales_price +"</td>"+
-                "<td class='prod_mrp'>"+this.mrp+"</td>"+
-                "<td class='prod_qa'>"+this.available+"</td>"+
-                "<td class='prod_qa'>"+default_unit+"</td>"+
-                "</tr>");
-            })
-            $('#productdetails').modal('show');
+            console.log(jsondata);
+            // $(".prod_data .prod_indi_data").remove();
+            // $.each(jsondata, function(){
+            //     $('.prod_data').append("<tr class='prod_indi_data'>"+
+            //     "<td class='prod_tsp'>"+this.tentative_sales_price +"</td>"+
+            //     "<td class='prod_mrp'>"+this.mrp+"</td>"+
+            //     "<td class='prod_qa'>"+this.available+"</td>"+
+            //     "<td class='prod_qa'>"+default_unit+"</td>"+
+            //     "</tr>");
+            // })
+            // $('#productdetails').modal('show');
         },
         // handle a non-successful response
         error : function() {
@@ -95,58 +94,52 @@ function load_warehouse(){
     });
 }
 
-load_units()
+// load_units()
 
-function load_units(){
-    $.ajax({
-        url : "/master/dimensionunit/unitdata/", 
-        type: "GET",
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            unit_data=jsondata
-            $.each(jsondata, function(){
-                unit_multi[this.id]=parseFloat(this.multiplier);
-                unit_names[this.id]=this.name;
-                $('#unit').append($('<option>',{
-                    'data-id': this.id,
-                    'title':this.symbol,
-                    'text': this.name,
-                }));
-            });
-            $('#unit').selectpicker('refresh');
-            // $('#unit').html('refresh',true);
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "No unit is registered.", "error");
-        }
-    });
-}
+// function load_units(){
+//     $.ajax({
+//         url : "/master/dimensionunit/unitdata/", 
+//         type: "GET",
+//         dataType: 'json',
+//         // handle a successful response
+//         success : function(jsondata) {
+//             $.each(jsondata, function(){
+//                 unit_multi[this.id]=parseFloat(this.multiplier);
+//                 unit_names[this.id]=this.name;
+//             });
+//             // $('#unit').selectpicker('refresh');
+//             // $('#unit').html('refresh',true);
+//         },
+//         // handle a non-successful response
+//         error : function() {
+//             swal("Oops...", "No unit is registered.", "error");
+//         }
+//     });
+// }
 
-load_customers()
+// load_customers()
 
-function load_customers(){
-    $.ajax({
-        url : "/master/customer/getdata/", 
-        type: "GET",
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            $.each(jsondata, function(){
-                $('#customer').append($('<option>',{
-                    'data-id': this.id,
-                    'text': this.name + ": "+ this.key
-                }));
-            });
-            $('#customer').selectpicker('refresh')
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "No customer data exist.", "error");
-        }
-    });
-}
+// function load_customers(){
+//     $.ajax({
+//         url : "/master/customer/getdata/", 
+//         type: "GET",
+//         dataType: 'json',
+//         // handle a successful response
+//         success : function(jsondata) {
+//             $.each(jsondata, function(){
+//                 $('#customer').append($('<option>',{
+//                     'data-id': this.id,
+//                     'text': this.name + ": "+ this.key
+//                 }));
+//             });
+//             $('#customer').selectpicker('refresh')
+//         },
+//         // handle a non-successful response
+//         error : function() {
+//             swal("Oops...", "No customer data exist.", "error");
+//         }
+//     });
+// }
 
 $('.details').on("mouseenter", ".first", function() {
     $( this ).children( ".delete" ).show();
@@ -434,48 +427,22 @@ $('.addmore').click(function(){
     '<td colspan="3"><input class="form-control name"></td>'+
     '<td colspan="1"><input class="form-control qty"></td>'+
     '<td colspan="1" class="qty_avl" hidden>'+0+'</td>'+
-    // '<td colspan="1"><input class="form-control free"></td>'+
-    // '<td colspan="1"><input class="form-control freet"></td>'+
-    '<td colspan="1"><select class="form-control selectpicker unit" id="unit"></select></td>'+
-    '<td colspan="1" hidden="" class="unit_multi"></td>'+
-    '<td colspan="1" hidden class="tsr"></td>'+
-    '<td colspan="1" hidden class="mrp"></td>'+
+    '<td colspan="1"><input class="form-control unit_symbol"></td>'+
+    '<td colspan="1"><input class="form-control unit_id"></td>'+
     '<td colspan="1"><input hidden class="form-control sr"></td>'+
-    '<td colspan="1"><select class="form-control selectpicker dt">'+
-        '<option data-id=0 title="-">No Discount</option>'+
-        '<option data-id=1 title=%>Percent(%)</option>'+
-        '<option data-id=2 title="V">Value(V)</option>'+
-        '</select></td>'+
-    '<td colspan="1"><input class="form-control dv"></td>'+
-    '<td colspan="1"><select class="form-control selectpicker dt2">'+
-        '<option data-id=0 title="-">No Discount</option>'+
-        '<option data-id=1 title=%>Percent(%)</option>'+
-        '<option data-id=2 title="V">Value(V)</option>'+
-        '</select></td>'+
-    '<td colspan="1"><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="total">0.00</td>'+
-    // '<td colspan="1" class="vt"></td>'+
-    // '<td colspan="1" class="vp"></td>'+
-    '<td colspan="1" class="cgstp"><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="cgstv"></td>'+
-    '<td colspan="1" class="sgstp"><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="sgstv"></td>'+
-    '<td colspan="1" class="igstp"><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="igstv"></td>'+
+    '<td colspan="1"><input class="form-control da"></td>'+
+    '<td colspan="1" class="total" hidden>0.00</td>'+
+    '<td colspan="1" hidden><input class="form-control cgstp"></td>'+
+    '<td colspan="1" class="cgstv" ></td>'+
+    '<td colspan="1" hidden><input class="form-control sgstp"></td>'+
+    '<td colspan="1" class="sgstv" hidden></td>'+
     '<td colspan="1" class="tv">0.00</td></tr>'
     $('.details').append(data);
 
-    $('.dt').selectpicker('refresh');
-    $('.dt2').selectpicker('refresh');
+    // $('.dt').selectpicker('refresh');
+    // $('.dt2').selectpicker('refresh');
     
-    $.each(unit_data, function(){
-        $('.details').find('tr:eq('+count+')').find('#unit').append($('<option>',{
-            'data-id': this.id,
-            'title':this.symbol,
-            'text': this.name,
-        }));
-    });
-    $('.unit').selectpicker('refresh');
+    
 })
 
 

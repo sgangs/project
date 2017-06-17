@@ -217,28 +217,6 @@ class product_attribute(models.Model):
 	def __str__(self):
 		return self.value
 
-#This shall be the scheme thing.
-class product_price(models.Model):
-	id=models.BigAutoField(primary_key=True)
-	product=models.ForeignKey(Product,related_name='productPrice_product')
-	tentative_purchase=models.DecimalField(max_digits=12, decimal_places=2)
-	tentative_sales=models.DecimalField(max_digits=12, decimal_places=2)
-	tentative_mrp=models.DecimalField(max_digits=12, decimal_places=2)
-	tenant=models.ForeignKey(Tenant,related_name='productPrice_master_user_tenant')
-	objects = TenantManager()
-	updated = models.DateTimeField(auto_now=True)
-	
-	# def get_absolute_url(self):
-	# 	return reverse('master:detail', kwargs={'detail':self.slug})
-
-
-	class Meta:
-		unique_together = (("product", "tenant"),)
-		#ordering = ('name',)
-		
-	def __str__(self):
-		return self.value
-
 
 #This is the list of Zone
 class Zone (models.Model):
@@ -379,4 +357,21 @@ class warehouse_user(models.Model):
 	tenant=models.ForeignKey(Tenant,related_name='warehouseUser_master_user_tenant')
 	objects=TenantManager()
 	updated = models.DateTimeField(auto_now=True)
+
+#This shall be the scheme thing
+class product_sales_rate(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	product=models.ForeignKey(Product,related_name='productSalesRate_product')
+	tentative_sales_rate=models.DecimalField(max_digits=12, decimal_places=2)
+	is_tax_included=models.BooleanField(default=True)
+	tenant=models.ForeignKey(Tenant,related_name='productSalesRate_master_user_tenant')
+	objects = TenantManager()
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+
+	class Meta:
+		unique_together = (("product", "tenant"),)
+		#ordering = ('name',)
 	

@@ -2,6 +2,7 @@ import django_excel as excel
 from datetime import date, datetime
 from dateutil.rrule import *
 from dateutil.parser import *
+from decimal import Decimal
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
@@ -694,8 +695,25 @@ def product_data(request):
 			new_attr.name=name
 			new_attr.tenant=this_tenant
 			new_attr.save()
+		
+		elif (calltype == 'newrate'):
+			productid=request.POST.get('productid')
+			is_tax=request.POST.get('is_tax')
+			if (is_tax == 'true'):
+				is_tax=True
+			elif (is_tax == 'false'):
+				is_tax=False
+			rate=Decimal(request.POST.get('rate'))
+			if (rate > 0):
+				new_rate=product_sales_rate()
+				new_rate.product=Product.objects.for_tenant(this_tenant).get(id=productid)
+				new_rate.tentative_sales_rate=rate
+				new_rate.is_tax_included=is_tax
+				new_rate.tenant=this_tenant
+				new_rate.save()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
+
 	return render (request, 'master/product_list.html',{'extension':extension})
 
 
