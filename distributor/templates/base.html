@@ -168,13 +168,25 @@
           </ul>
         </li>
       </ul>
-      <!-- Sales -->
-      <ul class="SalesNav">
-        <li><a href="#"><span><i class="fa fa-shopping-cart"></i></span>  Sales</a>
+      <!-- Distributor Sales -->
+      <ul class="DistributorSalesNav">
+        <li><a href="#"><span><i class="fa fa-shopping-cart"></i></span> Distributor Sales</a>
           <ul>
             <li><a href="#">Create Sales Order</a></li>
             <li><a href="{% url 'sales:new_sales_invoice' %}">Cretae Sales Invoice</a></li>
             <li><a href="{% url 'sales:invoice_list' %}">Sales Report</a></li>
+            <li><a href="#">Collection Report</a></li>
+            <li><a href="#">Sales Return</a></li>
+            <li><a href="#">Sales Return Report</a></li>
+          </ul>
+        </li>
+      </ul>
+      <!-- Retail Sales -->
+      <ul class="RetailSalesNav">
+        <li><a href="#"><span><i class="fa fa-shopping-cart"></i></span> Retail Sales</a>
+          <ul>
+            <li><a href="#">Cretae Sales Invoice</a></li>
+            <li><a href="#">Sales Report</a></li>
             <li><a href="#">Collection Report</a></li>
             <li><a href="#">Sales Return</a></li>
             <li><a href="#">Sales Return Report</a></li>

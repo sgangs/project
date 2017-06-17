@@ -18,7 +18,7 @@ class purchase_receipt(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	receipt_id = models.PositiveIntegerField(db_index=True)
 	supplier_invoice = models.CharField(max_length=200,blank=True, null=True)
-	date=models.DateField(default=datetime.now)
+	date=models.DateField(default=dt.date.today)
 
 	vendor=models.ForeignKey(Vendor,blank=True, null=True, 
 						related_name='purchaseReceipt_purchase_master_vendor', on_delete=models.SET_NULL)
@@ -90,6 +90,7 @@ class receipt_line_item(models.Model):
 	purchase_receipt=models.ForeignKey(purchase_receipt, related_name='receiptLineItem_purchaseReceipt',)
 	product=models.ForeignKey(Product,blank=True, null=True, related_name='receiptLineItem_purchase_master_product',\
 						on_delete=models.SET_NULL)
+	date=models.DateField(default=dt.date.today)
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
@@ -146,16 +147,6 @@ class purchase_payment(models.Model):
 	remarks=models.CharField(max_length=200, blank=True, null=True)
 	# final_payment_delay=models.PositiveSmallIntegerField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='purchasePayment_purchase_user_tenant')
-	objects = TenantManager()
-	updated = models.DateTimeField(auto_now=True)
-
-
-#This stores all the individual payments made againt the invoice(s), like a ledger
-class payment_line_item(models.Model):
-	payment_mode=models.ForeignKey(payment_mode,related_name='paymentLineItem_paymentMode')
-	purchase_receipt=models.ForeignKey(purchase_receipt, related_name='paymentLineItem_purchaseReceipt')
-	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
-	tenant=models.ForeignKey(Tenant,related_name='paymentLineItem_purchase_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 

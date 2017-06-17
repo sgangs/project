@@ -326,10 +326,11 @@ class Vendor (AbstractCustomer):
 class retail_customer(models.Model):
 	name=models.CharField(max_length=30)
 	phone_no=PhoneNumberField(db_index=True)
-	address=models.CharField("Address Line 2", max_length=400, blank=True, null=True)
+	address=models.CharField(max_length=200, blank=True, null=True)
 	email=models.EmailField(blank=True, null=True)
 	gender=models.CharField(max_length=1) #Options are M,F,O
 	age=models.PositiveSmallIntegerField(blank=True, null=True)
+	dob=models.DateField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='retailCustomer_master_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

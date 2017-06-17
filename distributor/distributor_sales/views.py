@@ -23,6 +23,7 @@ from distributor_inventory.models import Inventory, inventory_ledger, warehouse_
 
 from .sales_utils import *
 from .models import *
+from .serializers import *
 
 
 @login_required
@@ -161,6 +162,9 @@ def sales_invoice_save(request):
 					cgst_total=0
 					sgst_total=0
 					igst_total=0
+
+					#Does this tenant maintain inventory?
+					maintain_inventory=this_tenant.maintain_inventory
 					
 			#saving the invoice_line_item and linking them with foreign key to receipt
 					for data in bill_data:
@@ -213,53 +217,46 @@ def sales_invoice_save(request):
 						mrp=original_mrp/multiplier
 
 						original_quantity=int(data['quantity'])
-						# original_free_without_tax=int(data['free'])
-						# original_free_with_tax=int(data['free_tax'])
-
 						quantity=original_quantity*multiplier
-						# free_without_tax=original_free_without_tax*multiplier
-						# free_with_tax=original_free_with_tax*multiplier
-						# total_free=free_without_tax+free_with_tax
-
-						product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
-								product=productid, warehouse=warehouse, \
-								tentative_sales_price=original_tentative_sales_price, mrp=original_mrp).order_by('purchase_date')
-						quantity_updated=quantity
-						total_purchase_price=0
-						i=0
-						for item in product_list:
-							i+=1
-							if (quantity_updated<1):
-								break
-							original_available=item.quantity_available
-							if (quantity_updated>=original_available):
-								item.quantity_available=0
-								products_cost+=item.purchase_price*original_available
-								item.save()
-								price_list[i]={'date':item.purchase_date, \
-											'quantity':original_available, 'pur_rate':item.purchase_price}
-								total_purchase_price+=original_available*item.purchase_price
-								quantity_updated-=original_available
-								
-							else:
-								item.quantity_available-=quantity_updated
-								products_cost+=item.purchase_price*quantity_updated
-								item.save()
-								price_list[i]={'date':item.purchase_date, \
-											'quantity':quantity_updated, 'pur_rate':item.purchase_price}
-								total_purchase_price+=quantity_updated*item.purchase_price
-								quantity_updated=0								
-						if (quantity_updated>0):
-							raise IntegrityError
-						price_list_json = json.dumps(price_list,  cls=DjangoJSONEncoder)
+						if maintain_inventory:
+							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
+									product=productid, warehouse=warehouse, \
+									tentative_sales_price=original_tentative_sales_price, mrp=original_mrp).order_by('purchase_date')
+							quantity_updated=quantity
+							total_purchase_price=0
+							i=0
+							for item in product_list:
+								i+=1
+								if (quantity_updated<1):
+									break
+								original_available=item.quantity_available
+								if (quantity_updated>=original_available):
+									item.quantity_available=0
+									products_cost+=item.purchase_price*original_available
+									item.save()
+									price_list[i]={'date':item.purchase_date, \
+												'quantity':original_available, 'pur_rate':item.purchase_price}
+									total_purchase_price+=original_available*item.purchase_price
+									quantity_updated-=original_available
+									
+								else:
+									item.quantity_available-=quantity_updated
+									products_cost+=item.purchase_price*quantity_updated
+									item.save()
+									price_list[i]={'date':item.purchase_date, \
+												'quantity':quantity_updated, 'pur_rate':item.purchase_price}
+									total_purchase_price+=quantity_updated*item.purchase_price
+									quantity_updated=0								
+							if (quantity_updated>0):
+								raise IntegrityError
+							price_list_json = json.dumps(price_list,  cls=DjangoJSONEncoder)
 
 						LineItem = invoice_line_item()
 						LineItem.sales_invoice = new_invoice
 						LineItem.product= product
 						LineItem.product_name= product.name
 						LineItem.product_sku=product.sku
-						# LineItem.vat_type=product.vat_type
-						# LineItem.tax_percent=product.tax.percentage
+						LineItem.date = date
 						LineItem.cgst_percent=cgst_p
 						LineItem.cgst_value=cgst_v
 						LineItem.sgst_percent=sgst_p
@@ -270,8 +267,6 @@ def sales_invoice_save(request):
 						LineItem.unit=unit.symbol
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
-						# LineItem.free_without_tax=original_free_without_tax
-						# LineItem.free_with_tax=original_free_with_tax
 						if (product.has_batch):
 							LineItem.batch=batch
 							LineItem.manufacturing_date=manufacturing_date
@@ -281,7 +276,8 @@ def sales_invoice_save(request):
 						
 						LineItem.sales_price=original_actual_sales_price
 						LineItem.tentative_sales_price=original_tentative_sales_price
-						LineItem.other_data=price_list_json
+						if maintain_inventory:
+							LineItem.other_data=price_list_json
 						LineItem.mrp=original_mrp
 						LineItem.discount_type=discount_type
 						LineItem.discount_value=discount_value
@@ -291,42 +287,25 @@ def sales_invoice_save(request):
 						LineItem.line_total=line_total
 						LineItem.tenant=this_tenant
 						LineItem.save()
-						
-						#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
-						for k,v in price_list.items():
-							new_inventory_ledger=inventory_ledger()
-							new_inventory_ledger.product=product
-							new_inventory_ledger.warehouse=warehouse
-							new_inventory_ledger.transaction_type=2
-							new_inventory_ledger.date=date
-							new_inventory_ledger.quantity=v['quantity']
-							new_inventory_ledger.actual_sales_price=actual_sales_price
-							new_inventory_ledger.purchase_price=v['pur_rate']
-							new_inventory_ledger.transaction_bill_id=new_invoice.invoice_id
-							new_inventory_ledger.tenant=this_tenant
-							new_inventory_ledger.save()
-						
-						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-						warehouse_valuation_change.valuation-=total_purchase_price
-						warehouse_valuation_change.save()
 
-						# new_tax_transaction=tax_transaction()
-						# new_tax_transaction.transaction_type=2
-						# new_tax_transaction.tax_type="VAT"
-						# new_tax_transaction.product=product
-						# new_tax_transaction.product_name=product.name
-						# new_tax_transaction.tax_percent=product.tax.percentage
-						# new_tax_transaction.tax_value=line_total-line_taxable_total
-						# new_tax_transaction.transaction_bill_id=new_invoice.id
-						# new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-						# new_tax_transaction.date=date
-						# new_tax_transaction.tenant=this_tenant
-						# new_tax_transaction.save()
-
-						# if (product.tax.percentage in vat_paid):
-						# 	vat_paid[product.tax.percentage]+=line_total-line_taxable_total
-						# else:
-						# 	vat_paid[product.tax.percentage]=line_total-line_taxable_total
+						if maintain_inventory:						
+							#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
+							for k,v in price_list.items():
+								new_inventory_ledger=inventory_ledger()
+								new_inventory_ledger.product=product
+								new_inventory_ledger.warehouse=warehouse
+								new_inventory_ledger.transaction_type=2
+								new_inventory_ledger.date=date
+								new_inventory_ledger.quantity=v['quantity']
+								new_inventory_ledger.actual_sales_price=actual_sales_price
+								new_inventory_ledger.purchase_price=v['pur_rate']
+								new_inventory_ledger.transaction_bill_id=new_invoice.invoice_id
+								new_inventory_ledger.tenant=this_tenant
+								new_inventory_ledger.save()
+							
+							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+							warehouse_valuation_change.valuation-=total_purchase_price
+							warehouse_valuation_change.save()
 
 						if (cgst_p in sgst_paid):
 							cgst_paid[cgst_p]+=cgst_v
@@ -341,18 +320,6 @@ def sales_invoice_save(request):
 						else:
 							igst_paid[igst_p]=igst_v
 
-					#Storing Tax paid in a separate table
-					# for k,v in vat_paid.items():
-					# 	new_tax_transaction=tax_transaction()
-					# 	new_tax_transaction.transaction_type=2
-					# 	new_tax_transaction.tax_type="VAT"
-					# 	new_tax_transaction.tax_percent=k
-					# 	new_tax_transaction.tax_value=v
-					# 	new_tax_transaction.transaction_bill_id=new_invoice.id
-					# 	new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-					# 	new_tax_transaction.date=date
-					# 	new_tax_transaction.tenant=this_tenant
-					# 	new_tax_transaction.save()
 
 					for k,v in cgst_paid.items():
 						if v>0:
@@ -399,8 +366,6 @@ def sales_invoice_save(request):
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
 					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
 					
-					# account= Account.objects.for_tenant(this_tenant).get(name__exact="VAT Output")
-					# new_journal_entry(this_tenant, journal, taxtotal, account, 2, date)
 					if (cgst_total>0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
 						new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
@@ -419,23 +384,22 @@ def sales_invoice_save(request):
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
 
-					print(debit)
-					print(credit)
 					if (debit != credit):
 						raise IntegrityError
 
-					#COGS Journal Entry
-					if (total_purchase_price<1):
-						raise IntegrityError
-					journal=new_journal(this_tenant, date,"Sales",remarks)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
-					new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
-					new_journal_entry(this_tenant, journal, total_purchase_price, account, 2, date)
-					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-					if (debit != credit):
-						raise IntegrityError
+					if maintain_inventory:
+						#COGS Journal Entry
+						if (total_purchase_price<1):
+							raise IntegrityError
+						journal=new_journal(this_tenant, date,"Sales",remarks)
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
+						new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+						new_journal_entry(this_tenant, journal, total_purchase_price, account, 2, date)
+						debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+						credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+						if (debit != credit):
+							raise IntegrityError
 					response_data=new_invoice.id
 				except:
 					transaction.rollback()
@@ -535,7 +499,6 @@ def payment_register(request):
 		response_data=[]
 		customerid = request.data.get('customerid')
 		modeid = request.data.get('modeid')
-		print(modeid)
 		date = request.data.get('date')
 		payment_details = json.loads(request.data.get('payment_details'))
 		mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
@@ -572,3 +535,16 @@ def payment_register(request):
 
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+
+# @login_required
+@api_view(['GET'],)
+def collection_list(request):
+	if request.method == 'GET':
+		payments=sales_payment.objects.for_tenant(request.user.tenant).all()
+		serializer = CollectionSerializers(payments, many=True)		
+		return Response(serializer.data)
+
+@login_required
+def collection_list_view(request):
+	return render(request,'sales/collection_list.html', {'extension': 'base.html'})

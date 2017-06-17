@@ -15,5 +15,7 @@ urlpatterns = [
     url(r'^invoice/$', views.new_sales_invoice, name='new_sales_invoice'),
     url(r'^invoice/paymentsave/$', views.payment_register, name='payment_register'),
     url(r'^salestotalvalue/$', views.sales_total_values, name='sales_total_values'),
+    url(r'^collectionlist/$', views.collection_list, name='collection_list'),
+    url(r'^collectionlistview/$', views.collection_list_view, name='collection_list_view'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

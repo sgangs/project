@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^master/', include('distributor_master.urls',namespace='master', app_name='master')),
     url(r'^purchase/', include('distributor_purchase.urls',namespace='purchase', app_name='purchase')),
     url(r'^sales/', include('distributor_sales.urls',namespace='sales', app_name='sales')),
+    url(r'^retailsales/', include('retail_sales.urls',namespace='retailsales', app_name='retailsales')),
     url(r'^account/', include('distributor_account.urls',namespace='account', app_name='account')),
     url(r'^inventory/', include('distributor_inventory.urls',namespace='inventory', app_name='inventory')),
     # url(r'^purchase/', include('distribution_purchase.urls',namespace='purchase', app_name='purchase')),

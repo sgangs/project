@@ -26,8 +26,8 @@
 		</select>		 
 	</div>
 	<div class="form-group col-xs-3">
-		<label class="control-label">Credit Note No</label>
-		<input class="form-control invoice">		 
+		<label class="control-label">Vendor Credit Note No</label>
+		<input class="form-control credit">		 
 	</div>
 	<div class="form-group col-xs-3">
 		<label class="control-label">Select Warehouse</label>
@@ -36,11 +36,17 @@
 		</select>		 
 	</div>
 	<div class="form-group col-xs-3">
-		<label class="control-label">Debit Note Date</label>				 
+		<label class="control-label">Date</label>				 
 		<input class="form-control date">
-	</div>	
+	</div>
 </div>
 
+<div class="row">
+	<div class="form-group col-xs-3">
+		<label class="control-label">Original Invoice No</label>
+		<input class="form-control invoice">		 
+	</div>
+</div>
 
 <div class="">	
 <table class="table table-striped table-bordered details">
@@ -53,13 +59,17 @@
             <th colspan="1" hidden></th>
             <th colspan="1" class="text-center"><h5>Unit</h5></th>
             <th colspan="1" hidden></th>
-            <th colspan="1" class="text-center"><h5>Purchase Rate</h5></th>
+            <th colspan="1" class="text-center"><h5>Original Purchase Rate</h5></th>
+            <th colspan="1" class="text-center"><h5>Item Rate</h5></th>
             <th colspan="1" class="text-center" hidden><h5>Tentative Sales Price</h5></th>
             <th colspan="1" class="text-center" hidden><h5>MRP</h5></th>
             <th colspan="1" class="text-center"><h5>Taxable Total</h5></th>
-            <th colspan="1" class="text-center"><h5>Will Tax be returned?</h5></th>
-            <th colspan="1" class="text-center"><h5>VAT Type</h5></th>
-            <th colspan="1" class="text-center"><h5>VAT %</h5></th>
+            <th colspan="1" class="text-center"><h5>CGST %</h5></th>
+            <th colspan="1" class="text-center"><h5>CGST Amt</h5></th>
+            <th colspan="1" class="text-center"><h5>SGST %</h5></th>
+            <th colspan="1" class="text-center"><h5>SGST Amt</h5></th>
+            <th colspan="1" class="text-center"><h5>IGST %</h5></th>
+            <th colspan="1" class="text-center"><h5>IGST Amt</h5></th>
             <th colspan="1" class="text-center"><h5>Total</h5></th>
         </tr>
 	</thead>
@@ -79,9 +89,7 @@
             <td colspan="1" hidden><input class="form-control tsr" disabled></td>
             <td colspan="1" hidden><input class="form-control mrp" disabled></td>
             <td colspan="1" class="total">0.00</td>
-            <td colspan="1" class="total text-center"><input type="checkbox" class="is_tax"></td>
-            <td colspan="1" class="vt"></td>
-            <td colspan="1" class="vp"></td>
+            <td colspan="1"><input class="form-control mrp"></td>
             <td colspan="1" class="tv">0.00</td>
 		</tr>
 	</tbody>

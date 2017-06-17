@@ -18,7 +18,7 @@ class TenantManager(models.Manager):
 class sales_invoice(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	invoice_id = models.PositiveIntegerField(db_index=True)
-	date=models.DateField(default=datetime.now)
+	date=models.DateField(default=dt.date.today)
 	customer=models.ForeignKey(Customer,blank=True, null=True,\
 						related_name='salesInvoice_sales_master_customer', on_delete=models.SET_NULL)
 	customer_name=models.CharField(db_index=True, max_length=200)
@@ -88,6 +88,7 @@ class invoice_line_item(models.Model):
 	sales_invoice=models.ForeignKey(sales_invoice, related_name='invoiceLineItem_salesInvoice')
 	product=models.ForeignKey(Product,blank=True, null=True, related_name='invoiceLineItem_sales_master_product', \
 							on_delete=models.SET_NULL)
+	date=models.DateField(default=dt.date.today)
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
@@ -142,17 +143,9 @@ class sales_payment(models.Model):
 	sales_invoice=models.ForeignKey(sales_invoice, related_name='salesPayment_salesInvoice')
 	amount_received=models.DecimalField(max_digits=12, decimal_places=2)
 	cheque_rtgs_number=models.CharField(max_length=30, blank=True, null=True)
-	paid_on=models.DateTimeField(db_index=True, blank=True, null=True)
+	paid_on=models.DateField(db_index=True, blank=True, null=True)
 	remarks=models.CharField(max_length=200, blank=True, null=True)
 	final_payment_delay=models.PositiveSmallIntegerField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='salesPayment_sales_user_tenant')
-	objects = TenantManager()
-	updated = models.DateTimeField(auto_now=True)
-
-class payment_line_item(models.Model):
-	sales_payment=models.ForeignKey(sales_payment,related_name='paymentLineItem_salesPayment')
-	sales_invoice=models.ForeignKey(sales_invoice, related_name='paymentLineItem_salesInvoice')
-	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
-	tenant=models.ForeignKey(Tenant,related_name='paymentLineItem_sales_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

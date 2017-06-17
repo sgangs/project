@@ -144,14 +144,12 @@ USE_TZ = True
 
 #This is for Django phone number field
 # PHONENUMBER_DB_FORMAT='E164'
-# PHONENUMBER_DEFAULT_REGION='IN'
+PHONENUMBER_DEFAULT_REGION='IN'
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-# STATIC_ROOT=os.path.join(BASE_DIR, '..', '..','..','static','static_distributor')
-#.replace('\\', '/')
+STATIC_ROOT=os.path.join(BASE_DIR, '..','..','static','static_distributor').replace('\\', '/')
 
 STATIC_URL = '/staticdistributor/'
 
