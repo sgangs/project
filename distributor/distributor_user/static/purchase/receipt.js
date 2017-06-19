@@ -377,7 +377,8 @@ function new_data(){
     grand_discount_type=$('.gdt').find(':selected').data('id');
     grand_discount_value=$('.gd').val();
     subtotal=parseFloat($('.subtotal_receipt').html());
-    taxtotal=parseFloat($('.taxtotal_receipt').html());
+    // taxtotal=parseFloat($('.taxtotal_receipt').html());
+    var cgsttotal=0, sgsttotal=0, igsttotal=0;
     total=parseFloat($('.total_receipt').html());
     
     if (vendorid == '' || typeof(vendorid) =='undefined' || warehouseid == '' || typeof(warehouseid) == 'undefined' ||
@@ -450,6 +451,8 @@ function new_data(){
             cgst_p=0;
             cgst_v=0;
         }
+
+        cgsttotal+=cgst_v
         
         var sgst_p = parseFloat($(this).find('td:nth-child(17) input').val());
         var sgst_v = parseFloat($(this).find('td:nth-child(18)').html());
@@ -458,12 +461,16 @@ function new_data(){
             sgst_v=0;
         }
 
+        sgsttotal+=sgst_v
+
         var igst_p = parseFloat($(this).find('td:nth-child(19) input').val());
         var igst_v = parseFloat($(this).find('td:nth-child(20)').html());
         if (isNaN(igst_p)){
             igst_p=0;
             igst_v=0;
         }
+
+        igsttotal+=igst_v
 
         var taxable_total = $(this).find('td:nth-child(14)').html();
         var line_total = $(this).find('td:nth-child(21)').html();
@@ -506,7 +513,10 @@ function new_data(){
                     grand_discount_type: grand_discount_type,
                     grand_discount_value: grand_discount_value,
                     subtotal: subtotal,
-                    taxtotal: taxtotal,
+                    // taxtotal: taxtotal,
+                    cgsttotal: cgsttotal,
+                    sgsttotal: sgsttotal,
+                    igsttotal: igsttotal,
                     total: total,
                     duedate: duedate.split("/").reverse().join("-"),
                     bill_details: JSON.stringify(items),

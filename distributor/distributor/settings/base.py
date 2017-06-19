@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'distributor_sales',
     'distributor_account',
     'distributor_inventory',
+    'retail_sales',
     'phonenumber_field',
     'rest_framework',
     # 'rest_framework.authtoken',

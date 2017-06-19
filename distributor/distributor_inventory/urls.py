@@ -11,5 +11,6 @@ urlpatterns = [
     url(r'^getproductinventory/$', views.get_product_inventory, name='get_product_inventory'),
     url(r'^inventorytransfer/$', views.inventory_transfer_template, name='inventory_transfer_template'),
     url(r'^inventorytransfer/data/$', views.inventory_transfer_data, name='inventory_transfer_data'),
+    url(r'^inventorywastage/$', views.inventory_wastage_template, name='inventory_wastage_template'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

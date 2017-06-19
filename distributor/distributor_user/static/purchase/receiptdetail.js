@@ -54,6 +54,7 @@ function load_data(){
                 // total_pretax=this.line_total - this.cgst_value - this.sgst_value - this.igst_value;
                 $('.details').append("<tr class='data text-center'>"+
                     "<td span='4'>"+this.product_name+"</td>"+
+                    "<td span='4'>"+$.trim(this.product_hsn)+"</td>"+
                     "<td>"+this.quantity+"</td>"+
                     // "<td class='hidden-print'>"+this.free_without_tax+"</td>"+
                     // "<td class='hidden-print'>"+this.free_with_tax+"</td>"+

@@ -169,6 +169,11 @@ def inventory_transfer_template(request):
 	extension="base.html"
 	return render (request, 'inventory/inventory_transfer.html',{'extension':extension})
 
+@login_required
+def inventory_wastage_template(request):
+	extension="base.html"
+	return render (request, 'inventory/inventory_wastage.html',{'extension':extension})
+
 
 @api_view(['GET', 'POST'],)
 def inventory_transfer_data(request):

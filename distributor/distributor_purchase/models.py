@@ -94,6 +94,7 @@ class receipt_line_item(models.Model):
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
+	product_hsn=models.CharField(max_length=20, blank=True, null=True)
 	vat_type=models.CharField(max_length =15, blank=True, null=True)
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 

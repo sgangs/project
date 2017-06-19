@@ -165,6 +165,7 @@ def sales_invoice_save(request):
 
 					#Does this tenant maintain inventory?
 					maintain_inventory=this_tenant.maintain_inventory
+					total_purchase_price=0
 					
 			#saving the invoice_line_item and linking them with foreign key to receipt
 					for data in bill_data:
@@ -223,7 +224,6 @@ def sales_invoice_save(request):
 									product=productid, warehouse=warehouse, \
 									tentative_sales_price=original_tentative_sales_price, mrp=original_mrp).order_by('purchase_date')
 							quantity_updated=quantity
-							total_purchase_price=0
 							i=0
 							for item in product_list:
 								i+=1
@@ -256,6 +256,7 @@ def sales_invoice_save(request):
 						LineItem.product= product
 						LineItem.product_name= product.name
 						LineItem.product_sku=product.sku
+						LineItem.product_hsn=product.hsn_code
 						LineItem.date = date
 						LineItem.cgst_percent=cgst_p
 						LineItem.cgst_value=cgst_v

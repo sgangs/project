@@ -1,3 +1,4 @@
+from django.db import models
 from django.core.urlresolvers import reverse
 from django.contrib.postgres.fields import JSONField
 from django.template.defaultfilters import slugify
@@ -8,6 +9,8 @@ from phonenumber_field.modelfields import PhoneNumberField
 from distributor_master.models import Product, retail_customer, Unit, Warehouse, tax_structure
 from distributor_user.models import Tenant 
 from distributor_account.models import payment_mode
+
+from .models import *
 
 class TenantManager(models.Manager):
 	def for_tenant(self, tenant):
@@ -20,12 +23,11 @@ class retail_invoice(models.Model):
 	date=models.DateField(default=datetime.now)
 	customer=models.ForeignKey(retail_customer,blank=True, null=True,\
 						related_name='retailInvoice_retailsales_master_retailCustomer', on_delete=models.SET_NULL)
-	customer_name=models.CharField(db_index=True, max_length=200)
+	customer_name=models.CharField(db_index=True, max_length=200, blank=True, null=True,)
 	customer_address=models.CharField(max_length=200, blank=True, null=True)
-	customer_phone_no=PhoneNumberField(db_index=True)
+	customer_phone_no=PhoneNumberField(db_index=True, blank=True, null=True,)
 	customer_email=models.EmailField(blank=True, null=True)
-	customer_gender=models.CharField(max_length=1)
-	customer_age=models.PositiveSmallIntegerField(blank=True, null=True)
+	customer_gender=models.CharField(max_length=1,blank=True, null=True,)
 	customer_dob=models.DateField(blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse, blank=True, null=True,\
@@ -37,15 +39,12 @@ class retail_invoice(models.Model):
 	
 	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
 	# taxtotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	# cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	# sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	# igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
-	# itemwise_discount_total=models.DecimalField(max_digits=12, decimal_places=2)
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
-	# payable_by=models.DateField(blank=True, null=True)
-	final_payment_date=models.DateField(blank=True, null=True)
-	# purchase_order=models.ForeignKey(purchase_order, blank=True, null=True related_name='purchaseReceipt_purchaseOrder')
+	# final_payment_date=models.DateField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='retailInvoice_sales_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
@@ -68,7 +67,7 @@ class retail_invoice(models.Model):
 				next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
 			self.invoice_id=int(today_string + next_invoice_number)
 			
-		super(sales_invoice, self).save(*args, **kwargs)
+		super(retail_invoice, self).save(*args, **kwargs)
 
 	# class Meta:
 	# 	ordering = ('date',)
@@ -83,7 +82,7 @@ class retail_invoice(models.Model):
 
 #This model is for line items of a purchase invoice
 class invoice_line_item(models.Model):
-	sales_invoice=models.ForeignKey(sales_invoice, related_name='invoiceLineItem_retailInvoice')
+	retail_invoice=models.ForeignKey(retail_invoice, related_name='invoiceLineItem_retailInvoice')
 	product=models.ForeignKey(Product,blank=True, null=True, related_name='invoiceLineItem_retailSales_master_product', \
 							on_delete=models.SET_NULL)
 	# product_pk=models.BigIntegerField(blank=True, null=True)
@@ -122,7 +121,7 @@ class invoice_line_item(models.Model):
 	sgst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
 	igst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
 
-	line_tax=models.DecimalField(max_digits=12, decimal_places=2)
+	line_before_tax=models.DecimalField(max_digits=12, decimal_places=2)
 	line_total=models.DecimalField(max_digits=12, decimal_places=2)
 
 	

@@ -60,6 +60,7 @@ class UserRegistrationForm(forms.ModelForm):
 
 class CustomerRegistrationForm(forms.ModelForm):
 	phone=PhoneNumberField(widget=PhoneNumberPrefixWidget,)
+	# example_of_additional_data = forms.IntegerField()
 	class Meta:
 		model = Tenant
 		fields = ('name', 'pan', 'tin', 'cst', 'gst','address_1', 'address_2', 'state', 'city', 'pin', 'email', 'key', 'phone',)

@@ -609,6 +609,14 @@ def product_data(request):
 			name=request.POST.get('name')
 			sku=request.POST.get('sku')
 			hsn=request.POST.get('hsn')
+			barcode=request.POST.get('barcode')
+			if barcode:
+				try:
+					is_product=barcode.objects.for_tenant(this_tenant).get(barcode=barcode)
+					if is_product:
+						raise IntegrityError
+				except:
+					pass
 			# vat_type=request.POST.get('vat_type')
 			# tax=request.POST.get('tax')
 			cgst=request.POST.get('cgst')

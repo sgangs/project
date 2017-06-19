@@ -13,7 +13,7 @@
 {% block content%}
 	
 <div class="col-xs-12 text-center">
-  <h3>BILL OF SUPPLY</h3>
+  <h3>TAX INVOICE</h3>
 </div>
 
 <br>
@@ -23,36 +23,36 @@
 	<div class="form-group col-xs-3">
 		<label class="control-label">Select Warehouse</label>
 		<select class="form-control selectpicker warehouse" id="warehouse" data-live-search="true">
-			<option disabled selected hidden style='display: none' value>Select Warehouse</option>				
+			<!-- <option disabled selected hidden style='display: none' value>Select Warehouse</option> -->
 		</select>		 
 	</div>
-	<div class="form-group col-xs-3 col-xs-offset-6">
+	<!-- <div class="form-group col-xs-3 col-xs-offset-6">
 		<label class="control-label">Invoice Date</label>				 
 		<input class="form-control date">
-	</div>	
+	</div> -->	
 		
 </div>
 
 <div class="row">
 	<div class="form-group col-xs-2">
 		<label class="control-label">Customer Phone No.</label>
-		<input class="form-control phone">		 
+		<input class="form-control cust_phone">		 
 	</div>
 	<div class="form-group col-xs-2">
 		<label class="control-label">Customer Name</label>				 
-		<input class="form-control name">
+		<input class="form-control cust_name">
 	</div>	
 	<div class="form-group col-xs-2">
 		<label class="control-label">Customer Address</label>				 
-		<input class="form-control address">
+		<input class="form-control cust_address">
 	</div>
 	<div class="form-group col-xs-2">
 		<label class="control-label">Customer Email</label>				 
-		<input class="form-control email">
+		<input type="email" class="form-control cust_email">
 	</div>
 	<div class="form-group col-xs-2">
 		<label class="control-label">Customer Gender</label>				 
-		<select class="form-control selectpicker warehouse" id="warehouse" data-live-search="true">
+		<select class="form-control selectpicker cust_gender" id="cust_gender" data-live-search="true">
 			<option disabled selected hidden style='display: none' value>Select Gender</option>
 			<option data-id="1">Male</option>
 			<option data-id="2">Female</option>
@@ -61,7 +61,7 @@
 	</div>
 	<div class="form-group col-xs-2">
 		<label class="control-label">Customer DOB</label>				 
-		<input class="form-control dob">
+		<input class="form-control cust_dob">
 	</div>
 		
 </div>
@@ -81,6 +81,7 @@
             <th colspan="1"><h5>Sales Price</h5></th>
             <th colspan="1"><h5>Disc. Value</h5></th>
             <td colspan="1" hidden>Total</td>
+            <td colspan="1" hidden>Is Tax</td>
             <td colspan="1" hidden>CGST %</td>
             <td colspan="1" hidden>CGST V</td>
             <td colspan="1" hidden>SGST %</td>
@@ -96,10 +97,11 @@
             <td colspan="1"><input class="form-control qty"></td>
             <td colspan="1" class="qty_avl" hidden>0</td>
             <td colspan="1"><input class="form-control unit_symbol"></td>
-            <td colspan="1" hidden><input class="form-control unit_id"></td>
+            <td colspan="1" class="unit_id" hidden></td>
 			<td colspan="1"><input hidden class="form-control sr"></td>
             <td colspan="1"><input class="form-control da"></td>
             <td colspan="1" class="total" hidden>0.00</td>
+            <td colspan="1" hidden class="is_tax"></td>
             <td colspan="1" hidden><input class="form-control cgstp"></td>
             <td colspan="1" class="cgstv" hidden></td>
             <td colspan="1" hidden><input class="form-control sgstp"></td>
@@ -169,12 +171,12 @@
 	</div> -->
 	<div class="col-xs-4 col-xs-offset-8">
 		<table class="table metadata boderless">
-			<!-- <tr>
+			<tr hidden>
 				<td>Subtotal</td>
 				<td>Rs.</td>
 		        <td><span class='subtotal_receipt'>0.00</span></td>
 			</tr>
-			<tr>
+			<!-- <tr>
 				<td>Tax Total</td>
 				<td>Rs.</td>
 		        <td class='taxtotal_receipt'>0.00</td>

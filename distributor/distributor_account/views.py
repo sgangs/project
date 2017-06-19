@@ -63,8 +63,9 @@ def get_tax_report(request):
 	calltype=request.GET.get('calltype')
 	response_data={}
 	if (calltype == 'all_list'):
-		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type','tax_percent',\
-			'tax_value','transaction_bill_no','date',).order_by('transaction_type','date','tax_type','tax_percent'))
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type',\
+			'tax_percent',			'tax_value','transaction_bill_no','date',)\
+			.order_by('transaction_type','date','tax_type','tax_percent'))
 	elif (calltype == 'short_summary'):
 		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='CGST').\
 					aggregate(Sum('tax_value'))['tax_value__sum']

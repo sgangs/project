@@ -48,7 +48,7 @@ def get_product(request):
 			response_data.append(item_json)
 			data = json.dumps(response_data)
 		else:
-			products = Product.objects.for_tenant(this_tenant).filter(name__istartswith  = q )[:10].\
+			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].\
 						select_related('default_unit', 'tax')
 			response_data = []
 			for item in products:
@@ -117,7 +117,12 @@ def purchase_receipt_save(request):
 					except:
 						grand_discount_value=0
 					subtotal=Decimal(request.data.get('subtotal'))
-					taxtotal=Decimal(request.data.get('taxtotal'))
+					cgsttotal=Decimal(request.data.get('cgsttotal'))
+					sgsttotal=Decimal(request.data.get('sgsttotal'))
+					igsttotal=Decimal(request.data.get('igsttotal'))
+					print(cgsttotal)
+					print(sgsttotal)
+					print(igsttotal)
 					total=Decimal(request.data.get('total'))
 					duedate=request.data.get('duedate')
 
@@ -128,7 +133,7 @@ def purchase_receipt_save(request):
 
 					
 					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate,\
-							grand_discount_type, grand_discount_value, subtotal, taxtotal, total, 0)
+							grand_discount_type, grand_discount_value, subtotal, cgsttotal, sgsttotal, igsttotal, total, 0)
 					
 					vat_paid={}
 					cgst_paid={}
@@ -194,6 +199,7 @@ def purchase_receipt_save(request):
 						LineItem.product= product
 						LineItem.product_name= product.name
 						LineItem.product_sku=product.sku
+						LineItem.product_hsn=product.hsn_code
 						LineItem.date = date
 						LineItem.cgst_percent=cgst_p
 						LineItem.cgst_value=cgst_v
@@ -464,8 +470,8 @@ def receipts_details(request, pk):
 		receipt['tenant_gst']=this_tenant.gst
 		receipt['tenant_address']=this_tenant.address_1+","+this_tenant.address_2
 		
-		line_items=list(receipt_line_item.objects.filter(purchase_receipt=receipt['id']).values('id','product_name','vat_type',\
-			'tax_percent','unit','unit_multi','quantity','purchase_price', 'tentative_sales_price','mrp','discount_type',\
+		line_items=list(receipt_line_item.objects.filter(purchase_receipt=receipt['id']).values('id','product_name','product_hsn',\
+			'unit','unit_multi','quantity','purchase_price', 'tentative_sales_price','mrp','discount_type',\
 			'discount_value','discount2_type','discount2_value','cgst_percent','sgst_percent','igst_percent',\
 			'cgst_value','sgst_value','igst_value','line_tax','line_total'))
 		receipt['line_items']=line_items
