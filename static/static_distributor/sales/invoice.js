@@ -10,7 +10,6 @@ $(document).on('keydown.autocomplete', '.name', function() {
         minLength: 3,
         timeout: 200,
         select: function( event, ui ) {
-            console.log(ui['item']);
             $(el).closest('tr').addClass("updating");
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
             default_unit=ui['item']['unit']
@@ -330,7 +329,6 @@ function get_total(){
     for (var a = document.querySelectorAll('table.details tbody tr'), i = 0; a[i]; ++i) {
         // get all cells with input field
         cells = a[i].querySelectorAll('input:last-child');
-        console.log(cells)
         var quantity=parseFloat($(cells[2]).val());
         var qty_avl=parseFloat($(a[i]).find('td:nth-child(5)').html());
         // var free_tax_qty=parseFloat($(cells[4]).val());
@@ -343,9 +341,7 @@ function get_total(){
         discount_val=$(cells[4]).val();
         discount_type_2=$(a[i]).find('td:nth-child(13) :selected').data('id');
         discount_val_2=$(cells[5]).val();
-        console.log(discount_type_2)
-        console.log(discount_val_2)
-
+        
         cgst_percent=parseFloat($(cells[6]).val());
         sgst_percent=parseFloat($(cells[7]).val());
         igst_percent=parseFloat($(cells[8]).val());
@@ -597,6 +593,7 @@ function new_data(){
             cgst_p=0;
             cgst_v=0;
         }
+        cgsttotal+=cgst_v
         
         var sgst_p = parseFloat($(this).find('td:nth-child(18) input').val());
         var sgst_v = parseFloat($(this).find('td:nth-child(19)').html());
@@ -604,6 +601,7 @@ function new_data(){
             sgst_p=0;
             sgst_v=0;
         }
+        sgsttotal+=sgst_v
 
         var igst_p = parseFloat($(this).find('td:nth-child(20) input').val());
         var igst_v = parseFloat($(this).find('td:nth-child(21)').html());
@@ -611,6 +609,7 @@ function new_data(){
             igst_p=0;
             igst_v=0;
         }
+        igsttotal+=igst_v
         
         var taxable_total = $(this).find('td:nth-child(15)').html();
         var line_total = $(this).find('td:nth-child(22)').html();
@@ -639,6 +638,7 @@ function new_data(){
         };
         items.push(item);
     });
+    console.log(cgsttotal);
     
     if (proceed){
         (function() {

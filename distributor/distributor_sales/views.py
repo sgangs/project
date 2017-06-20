@@ -119,7 +119,10 @@ def sales_invoice_save(request):
 					# 		grand_discount_type, grand_discount_value, subtotal, taxtotal, total, 0)
 					
 					customer_name=customer.name
-					customer_address=customer.address_1+", "+customer.address_2
+					try:
+						customer_address=customer.address_1+", "+customer.address_2
+					except:
+						customer_address=''
 					customer_state=customer.state
 					customer_city=customer.city
 					customer_pin=customer.pin
@@ -484,7 +487,9 @@ def invoice_details(request, pk):
 	if request.method == 'GET':
 		invoice=sales_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date',\
 		'customer_name','customer_address','customer_city','customer_pin','warehouse_address','warehouse_city',\
-		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','taxtotal','total','amount_paid').get(id=pk)
+		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
+		'total','amount_paid').get(id=pk)
+		print(invoice['cgsttotal'])
 		
 		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('product_name','vat_type',\
 			'tax_percent','unit','unit_multi','quantity','sales_price', 'tentative_sales_price','mrp','discount_type',\

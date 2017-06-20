@@ -13,6 +13,7 @@ function load_data(){
         // handle a successful response
         success : function(jsondata) {
             igst_total=0;
+            taxtotal = parseFloat(jsondata['cgsttotal']) + parseFloat(jsondata['sgsttotal']) + parseFloat(jsondata['igsttotal'])
             $('.invoiceid').append(jsondata['invoice_id']);
             date=jsondata['date']
             date=date.split("-").reverse().join("-")
@@ -21,7 +22,7 @@ function load_data(){
                     ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']);
             $('.warehouse').append(jsondata['warehouse_address']+',<br>'+jsondata['warehouse_city']);
             $('.subtotal_receipt').append(jsondata['subtotal']);
-            $('.taxtotal_receipt').append(jsondata['taxtotal']);
+            $('.taxtotal_receipt').append(taxtotal.toFixed(2));
             $('.total_receipt').append(jsondata['total']);
             $.each(jsondata['line_items'], function(){
                 igst_total+=this.igst_value;
@@ -48,7 +49,7 @@ function load_data(){
                 console.log(d2_val);
                 $('.details').append("<tr class='data text-center'>"+
                     "<td>"+this.product_name+"</td>"+
-                    "<td>"+this.product_hsn+"</td>"+
+                    "<td>"+$.trim(this.product_hsn)+"</td>"+
                     "<td>"+this.quantity+"</td>"+
                     // "<td id='not_print'>"+this.free_without_tax+"</td>"+
                     // "<td id='not_print'>"+this.free_with_tax+"</td>"+

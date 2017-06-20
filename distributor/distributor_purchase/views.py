@@ -464,7 +464,8 @@ def receipts_details(request, pk):
 	if request.method == 'GET':
 		receipt=purchase_receipt.objects.for_tenant(this_tenant).values('id','receipt_id','supplier_invoice',\
 		'date','vendor_name','vendor_address','vendor_city','vendor_pin','vendor_gst','warehouse_address','warehouse_city',\
-		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','taxtotal','total','amount_paid').get(id=pk)
+		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
+		'total','amount_paid').get(id=pk)
 
 		receipt['tenant_name']=this_tenant.name
 		receipt['tenant_gst']=this_tenant.gst

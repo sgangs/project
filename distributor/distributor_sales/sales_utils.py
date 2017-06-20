@@ -10,7 +10,10 @@ def new_sales_invoice(tenant, customer, warehouse, date, duedate,
 				grand_discount_type, grand_discount_value, subtotal, taxtotal, total, amount_paid = 0):
 	
 	customer_name=customer.name
-	customer_address=customer.address_1+", "+customer.address_2
+	try:
+		customer_address=customer.address_1+", "+customer.address_2
+	except:
+		customer_address=''
 	customer_state=customer.state
 	customer_city=customer.city
 	customer_pin=customer.pin

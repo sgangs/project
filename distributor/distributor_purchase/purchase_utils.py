@@ -26,7 +26,10 @@ def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, dued
 	
 	new_receipt.vendor=vendor
 	new_receipt.vendor_name=vendor_name
-	new_receipt.vendor_address=ven_address
+	try:
+		new_receipt.vendor_address=ven_address
+	except:
+		new_receipt=''
 	new_receipt.vendor_state=ven_state
 	new_receipt.vendor_city=ven_city
 	new_receipt.vendor_pin=ven_pin

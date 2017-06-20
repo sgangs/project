@@ -14,6 +14,7 @@ function load_data(){
         // handle a successful response
         success : function(jsondata) {
             // console.log(jsondata);
+            taxtotal = parseFloat(jsondata['cgsttotal']) + parseFloat(jsondata['sgsttotal']) + parseFloat(jsondata['igsttotal'])
             $('.receiptid').append(jsondata['receipt_id']);
             $('.invoiceid').append(jsondata['supplier_invoice']);
             date=jsondata['date']
@@ -25,7 +26,7 @@ function load_data(){
                 '<br>Address: '+jsondata['tenant_address']+'<br>GST: '+$.trim(jsondata['tenant_gst'])+'</p>');
             $('.warehouse').append(jsondata['warehouse_address']);
             $('.subtotal_receipt').append(jsondata['subtotal']);
-            $('.taxtotal_receipt').append(jsondata['taxtotal']);
+            $('.taxtotal_receipt').append(taxtotal.toFixed(2));
             $('.total_receipt').append(jsondata['total']);
             $.each(jsondata['line_items'], function(){
                 var d1_val=0.00, d2_val=0.00;
