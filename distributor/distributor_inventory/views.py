@@ -138,7 +138,7 @@ def get_product(request):
 	this_tenant=request.user.tenant
 	if request.is_ajax():
 		q = request.GET.get('term', '')
-		products = Product.objects.for_tenant(this_tenant).filter(name__istartswith  = q )[:10].select_related('default_unit', 'tax')
+		products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].select_related('default_unit', 'tax')
 		response_data = []
 		for item in products:
 			item_json = {}
@@ -160,7 +160,6 @@ def get_product_inventory(request):
 		product_quantity=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
 					product=product_id, warehouse=warehouse_id).values('id','purchase_price','tentative_sales_price','mrp',\
 					'purchase_date','quantity_available'))
-		print(product_quantity)
 	jsondata = json.dumps(product_quantity,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -178,14 +177,20 @@ def inventory_wastage_template(request):
 @api_view(['GET', 'POST'],)
 def inventory_transfer_data(request):
 	this_tenant=request.user.tenant
+	response_data=[]
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
 		if (calltype == 'newtransfer'):
-			from_warehouseid=int(request.POST.get('warehouse'))
-			to_warehouseid=int(request.POST.get('warehouse'))
+			from_warehouseid=int(request.POST.get('from_warehouseid'))
+			to_warehouseid=int(request.POST.get('to_warehouseid'))
 			date=request.POST.get('date')
-			all_data = json.loads(request.POST.get('bill_details'))
+			record_transit=request.POST.get('record_transit')
+			if (record_transit == 'true'):
+				record_transit=True
+			elif (record_transit == 'false'):
+				record_transit=False
+			all_data = json.loads(request.POST.get('all_details'))
 			total=0
 			if (from_warehouseid == to_warehouseid):
 				raise IntegrityError
@@ -199,7 +204,6 @@ def inventory_transfer_data(request):
 			# serial_no=request.POST.get('serial_no')
 			from_warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=from_warehouseid)
 			to_warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=to_warehouseid)
-			total_inventory_value=quantity*purchase_price
 			with transaction.atomic():
 				try:
 					new_inventory_transfer=inventory_transfer()
@@ -207,17 +211,16 @@ def inventory_transfer_data(request):
 					new_inventory_transfer.to_warehouse=to_warehouse
 					new_inventory_transfer.initiated_on=date
 					new_inventory_transfer.total_value=total
-					new_inventory_transfer.in_transit=True
+					new_inventory_transfer.in_transit=record_transit
 					new_inventory_transfer.tenant=this_tenant
 					new_inventory_transfer.save()
 
-					for data in bill_data:
-						inventory_id=data['inventory_id']
-						unit_id=data['unit_id']
-						original_qty=data['original_qty']
-						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
+					for data in all_data:
+						inventory_id=data['quantity']
+						product=Product.objects.for_tenant(this_tenant).get(id=product_id)
+						unit=Unit.objects.for_tenant(this_tenant).get(id=unit_id)
 						multiplier=unit.multiplier
-						actual_qty=Decimal(request.POST.get('quantity'))*multiplier
+						actual_qty=Decimal(original_qty)*multiplier
 						inventory_item=Inventory.objects.for_tenant(this_tenant).get(id=inventory_id)
 						if (actual_qty>inventory_item.quantity_available):
 							raise IntegrityError
@@ -225,6 +228,7 @@ def inventory_transfer_data(request):
 						inventory_item.save()
 
 						new_item=inventory_transfer_items()
+						new_item.inventory_id=inventory_item.id
 						new_item.transfer=new_inventory_transfer
 						new_item.product=product
 						new_item.quantity=original_qty
@@ -241,12 +245,22 @@ def inventory_transfer_data(request):
 						new_item.save()
 
 						total+=inventory_item.purchase_price*actual_qty
-
-					new_inventory_transfer.total_value=total
-					new_inventory_transfer.save()
+						new_inventory_transfer.total_value=total
+						new_inventory_transfer.save()
+					
 					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=from_warehouse)
 					warehouse_valuation_change.valuation-=total
 					warehouse_valuation_change.save()
+					
+					if not record_transit:
+						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=to_warehouse)
+						warehouse_valuation_change.valuation+=total
+						warehouse_valuation_change.save()
+
 
 				except:
-					transaction.rollback()
+					transaction.rollbackIntegrityError
+
+
+	jsondata = json.dumps(response_data)
+	return HttpResponse(jsondata)

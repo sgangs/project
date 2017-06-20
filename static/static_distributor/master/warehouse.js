@@ -1,8 +1,30 @@
 $(function(){
 
-load_warehouse()
+
+load_states()
+
+function load_states(){
+    $.ajax({
+        url : "/master/getstatelist/", 
+        type: "GET",
+        // data: { calltype:"all_vendor"},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            states=jsondata;
+            load_warehouse();
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "There were some issues.", "error");
+        }
+    });
+}
+
+// load_warehouse()
 
 function load_warehouse(){
+    console.log("here");
     $.ajax({
         url : "getdata/", 
         type: "GET",
@@ -10,11 +32,12 @@ function load_warehouse(){
         // handle a successful response
         success : function(jsondata) {
             $.each(jsondata, function(){
-                if (this.address_2 == null){
+                console.log(jsondata);
+                if (typeof(states[this.state]) == 'undefined'){
                     $('#warehouse').append("<tr class='data' align='center'>"+
                     "<td hidden='true'>"+this.id+"</td>"+
                     "<td>"+this.name+"</td>"+
-                    "<td>"+this.address_1+", "+this.state+ ", "+this.city +": "+this.pin+"</td>"+
+                    "<td>"+this.address_1+", "+$.trim(this.address_2)+ ", "+this.city +": "+this.pin+"</td>"+
                     "<td>"+this.default+"</td>"+
                     "</tr>");
                 }
@@ -22,7 +45,8 @@ function load_warehouse(){
                     $('#warehouse').append("<tr class='data' align='center'>"+
                     "<td hidden='true'>"+this.id+"</td>"+
                     "<td>"+this.name+"</td>"+
-                    "<td>"+this.address_1+", "+ this.address_2+", "+this.state+ ", "+this.city +": "+this.pin+"</td>"+
+                    "<td>"+this.address_1+", "+ $.trim(this.address_2)+", "+states[this.state]+ ", "+this.city +": "
+                        +this.pin+"</td>"+
                     "<td>"+this.default+"</td>"+
                     "</tr>");
                 }
@@ -36,32 +60,6 @@ function load_warehouse(){
 }
 
 
-var name ='', key='', address_1 ='', address_2='', state='', city='', phone='', cst='', tin='', gst='', details='', zone='', 
-    number_valid=true;
-
-var telInput = $('.phone'), errorMsg = $("#error-msg"), validMsg = $("#valid-msg");
-
-var reset = function() {
-  telInput.removeClass("error");
-  errorMsg.addClass("hide");
-  validMsg.addClass("hide");
-}
-
-telInput.blur(function() {
-  reset();
-  if ($.trim(telInput.val())) {
-    if (telInput.intlTelInput("isValidNumber")) {
-      validMsg.removeClass("hide");
-      number_valid=true;
-      phone=telInput.intlTelInput("getNumber");
-    } else {
-      telInput.addClass("error");
-      errorMsg.removeClass("hide");
-      number_valid=false
-    }
-  }
-});
-
 $('.submit').click(function(e) {
     // $('.year_error').attr('hidden', true);
     // $('.start_error').attr('hidden', true);
@@ -70,11 +68,11 @@ $('.submit').click(function(e) {
     // $('.error_box').attr('hidden', true);
     swal({
         title: "Are you sure?",
-        text: "Are you sure to add a new customer?",
+        text: "Are you sure to add a new warehouse?",
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, add new customer!",
+        confirmButtonText: "Yes, add new warehouse!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
@@ -87,45 +85,32 @@ $('.submit').click(function(e) {
     
 function new_data(){
     var proceed=true;
-    name=$('.name').val()
-    key=$('.key').val()
-    address_1=$('.add1').val()
-    address_2=$('.add2').val()
-    state=$(".state").find(':selected').data('id');
-    city=$('.city').val()
-    pin=$('.pin').val()
-    cst=$('.cst').val()
-    tin=$('.tin').val()
-    gst=$('.gst').val()
-    details=$('.details').val()
-    zone=$(".zone").find(':selected').data('id');
-    // var year=parseInt($('.year').val());
-    // var start=$('.start').val();
-    // var end=$('.end').val();
-    // var current = $('.current').is(":checked");
+    var name=$('.name').val()
+    var address_1=$('.add1').val()
+    var address_2=$('.add2').val()
+    var state=$(".state").find(':selected').data('id');
+    var city=$('.city').val()
+    var pin=$('.pin').val()
+    var remarks=$('.remarks').val()
+    var retail = $('.retail').is(":checked");
     
-    if (name == '' || name =='undefined' || key == '' || key =='undefined' ){
+    if (name == '' || typeof(name) =='undefined' || address_1 == '' || typeof(address_1) =='undefined' ){
         proceed = false;
     }
-    if (proceed && number_valid){
+    if (proceed){
         (function() {
             $.ajax({
                 url : "" , 
                 type: "POST",
                 data:{name: name,
-                    key:key,
                     address_1:address_1,
                     address_2:address_2,
                     state:state,
                     city:city,
                     pin:pin,
-                    phone:phone,
-                    cst:cst,
-                    tin:tin,
-                    gst:gst,
-                    details:details,
-                    zone:zone,
-                    calltype: "newcustomer",
+                    remarks:remarks,
+                    retail:retail,
+                    calltype: "newwarehouse",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 // contentType: "application/json",
@@ -133,7 +118,7 @@ function new_data(){
                 success : function(jsondata) {
                     var show_success=true
                     if (show_success){
-                        swal("Hooray", "New customer added", "success");
+                        swal("Hooray", "New warehouse added", "success");
                         setTimeout(location.reload(true),1000);
                     }
                     //console.log(jsondata);

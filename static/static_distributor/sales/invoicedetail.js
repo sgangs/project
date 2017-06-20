@@ -48,6 +48,7 @@ function load_data(){
                 console.log(d2_val);
                 $('.details').append("<tr class='data text-center'>"+
                     "<td>"+this.product_name+"</td>"+
+                    "<td>"+this.product_hsn+"</td>"+
                     "<td>"+this.quantity+"</td>"+
                     // "<td id='not_print'>"+this.free_without_tax+"</td>"+
                     // "<td id='not_print'>"+this.free_with_tax+"</td>"+

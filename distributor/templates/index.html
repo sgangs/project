@@ -7,30 +7,31 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>Assisto: ERP Software - Accounting Inventory Invoicing and HR Software</title>
-    <meta name="description" content="ERP Software, packed with /
-            one stop Accounting, Inventory, Invoicng and HR software">
+    <title>Assisto: ERP Software - GST Ready Billing, Inventory ERP</title>
+    <meta name="description" content="GST Ready ERP Software. App based solution for GST. ">
     
 
     {% load static from staticfiles %}
 
-    <link type ="image/x-icon" href= "{% static 'img/Logo_Favicon.ico' %}" rel="logo icon">
+    <link type ="image/x-icon" href= "{% static 'img/Logo_Favicon.ico' %}" rel="icon">
 
     <!-- Bootstrap Core CSS -->
     <link href= "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="/staticdistributor/css/stylish-portfolio.css" rel="stylesheet">
+    <link href="{% static 'css/stylish-portfolio.css' %}" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
-    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
 
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 
     <!-- Latest compiled and minified JavaScript for Bootstrap-->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
 
 </head>
 
@@ -54,7 +55,7 @@
                 <a href="#services" onclick = $("#menu-close").click(); >Services</a>
             </li>
             <li>
-                <a href="#portfolio" onclick = $("#menu-close").click(); >Portfolio</a>
+                <a href="#portfolio" onclick = $("#menu-close").click(); >Segments</a>
             </li>
             <li>
                 <a href="#contact" onclick = $("#menu-close").click(); >Contact</a>
@@ -68,19 +69,77 @@
             <!--<h1>Assisto</h1>
             <h3>Your technical assistant</h3>-->
             <br>
-            <a href="{% url 'register' %}" class="button btn btn-dark btn-lg">Register (Distributor)</a>
-            <a href="{% url 'login' %}" class="button btn btn-dark btn-lg">Login (Distributor)</a>
+            <a href="register"><button type="button" class="btn btn-dark btn-lg register">Register</button></a>
+            <a href="login"><button type="button" class="btn btn-dark btn-lg login">Login</button></a>
+            <!-- <button type="button" class="btn btn-dark btn-lg" id="learn" data-toggle="modal" data-target="#learnModal">Learn More!</button> -->
+            <!-- <button type="button" class="btn btn-dark btn-lg" id="register" data-toggle="modal" data-target="#regModal">Try ERP for Free!</button> -->
+            <!-- <button type="button" class="btn btn-dark btn-lg" id="logi" data-toggle="modal" data-target="#logModal">Login</button> -->
         </div>
     </header>
+
+
+    <!-- Register Modal -->
+    <!-- <div class="modal fade regmodal" id="regModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Try for Free As:</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <a href="school/register"><button type="button" class="btn btn-primary distributor">School</button></a>
+                    <a href="distributor/register"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Distributor</button></a>
+                    <a href="distributor/register"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Retail</button></a>                    
+                </div>
+                <div class="modal-footer">                    
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <!-- Login Modal -->
+    <!-- <div class="modal fade regmodal" id="logModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Login As:</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <a href="school/login"><button type="button" class="btn btn-primary distributor">School</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Distributor</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Retail</button></a>
+                    
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <!-- Learn More Modal -->
+    <!-- <div class="modal fade learnmodal" id="learnModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Learn More About:</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <a href="school"><button type="button" class="btn btn-primary distributor">School</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Distributor</button></a>
+                    <a href="#"><button type="button" class="btn btn-primary school" disabled title="We are coming shortly.">Retail</button></a>
+                    
+                </div>
+                <div class="modal-footer">                    
+                </div>
+            </div>
+        </div>
+    </div> -->
+
 
     <!-- About -->
     <section id="about" class="about">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 text-center">
-                    <h2>We solve your accounting, inventory, invoicing and HR problem with our one stop
-                     ERP software, segregated for every business types.</h2>
-                    <p class="lead">Enjoy what yo do best and take vacations. Get your stats on the go with us. Access your business from anywhere, using any system - all you need is a just web browser.</p>
+                    <h2>We are the only app based GST software. Login and use from browser, or from the app with barcode management and Automated SMS services.</h2>
+                    <p class="lead">Complete operations with our app with multiple reports and real time analysis and GST filing options. Our solution helps you reduce infrastructure space and cost by replacing computers and scanners with our app and sms instead of printed invoice.</p>
                 </div>
             </div>
             <!-- /.row -->
@@ -101,52 +160,52 @@
                             <div class="service-item">
                                 <span class="fa-stack fa-4x">
                                 <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-cloud fa-stack-1x text-primary"></i>
+                                <i class="fa fa-inr fa-stack-1x text-primary"></i>
                             </span>
                                 <h4>
-                                    <strong>On the cloud</strong>
+                                    <strong>GST Ready</strong>
                                 </h4>
-                                <p>On a vacation? Need data on Sunday evening? Find us on the cloud...ANYTIME, ANYWHERE.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
+                                <p>FIle GST from our software &amp download all reports in excel.</p>
+                                <!-- <a href="#" class="btn btn-light">Learn More</a> -->
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="service-item">
                                 <span class="fa-stack fa-4x">
                                 <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-compass fa-stack-1x text-primary"></i>
+                                <i class="fa fa-barcode fa-stack-1x text-primary"></i>
                             </span>
                                 <h4>
-                                    <strong>System Independent</strong>
+                                    <strong>Barcode Management</strong>
                                 </h4>
-                                <p>Older windows?New windows? Mac? No problem. We are there for you on ALL SYSTEM.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
+                                <p>Print, generate and scan barcodes, all from the app itself</p>
+                                <!-- <a href="#" class="btn btn-light">Learn More</a> -->
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="service-item">
                                 <span class="fa-stack fa-4x">
                                 <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-flask fa-stack-1x text-primary"></i>
+                                <i class="fa fa-truck fa-stack-1x text-primary"></i>
                             </span>
                                 <h4>
-                                    <strong>Lifetime Updates</strong>
+                                    <strong>Inventory</strong>
                                 </h4>
-                                <p>Download, install...pay for updates? Nah!! That's not our style. You get lifetime updates, FOR FREE.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
+                                <p>With barcodes management using our app, track your inventory. </p>
+                                <!-- <a href="#" class="btn btn-light">Learn More</a> -->
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="service-item">
                                 <span class="fa-stack fa-4x">
                                 <i class="fa fa-circle fa-stack-2x"></i>
-                                <i class="fa fa-shield fa-stack-1x text-primary"></i>
+                                <i class="fa fa-wechat fa-stack-1x text-primary"></i>
                             </span>
                                 <h4>
-                                    <strong>Data Protection</strong>
+                                    <strong>SMS Management</strong>
                                 </h4>
-                                <p>Flood? Virus? Formatting your system? No issues. All your data are on cloud. PROTECTED. ALWAYS.</p>
-                                <a href="#" class="btn btn-light">Learn More</a>
+                                <p>Send invoices, offers, discount coupons to your client by SMS</p>
+                                <!-- <a href="#" class="btn btn-light">Learn More</a> -->
                             </div>
                         </div>
                     </div>
@@ -162,7 +221,7 @@
     <!-- Callout -->
     <aside class="callout">
         <div class="text-vertical-center">
-            <h1>Leave the computing to us</h1>
+            <h1>GST is not a headache anymore</h1>
         </div>
     </aside>
 
@@ -171,32 +230,32 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-10 col-lg-offset-1 text-center">
-                    <h2>Our Work</h2>
+                    <h2>Our Segments</h2>
                     <hr class="small">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="portfolio-item">
-                                <a href="#">
-                                    <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-1.jpg' %}">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="portfolio-item">
-                                <a href="#">
+                                <a href="#" title="TECHASSISTO IS FOR ALL DISTRIBUTOR TYPES">
                                     <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-2.jpg' %}">
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="portfolio-item">
-                                <a href="#">
+                                <a href="#" title="TECHASSISTO IS FOR ALL TYPES OF RETAIL SEGMENT">
                                     <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-3.jpg' %}">
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="portfolio-item">
+                                <a href="#" title="TECHASSISTO IS FOR ALL READY TO EAT STORES">
+                                    <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-1.jpg' %}">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="portfolio-item" title="WE'RE COMING WITH SOLUTION OTHERS TOO...">
                                 <a href="#">
                                     <img class="img-portfolio img-responsive" src="{% static 'img/portfolio-4.jpg' %}">
                                 </a>
@@ -229,17 +288,19 @@
     <!-- Map -->
 
     <!--45b,+Anath+Nath+Deb+Lane,+MIG+Housing,+Kolkata,+West+Bengal,+India-->
-    <section id="contact" class="map">
-        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=45b,+Anath+Nath+Deb+Lane,+MIG+Housing,+Kolkata,+West+Bengal,+India&amp;aq=0&amp;sll=22.609197, 88.385055&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A&amp;output=embed"></iframe>
+    <!-- <section id="contact" class="map">
+        <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=45b,+Anath+Nath+Deb+Lane,+MIG+Housing,+Kolkata,+West+Bengal,+India&amp;aq=0    &amp;sll=22.609197, 88.385055&amp;ie=UTF8&amp;hq=TechAssisto&amp;t=m&amp;z=15&amp;iwloc=A&amp;output=embed"></iframe>
         <br />
         <small>
-            <a href="https://maps.google.com/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;aq=0&amp;oq=twitter&amp;sll=28.659344,-81.187888&amp;sspn=0.128789,0.264187&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A"></a>
+            <a href="https://maps.google.com/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q=45b,+Anath+Nath+Deb+Lane,+MIG+Housing,+Kolkata,+West+Bengal,+India&amp;aq=0&amp;oq=twitter&amp;sll=28.659344,-81.187888&amp;sspn=0.128789,0.264187&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A"></a>
         </small>
-        </iframe>
-    </section>
+            
+    </section> -->
+
+    <div id="map"></div>
 
     <!-- Footer -->
-    <footer>
+    <footer id="contact">
         <div class="container">
             <div class="row">
                 <div class="col-lg-10 col-lg-offset-1 text-center">
@@ -248,13 +309,13 @@
                     <p>45B Anath Nath Deblane<br>Kolkata, West Bengal 700037</p>
                     <ul class="list-unstyled">
                         <li><i class="fa fa-phone fa-fw"></i> +91-9940067159</li>
-                        <li><i class="fa fa-envelope-o fa-fw"></i>  <a href="mailto:sayantan@techassisto.com">sayantan@techassisto.com</a>
+                        <li><i class="fa fa-envelope-o fa-fw"></i>  <a href="mailto:sayantan@techassisto.com">assisto@techassisto.com</a>
                         </li>
                     </ul>
                     <br>
                     <ul class="list-inline">
                         <li>
-                            <a href="https://www.facebook.com/sgangs.91" target="_blank"><i class="fa fa-facebook fa-fw fa-3x"></i></a>
+                            <a href="https://www.facebook.com/techassisto" target="_blank"><i class="fa fa-facebook fa-fw fa-3x"></i></a>
                         </li>
                         <li>
                             <a href="https://twitter.com/iamsganguly" target="_blank"><i class="fa fa-twitter fa-fw fa-3x"></i></a>
@@ -264,11 +325,28 @@
                         </li>
                     </ul>
                     <hr class="small">
-                    <p class="text-muted">Copyright &copy; Tech Assisto 2016</p>
+                    <p class="text-muted">Copyright &copy; TechAssisto 2017</p>
                 </div>
             </div>
         </div>
     </footer>
+
+    <script>
+      function initMap() {
+        var uluru = {lat: -25.363, lng: 131.044};
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 4,
+          center: uluru
+        });
+        var marker = new google.maps.Marker({
+          position: uluru,
+          map: map
+        });
+      }
+    </script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDME4exgzOoBqbssCofnUe5ZOtXVI_nC64&callback=initMap">
+    </script>
 
 
     <!-- Custom Theme JavaScript -->
@@ -286,21 +364,25 @@
     });
 
     // Scrolls to the selected menu item on the page
-    $(function() {
-        $('a[href*=#]:not([href=#])').click(function() {
-            if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') || location.hostname == this.hostname) {
+    // $('a[href*=#]:not([href=#])').click(function() {
+    //     $(function() {
+    //         if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') || location.hostname == this.hostname) {
 
-                var target = $(this.hash);
-                target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
-                if (target.length) {
-                    $('html,body').animate({
-                        scrollTop: target.offset().top
-                    }, 1000);
-                    return false;
-                }
-            }
-        });
-    });
+    //             var target = $(this.hash);
+    //             target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
+    //             if (target.length) {
+    //                 $('html,body').animate({
+    //                     scrollTop: target.offset().top
+    //                 }, 1000);
+    //                 return false;
+    //             }
+    //         }
+    //     });
+    // });
+
+
+
+
     </script>
 
 </body>

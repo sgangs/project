@@ -521,7 +521,8 @@ function new_data(){
     grand_discount_type=$('.gdt').find(':selected').data('id');
     grand_discount_value=$('.gd').val();
     subtotal=parseFloat($('.subtotal_receipt').html());
-    taxtotal=parseFloat($('.taxtotal_receipt').html());
+    // taxtotal=parseFloat($('.taxtotal_receipt').html());
+    var cgsttotal=0, sgsttotal=0, igsttotal=0;
     total=parseFloat($('.total_receipt').html());
     if (customerid == '' || typeof(customerid) =='undefined' || warehouseid == '' || typeof(warehouseid) =='undefined' ||
         $.trim(date) == '' || typeof(date) =='undefined'){
@@ -650,7 +651,10 @@ function new_data(){
                     grand_discount_type: grand_discount_type,
                     grand_discount_value: grand_discount_value,
                     subtotal: subtotal,
-                    taxtotal: taxtotal,
+                    // taxtotal: taxtotal,
+                    cgsttotal: cgsttotal,
+                    sgsttotal: sgsttotal,
+                    igsttotal: igsttotal,
                     total: total,
                     duedate: duedate.split("/").reverse().join("-"),
                     bill_details: JSON.stringify(items),

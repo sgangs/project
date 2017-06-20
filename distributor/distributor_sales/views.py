@@ -29,10 +29,9 @@ from .serializers import *
 @api_view(['GET','POST'],)
 def get_product(request):
 	this_tenant=request.user.tenant
-	print(request.method)
 	if request.is_ajax():
 		q = request.GET.get('term', '')
-		products = Product.objects.for_tenant(this_tenant).filter(name__istartswith  = q )[:10].select_related('default_unit', \
+		products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].select_related('default_unit', \
 			'cgst','sgst','igst')
 		response_data = []
 		for item in products:
@@ -101,9 +100,15 @@ def sales_invoice_save(request):
 					grand_discount_value=0
 					
 					subtotal=Decimal(request.data.get('subtotal'))
-					taxtotal=Decimal(request.data.get('taxtotal'))
+					cgsttotal=Decimal(request.data.get('cgsttotal'))
+					sgsttotal=Decimal(request.data.get('sgsttotal'))
+					igsttotal=Decimal(request.data.get('igsttotal'))
 					total=Decimal(request.data.get('total'))
 					duedate=request.data.get('duedate')
+
+					print(cgsttotal)
+					print(sgsttotal)
+					print(igsttotal)
 
 					bill_data = json.loads(request.data.get('bill_details'))
 
@@ -146,7 +151,9 @@ def sales_invoice_save(request):
 					# new_invoice.grand_discount_type=grand_discount_type
 					# new_invoice.grand_discount_value=grand_discount_value
 					new_invoice.subtotal=subtotal
-					new_invoice.taxtotal=taxtotal
+					new_invoice.cgsttotal=cgsttotal
+					new_invoice.sgsttotal=sgsttotal
+					new_invoice.igsttotal=igsttotal
 					new_invoice.total = total
 					new_invoice.duedate = duedate
 					new_invoice.amount_paid = 0

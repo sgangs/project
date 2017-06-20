@@ -9,6 +9,7 @@ $(document).on('keydown.autocomplete', '.name', function() {
         minLength: 3,
         timeout: 200,
         select: function( event, ui ) {
+            console.log(ui)
             $(el).closest('tr').addClass("updating");
             $(el).closest('tr').find('td:nth-child(2) input').val(ui['item']['id']);
             var unit=$(el).closest('tr').find('td:nth-child(6) :selected').data('id');
@@ -107,6 +108,7 @@ function load_warehouse(){
     });
 }
 
+
 load_units()
 
 function load_units(){
@@ -200,14 +202,11 @@ function get_qty_avl(el){
     var unit_id = $(el).closest('tr').find('td:nth-child(6) .unit :selected').data('id');
     var quantity =  parseFloat($(el).closest('tr').find('td:nth-child(4) input').val());
     var quantity_avl = parseFloat($(el).closest('tr').find('td:nth-child(5)').html());
-    console.log(quantity);
-    console.log(quantity_avl);
     if (isNaN(quantity_avl)){
         quantity_avl=0;
     }
     var unit_multi_selected = parseFloat($(el).closest('tr').find('td:nth-child(7)').html());
     quantity_avl=quantity_avl/unit_multi_selected;
-    console.log(quantity_avl);
     if (!$(el).closest('tr').hasClass("has-error")){
         if ((quantity)>quantity_avl ){
             console.log("here");
@@ -258,10 +257,11 @@ function new_data(){
     var proceed=true;
     var from_warehouseid=$('.from').find(':selected').data('id');
     var to_warehouseid=$('.to').find(':selected').data('id');
-    date=$('.date').val()
+    var date=$('.date').val()
+    var record_transit = $('.transit').is(":checked");
     
-    if (from_warehouseid == '' || from_warehouseid =='undefined' ||
-        to_warehouseid == '' || to_warehouseid =='undefined' || date == '' || date =='undefined'){
+    if (from_warehouseid == '' || typeof(from_warehouseid) =='undefined' ||
+        to_warehouseid == '' || typeof(to_warehouseid) =='undefined' || date == '' || typeof(date) =='undefined'){
         proceed = false;
         swal("Oops...", "Please select from & to warehouse and date of the challan.", "error");
     }
@@ -270,8 +270,8 @@ function new_data(){
         swal("Oops...", "From and to warehouses cannot be same.", "error");
     }
     $(".details tr.data").each(function() {
-        var product_id = $(this).find('td:nth-child(1) input').val();
-        if (product_id == '' || product_id =='undefined'){
+        var product_id = $(this).find('td:nth-child(2) input').val();
+        if (product_id == '' || typeof(product_id) =='undefined'){
             proceed=false;
             swal("Oops...", "Please enter a product ", "error");
             $(this).closest('tr').addClass("has-error");
@@ -308,37 +308,38 @@ function new_data(){
         };
         items.push(item);
     });
-    console.log(subtotal);
+    console.log(items)
 
-    // if (proceed){
-    //     (function() {
-    //         $.ajax({
-    //             url : "save/" , 
-    //             type: "POST",
-    //             data:{from_warehouseid:from_warehouseid,
-    //                 to_warehouseid: to_warehouseid,
-    //                 date:date.split("/").reverse().join("-"),
-    //                 bill_details: JSON.stringify(items),
-    //                 calltype: "newtransfer",
-    //                 csrfmiddlewaretoken: csrf_token},
-    //             dataType: 'json',               
-    //             // contentType: "application/json",
-    //                     // handle a successful response
-    //             success : function(jsondata) {
-    //                 var show_success=true
-    //                 if (show_success){
-    //                     swal("Hooray", "New purchase receipt added", "success");
-    //                     setTimeout(location.reload(true),1000);
-    //                 }
-    //                 //console.log(jsondata);
-    //             },
-    //             // handle a non-successful response
-    //             error : function() {
-    //                 swal("Oops...", "Recheck your inputs. There were some errors!", "error");
-    //             }
-    //         });
-    //     }());
-    // }
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "data/" , 
+                type: "POST",
+                data:{from_warehouseid:from_warehouseid,
+                    to_warehouseid: to_warehouseid,
+                    date:date.split("/").reverse().join("-"),
+                    record_transit:record_transit,
+                    all_details: JSON.stringify(items),
+                    calltype: "newtransfer",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // contentType: "application/json",
+                        // handle a successful response
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "New purchase receipt added", "success");
+                        setTimeout(location.reload(true),1000);
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }
     
 }
 

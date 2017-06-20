@@ -1,3 +1,4 @@
+import datetime as dt
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import slugify
@@ -141,11 +142,33 @@ class inventory_transfer (models.Model):
 	initiated_on=models.DateField(db_index=True, blank=True, null=True)
 	received_on=models.DateField(db_index=True, blank=True, null=True)
 	total_value=models.DecimalField(db_index=True, max_digits=10, decimal_places=2, blank=True, null=True)
-	in_transit=models.BooleanField(db_index=True, default=True)
+	in_transit=models.BooleanField(db_index=True, default=False)
 	tenant=models.ForeignKey(Tenant,related_name='inventoryTransfer_inventory_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
+	def save(self, *args, **kwargs):
+		if not self.id:
+			tenant=self.tenant.key
+			today=dt.date.today()
+			today_string=today.strftime('%y%m%d')
+			next_transfer_number='001'
+			last_transfer=type(self).objects.filter(tenant=self.tenant).\
+						filter(transfer_id__contains=today_string).order_by('transfer_id').last()
+			if last_transfer:
+				last_transfer_id=str(last_transfer.transfer_id)
+				last_transfer_number=int(last_transfer_id[6:])
+				next_transfer_number='{0:03d}'.format(last_transfer_number + 1)
+			self.transfer_id=int(today_string + next_transfer_number)
+			
+		super(inventory_transfer, self).save(*args, **kwargs)
+
+	# class Meta:
+	# 	ordering = ('date',)
+
+	def __str__(self):
+		# return  '%s %s %s' % (self.receipt_id, self.vendor, self.date)
+		return  '%s %s' % (self.invoice_id, self.date)
 
 class inventory_transfer_items (models.Model):
 	id=models.BigAutoField(primary_key=True)
@@ -165,5 +188,18 @@ class inventory_transfer_items (models.Model):
 	tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='inventoryTransferItem_inventory_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+
+class inventory_wastage (models.Model):
+	id=models.BigAutoField(primary_key=True)
+	product=models.ForeignKey(Product, related_name='inventoryWastage_inventory_master_product')
+	warehouse=models.ForeignKey(Warehouse, related_name='inventoryWastage_inventory_master_warehouse')
+	purchase_price=models.DecimalField(db_index=True, max_digits=10, decimal_places=2, blank=True, null=True)
+	#To consider average inventory cost
+	inventory_average_cost=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+	quantity=models.PositiveSmallIntegerField(db_index=True)
+	tenant=models.ForeignKey(Tenant,related_name='inventoryWastage_inventory_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

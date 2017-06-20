@@ -256,7 +256,7 @@ class AbstractCustomer(models.Model):
 	gst=models.CharField(max_length=20, blank=True, null=True)
 	details=models.TextField(blank=True, null=True)
 	is_active=models.BooleanField(default=True)
-	updated = models.DateTimeField(auto_now=True)
+	updated = models.DateTimeField(blank=True, null=True)
 	#vat_license_no=models.PositiveSmallIntegerField(blank=True, null=True)
 
 	class Meta:

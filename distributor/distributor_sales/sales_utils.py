@@ -42,7 +42,9 @@ def new_sales_invoice(tenant, customer, warehouse, date, duedate,
 	new_receipt.grand_discount_type=grand_discount_type
 	new_receipt.grand_discount_value=grand_discount_value
 	new_receipt.subtotal=subtotal
-	new_receipt.taxtotal=taxtotal
+	new_receipt.cgsttotal=cgsttotal
+	new_receipt.sgsttotal=sgsttotal
+	new_receipt.igsttotal=igsttotal
 	new_receipt.total = total
 	new_receipt.duedate = duedate
 	new_receipt.amount_paid = 0

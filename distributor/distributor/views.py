@@ -68,7 +68,7 @@ def RegisterView(request):
                     new_user.save()
                     #Do this after user's first login maybe.
                     warehouse=Warehouse()
-                    warehouse.key="Default"
+                    warehouse.name="Default"
                     warehouse.address_1=new_tenant.address_1
                     warehouse.address_2=new_tenant.address_2
                     warehouse.state=new_tenant.state

@@ -35,9 +35,9 @@ function load_customers(){
                     "<td hidden='true'>"+this.id+"</td>"+
                     "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
                     "<td>"+this.key+"</td>"+
-                    "<td>"+this.address_1+", "+$.trim(this.address_2)+ ", "+this.city +": "+this.pin+"</td>"+
-                    "<td>"+this.phone_no+"</td>"+
-                    "<td>"+this.zone+"</td>"+
+                    "<td>"+this.address_1+", "+$.trim(this.address_2)+ ", "+$.trim(this.city) +": "+this.pin+"</td>"+
+                    "<td>"+$.trim(this.phone_no)+"</td>"+
+                    "<td>"+$.trim(this.zone)+"</td>"+
                     "</tr>");
                 }
                 else{
@@ -45,10 +45,10 @@ function load_customers(){
                     "<td hidden='true'>"+this.id+"</td>"+
                     "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
                     "<td>"+this.key+"</td>"+
-                    "<td>"+this.address_1+", "+ $.trim(this.address_2)+", "+states[this.state]+ ", "+this.city +": "
+                    "<td>"+this.address_1+", "+ $.trim(this.address_2)+", "+states[this.state]+ ", "+$.trim(this.city) +": "
                         +this.pin+"</td>"+
-                    "<td>"+this.phone_no+"</td>"+
-                    "<td>"+this.zone+"</td>"+
+                    "<td>"+$.trim(this.phone_no)+"</td>"+
+                    "<td>"+$.trim(this.zone)+"</td>"+
                     "</tr>");
                 }
             })

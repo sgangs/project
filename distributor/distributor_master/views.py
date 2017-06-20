@@ -21,6 +21,7 @@ from rest_framework.response import Response
 from .serializers import *
 
 from distributor_user.models import Tenant
+from distributor_inventory.models import warehouse_valuation
 from distributor.variable_list import state_list
 from .models import *
 from .forms import *
@@ -742,17 +743,34 @@ def warehouse_data(request):
 			city=request.POST.get('city')
 			pin=request.POST.get('pin')
 			remarks=request.POST.get('remarks')
-			default=request.POST.get('default')
-			new_warehouse=Warehouse()
-			new_warehouse.name=name
-			new_warehouse.address_1=address_1
-			new_warehouse.address_2=address_2
-			new_warehouse.state=state
-			new_warehouse.city=city
-			new_warehouse.pin=pin
-			new_warehouse.remarks=remarks
-			new_warehouse.default=default
-			new_warehouse.save()			
+			# default=request.POST.get('default')
+			retail=request.POST.get('retail')
+			if (retail == 'true'):
+				retail = True
+			elif (retail == 'false'):
+				retail = False
+			with transaction.atomic():
+				try:
+					print('here')
+					new_warehouse=Warehouse()
+					new_warehouse.name=name
+					new_warehouse.address_1=address_1
+					new_warehouse.address_2=address_2
+					new_warehouse.state=state
+					new_warehouse.city=city
+					new_warehouse.pin=pin
+					new_warehouse.remarks=remarks
+					new_warehouse.is_retail_channel=retail
+					new_warehouse.tenant=this_tenant
+					new_warehouse.save()
+					new_valuation=warehouse_valuation()
+					new_valuation.warehouse=new_warehouse
+					new_valuation.valuation=0
+					new_valuation.tenant=this_tenant
+					new_valuation.save()
+					print(new_valuation)
+				except:
+					pass
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'master/warehouse_list.html',{'extension':extension,'states':state_list })

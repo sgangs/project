@@ -49,4 +49,6 @@ urlpatterns = [
     # url(r'^inventory/', include('distribution_inventory.urls',namespace='inventory', app_name='inventory')),
     # url(r'^accounts/', include('distribution_accounts.urls',namespace='accounts', app_name='accounts')),
     # url(r'^hr/', include('distribution_hr.urls',namespace='hr', app_name='hr')),
+
+    # url(r'^payment/', include('payumoney.urls',namespace='payumoney', app_name='payumoney')),
 ]
