@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+<!-- Pace JS, used for animating page load -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-circle.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>
+
+
+{%block title%}
+<title>Bulk Upload</title>
+{% endblock %} 
+
+{% block content%}
+	<div>
+		<div><h2>Bulk Upload Opening Inventory List</h2></div>
+		{% if messages %}
+			<ul class="messages">
+			    {% for message in messages %}
+			    <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+			    {% endfor %}
+			</ul>
+		{% endif %}
+		    {% crispy form form.helper %}
+            {% csrf_token %}
+            
+	</div>
+	
+	
+{% endblock %}
+
+
+

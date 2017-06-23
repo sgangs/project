@@ -23,6 +23,14 @@
 <p>Note: Option to update opening inventory is only for the first 90 days, after which it'll be sealed automatically</p>
 <br>
 
+{% if messages %}
+	{% for msg in messages %}       
+        <div class="alert alert-{{msg.level_tag}}" role="alert">
+ 	{{msg.level_tag|title}}: {{msg.message}}
+	</div>
+    {% endfor %}
+{% endif %}
+
 <div class="table-responsive current">
 	<table class="table table-striped table-bordered table-hover" id="opening_inventory">
     	<thead class="thead-inverse header-background">

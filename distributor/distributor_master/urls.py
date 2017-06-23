@@ -36,5 +36,6 @@ urlpatterns = [
     url(r'^product/attributedata/$', views.attribute_view, name='attribute_view'),
     url(r'^product/productdata/$', views.product_view, name='product_view'),
     url(r'^product/productdetails/$', views.product_details, name='product_details'),
+    url(r'^uploadproduct/$', views.import_product, name='import_product'),
     # url(r'^uploadproduct/$', views.import_product, name='import_product'),
 ]

@@ -66,13 +66,13 @@ def new_sales_invoice(tenant, request):
 # 	debit_note.save()
 # 	return debit_note
 
-# # def sales_day_wise(start, end, tenant):
-# # 	sales_values=sales_invoice.objects.for_tenant(tenant).filter(date__range=(start,end)).\
-# # 			order_by('date').values('date').annotate(total=Sum('total'))
-# # 	response_data=[]
-# # 	for item in sales_values:
-# # 		response_data.append({'date':item['date'],'total':str(item['total'])})
-# # 	return response_data
+def retail_sales_day_wise(start, end, tenant):
+	sales_values=retail_invoice.objects.for_tenant(tenant).filter(date__range=(start,end)).\
+			order_by('date').values('date').annotate(total=Sum('total'))
+	response_data=[]
+	for item in sales_values:
+		response_data.append({'date':item['date'],'total':str(item['total'])})
+	return response_data
 
 # # def sales_raised_value(start, end, tenant):
 # # 	invoice_value=sales_invoice.objects.for_tenant(tenant).filter(date__range=(start,end)).aggregate(Sum('total'))

@@ -27,16 +27,16 @@
                 <div>
                     <h5><b>Current Accounting Period: {{current_account.start}} to {{current_account.end}}</b></h5>
                 </div>
-                <div >
+                <div class='distributor'>
                     <label title="Sales for last 30 days">Sales for last 30 days
                         <canvas id="sales" width="600" height="300"></canvas>
                     </label>
                 </div>
-                <br>
+                <!-- <br>
                 <br>
                 <div class="col-lg-8 col-md-8 col-xs-12 thumb">
                     <h6 style="font-size: 25px; font-family: 'Righteous';">Collection Pending:</h6>
-                </div>
+                </div> -->
                 
             </div>            
             <div class="col-lg-4 col-md-4 col-xs-12 ">
@@ -78,6 +78,7 @@
     <script>
         csrf_token='{{csrf_token}}';
         var sales_daily='{{sales_daily|escapejs}}'
+        // var retail_sales_daily='{{retail_sales_daily|escapejs}}'
         var invoice_value=parseFloat(JSON.parse('{{invoice_value|escapejs}}'));
         var payment_value=parseFloat(JSON.parse('{{payment_value|escapejs}}'))
         // var colors = ["#008062", "#68367c"];
@@ -92,6 +93,7 @@
     <script src="{% static 'landing/sales_30days_chart.js' %}"></script>
     <script src="{% static 'landing/invoiced_payment_chart.js' %}"></script>
     <!-- <script src="{% static 'landing/monthly_sales_dimple.js' %}"></script> -->
+    
     
 {% endblock %}
 

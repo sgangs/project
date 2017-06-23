@@ -25,6 +25,7 @@ from distributor_account.models import accounting_period, payment_mode
 from distributor_inventory.models import warehouse_valuation
 from distributor_master.models import Warehouse
 from distributor_sales.sales_utils import sales_day_wise, sales_raised_value, sales_collected_value
+from retail_sales.sales_utils import retail_sales_day_wise
 from .user_creation import *
 
 #landing page
@@ -141,6 +142,9 @@ def RegisterView(request):
                     create_accountChart(new_tenant,"Inventory Waste Expense", "Direct Expense",\
                         "Parent Inventory Wastage", "inventory waste", period, new_ledger, is_first_year=True, is_contra=True)
                     
+                    #Rounding off
+                    create_accountChart(new_tenant,"Rounding Adjustment",\
+                        "Direct Expense", "Rounding Adjustment Account", "round", period, new_ledger, is_first_year=True)
 
                     #Purchase account only if user choses not to maintain inventory
 
@@ -250,7 +254,10 @@ def landing(request):
     this_tenant=request.user.tenant
     end=date_first.date.today()
     start=end-date_first.timedelta(days=30)
-    sales_daily=sales_day_wise(start, end, this_tenant)
+    if (this_tenant.tenant_type == 2):
+    	sales_daily=retail_sales_day_wise(start, end, this_tenant)
+    else:
+    	sales_daily=sales_day_wise(start, end, this_tenant)
     invoice_value=sales_raised_value(start, end, this_tenant)
     payment_value=sales_collected_value(start, end, this_tenant)
     current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)

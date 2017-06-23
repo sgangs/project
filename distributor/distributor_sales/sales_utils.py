@@ -4,6 +4,7 @@ from django.db.models import Sum
 #from datetime import datetime
 from distributor_sales.models import sales_invoice, sales_payment
 from django.db.models import Sum
+from distributor_account.models import Account, Journal, journal_entry
 # from distributor_master.models import Product, Unit
 
 def new_sales_invoice(tenant, customer, warehouse, date, duedate,
@@ -74,6 +75,7 @@ def sales_day_wise(start, end, tenant):
 	for item in sales_values:
 		response_data.append({'date':item['date'],'total':str(item['total'])})
 	return response_data
+
 
 def sales_raised_value(start, end, tenant):
 	invoice_value=sales_invoice.objects.for_tenant(tenant).filter(date__range=(start,end)).aggregate(Sum('total'))

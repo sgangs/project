@@ -1,6 +1,8 @@
 import django_excel as excel
 from decimal import Decimal
+import xlrd
 
+from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
 from django.utils import timezone
@@ -20,8 +22,10 @@ from rest_framework.response import Response
 from distributor_master.models import Unit, Product, Warehouse
 from distributor_user.models import Tenant
 from distributor_account.models import Account, accounting_period, account_year
+from .forms import *
 from .models import *
 from .serializers import *
+from .inventory_utils import *
 
 
 
@@ -66,6 +70,7 @@ def opening_inventory_data(request):
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
+		print(calltype)
 		if (calltype == 'newinventory'):
 			productid=int(request.POST.get('productid'))
 			warehouseid=int(request.POST.get('warehouse'))
@@ -115,6 +120,8 @@ def opening_inventory_data(request):
 					new_inventory.mrp=mrp
 					new_inventory.tenant=this_tenant
 					new_inventory.save()
+
+					print(new_inventory)
 
 					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 					warehouse_valuation_change.valuation+=total_inventory_value
@@ -259,8 +266,47 @@ def inventory_transfer_data(request):
 
 
 				except:
-					transaction.rollbackIntegrityError
+					transaction.rollback()
 
 
 	jsondata = json.dumps(response_data)
 	return HttpResponse(jsondata)
+
+
+
+@login_required
+def import_opening_inventory(request):
+	this_tenant=request.user.tenant
+	if request.method == "POST":
+		form = UploadFileForm(request.POST, request.FILES)
+		def choice_func(row):
+			data=oepning_inventory_validate(row, this_tenant, calculate_total=True)
+			return data		
+		if form.is_valid():
+			# inventory=request.FILES['Inventory_Import']
+			data={}
+			f = request.FILES['file']
+			data['name'] = f.name
+			data['size'] = f.size / 1024
+			if 'xls' not in f.name and 'xlsx' not in f.name:
+				data['error'] = 2
+				data['info'] = 'file type must be excel!'
+				print(data['info'])
+			elif 0 == f.size:
+				data['error'] = 3
+				data['info'] = 'file content is empty!'
+			# wb = xlrd.open_workbook(inventory)
+			else:
+				rows = opening_inventory_upload_save(f, this_tenant)
+				if (rows):
+					str1 = ' ,'.join(str(e) for e in rows)
+					messages.add_message(request, messages.WARNING, 'There was error in the following rows: .'+str1)
+					messages.add_message(request, messages.INFO, 'The rest of the data have been uploaded successfully.')	
+				else:
+					messages.add_message(request, messages.SUCCESS, 'Data uploaded successfully.')
+				return redirect('inventory:opening_inventory')
+		else:
+			return HttpResponseBadRequest()
+	else:
+		form = UploadFileForm()
+	return render(request,'master/upload_product.html',{'form': form,})

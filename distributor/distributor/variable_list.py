@@ -39,6 +39,10 @@ state_list=(('35','Andaman & Nicobar Island'),
 account=(('Basic','Basic'),
 			('SMS_Active','SMS_Active'))
 
+tenant_type=((1,'Distributor'),
+			(2,'Retailer'),
+			(3,'Both Retail & Distributor'))
+
 user_type=(('Owner','Owner'),
 			('Salesperson','Salesperson'),)
 
@@ -49,6 +53,7 @@ discount_type_options=((1,'Value'),
 			(2,'Percentage'))
 
 
+#Inventory Changes Here.
 transaction_choices=((1,'Purchase'), #Inventory Increase
 			(2,'Sales'), #Inventory Decrease
 			(3,'Sales Return'), #Inventory Increase
@@ -56,7 +61,10 @@ transaction_choices=((1,'Purchase'), #Inventory Increase
 			(5,'Purchase Return'), #Inventory Decrease
 			(6,'Other Outward'), #Inventory Decrease
 			(7,'Transfer Outward'), #Inventory Decrease
-			(8,'Transfer Inward'),) #Inventory Increase
+			(8,'Transfer Inward'), #Inventory Increase
+			(9,'Retail Sales'), #Inventory Decrease
+			(9,'Retail Sales Return'),) #Inventory Increase
+ 
 
 #transaction_choices option 1 also includes first time inventory
 

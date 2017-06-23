@@ -13,12 +13,13 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from rest_framework.authtoken.models import Token
 
-from distributor.variable_list import state_list, account, user_type
+from distributor.variable_list import state_list, account, user_type, tenant_type
 
 #This is the list of schools. Add paid until model and get it to work with decorators
 class Tenant(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField('Name of your company',max_length=50)
+	tenant_type=models.PositiveSmallIntegerField(default=1, choices=tenant_type)
 	pan=models.PositiveIntegerField("PAN Number", blank=True, null=True)
 	tin=models.PositiveIntegerField("TIN Number", blank=True, null=True)
 	cst=models.PositiveIntegerField("CST Number", blank=True, null=True)

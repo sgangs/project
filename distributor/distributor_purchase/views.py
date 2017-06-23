@@ -3,6 +3,7 @@ import json
 from datetime import date, timedelta
 
 from decimal import Decimal
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
@@ -43,8 +44,18 @@ def get_product(request):
 			item_json['label'] = product.name
 			item_json['unit_id'] = product.default_unit.id
 			item_json['unit'] = product.default_unit.symbol
-			item_json['vat_type'] = product.vat_type
-			item_json['tax'] = product.tax.percentage
+			try:
+				item_json['cgst'] = item.cgst.percentage
+			except:
+				item_json['cgst'] = 0
+			try:
+				item_json['sgst'] = item.sgst.percentage
+			except:
+				item_json['sgst'] = 0
+			try:
+				item_json['igst'] = item.igst.percentage
+			except:
+				item_json['igst'] = 0
 			response_data.append(item_json)
 			data = json.dumps(response_data)
 		else:
@@ -324,7 +335,7 @@ def purchase_receipt_save(request):
 					if this_tenant.maintain_inventory:
 						#Journal Entry for tenants with inventory
 						remarks="Purchase Receipt No: "+str(new_receipt.receipt_id)
-						journal=new_journal(this_tenant, date,"Purchase",remarks)
+						journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=1)
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 						new_journal_entry(this_tenant, journal, subtotal, account, 1, date)
 						if (cgst_total>0):
@@ -519,7 +530,8 @@ def payment_register(request):
 					new_purchase_payment.tenant=this_tenant
 					new_purchase_payment.save()
 
-					journal=new_journal(this_tenant,date,group_name="Purchase")
+					journal=new_journal(this_tenant,date,group_name="Purchase",\
+						remarks='Payment Against: '+str(receipt.id), trn_id=new_purchase_payment.id, trn_type=2)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
 					new_journal_entry(this_tenant, journal, amount_paid, account, 1, date)
 					new_journal_entry(this_tenant, journal, amount_paid, mode.payment_account, 2, date)
@@ -604,7 +616,7 @@ def debit_note_save(request):
 					new_invoice.save()
 					
 					remarks="Debit Note No: "+str(new_debit_note.note_id)
-					journal=new_journal(this_tenant, date,"Purchase",remarks)
+					journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_debit_note.id, trn_type=3)
 					# debit_note_account = request.data.get('debit_note_account')
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 					new_journal_entry(this_tenant, journal, taxtotal, account, 2, date)

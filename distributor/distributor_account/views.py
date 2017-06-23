@@ -64,7 +64,7 @@ def get_tax_report(request):
 	response_data={}
 	if (calltype == 'all_list'):
 		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type',\
-			'tax_percent',			'tax_value','transaction_bill_no','date',)\
+			'tax_percent', 'tax_value','transaction_bill_no','date',)\
 			.order_by('transaction_type','date','tax_type','tax_percent'))
 	elif (calltype == 'short_summary'):
 		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='CGST').\
@@ -101,8 +101,6 @@ def get_tax_report(request):
 	elif (calltype == 'apply_filter'):
 		tax_percent=int(request.GET.get('tax_percent'))
 		tax_type=request.GET.get('tax_type')
-		# response_data=tax_transaction.objects.for_tenant(request.user.tenant).order_by('transaction_type','date',\
-		# 	'tax_type','tax_percent')
 		response_data=tax_transaction.objects.for_tenant(request.user.tenant).all()
 		if (tax_percent):
 			response_data=response_data.filter(tax_percent=tax_percent).all()
@@ -110,6 +108,35 @@ def get_tax_report(request):
 			response_data=response_data.filter(tax_type=tax_type).all()
 		response_data=list(response_data.values('transaction_type','tax_type','tax_percent',\
 			'tax_value','transaction_bill_no','date',).order_by('transaction_type','date','tax_type','tax_percent'))
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@login_required
+def new_gst_purchase(request):
+	extension="base.html"
+	return render (request, 'gst_report/gst_purchase.html',{'extension':extension})
+
+@api_view(['GET'],)
+def get_gst_purchase(request):
+	this_tenant=request.user.tenant
+	calltype=request.GET.get('calltype')
+	response_data={}
+	if (calltype == 'all_list'):
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(transaction_type=1).\
+			values('transaction_type','tax_type','tax_percent', 'tax_value','transaction_bill_no','date',)\
+			.order_by('transaction_type','date','tax_type','tax_percent'))
+		
+	# elif (calltype == 'apply_filter'):
+	# 	tax_percent=int(request.GET.get('tax_percent'))
+	# 	tax_type=request.GET.get('tax_type')
+	# 	response_data=tax_transaction.objects.for_tenant(request.user.tenant).all()
+	# 	if (tax_percent):
+	# 		response_data=response_data.filter(tax_percent=tax_percent).all()
+	# 	if (tax_type):
+	# 		response_data=response_data.filter(tax_type=tax_type).all()
+	# 	response_data=list(response_data.values('transaction_type','tax_type','tax_percent',\
+	# 		'tax_value','transaction_bill_no','date',).order_by('transaction_type','date','tax_type','tax_percent'))
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

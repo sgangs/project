@@ -63,7 +63,8 @@ class CustomerRegistrationForm(forms.ModelForm):
 	# example_of_additional_data = forms.IntegerField()
 	class Meta:
 		model = Tenant
-		fields = ('name', 'pan', 'tin', 'cst', 'gst','address_1', 'address_2', 'state', 'city', 'pin', 'email', 'key', 'phone',)
+		fields = ('name', 'tenant_type','pan', 'tin', 'cst', 'gst','address_1',\
+				'address_2', 'state', 'city', 'pin', 'email', 'key', 'phone',)
 		help_texts = {
 		'name':  'Name of your company',
 		'pan':  'PAN license number of your company - if applicable',

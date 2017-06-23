@@ -79,7 +79,7 @@ def get_product_inventory(request):
 	return HttpResponse(jsondata)
 
 @api_view(['GET'],)
-def get_product_inventory(request):
+def get_product_barcode(request):
 	this_tenant=request.user.tenant
 	response_data={}
 	if request.is_ajax():
@@ -135,6 +135,11 @@ def sales_invoice_save(request):
 					warehouse_id=request.data.get('warehouse')
 					
 					subtotal=Decimal(request.data.get('subtotal'))
+					cgsttotal=Decimal(request.data.get('cgsttotal'))
+					sgsttotal=Decimal(request.data.get('sgsttotal'))
+					
+					print(cgsttotal)
+					
 					total=Decimal(request.data.get('total'))
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 
@@ -163,6 +168,8 @@ def sales_invoice_save(request):
 					new_invoice.warehouse_pin=ware_pin
 					
 					new_invoice.subtotal=subtotal
+					new_invoice.cgsttotal=cgsttotal
+					new_invoice.sgsttotal=sgsttotal
 					# new_invoice.taxtotal=taxtotal
 					new_invoice.total = total
 					new_invoice.amount_paid = total
@@ -250,7 +257,7 @@ def sales_invoice_save(request):
 									quantity_updated=0								
 							if (quantity_updated>0):
 								raise IntegrityError
-							# price_list_json = json.dumps(price_list,  cls=DjangoJSONEncoder)
+							price_list_json = json.dumps(price_list,  cls=DjangoJSONEncoder)
 
 						LineItem = invoice_line_item()
 						LineItem.retail_invoice = new_invoice
@@ -290,7 +297,7 @@ def sales_invoice_save(request):
 								new_inventory_ledger=inventory_ledger()
 								new_inventory_ledger.product=product
 								new_inventory_ledger.warehouse=warehouse
-								new_inventory_ledger.transaction_type=2
+								new_inventory_ledger.transaction_type=9
 								new_inventory_ledger.date=date
 								new_inventory_ledger.quantity=v['quantity']
 								new_inventory_ledger.actual_sales_price=actual_sales_price
@@ -316,7 +323,7 @@ def sales_invoice_save(request):
 					for k,v in cgst_paid.items():
 						if v>0:
 							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
+							new_tax_transaction.transaction_type=5
 							new_tax_transaction.tax_type="CGST"
 							new_tax_transaction.tax_percent=k
 							new_tax_transaction.tax_value=v
@@ -329,7 +336,7 @@ def sales_invoice_save(request):
 					for k,v in sgst_paid.items():
 						if v>0:
 							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
+							new_tax_transaction.transaction_type=5
 							new_tax_transaction.tax_type="SGST"
 							new_tax_transaction.tax_percent=k
 							new_tax_transaction.tax_value=v
@@ -341,7 +348,7 @@ def sales_invoice_save(request):
 
 					#One more journal entry for COGS needs to be done
 					remarks="Retail Invoice No: "+str(new_invoice.invoice_id)
-					journal=new_journal(this_tenant, date,"Sales",remarks)
+					journal=new_journal(this_tenant, date,"Sales",remarks, trn_id=new_invoice.id, trn_type=7)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
 					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
 					
@@ -367,7 +374,7 @@ def sales_invoice_save(request):
 						#COGS Journal Entry
 						if (total_purchase_price<1):
 							raise IntegrityError
-						journal=new_journal(this_tenant, date,"Sales",remarks)
+						journal=new_journal(this_tenant, date,"Sales",remarks, trn_id=new_invoice.id, trn_type=7)
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
 						new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
@@ -382,3 +389,55 @@ def sales_invoice_save(request):
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
+
+
+@api_view(['GET', 'POST'],)
+def invoice_details(request, pk):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		invoice=retail_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date','customer_name',\
+			'warehouse_address','warehouse_city', 'warehouse_pin','subtotal','cgsttotal','sgsttotal',\
+		'total','amount_paid').get(id=pk)
+		
+		line_items=list(invoice_line_item.objects.filter(retail_invoice=invoice['id']).values('product_name',\
+			'unit','unit_multi','quantity','sales_price','discount_amount','line_before_tax','line_total',\
+			'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
+		invoice['line_items']=line_items
+
+		invoice['tenant_name']=this_tenant.name
+		
+		jsondata = json.dumps(invoice, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+
+@login_required
+def invoice_detail_view(request, pk):
+	return render(request,'retail_sales/retail_invoice_detail.html', {'extension': 'base.html', 'pk':pk})
+
+@login_required
+def invoice_list(request):
+	return render(request,'retail_sales/sales_list.html', {'extension': 'base.html'})
+
+@api_view(['GET'],)
+def all_invoices(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		end=date_first.date.today()
+		start=end-date_first.timedelta(days=15)
+		if (calltype == 'all_invoices'):
+			# page_no = request.GET.get('page')
+			invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
+				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
+			# page_no=1
+			# paginator = Paginator(invoices, 3)
+			# receipts_paginated=paginator.page(page_no)
+			# for item in receipts_paginated:
+			# 	print(item)
+		elif (calltype== 'customer_pending'):
+			customerid = request.GET.get('customerid')
+			invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid).\
+				values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')
+		response_data = list(invoices)		
+		
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

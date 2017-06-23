@@ -106,10 +106,7 @@ def sales_invoice_save(request):
 					total=Decimal(request.data.get('total'))
 					duedate=request.data.get('duedate')
 
-					print(cgsttotal)
-					print(sgsttotal)
-					print(igsttotal)
-
+					
 					bill_data = json.loads(request.data.get('bill_details'))
 
 					customer = Customer.objects.for_tenant(this_tenant).get(id=customer_id)
@@ -373,7 +370,7 @@ def sales_invoice_save(request):
 
 					#One more journal entry for COGS needs to be done
 					remarks="Sales Invoice No: "+str(new_invoice.invoice_id)
-					journal=new_journal(this_tenant, date,"Sales",remarks)
+					journal=new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
 					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
 					
@@ -402,7 +399,7 @@ def sales_invoice_save(request):
 						#COGS Journal Entry
 						if (total_purchase_price<1):
 							raise IntegrityError
-						journal=new_journal(this_tenant, date,"Sales",remarks)
+						journal=new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
 						new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
@@ -441,7 +438,7 @@ def all_invoices(request):
 		if (calltype == 'all_invoices'):
 			# page_no = request.GET.get('page')
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
-				'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', 'invoice_id')
+				'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
 			# page_no=1
 			# paginator = Paginator(invoices, 3)
 			# receipts_paginated=paginator.page(page_no)
@@ -489,7 +486,6 @@ def invoice_details(request, pk):
 		'customer_name','customer_address','customer_city','customer_pin','warehouse_address','warehouse_city',\
 		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
 		'total','amount_paid').get(id=pk)
-		print(invoice['cgsttotal'])
 		
 		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('product_name','vat_type',\
 			'tax_percent','unit','unit_multi','quantity','sales_price', 'tentative_sales_price','mrp','discount_type',\
@@ -538,7 +534,8 @@ def payment_register(request):
 					new_sales_payment.tenant=this_tenant
 					new_sales_payment.save()
 
-					journal=new_journal(this_tenant,date,group_name="Sales")
+					journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+str(invoice.invoice_id)\
+						,trn_id=new_sales_payment.id, trn_type=5)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
 					new_journal_entry(this_tenant, journal, amount_received, account, 2, date)
 					new_journal_entry(this_tenant, journal, amount_received, mode.payment_account, 1, date)

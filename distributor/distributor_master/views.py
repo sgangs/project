@@ -4,6 +4,7 @@ from dateutil.rrule import *
 from dateutil.parser import *
 from decimal import Decimal
 
+from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from django.utils.timezone import localtime
@@ -45,11 +46,11 @@ def customer_view(request):
 			customer=Customer.objects.for_tenant(this_tenant).get(id=customerid)
 			serializer = VendorSerializers(customer)
 		else:
-			customers=Customer.objects.for_tenant(this_tenant).all()
+			customers=Customer.objects.for_tenant(this_tenant).order_by('key').all()
 			serializer = VendorSerializers(customers, many=True)
 		return Response(serializer.data)
 	elif request.method == 'POST':
-		calltype = request.POST.get('calltype')
+		calltype = request.data.get('calltype')
 		response_data = {}
 		if (calltype == 'newcustomer'):
 			name=request.data.get('name')
@@ -134,11 +135,11 @@ def vendor_view(request):
 			vendor=Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
 			serializer = VendorSerializers(vendor)
 		else:
-			vendors=Vendor.objects.for_tenant(this_tenant).all()
+			vendors=Vendor.objects.for_tenant(this_tenant).order_by('key').all()
 			serializer = VendorSerializers(vendors, many=True)
 		return Response(serializer.data)
 	elif request.method == 'POST':
-		calltype = request.POST.get('calltype')
+		calltype = request.data.get('calltype')
 		response_data = {}
 		if (calltype == 'newvendor'):
 			name=request.data.get('name')
@@ -351,12 +352,47 @@ def warehouse_view(request):
 # @login_required
 @api_view(['GET','POST'],)
 def product_view(request):
+	this_tenant=request.user.tenant
 	if request.method == 'GET':
-		products=Product.objects.for_tenant(request.user.tenant).filter(is_active=True)
-		serializer = ProductSerializers(products, many=True)
-		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		calltype = request.GET.get('calltype')
+		if (calltype == 'one_product'):
+			productid = request.GET.get('productid')
+			product=Product.objects.for_tenant(this_tenant).get(id=productid)
+			serializer = ProductDetailSerializers(product)
+		else:
+			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by('sku').\
+					select_related('default_unit','brand','group')
+			serializer = ProductSerializers(products, many=True)
 		return Response(serializer.data)
+	elif request.method == 'POST':
+		calltype = request.data.get('calltype')
+		if calltype == 'updateproduct':
+			response_data = {}
+			pk=request.data.get('pk')
+			name=request.data.get('name')
+			sku=request.data.get('sku')
+			cgst=request.data.get('cgst')
+			sgst=request.data.get('sgst')
+			igst=request.data.get('igst')
+			taxes=tax_structure.objects.for_tenant(this_tenant).all()
+			# state=request.data.get('state')
+			
+			old_product=Product.objects.for_tenant(this_tenant).get(id=pk)
+			old_product.name=name
+			old_product.sku=sku
+			if cgst:
+				old_product.cgst=taxes.get(id=cgst)
+			if sgst:
+				old_product.sgst=taxes.get(id=sgst)
+			if igst:
+				old_product.igst=taxes.get(id=igst)
+			old_product.save()
 
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+		
+
+#This view will not be needed soon
 @api_view(['GET','POST'],)
 def product_details(request):
 	if request.method == 'GET':
@@ -524,22 +560,93 @@ def import_customer(request):
 			# batch_data= data['batch']
 			# batch_selected=Batch.objects.for_tenant(this_tenant).get(id=batch_data)
 			
-			with transaction.atomic():
-				try:
-					request.FILES['file'].save_to_database(
-						model=Customer,
-						initializer=choice_func,
-						mapdict=['name', 'key', 'address_1','address_2','state', 'city', 'pin', \
-						'phone_no','cst','tin','gst','details','tenant'])
-					return redirect('master:customer_data')
-				except:
-					transaction.rollback()
-					return HttpResponse("Error")
+			# with transaction.atomic():
+			# 	try:
+			# 		request.FILES['file'].save_to_database(
+			# 			model=Customer,
+			# 			initializer=choice_func,
+			# 			mapdict=['name', 'key', 'address_1','address_2','state', 'city', 'pin', \
+			# 			'phone_no','cst','tin','gst','details','tenant'])
+			# 		return redirect('master:customer_data')
+			# 	except:
+			# 		transaction.rollback()
+			# 		return HttpResponse("Error")
+
+			data={}
+			f = request.FILES['file']
+			data['name'] = f.name
+			data['size'] = f.size / 1024
+			if 'xls' not in f.name and 'xlsx' not in f.name:
+				data['error'] = 2
+				data['info'] = 'file type must be excel!'
+				print(data['info'])
+				messages.add_message(request, messages.WARNING, 'File type must be excel.')
+				return redirect('master:import_customer')
+			elif 0 == f.size:
+				data['error'] = 3
+				data['info'] = 'file content is empty!'
+				messages.add_message(request, messages.WARNING, 'File content is empty.')
+				return redirect('master:import_customer')
+			# wb = xlrd.open_workbook(inventory)
+			else:
+				rows = customer_register(f, this_tenant)
+				if (rows):
+					str1 = ' ,'.join(str(e) for e in rows)
+					messages.add_message(request, messages.WARNING, 'There was error in the following rows: '+str1\
+							+". Either the compulsory parameters are empty or the customer codes/keys are not unique")
+					messages.add_message(request, messages.INFO, 'The rest of the data have been uploaded successfully.')	
+				else:
+					messages.add_message(request, messages.SUCCESS, 'Data uploaded successfully.')
+				return redirect('master:customer_data')
 		else:
 			return HttpResponseBadRequest()
 	else:
 		form = UploadFileForm()
 	return render(request,'master/upload_customer.html',{'form': form,})
+
+
+@login_required
+def import_product(request):
+	this_tenant=request.user.tenant
+	if request.method == "POST":
+		form = UploadFileForm(request.POST, request.FILES)
+		if form.is_valid():
+			# data = form.cleaned_data
+			# batch_data= data['batch']
+			# batch_selected=Batch.objects.for_tenant(this_tenant).get(id=batch_data)
+
+			data={}
+			f = request.FILES['file']
+			data['name'] = f.name
+			data['size'] = f.size / 1024
+			if 'xls' not in f.name and 'xlsx' not in f.name:
+				data['error'] = 2
+				data['info'] = 'file type must be excel!'
+				print(data['info'])
+				messages.add_message(request, messages.WARNING, 'File type must be excel.')
+				return redirect('master:import_product')
+			elif 0 == f.size:
+				data['error'] = 3
+				data['info'] = 'file content is empty!'
+				messages.add_message(request, messages.WARNING, 'File content is empty.')
+				return redirect('master:import_product')
+			# wb = xlrd.open_workbook(inventory)
+			else:
+				rows = product_register(f, this_tenant)
+				if (rows):
+					str1 = ' ,'.join(str(e) for e in rows)
+					messages.add_message(request, messages.WARNING, 'There was error in the following rows: .'+str1\
+							+". Either the compulsory parameters are empty or the SKU are not unique")
+					messages.add_message(request, messages.INFO, 'The rest of the data have been uploaded successfully.')	
+				else:
+					messages.add_message(request, messages.SUCCESS, 'Data uploaded successfully.')
+				return redirect('master:product_data')
+			
+		else:
+			return HttpResponseBadRequest()
+	else:
+		form = UploadFileForm()
+	return render(request,'master/upload_product.html',{'form': form,})
 
 
 

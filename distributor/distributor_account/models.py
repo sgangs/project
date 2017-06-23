@@ -117,12 +117,24 @@ class journal_group(models.Model):
 	def __str__(self):
 		return self.name
 
+#transaction options are:
+#1 - Purchase
+#2 - Purchase Payment
+#3 - Purchase Debit Note
+#4 - Sales
+#5 - Sales Collection
+#6 - Sales Credit Note
+#7 - Retail Sales
+#8 - Retail Credit Note
+
 #This is a list of journal entry
 class Journal(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	date=models.DateField(default=datetime.now)
 	group=models.ForeignKey(journal_group,related_name='journal_journalGroup')
 	remarks=models.CharField(max_length=80, blank=True, null=True)
+	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
+	trn_type=models.PositiveSmallIntegerField(db_index=True,blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journal_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
@@ -197,9 +209,16 @@ class inventory_value(models.Model):
 	def __str__(self):
 		return self.inventory_type
 
+#Tax trn type: 
+#1 for purchase,
+#2 for sales, 
+#3 for purchase debit note
+#4 for sales credit note
+#5 for retail sales
+
 class tax_transaction(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	transaction_type=models.PositiveSmallIntegerField(db_index=True) #1 for purchase, 2 for sales, two more for credit/debit note
+	transaction_type=models.PositiveSmallIntegerField(db_index=True) 
 	tax_type=models.CharField(db_index=True, max_length=5) #VAT/CGST/SGST/IGST
 	tax_percent=models.DecimalField(max_digits=5, db_index=True, decimal_places=2, default=0)
 	tax_value=models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)

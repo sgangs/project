@@ -71,11 +71,13 @@ class ProductDetailSerializers (serializers.ModelSerializer):
 	default_unit=serializers.StringRelatedField()
 	brand=serializers.StringRelatedField()
 	group=serializers.StringRelatedField()
-	tax=serializers.StringRelatedField()
+	cgst=serializers.StringRelatedField()
+	sgst=serializers.StringRelatedField()
+	igst=serializers.StringRelatedField()
 	class Meta:
 		model = Product
-		fields = ('id','name','sku','hsn_code','tax','reorder_point','manufacturer','has_batch','has_instance','has_attribute'\
-		'default_unit', 'brand','group','remarks')
+		fields = ('id','name','sku','hsn_code','cgst','sgst','igst','reorder_point','manufacturer','has_batch',\
+			'has_instance','has_attribute','default_unit', 'brand','group','remarks')
 
 class ManufacturerSerializers (serializers.ModelSerializer):
 	class Meta:

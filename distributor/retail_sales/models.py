@@ -39,8 +39,8 @@ class retail_invoice(models.Model):
 	
 	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
 	# taxtotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	# cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	# sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	# igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
@@ -107,8 +107,8 @@ class invoice_line_item(models.Model):
 	# mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
 	other_data = JSONField()
 
-	discount_type=models.PositiveSmallIntegerField(default=0)
-	discount_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+	# discount_type=models.PositiveSmallIntegerField(default=0)
+	discount_amount=models.DecimalField(max_digits=8, decimal_places=2, default=0)
 
 	# discount2_type=models.PositiveSmallIntegerField(default=0)
 	# discount2_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)

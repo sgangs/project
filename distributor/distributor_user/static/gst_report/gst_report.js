@@ -33,30 +33,30 @@ function load_list(){
     });
 }
 
-load_summary()
+// load_summary()
 
-function load_summary(){
-    $.ajax({
-        url : "getdata/", 
-        type: "GET",
-        data:{ calltype:"short_summary",},
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            $('.cgstin').append($.trim(jsondata['cgst_input']));
-            $('.sgstin').append($.trim(jsondata['sgst_input']));
-            $('.igstin').append($.trim(jsondata['igst_input']));
+// function load_summary(){
+//     $.ajax({
+//         url : "getdata/", 
+//         type: "GET",
+//         data:{ calltype:"short_summary",},
+//         dataType: 'json',
+//         // handle a successful response
+//         success : function(jsondata) {
+//             $('.cgstin').append($.trim(jsondata['cgst_input']));
+//             $('.sgstin').append($.trim(jsondata['sgst_input']));
+//             $('.igstin').append($.trim(jsondata['igst_input']));
 
-            $('.cgstout').append($.trim(jsondata['cgst_output']));
-            $('.sgstout').append($.trim(jsondata['sgst_output']));
-            $('.igstout').append($.trim(jsondata['igst_output']));
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "There were some errors. Please try again later.", "error");
-        }
-    });
-}
+//             $('.cgstout').append($.trim(jsondata['cgst_output']));
+//             $('.sgstout').append($.trim(jsondata['sgst_output']));
+//             $('.igstout').append($.trim(jsondata['igst_output']));
+//         },
+//         // handle a non-successful response
+//         error : function() {
+//             swal("Oops...", "There were some errors. Please try again later.", "error");
+//         }
+//     });
+// }
 
 $('.apply_filter').click(function(e) {
     tax_type=$('#type_filter').find(':selected').data('id');

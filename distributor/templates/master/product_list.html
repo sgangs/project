@@ -21,6 +21,14 @@
 <div class="col-md-4  alert alert-danger">
 	
 </div> -->
+{% if messages %}
+	{% for msg in messages %}       
+        <div class="alert alert-{{msg.level_tag}}" role="alert">
+ 	{{msg.level_tag|title}}: {{msg.message}}
+	</div>
+    {% endfor %}
+{% endif %}
+
 
 <div class="table-responsive">
     	<table class="table table-striped table-bordered table-hover" id="product_table">
@@ -199,15 +207,19 @@
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
-		    	<div class="form-group namediv">
+		    	<div class="form-group iddiv" hidden>
+					<label for="classname" class="control-label"></label>
+					<input type="text" class="form-control id_data_prod" disabled>
+				</div>
+				<div class="form-group namediv">
 					<label for="classname" class="control-label">Product name</label>
-					<input type="text" class="form-control name_data_prod" placeholder="Complete name, eg: Cotton Round Tee XL">
+					<input type="text" class="form-control name_data_prod editable" disabled>
 				</div>
 				<div class="form-group skudiv">
 					<label class="control-label">Product SKU/Code</label>
-					<input type="text" class="form-control sku_data_prod" placeholder="Proper SKU, eg: CRTXL (for Cotton Round Tee XL)">		
+					<input type="text" class="form-control sku_data_prod editable" disabled>		
 				</div>
-				<div class="form-group vattypediv">
+				<!-- <div class="form-group vattypediv">
 					<label class="control-label">VAT Type</label>
 					<select class="form-control selectpicker vattype_data_prod" data-live-search="true">
 						<option data-id="0">NO VAT</option>
@@ -220,41 +232,59 @@
 					<select class="form-control selectpicker tax_data_prod" id='tax' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select Tax Structure</option>
 					</select>
+				</div> -->
+				<div class="form-group reorderdiv">
+					<label class="control-label">CGST %</label>
+					<select class="form-control select cgst editable" id='cgst_data_prod' disabled>
+						<option disabled selected hidden style='display: none' value>CGST</option>
+					</select>
 				</div>
 				<div class="form-group reorderdiv">
-					<label class="control-label">Re-order Point</label>
-					<input type="text" class="form-control reorder_data_prod" placeholder="If you want to reorder after 10 SKU (in default-unit), enter: 10">		
+					<label class="control-label">SGST %</label>
+					<select class="form-control select cgst editable" id='sgst_data_prod' disabled>
+						<option disabled selected hidden style='display: none' value>SGST</option>
+					</select>
 				</div>
-				<div class="form-group unitdiv">
+				<div class="form-group reorderdiv">
+					<label class="control-label">IGST %</label>
+					<select class="form-control select cgst editable" id='igst_data_prod' disabled>
+						<option disabled selected hidden style='display: none' value>IGST</option>
+					</select>
+				</div>
+				<!-- <div class="form-group reorderdiv">
+					<label class="control-label">Re-order Point</label>
+					<input type="text" class="form-control reorder_data_prod" placeholder="If you want to reorder after 10 SKU (in default-unit), enter: 10" disabled>		
+				</div> -->
+				<!-- <div class="form-group unitdiv">
 					<label class="control-label">Default Unit</label>
-					<select class="form-control selectpicker unit_data_prod" id='unit_data_prod' data-live-search="true">
+					<select class="form-control selectpicker unit_data_prod" id='unit_data_prod' data-live-search="true" disabled>
 						<option disabled selected hidden style='display: none' value>Select Default Unit</option>						
 					</select>
 				</div>
 				<div class="form-group branddiv">
 					<label class="control-label">Brand</label>
-					<select class="form-control selectpicker brand_data_prod" data-live-search="true">
+					<select class="form-control selectpicker brand_data_prod" data-live-search="true"disabled>
 						<option disabled selected hidden style='display: none' value>Select Product Brand</option>						
 					</select>
-				</div>
+				</div> -->
 				<!-- <div class="form-group groupdiv">
 					<label class="control-label">Product Group</label>
-					<select class="form-control selectpicker group" id='group' data-live-search="true">
+					<select class="form-control selectpicker group" id='group' data-live-search="true" disabled>
 						<option disabled selected hidden style='display: none' value>Select Product Group</option>						
 					</select>
 				</div> -->
-				<div class="form-group has_batchdiv">
+				<!-- <div class="form-group has_batchdiv">
 					<label class="control-label">Will this item be maintained batch-wise</label>
-					<input type="checkbox" class="has_batch_data_prod">		
+					<input type="checkbox" class="has_batch_data_prod" disabled>		
 				</div>
 				<div class="form-group has_instancediv">
 					<label class="control-label">Will this item be have individual instance/serial-no</label>
-					<input type="checkbox" class="has_instance_data_prod">		
+					<input type="checkbox" class="has_instance_data_prod" disabled>		
 				</div>
 				<div class="form-group has_attributediv">
 					<label class="control-label">Does this item have additional attribute</label>
-					<input type="checkbox" class="has_attribute_data_prod">		
-				</div>
+					<input type="checkbox" class="has_attribute_data_prod" disabled>		
+				</div> -->
 				
     		    <!-- <div id="attribute_details" hidden>
                 	<div id="attr0" class='attr'>
@@ -276,7 +306,8 @@
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
-		    	<!-- <button type="button" class="btn btn-primary submit">Submit</button> -->
+		    	<button type="button" class="btn btn-primary edit">Edit</button>
+		    	<button type="button" class="btn btn-primary update">Update &amp Save</button>
 		    </div>
 	    </div>
 	</div>
