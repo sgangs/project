@@ -413,6 +413,7 @@ def tax_short_summary(request):
 
 @login_required
 def trial_balance_view(request):
+	extension="base.html"
 	date=datetime.now()
 	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
 	start=period.start
@@ -422,7 +423,7 @@ def trial_balance_view(request):
 	except:
 		response_data=[]
 	jsondata = json.dumps(response_data)
-	return render(request, 'account/trial_balance.html', {'accounts':jsondata, "start":start, "date":date})
+	return render(request, 'account/trial_balance.html', {'accounts':jsondata, "start":start, "date":date, 'extension':extension})
 	# return render(request, 'account/trial_balance.html')
 
 
@@ -440,3 +441,22 @@ def trial_balance_data(request):
 		response_data=[]
 	jsondata = json.dumps(response_data)
 	return HttpResponse(jsondata)
+
+
+# @api_view(['GET', 'POST'],)
+@login_required
+def account_journal_entries(request, pk_detail):
+	extension="base.html"
+	account=Account.objects.for_tenant(request.user.tenant).get(id=pk_detail)
+	entries=journal_entry.objects.filter(account=account).select_related('journal').all()
+	return render(request, 'account/accountwisejournal.html',{'account':account, 'entries':entries, 'extension':extension})
+
+
+# @api_view(['GET', 'POST'],)
+@login_required
+#For showing the general ledger
+def journal_detail(request,pk_detail):
+	extension="base.html"
+	journal=Journal.objects.for_tenant(request.user.tenant).get(id=pk_detail)
+	entries=journal_entry.objects.filter(journal=journal).order_by('transaction_type').prefetch_related('journal').select_related('account').all()
+	return render(request, 'account/journal_view.html',{'journal':journal,'entries':entries,'extension':extension})

@@ -79,10 +79,8 @@ def sales_day_wise(start, end, tenant):
 
 def sales_raised_value(start, end, tenant):
 	invoice_value=sales_invoice.objects.for_tenant(tenant).filter(date__range=(start,end)).aggregate(Sum('total'))
-	print (invoice_value['total__sum'])
 	return invoice_value['total__sum']
 
 def sales_collected_value(start, end, tenant):
 	payment_value=sales_payment.objects.for_tenant(tenant).filter(paid_on__range=(start,end)).aggregate(Sum('amount_received'))
-	print (payment_value['amount_received__sum'])
 	return payment_value['amount_received__sum']

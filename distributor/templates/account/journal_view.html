@@ -1,0 +1,85 @@
+{% extends extension %}
+
+{% load crispy_forms_tags %}
+
+
+{%block title%}
+<title>Journal Entry</title>
+
+{% endblock %} 
+
+{% block content%}
+<h3>Journal: {{journal.key}}</h3>
+<div class="row">
+  <div class="form-group col-xs-6 col-md-4">
+  	<select class="form-control selectpicker journalgroup" disabled>
+      <option value="{{journal.group.name}}">{{journal.group.name}}</option>
+    </select>
+  </div>
+</div>
+<div class="row">
+  <div class="form-group col-xs-5 col-md-3">
+  	<label for="classname" class="control-label">Remarks/Narration</label>
+    <input type="text"  class="form-control remarks" value="{{journal.remarks}}" disabled>
+  </div>
+  <div class="form-group col-xs-5 col-md-3">
+    <label class="control-label">Date</label>
+    <input type="date" class="form-control date" id="date" value={{journal.date|date:"Y-m-d"}} disabled>
+  </div>
+</div>
+
+<!-- <form id='students' method='post' name='journal' action=''> -->
+<table id="journal_table" class="journal table table-striped table-bordered">
+<thead class="bg-primary">
+  <tr>
+    <th class="header">Account Name</th>
+    <th>Debit Value</th>
+    <th>Credit Value</th>
+  </tr>
+ </thead>
+ <tbody>
+ {% for entry in entries %}
+  <tr class='data'>
+  {% if entry.transaction_type == 1 %}
+    <td class='accountname align-right'><a href="#">{{entry.account.name}}</a></td>
+    <td><input type="value" min="0" class="form-control debit" disabled="true" value="{{entry.value}}"></td>
+    <td></td>
+  {% else %}
+    <td class='accountname align-left'><a href="#">{{entry.account.name}}</a></td>
+    <td></td>
+    <td><input type="value" min="0" class="form-control credit" disabled="true" value="{{entry.value}}"></td>
+    {% endif %}
+   </tr>
+   {% endfor %}
+</tbody>
+</table>
+
+
+<script>
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -372,7 +372,6 @@ def product_view(request):
 			name=request.data.get('name')
 			sku=request.data.get('sku')
 			barcode=request.data.get('barcode')
-			print(barcode)
 			if barcode:
 				try:
 					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
@@ -594,7 +593,6 @@ def import_customer(request):
 			if 'xls' not in f.name and 'xlsx' not in f.name:
 				data['error'] = 2
 				data['info'] = 'file type must be excel!'
-				print(data['info'])
 				messages.add_message(request, messages.WARNING, 'File type must be excel.')
 				return redirect('master:import_customer')
 			elif 0 == f.size:
@@ -637,7 +635,6 @@ def import_product(request):
 			if 'xls' not in f.name and 'xlsx' not in f.name:
 				data['error'] = 2
 				data['info'] = 'file type must be excel!'
-				print(data['info'])
 				messages.add_message(request, messages.WARNING, 'File type must be excel.')
 				return redirect('master:import_product')
 			elif 0 == f.size:
@@ -876,7 +873,6 @@ def warehouse_data(request):
 				retail = False
 			with transaction.atomic():
 				try:
-					print('here')
 					new_warehouse=Warehouse()
 					new_warehouse.name=name
 					new_warehouse.address_1=address_1
@@ -893,7 +889,6 @@ def warehouse_data(request):
 					new_valuation.valuation=0
 					new_valuation.tenant=this_tenant
 					new_valuation.save()
-					print(new_valuation)
 				except:
 					pass
 		jsondata = json.dumps(response_data)

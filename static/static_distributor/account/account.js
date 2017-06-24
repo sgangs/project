@@ -10,9 +10,11 @@ function load_accounts(){
         // handle a successful response
         success : function(jsondata) {
             $.each(jsondata, function(){
+                url="/account/journallist/account/"+this.id+"/"
                     $('#account').append("<tr class='data' align='center'>"+
                     "<td hidden='true'>"+this.id+"</td>"+
-                    "<td>"+this.name+"</td>"+
+                    "<td hidden='true'>"+url+"</td>"+
+                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
                     "<td>"+this.key+"</td>"+
                     "<td>"+this.type+"</td>"+
                     "<td>"+this.debit+"</td>"+
@@ -26,6 +28,7 @@ function load_accounts(){
         }
     });
 }
+
 
 load_ledgers()
 
@@ -78,6 +81,12 @@ function load_acct_type(){
 
 
 // var name ='', key='', details ='';
+
+$("#account").on("click", ".link", function(){
+    url=$(this).closest('tr').find('td:nth-child(2)').html();
+    console.log(url)
+    window.location = url;
+});
 
 
 $('.submit').click(function(e) {

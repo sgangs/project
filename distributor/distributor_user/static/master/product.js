@@ -254,15 +254,9 @@ function new_product(){
         }
     }
 
-    if (product_name == '' || product_name =='undefined' || sku == '' || sku =='undefined' || vat_type >3 || vat_type<1){
+    if (product_name == '' || product_name =='undefined' || sku == '' || sku =='undefined' || unit == '' || typeof(unit) =='undefined'){
         proceed = false;
         swal("Oops...", "Product must have a name and sku/product code.", "error");
-    }
-    if (vat_type == 2 || vat_type ==3){
-        if (tax == '' || tax =='undefined' || isNaN(tax)){
-            proceed=false;
-            swal("Oops...", "Please select a tax structure", "error");
-        }
     }
     console.log(barcode);
     if (proceed){

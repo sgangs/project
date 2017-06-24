@@ -435,6 +435,8 @@ def all_receipts(request):
 						filter(final_payment_date__isnull=True).values('id',\
 						'receipt_id','supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by',)\
 						.order_by('-date', 'receipt_id')
+			if (start and end):
+				receipts=receipts.filter(date__range=[start,end])
 		elif (calltype== 'vendor_pending'):
 			vendorid = request.GET.get('vendorid')
 			vendor=Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
@@ -531,7 +533,7 @@ def payment_register(request):
 					new_purchase_payment.save()
 
 					journal=new_journal(this_tenant,date,group_name="Purchase",\
-						remarks='Payment Against: '+str(receipt.id), trn_id=new_purchase_payment.id, trn_type=2)
+						remarks='Payment Against: '+str(receipt.receipt_id), trn_id=new_purchase_payment.id, trn_type=2)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
 					new_journal_entry(this_tenant, journal, amount_paid, account, 1, date)
 					new_journal_entry(this_tenant, journal, amount_paid, mode.payment_account, 2, date)
