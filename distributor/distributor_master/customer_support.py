@@ -88,6 +88,8 @@ def product_register(excel_data, this_tenant):
                         row_no.append(i+1)
                     except:
                         objects_product.append(Product(name=row[0], sku=row[1],barcode=row[2], default_unit=unit, tenant=this_tenant))
+                else:
+                    objects_product.append(Product(name=row[0], sku=row[1], default_unit=unit, tenant=this_tenant))
             
     with transaction.atomic():
         try:
