@@ -15,12 +15,11 @@ from time import strptime
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
 from reportlab.lib.pagesizes import A6, A5, A4
-from reportlab.lib.units import mm
+from reportlab.lib.units import mm, cm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageTemplate, Frame, Image
-from reportlab.lib.units import cm
 from reportlab.graphics.shapes import Line
 
 from school.settings.base import STATIC_ROOT

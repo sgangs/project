@@ -1,9 +1,9 @@
 $(function(){
-var has_attribute=false, attr_name, product_name, sku, vat_type, tax
-var has_attribute=false, attr_name, product_name, sku, vat_type, tax
-var has_attribute=false, attr_name, product_name, sku, vat_type, tax
-var has_attribute=false, attr_name, product_name, sku, vat_type, tax, reorder, unit, brand, group, has_batch, 
+
+var has_attribute=false, attr_name, product_name, sku, vat_type, tax, reorder, unit, brand, group, has_batch,tax_array={},
     has_instance;
+
+// var tax_array={};
 
 load_products()
 
@@ -14,11 +14,11 @@ function load_products(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            // console.log(jsondata);
             $.each(jsondata, function(){
+                var url='/inventory/barcode/'+this.id+'/'
                 $('#product_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+this.id+"</td>"+
-                "<td>"+this.name+"</td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
                 "<td>"+$.trim(this.hsn)+"</td>"+
                 "<td>"+this.sku+"</td>"+
                 "<td>"+$.trim(this.default_unit)+"</td>"+
@@ -26,6 +26,7 @@ function load_products(){
                 "<td>"+$.trim(this.group)+"</td>"+
                 "<td>"+$.trim(this.remarks)+"</td>"+
                 "<td class='add_price'>Click to add sales rate</td>"+
+                "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
                 "</tr>");
             })
         },
@@ -70,6 +71,7 @@ function load_tax(){
         // handle a successful response
         success : function(jsondata) {
             $.each(jsondata, function(){
+                tax_array[this.name]=this.id;
                 $('#tax_cgst').append($('<option/>',{
                     'data-id': this.id,
                     'text': this.name
@@ -82,10 +84,25 @@ function load_tax(){
                     'data-id': this.id,
                     'text': this.name
                 }));
+                $('#cgst_data_prod').append($('<option/>',{
+                    'value': this.id,
+                    'text': this.name
+                }));
+                $('#sgst_data_prod').append($('<option/>',{
+                    'value': this.id,
+                    'text': this.name
+                }));
+                $('#igst_data_prod').append($('<option/>',{
+                    'value': this.id,
+                    'text': this.name
+                }));
             })
             $('#tax_cgst').selectpicker('refresh');
             $('#tax_sgst').selectpicker('refresh');
             $('#tax_igst').selectpicker('refresh');
+            // $('#cgst_data_prod').selectpicker('refresh');
+            // $('#sgst_data_prod').selectpicker('refresh');
+            // $('#igst_data_prod').selectpicker('refresh');
         },
         // handle a non-successful response
         error : function() {
@@ -117,6 +134,17 @@ function load_attribute(){
         }
     });
 }
+
+
+$("#product_table").on("click", ".barcode", function(){
+    var newurl=$(this).closest('tr').find('td:nth-child(10) a').attr('href');
+    $('a.barcodetag').attr('href', newurl);
+    productid=$(this).closest('tr').find('td:nth-child(1)').html();
+    productname=$(this).closest('tr').find('td:nth-child(2)').html();
+    $('.id_barcode').val(productid)
+    $('.name_barcode').val(productname)
+    $('#modal_barcode').modal('show');
+});
 
 
 
@@ -191,6 +219,7 @@ function new_product(){
     var proceed=true, attributes=[];
     product_name=$('.name').val()
     sku=$('.sku').val()
+    barcode=$('.barcode_new').val()
     hsn=$('.hsn').val()
     // vat_type=$(".vattype").find(':selected').data('id');
     // tax=$(".tax").find(':selected').data('id');
@@ -217,7 +246,6 @@ function new_product(){
             };
             attributes.push(item);            
         });
-        console.log(attributes)
     }
     if (has_attribute){
         if (attributes.length < 1){
@@ -236,6 +264,7 @@ function new_product(){
             swal("Oops...", "Please select a tax structure", "error");
         }
     }
+    console.log(barcode);
     if (proceed){
         (function() {
             $.ajax({
@@ -244,6 +273,7 @@ function new_product(){
                 data:{name: product_name,
                     sku: sku,
                     hsn: hsn,
+                    barcode: barcode,
                     // vat_type: vat_type,
                     // tax:tax,
                     cgst:cgst,
@@ -353,7 +383,6 @@ $("#product_table").on("click", ".add_price", function(){
     $('.sales_rate_prod').val('')
 });
 
-
 $('.submitrate').click(function(e) {
     swal({
         title: "Are you sure?",
@@ -413,4 +442,114 @@ function new_rate(){
         swal("Oops...", "Please note that sales rate must be greater than zero.", "error");
     }
 }
+
+$("#product_table").on("click", ".link", function(){
+    productid=$(this).closest('tr').find('td:nth-child(1)').html();
+    $('.update').hide();
+    $('.edit').show();
+    $.ajax({
+        url : "productdata/",
+        type: "GET",
+        data: { calltype:"one_product",
+            productid:productid},
+        dataType: 'json',
+            // handle a successful response
+        success : function(jsondata) {
+            console.log(jsondata);
+            $('#modal_product_details').modal('show');
+            $('.id_data_prod').val(jsondata['id'])
+            $('.name_data_prod').val(jsondata['name'])
+            $('.sku_data_prod').val(jsondata['sku'])
+            $('.barcode_data_prod').val(jsondata['barcode'])
+            $('#cgst_data_prod').val(tax_array[jsondata['cgst']])
+            $('#sgst_data_prod').val(tax_array[jsondata['sgst']])
+            $('#igst_data_prod').val(tax_array[jsondata['igst']])
+            $('.editable').attr('disabled', true);
+            // $('#cgst_data_prod').selectpicker('refresh');
+            // $('#sgst_data_prod').selectpicker('refresh');
+            // $('#igst_data_prod').selectpicker('refresh');
+        },
+            // handle a non-successful response
+        error : function() {
+            swal("Oops...", "There was error in processing product data. Please try again later", "error");
+        }
+    });
+});
+
+$('.edit').click(function(e) {
+    $('.editable').attr('disabled', false);
+    $('.edit').hide();
+    $('.update').show();
+});
+
+$('.update').click(function(e) {
+    
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure to update product data?",
+        type: "warning",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, update data!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){update_data()},600)            
+        }
+    })
+});
+
+function update_data(){
+    var proceed_update=true;
+    pk=$('.id_data_prod').val()
+    name_update=$('.name_data_prod').val()
+    sku_update=$('.sku_data_prod').val()
+    barcode_update=$('.barcode_data_prod').val()
+    cgst_update=$('#cgst_data_prod').val()
+    sgst_update=$('#sgst_data_prod').val()
+    igst_update=$('#igst_data_prod').val()
+    // zone=$(".zone").find(':selected').data('id');
+    
+    if (name_update == '' || typeof(name_update) =='undefined' || sku_update == '' || typeof(sku_update) =='undefined' ){
+        proceed_update = false;
+    }
+    if (proceed_update){
+        (function() {
+            $.ajax({
+                url : "productdata/" , 
+                type: "POST",
+                data:{pk: pk,
+                    name: name_update,
+                    sku:sku_update,
+                    barcode: barcode_update,
+                    cgst:cgst_update,
+                    sgst:sgst_update,
+                    igst:igst_update,
+                    calltype: "updateproduct",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // contentType: "application/json",
+                        // handle a successful response
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "Customer data updated.", "success");
+                        setTimeout(location.reload(true),1000);
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. Remember, SKU must be unique. There were some errors!", "error");
+                }
+            });
+        }());
+    }
+    else{
+        swal("Oops...", "Please note that name & sku must be filled and SKU must be unique.", "error");
+    }
+}
+
 });

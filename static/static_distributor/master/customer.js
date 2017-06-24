@@ -255,7 +255,7 @@ $('.update').click(function(e) {
     
     swal({
         title: "Are you sure?",
-        text: "Are you sure to u[date customer data?",
+        text: "Are you sure to update customer data?",
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
@@ -284,7 +284,7 @@ function update_data(){
     tin_data=$('.tin_data').val()
     gst_data=$('.gst_data').val()
     details_data=$('.details_data').val()
-    phone_update_check();
+    // phone_update_check();
     // zone=$(".zone").find(':selected').data('id');
     
     if (name_data == '' || name_data =='undefined' || key_data == '' || key_data =='undefined' ){

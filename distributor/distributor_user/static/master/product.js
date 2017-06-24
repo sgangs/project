@@ -15,6 +15,7 @@ function load_products(){
         // handle a successful response
         success : function(jsondata) {
             $.each(jsondata, function(){
+                var url='/inventory/barcode/'+this.id+'/'
                 $('#product_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+this.id+"</td>"+
                 "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
@@ -25,6 +26,7 @@ function load_products(){
                 "<td>"+$.trim(this.group)+"</td>"+
                 "<td>"+$.trim(this.remarks)+"</td>"+
                 "<td class='add_price'>Click to add sales rate</td>"+
+                "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
                 "</tr>");
             })
         },
@@ -134,6 +136,17 @@ function load_attribute(){
 }
 
 
+$("#product_table").on("click", ".barcode", function(){
+    var newurl=$(this).closest('tr').find('td:nth-child(10) a').attr('href');
+    $('a.barcodetag').attr('href', newurl);
+    productid=$(this).closest('tr').find('td:nth-child(1)').html();
+    productname=$(this).closest('tr').find('td:nth-child(2)').html();
+    $('.id_barcode').val(productid)
+    $('.name_barcode').val(productname)
+    $('#modal_barcode').modal('show');
+});
+
+
 
 $( ".has_attribute" ).change(function() {
     has_attribute = $( ".has_attribute" ).is(":checked");
@@ -206,6 +219,7 @@ function new_product(){
     var proceed=true, attributes=[];
     product_name=$('.name').val()
     sku=$('.sku').val()
+    barcode=$('.barcode_new').val()
     hsn=$('.hsn').val()
     // vat_type=$(".vattype").find(':selected').data('id');
     // tax=$(".tax").find(':selected').data('id');
@@ -250,6 +264,7 @@ function new_product(){
             swal("Oops...", "Please select a tax structure", "error");
         }
     }
+    console.log(barcode);
     if (proceed){
         (function() {
             $.ajax({
@@ -258,6 +273,7 @@ function new_product(){
                 data:{name: product_name,
                     sku: sku,
                     hsn: hsn,
+                    barcode: barcode,
                     // vat_type: vat_type,
                     // tax:tax,
                     cgst:cgst,
@@ -367,7 +383,6 @@ $("#product_table").on("click", ".add_price", function(){
     $('.sales_rate_prod').val('')
 });
 
-
 $('.submitrate').click(function(e) {
     swal({
         title: "Are you sure?",
@@ -440,10 +455,12 @@ $("#product_table").on("click", ".link", function(){
         dataType: 'json',
             // handle a successful response
         success : function(jsondata) {
+            console.log(jsondata);
             $('#modal_product_details').modal('show');
             $('.id_data_prod').val(jsondata['id'])
             $('.name_data_prod').val(jsondata['name'])
             $('.sku_data_prod').val(jsondata['sku'])
+            $('.barcode_data_prod').val(jsondata['barcode'])
             $('#cgst_data_prod').val(tax_array[jsondata['cgst']])
             $('#sgst_data_prod').val(tax_array[jsondata['sgst']])
             $('#igst_data_prod').val(tax_array[jsondata['igst']])
@@ -489,6 +506,7 @@ function update_data(){
     pk=$('.id_data_prod').val()
     name_update=$('.name_data_prod').val()
     sku_update=$('.sku_data_prod').val()
+    barcode_update=$('.barcode_data_prod').val()
     cgst_update=$('#cgst_data_prod').val()
     sgst_update=$('#sgst_data_prod').val()
     igst_update=$('#igst_data_prod').val()
@@ -505,6 +523,7 @@ function update_data(){
                 data:{pk: pk,
                     name: name_update,
                     sku:sku_update,
+                    barcode: barcode_update,
                     cgst:cgst_update,
                     sgst:sgst_update,
                     igst:igst_update,

@@ -157,7 +157,7 @@ function new_data(){
                     purchase: purchase,
                     tsp: tsp,
                     mrp: mrp,
-                    calltype: "newin",
+                    calltype: "newinventory",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 // contentType: "application/json",

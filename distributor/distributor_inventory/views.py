@@ -1,3 +1,4 @@
+from io import BytesIO
 import django_excel as excel
 from decimal import Decimal
 import xlrd
@@ -5,6 +6,7 @@ import xlrd
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
+from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.timezone import localtime
 import json
@@ -18,6 +20,12 @@ from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
+
+
+from reportlab.pdfgen import canvas
+from reportlab.graphics.barcode import code128
+from reportlab.lib.units import mm
+
 
 from distributor_master.models import Unit, Product, Warehouse
 from distributor_user.models import Tenant
@@ -310,3 +318,44 @@ def import_opening_inventory(request):
 	else:
 		form = UploadFileForm()
 	return render(request,'master/upload_product.html',{'form': form,})
+
+
+
+
+@login_required
+def write_pdf_view(request, pk_detail):
+	response = HttpResponse(content_type='application/pdf')
+	response['Content-Disposition'] = 'attachment;; filename="barcode.pdf"'	
+	this_tenant=request.user.tenant
+	try:
+		barcode=Product.objects.for_tenant(this_tenant).get(id=pk_detail).barcode
+		buffer = BytesIO()
+		p = canvas.Canvas(buffer)
+		
+		# Start writing the PDF here
+		# p.drawString(100, 100, 'Hello world.')
+		barcode = code128.Code128(barcode,barHeight=15*mm,barWidth = 0.25*mm, humanReadable=True)
+		y=5
+		for i in range(12):
+			x=5
+			for j in range(4):
+				barcode.drawOn(p,x*mm,y*mm)
+				x=x+52.5
+			y=y+24.75
+			print(y)
+		print(y)
+
+		# End writing
+		p.showPage()
+		p.save()
+
+		pdf = buffer.getvalue()
+		buffer.close()
+		response.write(pdf)
+
+		return response
+	except:
+		messages.add_message(request, messages.WARNING, "Barcode for the product doesn't exist")
+		return redirect('master:product_data')
+
+		

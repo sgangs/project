@@ -13,16 +13,11 @@
 
 {% block content%}
 
-{% if messages %}
-	{% for msg in messages %}       
-        <div class="alert alert-{{msg.level_tag}}" role="alert">
- 	{{msg.level_tag|title}}: {{msg.message}}
-	</div>
-    {% endfor %}
-{% endif %}
-
 	<div>
 		<div><h2>Bulk Upload Product List</h2></div>
+		
+		<a href="{% url 'master:product_import_format' %}"><button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-download"></i> Download Excel Format</button></a>
+		<br>
 		{% if messages %}
 			<ul class="messages">
 			    {% for message in messages %}
@@ -30,8 +25,8 @@
 			    {% endfor %}
 			</ul>
 		{% endif %}
-		    {% crispy form form.helper %}
-            {% csrf_token %}
+		{% crispy form form.helper %}
+        {% csrf_token %}
             
 	</div>
 	

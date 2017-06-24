@@ -371,15 +371,30 @@ def product_view(request):
 			pk=request.data.get('pk')
 			name=request.data.get('name')
 			sku=request.data.get('sku')
+			barcode=request.data.get('barcode')
+			print(barcode)
+			if barcode:
+				try:
+					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
+				except:
+					is_product=''
+				if is_product:
+					raise IntegrityError
 			cgst=request.data.get('cgst')
 			sgst=request.data.get('sgst')
 			igst=request.data.get('igst')
 			taxes=tax_structure.objects.for_tenant(this_tenant).all()
 			# state=request.data.get('state')
+			if not sku:
+				raise IntegrityError
+			if not name:
+				raise IntegrityError
 			
 			old_product=Product.objects.for_tenant(this_tenant).get(id=pk)
 			old_product.name=name
 			old_product.sku=sku
+			if barcode:
+				old_product.barcode=barcode
 			if cgst:
 				old_product.cgst=taxes.get(id=cgst)
 			if sgst:
@@ -720,11 +735,11 @@ def product_data(request):
 			barcode=request.POST.get('barcode')
 			if barcode:
 				try:
-					is_product=barcode.objects.for_tenant(this_tenant).get(barcode=barcode)
-					if is_product:
-						raise IntegrityError
+					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
 				except:
-					pass
+					is_product=''
+				if is_product:
+					raise IntegrityError
 			# vat_type=request.POST.get('vat_type')
 			# tax=request.POST.get('tax')
 			cgst=request.POST.get('cgst')
@@ -790,7 +805,7 @@ def product_data(request):
 					new_product.has_instance=has_instance
 					new_product.tenant=this_tenant
 					# new_product.remarks=remarks
-					new_product.save()
+					# new_product.save()
 					# new_product.tax.add(tax_selected)
 					if (has_attribute):
 						for data in attributes:
@@ -804,6 +819,9 @@ def product_data(request):
 							product_attr.tenant=this_tenant
 				except:
 					transaction.rollback()
+					messages.add_message(request, messages.WARNING, "There were some errors. Note Barcode & SKU must be unique."+
+										" Name and SU cannot be blank.")
+					return redirect('master:product_data')
 		#Attribute API-ed
 		elif (calltype == 'newattribute'):
 			name=request.POST.get('name')
@@ -881,3 +899,22 @@ def warehouse_data(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'master/warehouse_list.html',{'extension':extension,'states':state_list })
+
+
+@login_required
+def customer_import_format(request):
+	# if 'excel' in request.POST:
+	response = HttpResponse(content_type='application/vnd.ms-excel')
+	response['Content-Disposition'] = 'attachment; filename=Customer_Import.xlsx'
+	xlsx_data = customer_format()
+	response.write(xlsx_data)
+	return response
+
+@login_required
+def product_import_format(request):
+	# if 'excel' in request.POST:
+	response = HttpResponse(content_type='application/vnd.ms-excel')
+	response['Content-Disposition'] = 'attachment; filename=Product_Import.xlsx'
+	xlsx_data = product_format()
+	response.write(xlsx_data)
+	return response

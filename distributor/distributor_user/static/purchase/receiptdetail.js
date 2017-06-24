@@ -49,8 +49,6 @@ function load_data(){
                 else if(d2_type == 2){
                     d2_val=this.discount2_value;
                 }
-                console.log(d1_val);
-                console.log(d2_val);
                 igst_total+=this.igst_value;
                 // total_pretax=this.line_total - this.cgst_value - this.sgst_value - this.igst_value;
                 $('.details').append("<tr class='data text-center'>"+
@@ -67,7 +65,7 @@ function load_data(){
                     "<td class='hidden-print'>"+discount_types[this.discount_type]+"</td>"+
                     // "<td>"+this.discount_value+"</td>"+
                     // "<td class='visible-print-block'>"+d1_val+"</td>"+
-                    "<td>"+d1_val.toFixed(2)+"</td>"+
+                    "<td>"+d1_val+"</td>"+
                     "<td class='hidden-print'>"+discount_types[this.discount2_type]+"</td>"+
                     // "<td>"+this.discount2_value+"</td>"+
                     // "<td class='visible-print-block'>"+d2_val+"</td>"+

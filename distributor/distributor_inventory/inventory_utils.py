@@ -22,17 +22,17 @@ def create_new_inventory_ledger(product, warehouse, transaction_type, date, quan
 
 
 
-def oepning_inventory_validate(row, this_tenant):
-    # row[4]=state_dict[state_selected]
-    product_name=row[0]
-    row[0]=Product.objects.for_tenant(this_tenant).get(name=product_name)
-    warehouse=Warehouse.objects.for_tenant(this_tenant).get(default=True)
-    row.append(warehouse)
-    row.append(this_tenant)
-    if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "" or row[2] == None or row[2] == "") :
-        transaction.rollback()
-        return HttpResponse("There is error in uploaded excel")
-    return row
+# def oepning_inventory_validate(row, this_tenant):
+#     # row[4]=state_dict[state_selected]
+#     product_name=row[0]
+#     row[0]=Product.objects.for_tenant(this_tenant).get(name=product_name)
+#     warehouse=Warehouse.objects.for_tenant(this_tenant).get(default=True)
+#     row.append(warehouse)
+#     row.append(this_tenant)
+#     if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "" or row[2] == None or row[2] == "") :
+#         transaction.rollback()
+#         return HttpResponse("There is error in uploaded excel")
+#     return row
 
 
 def opening_inventory_upload_save(excel_data, this_tenant):

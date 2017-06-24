@@ -10,6 +10,7 @@ urlpatterns = [
     
     url(r'^customer/getdata/$', views.customer_view, name='customer_view'),
     url(r'^customer/$', views.customer_data, name='customer_data'),
+    url(r'^customer/format/$', views.customer_import_format, name='customer_import_format'),
     url(r'^uploadcustomer/$', views.import_customer, name='import_customer'),
 
     url(r'^vendor/getdata/$', views.vendor_view, name='vendor_view'),
@@ -37,5 +38,6 @@ urlpatterns = [
     url(r'^product/productdata/$', views.product_view, name='product_view'),
     url(r'^product/productdetails/$', views.product_details, name='product_details'),
     url(r'^uploadproduct/$', views.import_product, name='import_product'),
+    url(r'^product/format/$', views.product_import_format, name='product_import_format'),
     # url(r'^uploadproduct/$', views.import_product, name='import_product'),
 ]

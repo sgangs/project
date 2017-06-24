@@ -12,7 +12,7 @@
 <div>
 	<button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-star"></i> Add New Product</button>
 	<button type="submit" class="btn btn-primary btn-xs new_attr"><i class="fa fa-star"></i> Add New Attribute</button>
-	<!-- <button class="btn btn-primary btn-xs"><i class="fa fa-star"></i> Bulk Upload Using Excel</button> -->
+	<a href="{% url 'master:import_product' %}"><button class="btn btn-primary btn-xs"><i class="fa fa-upload"></i> Bulk Upload Using Excel</button></a>
 </div>
 <h1></h1>
 <!-- <div class="col-md-4  alert alert-danger">
@@ -43,6 +43,7 @@
 	            <th class="text-center">Group</th>
 	            <th class="text-center">Remarks</th>
 	            <th class="text-center">Add Retail sales rate</th>
+	            <th class="text-center">Download Barcode</th>
           	</tr>
 		</thead>
         <tbody>        	
@@ -77,7 +78,7 @@
 				</div>
 				<div class="form-group skudiv">
 					<label class="control-label">Product Barocde Data</label>
-					<input type="text" class="form-control barcode" placeholder="Product BarCode Data">		
+					<input type="text" class="form-control barcode_new" placeholder="Product BarCode Data">		
 				</div>
 				<!-- <div class="form-group vattypediv">
 					<label class="control-label">VAT Type</label>
@@ -219,6 +220,10 @@
 					<label class="control-label">Product SKU/Code</label>
 					<input type="text" class="form-control sku_data_prod editable" disabled>		
 				</div>
+				<div class="form-group skudiv">
+					<label class="control-label">Product Barcode</label>
+					<input type="text" class="form-control barcode_data_prod editable" disabled>		
+				</div>
 				<!-- <div class="form-group vattypediv">
 					<label class="control-label">VAT Type</label>
 					<select class="form-control selectpicker vattype_data_prod" data-live-search="true">
@@ -339,13 +344,40 @@
 					<input type="number" class="form-control sales_rate_prod">
 				</div>
 				<div class="form-group taxdiv">
-					<label class="control-label">Is taax included in the rate?</label>
+					<label class="control-label">Is tax included in the rate?</label>
 					<input type="checkbox" class="tax_rate_prod" checked>
 				</div>
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
 		    	<button type="button" class="btn btn-primary submitrate">Submit</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modal_barcode" tabindex="-1" role="dialog" aria-labelledby="modal_product_rateLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Print Barcode</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div class="form-group iddiv" hidden>
+					<label for="classname" class="control-label">ID</label>
+					<input type="text" class="form-control id_barcode" disabled>
+				</div>
+				<div class="form-group namediv">
+					<label for="classname" class="control-label">Product name</label>
+					<input type="text" class="form-control name_barcode" disabled>
+				</div>				
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<a href="" class="barcodetag">Get Barcode</button>
 		    </div>
 	    </div>
 	</div>
@@ -370,6 +402,10 @@ $('.new_attr').attr('data-target',"#new_attr")
 
 csrf_token='{{csrf_token}}';
 </script>
+
+<style type="text/css">
+td a { display: block; width: 100%; height: 100%; }
+</style>
 
 {% endblock %}
 

@@ -364,7 +364,7 @@ function new_data(){
     warehouseid=$('.warehouse').find(':selected').data('id');
     date=$('.date').val()
     subtotal=parseFloat($('.subtotal_receipt').html());
-    taxtotal=parseFloat($('.taxtotal_receipt').html());
+    // taxtotal=parseFloat($('.taxtotal_receipt').html());
     total=parseFloat($('.total_receipt').html());
     if (warehouseid == '' || typeof(warehouseid) =='undefined'){
         proceed = false;
@@ -451,12 +451,10 @@ function new_data(){
         };
         items.push(item);
     });
-    console.log(items)
+    // console.log(items)
     // console.log(customer_name)
     console.log(cgst_total_sum)
     console.log(sgst_total_sum)
-    console.log(subtotal)
-    console.log(total)
     if (proceed){
         (function() {
             $.ajax({
@@ -470,6 +468,8 @@ function new_data(){
                     customer_email,customer_email,
                     warehouse:warehouseid,
                     subtotal: subtotal,
+                    cgsttotal: cgst_total_sum,
+                    sgsttotal: sgst_total_sum,
                     // taxtotal: taxtotal,
                     total: total,
                     bill_details: JSON.stringify(items),

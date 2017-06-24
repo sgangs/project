@@ -14,6 +14,9 @@
 {% block content%}
 	<div>
 		<div><h2>Bulk Upload Customer List</h2></div>
+		
+		<a href="{% url 'master:customer_import_format' %}"><button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-download"></i> Download Excel Format</button></a>
+		<br>
 		{% if messages %}
 			<ul class="messages">
 			    {% for message in messages %}
@@ -21,8 +24,8 @@
 			    {% endfor %}
 			</ul>
 		{% endif %}
-		    {% crispy form form.helper %}
-            {% csrf_token %}
+		{% crispy form form.helper %}
+        {% csrf_token %}
             
 	</div>
 	
