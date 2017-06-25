@@ -18,13 +18,15 @@
 		
 		<a href="{% url 'master:product_import_format' %}"><button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-download"></i> Download Excel Format</button></a>
 		<br>
+		<br>
 		{% if messages %}
-			<ul class="messages">
-			    {% for message in messages %}
-			    <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-			    {% endfor %}
-			</ul>
+			{% for msg in messages %}       
+		        <div class="alert alert-{{msg.level_tag}}" role="alert">
+		 	{{msg.level_tag|title}}: {{msg.message}}
+			</div>
+		    {% endfor %}
 		{% endif %}
+		
 		{% crispy form form.helper %}
         {% csrf_token %}
             
