@@ -180,7 +180,7 @@ class Product(models.Model):
 	has_batch=models.BooleanField(default=False)
 	has_instance=models.BooleanField(default=False)
 	has_attribute=models.BooleanField(default=False)
-	remarks=models.CharField(max_length=200)
+	remarks=models.CharField(max_length=200, blank=True, null=True)
 	is_active=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,related_name='product_master_user_tenant')
 	objects = TenantManager()

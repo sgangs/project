@@ -185,9 +185,8 @@
       <ul class="RetailSalesNav">
         <li><a href="#"><span><i class="fa fa-shopping-cart"></i></span> Retail Sales</a>
           <ul>
-            <li><a href="#">Cretae Sales Invoice</a></li>
-            <li><a href="#">Sales Report</a></li>
-            <li><a href="#">Collection Report</a></li>
+            <li><a href="{% url 'retailsales:new_sales_invoice' %}">Cretae Sales Invoice</a></li>
+            <li><a href="{% url 'retailsales:invoice_list' %}">Sales Report</a></li>
             <li><a href="#">Sales Return</a></li>
             <li><a href="#">Sales Return Report</a></li>
           </ul>

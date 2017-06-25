@@ -78,7 +78,6 @@ def opening_inventory_data(request):
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
-		print(calltype)
 		if (calltype == 'newinventory'):
 			productid=int(request.POST.get('productid'))
 			warehouseid=int(request.POST.get('warehouse'))
@@ -128,8 +127,6 @@ def opening_inventory_data(request):
 					new_inventory.mrp=mrp
 					new_inventory.tenant=this_tenant
 					new_inventory.save()
-
-					print(new_inventory)
 
 					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 					warehouse_valuation_change.valuation+=total_inventory_value
@@ -299,7 +296,7 @@ def import_opening_inventory(request):
 			if 'xls' not in f.name and 'xlsx' not in f.name:
 				data['error'] = 2
 				data['info'] = 'file type must be excel!'
-				print(data['info'])
+				
 			elif 0 == f.size:
 				data['error'] = 3
 				data['info'] = 'file content is empty!'
@@ -342,8 +339,8 @@ def write_pdf_view(request, pk_detail):
 				barcode.drawOn(p,x*mm,y*mm)
 				x=x+52.5
 			y=y+24.75
-			print(y)
-		print(y)
+			
+		
 
 		# End writing
 		p.showPage()

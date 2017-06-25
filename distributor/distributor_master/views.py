@@ -730,6 +730,7 @@ def product_data(request):
 			sku=request.POST.get('sku')
 			hsn=request.POST.get('hsn')
 			barcode=request.POST.get('barcode')
+			print(barcode)
 			if barcode:
 				try:
 					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
@@ -764,7 +765,7 @@ def product_data(request):
 				has_attribute=True
 			elif(has_attribute == 'false'):
 				has_attribute=False
-			# remarks=request.POST.get('remarks')
+			remarks=request.POST.get('remarks')
 			# tax_selected=tax_structure.objects.for_tenant(this_tenant).get(id=tax)
 			tax_all=tax_structure.objects.for_tenant(this_tenant).all()
 			unit_selected=Unit.objects.for_tenant(this_tenant).get(id=unit_id)
@@ -780,6 +781,7 @@ def product_data(request):
 					new_product.name=name
 					new_product.sku=sku
 					new_product.hsn_code=hsn
+					new_product.barcode=barcode
 					# new_product.vat_type=vat_type
 					# new_product.tax=tax_selected
 					if (cgst):
@@ -801,8 +803,8 @@ def product_data(request):
 					new_product.has_attribute=has_attribute
 					new_product.has_instance=has_instance
 					new_product.tenant=this_tenant
-					# new_product.remarks=remarks
-					# new_product.save()
+					new_product.remarks=remarks
+					new_product.save()
 					# new_product.tax.add(tax_selected)
 					if (has_attribute):
 						for data in attributes:
