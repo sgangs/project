@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^receipt/detailview/(?P<pk>[-\S]+)/$$', views.receipts_detail_view, name='receipts_detail_view'),
     url(r'^receipt/api/getproduct$', views.get_product, name='get_product'),
     url(r'^receipt/detail/(?P<pk>[-\S]+)/$', views.receipts_details, name='receipts_details'),
+    url(r'^receipt/excel/(?P<pk>[-\S]+)/$$', views.excel_receipt, name='excel_receipt'),
     url(r'^receiptlist/listall/$', views.all_receipts, name='all_receipts'),
     url(r'^receiptlist/metadata/$', views.receipts_metadata, name='receipts_metadata'),
     url(r'^receipt/paymentsave/$', views.payment_register, name='payment_register'),

@@ -17,7 +17,7 @@ class TenantManager(models.Manager):
 class purchase_receipt(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	receipt_id = models.PositiveIntegerField(db_index=True)
-	supplier_invoice = models.CharField(max_length=200,blank=True, null=True)
+	supplier_invoice = models.CharField(db_index=True, max_length=200,blank=True, null=True)
 	date=models.DateField(default=dt.date.today)
 
 	vendor=models.ForeignKey(Vendor,blank=True, null=True, 

@@ -23,7 +23,7 @@ def new_journal_entry(tenant, journal, value, account, trn_type, date):
 	entry.value=value
 	entry.account= account
 	entry.transaction_type = trn_type
-	entry.save()	
+	entry.save()
 
 	acct_period=accounting_period.objects.for_tenant(tenant).get(start__lte=date, end__gte=date)
 	account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)

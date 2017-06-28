@@ -355,4 +355,84 @@ def write_pdf_view(request, pk_detail):
 		messages.add_message(request, messages.WARNING, "Barcode for the product doesn't exist")
 		return redirect('master:product_data')
 
+
+@api_view(['GET', 'POST', ])
+def product_valuation_movement_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	calltype = request.GET.get('calltype')
+	warehouse=request.GET.get('warehouse')
+	# start=request.GET.get('start')
+	# end=request.GET.get('end')
+	date=request.GET.get('date')
+	if (calltype == 'productid'):
+		productid=request.GET.get('product')
+		product=Product.objects.for_tenant(this_tenant).get(id=productid)
+	elif (calltype == 'productid'):
+		productbarcode=request.GET.get('product')
+		product=Product.objects.for_tenant(this_tenant).get(id=productbarcode)
+	response_data=list(inventory_ledger.objects.filter(product=product, warehouse=warehouse, date__gt=date).order_by('-date','id').\
+					values('quantity','purchase_price', 'transaction_type','date', 'actual_sales_price'))
+	current_avl=Inventory.objects.filter(product=product, warehouse=warehouse, quantity_available__gt=0)
+	current_val=0
+	current_qty=0
+	for item in current_avl:
+		# current_val+=item['purchase_price']*item['quantity_available']
+		current_val+=item.purchase_price*item.quantity_available
+		current_qty+=item.quantity_available
+	open_val=current_val
+	open_qty=current_qty
+	if (len(response_data) == 0):
+		response_data=[{'transaction_type' : 0, 'current_qty':current_qty,'current_val':current_val }]
+	else:
+		for item in response_data:
+			if item['transaction_type'] in [1,3,4,8,10]:
+				item['current_qty']=open_qty
+				item['current_val']=open_val
+				open_qty-=item['quantity']
+				open_val-=(item['purchase_price']*item['quantity'])
+			else:
+				item['current_qty']=open_qty
+				item['current_val']=open_val
+				open_qty+=item['quantity']
+				open_val+=(item['purchase_price']*item['quantity'])
+	
+
+	# if (calltype == 'stockwise'):
+	# 	current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+	# 				select_related('product', 'warehouse').values('product__name','product__sku','purchase_date','expiry_date',\
+	# 				'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
+	# 				annotate(available=Sum('quantity_available')).order_by('purchase_date'))
+	# if (calltype == 'current'):
+	# 	current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+	# 				select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
+	# 				'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
+	# 				annotate(available=Sum('quantity_available')).order_by('product__sku'))
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
 		
+
+@login_required
+def product_valuation_movement_template(request):
+	extension="base.html"
+	return render (request, 'inventory/product_movement.html',{'extension':extension})
+
+
+@api_view(['GET','POST'],)
+def get_product(request):
+	this_tenant=request.user.tenant
+	if request.method=='GET':
+		q = request.GET.get('term', '')
+		calltype=request.GET.get('calltype')
+		products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10]
+		response_data = []
+		for item in products:
+			item_json = {}
+			item_json['id'] = item.id
+			item_json['label'] = item.name
+			response_data.append(item_json)
+		data = json.dumps(response_data)
+	else:
+		data = 'fail'
+	mimetype = 'application/json'
+	return HttpResponse(data, mimetype)

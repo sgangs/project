@@ -28,6 +28,7 @@ function load_receipts(){
             all_receipts=true, unpaid_receipts = false; overdue_receipts = false;
             $.each(jsondata, function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
+                var download_url='/purchase/receipt/excel/'+this.id+'/'
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
@@ -39,6 +40,8 @@ function load_receipts(){
                 "<td>"+this.vendor_name+"</td>"+
                 "<td>"+this.total+"</td>"+
                 "<td>"+this.amount_paid+"</td>"+
+                "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
+                        "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
         },
@@ -64,6 +67,7 @@ $('.unpaid').click(function(e) {
             all_receipts=false, unpaid_receipts = true; overdue_receipts = false;
             $.each(jsondata, function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
+                var download_url='/purchase/receipt/excel/'+this.id+'/'
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
@@ -75,6 +79,8 @@ $('.unpaid').click(function(e) {
                 "<td>"+this.vendor_name+"</td>"+
                 "<td>"+this.total+"</td>"+
                 "<td>"+this.amount_paid+"</td>"+
+                "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
+                        "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
         },
@@ -120,8 +126,6 @@ $('.apply_filter').click(function(e) {
         };
         vendors.push(vendor);
     });
-    console.log(vendors);
-    console.log(startdate);
     if (unpaid_receipts){
         sent_with='unpaid_receipts'
     }
@@ -131,6 +135,7 @@ $('.apply_filter').click(function(e) {
     else if(overdue_receipts){
         sent_with='overdue_receipts'
     }
+    invoice_no=$('.invoice_no').val()
 
     $.ajax({
         url : "listall/", 
@@ -139,6 +144,7 @@ $('.apply_filter').click(function(e) {
             sent_with: sent_with,
             start: startdate,
             end: enddate,
+            invoice_no: invoice_no,
             vendors: JSON.stringify(vendors),
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',

@@ -24,6 +24,7 @@ from distributor_inventory.models import Inventory, inventory_ledger, warehouse_
 from .sales_utils import *
 from .models import *
 from .serializers import *
+from .excel_download import *
 
 
 @api_view(['GET','POST'],)
@@ -558,3 +559,38 @@ def collection_list(request):
 @login_required
 def collection_list_view(request):
 	return render(request,'sales/collection_list.html', {'extension': 'base.html'})
+
+@login_required
+def sales_return_view(request):
+	return render(request,'sales/sales_return.html', {'extension': 'base.html'})
+
+@api_view(['GET'],)
+def get_return_data(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		if (calltype == 'Sales Return'):
+			invoice_id = request.GET.get('invoice_id')
+			response_data=sales_invoice.objects.for_tenant(this_tenant).get(invoice_id=invoice_id).id
+
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+		
+
+@api_view(['GET', 'POST'],)
+def excel_invoice(request, pk):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=pk)
+		
+		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice).values('product_name','product_hsn',\
+			'unit','quantity','sales_price','mrp','discount_type',\
+			'discount_value','discount2_type','discount2_value','line_tax', 'line_total', 'cgst_percent','sgst_percent',\
+			'igst_percent','cgst_value','sgst_value','igst_value',))
+		
+		x='Sales_Invoice '+str(invoice.invoice_id)+'.xlsx'
+		response = HttpResponse(content_type='application/vnd.ms-excel')
+		response['Content-Disposition'] = 'attachment; filename='+x
+		xlsx_data = sales_invoice_excel(line_items, invoice, this_tenant)
+		response.write(xlsx_data)
+		return response

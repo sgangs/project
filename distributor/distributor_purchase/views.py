@@ -26,6 +26,7 @@ from distributor_inventory.inventory_utils import create_new_inventory_ledger
 from .purchase_utils import *
 from .serializers import *
 from .models import *
+from .excel_download import *
 
 # @login_required
 @api_view(['GET','POST'],)
@@ -131,9 +132,6 @@ def purchase_receipt_save(request):
 					cgsttotal=Decimal(request.data.get('cgsttotal'))
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
 					igsttotal=Decimal(request.data.get('igsttotal'))
-					print(cgsttotal)
-					print(sgsttotal)
-					print(igsttotal)
 					total=Decimal(request.data.get('total'))
 					duedate=request.data.get('duedate')
 
@@ -410,6 +408,7 @@ def all_receipts(request):
 			vendors=json.loads(request.GET.get('vendors'))
 			start=request.GET.get('start')
 			end=request.GET.get('end')
+			invoice_no=request.GET.get('invoice_no')
 			receipts=[]
 			sent_with=request.GET.get('sent_with')
 			if (len(vendors)>0):
@@ -437,6 +436,9 @@ def all_receipts(request):
 						.order_by('-date', 'receipt_id')
 			if (start and end):
 				receipts=receipts.filter(date__range=[start,end])
+			if invoice_no:
+				receipts=receipts.filter(supplier_invoice__icontains=invoice_no)
+
 		elif (calltype== 'vendor_pending'):
 			vendorid = request.GET.get('vendorid')
 			vendor=Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
@@ -752,3 +754,25 @@ def debit_note_save(request):
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
+
+
+
+@api_view(['GET', 'POST'],)
+def excel_receipt(request, pk):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		receipt=purchase_receipt.objects.for_tenant(this_tenant).get(id=pk)
+
+		line_items=list(receipt_line_item.objects.filter(purchase_receipt=receipt).values('id','product_name','product_hsn',\
+			'unit','quantity','purchase_price', 'tentative_sales_price','mrp','discount_type',\
+			'discount_value','discount2_type','discount2_value','cgst_percent','sgst_percent','igst_percent',\
+			'cgst_value','sgst_value','igst_value','line_tax','line_total'))
+		
+		x='Purchase_Invoice '+str(receipt.supplier_invoice)+'.xlsx'
+		response = HttpResponse(content_type='application/vnd.ms-excel')
+		response['Content-Disposition'] = 'attachment; filename='+x
+		xlsx_data = purchase_invoice_excel(line_items, receipt, this_tenant)
+		response.write(xlsx_data)
+		return response
+		
+		

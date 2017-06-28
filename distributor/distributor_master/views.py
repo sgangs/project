@@ -280,7 +280,7 @@ def dimension_view(request):
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)
 	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
+		calltype = request.data.get('calltype')
 		response_data = {}
 		if (calltype == 'newdimension'):
 			name=request.data.get('name')
@@ -302,7 +302,7 @@ def unit_view(request):
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)
 	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
+		calltype = request.data.get('calltype')
 		response_data = {}
 		if (calltype == 'newunit'):
 			name=request.data.get('name')
@@ -329,7 +329,7 @@ def attribute_view(request):
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)
 	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
+		calltype = request.data.get('calltype')
 		response_data = {}
 		if (calltype == 'newattribute'):
 			name=request.data.get('name')
@@ -425,7 +425,7 @@ def manufacturer_view(request):
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)
 	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
+		calltype = request.data.get('calltype')
 		response_data = {}
 		if (calltype == 'newmanufacturer'):
 			name=request.data.get('name')
@@ -445,7 +445,7 @@ def brand_view(request):
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)
 	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
+		calltype = request.data.get('calltype')
 		response_data = {}
 		if (calltype == 'newbrand'):
 			name=request.data.get('name')
@@ -730,7 +730,6 @@ def product_data(request):
 			sku=request.POST.get('sku')
 			hsn=request.POST.get('hsn')
 			barcode=request.POST.get('barcode')
-			print(barcode)
 			if barcode:
 				try:
 					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
@@ -819,7 +818,7 @@ def product_data(request):
 				except:
 					transaction.rollback()
 					messages.add_message(request, messages.WARNING, "There were some errors. Note Barcode & SKU must be unique."+
-										" Name and SU cannot be blank.")
+										" Name, SKU and default unit cannot be blank.")
 					return redirect('master:product_data')
 		#Attribute API-ed
 		elif (calltype == 'newattribute'):

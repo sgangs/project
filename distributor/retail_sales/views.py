@@ -82,30 +82,36 @@ def get_product_inventory(request):
 def get_product_barcode(request):
 	this_tenant=request.user.tenant
 	response_data={}
-	if request.is_ajax():
-		product_barcode = request.GET.get('product_barcode')
-		warehouse_id = request.GET.get('warehouse_id')
-		product_quantity=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,product=product_id,\
-				warehouse=warehouse_id).aggregate(Sum('quantity_available'))['quantity_available__sum']
-		product_rate=list(product_sales_rate.objects.for_tenant(this_tenant).filter(product=product_id).\
-					values('tentative_sales_rate', 'is_tax_included'))
-		product_data=Product.objects.for_tenant(this_tenant).get(barcode  = product_barcode)
-
-		response_data['quantity']=product_quantity
-		response_data['rate']=product_rate
-		response_data['product_id']=product_data.id
-		response_data['product_name']=product_data.name
-		response_data['unit_id']=product_data.default_unit.id
-		response_data['unit']=product_data.default_unit.symbol
-
+	if request.method == 'GET':
 		try:
-			response_data['cgst'] = product_data.cgst.percentage
+			product_barcode = request.GET.get('product_barcode')
+			warehouse_id = request.GET.get('warehouse_id')
+
+			product_data=Product.objects.for_tenant(this_tenant).get(barcode  = product_barcode)
+			product_quantity=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,product=product_data,\
+					warehouse=warehouse_id).aggregate(Sum('quantity_available'))['quantity_available__sum']
+			product_rate=list(product_sales_rate.objects.for_tenant(this_tenant).filter(product=product_data).\
+						values('tentative_sales_rate', 'is_tax_included'))
+			
+
+			response_data['quantity']=product_quantity
+			response_data['rate']=product_rate
+			response_data['product_id']=product_data.id
+			response_data['product_name']=product_data.name
+			response_data['unit_id']=product_data.default_unit.id
+			response_data['unit']=product_data.default_unit.symbol
+
+			try:
+				response_data['cgst'] = product_data.cgst.percentage
+			except:
+				response_data['cgst'] = 0
+			try:
+				response_data['sgst'] = product_data.sgst.percentage
+			except:
+				response_data['sgst'] = 0
 		except:
-			response_data['cgst'] = 0
-		try:
-			response_data['sgst'] = product_data.sgst.percentage
-		except:
-			response_data['sgst'] = 0
+			#Check if json response has any error. If so, display error.
+			response_data['error']='Product Does not exist'
 	
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

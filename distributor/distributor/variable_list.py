@@ -63,7 +63,7 @@ transaction_choices=((1,'Purchase'), #Inventory Increase
 			(7,'Transfer Outward'), #Inventory Decrease
 			(8,'Transfer Inward'), #Inventory Increase
 			(9,'Retail Sales'), #Inventory Decrease
-			(9,'Retail Sales Return'),) #Inventory Increase
+			(10,'Retail Sales Return'),) #Inventory Increase
  
 
 #transaction_choices option 1 also includes first time inventory

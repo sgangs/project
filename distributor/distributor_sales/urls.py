@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^invoice/save/$', views.sales_invoice_save, name='sales_invoice_save'),
     url(r'^invoice/detailview/(?P<pk>[-\S]+)/$$', views.invoice_detail_view, name='invoice_detail_view'),
     url(r'^invoice/detail/(?P<pk>[-\S]+)/$', views.invoice_details, name='invoice_details'),
+    url(r'^invoice/excel/(?P<pk>[-\S]+)/$', views.excel_invoice, name='excel_invoice'),
     url(r'^invoicelist/$', views.invoice_list, name='invoice_list'),
     url(r'^invoicelist/listall/$', views.all_invoices, name='all_invoices'),
     url(r'^invoicelist/metadata/$', views.invoices_metadata, name='invoices_metadata'),
@@ -17,5 +18,7 @@ urlpatterns = [
     url(r'^salestotalvalue/$', views.sales_total_values, name='sales_total_values'),
     url(r'^collectionlist/$', views.collection_list, name='collection_list'),
     url(r'^collectionlistview/$', views.collection_list_view, name='collection_list_view'),
+    url(r'^invoice/salesreturn/data/$', views.get_return_data, name='get_return_data'),
+    url(r'^invoice/salesreturn/$', views.sales_return_view, name='sales_return_view'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

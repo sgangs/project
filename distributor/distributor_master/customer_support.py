@@ -179,7 +179,7 @@ def product_format():
     # column widths
     worksheet_s.set_column('A:A', base_col_width)
     worksheet_s.set_column('B:B', wide_col_width)
-    worksheet_s.set_column('C:C', wide_col_width    )
+    worksheet_s.set_column('C:C', wide_col_width)
     
     workbook.close()
     xlsx_data = output.getvalue()
