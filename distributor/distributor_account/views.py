@@ -458,5 +458,15 @@ def account_journal_entries(request, pk_detail):
 def journal_detail(request,pk_detail):
 	extension="base.html"
 	journal=Journal.objects.for_tenant(request.user.tenant).get(id=pk_detail)
-	entries=journal_entry.objects.filter(journal=journal).order_by('transaction_type').prefetch_related('journal').select_related('account').all()
+	entries=journal_entry.objects.filter(journal=journal).order_by('transaction_type').prefetch_related('journal').\
+			select_related('account').all()
 	return render(request, 'account/journal_view.html',{'journal':journal,'entries':entries,'extension':extension})
+
+
+
+@login_required
+def gst_payment(request):
+	extension="base.html"
+	return render(request, 'gst_report/gst_payment.html',{'extension':extension})
+
+

@@ -10,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext
 # from school.id_definition import make_id
 # from school_genadmin.models import Batch
-from .models import Customer, Unit, Product
+from .models import Customer, Unit, Product, tax_structure
 from distributor.variable_list import state_list
 
 
@@ -63,6 +63,8 @@ def customer_register(excel_data, this_tenant):
 
 
 def product_register(excel_data, this_tenant):
+    taxes=tax_structure.objects.for_tenant(this_tenant).all()
+    len(taxes)
     row_no=[]
     product_id={}
     objects_product = []
@@ -72,24 +74,59 @@ def product_register(excel_data, this_tenant):
     unit=Unit.objects.for_tenant(this_tenant).get(name='Number')
     for i in range(2, num_rows):
         row = sheet.row_values(i)
-        if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "") :
+        if (row[0] == None or row[0] == "" or row[2] == None or row[2] == "") :
             row_no.append(i+1)
-        elif (row[1] in product_id):
+        elif (row[2] in product_id):
             row_no.append(i+1)
         else:
             product_id[row[1]]=i
             try:
-                Product.objects.for_tenant(this_tenant).get(sku=row[1])
+                Product.objects.for_tenant(this_tenant).get(sku=row[2])
                 row_no.append(i+1)
             except:
-                if row[2]:
+                cgst = None
+                sgst = None
+                igst = None
+                if row[3]:
                     try:
-                        Product.objects.for_tenant(this_tenant).get(barcode=row[2])
+                        Product.objects.for_tenant(this_tenant).get(barcode=row[3])
                         row_no.append(i+1)
                     except:
-                        objects_product.append(Product(name=row[0], sku=row[1],barcode=row[2], default_unit=unit, tenant=this_tenant))
+                        if row[4]:
+                            try:
+                                cgst=taxes.get(name=row[4])
+                            except:
+                                pass
+                        if row[5]:
+                            try:
+                                sgst=taxes.get(name=row[5])
+                            except:
+                                pass
+                        if row[6]:
+                            try:
+                                igst=taxes.get(name=row[6])
+                            except:
+                                pass
+                        objects_product.append(Product(name=row[0], sku=row[1],barcode=row[2], default_unit=unit,\
+                            cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
                 else:
-                    objects_product.append(Product(name=row[0], sku=row[1], default_unit=unit, tenant=this_tenant))
+                    if row[4]:
+                        try:
+                            cgst=taxes.get(name=row[4])
+                        except:
+                            pass
+                    if row[5]:
+                        try:
+                            sgst=taxes.get(name=row[5])
+                        except:
+                            pass
+                    if row[6]:
+                        try:
+                            igst=taxes.get(name=row[6])
+                        except:
+                            pass
+                    objects_product.append(Product(name=row[0], sku=row[1], default_unit=unit,\
+                        cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
             
     with transaction.atomic():
         try:
@@ -166,20 +203,37 @@ def product_format():
         'valign': 'top',
         'border': 1
     })
+
+    bold_header = workbook.add_format({
+        'bold': True,
+        'bg_color': '#F7F7F7',
+        'color': 'black',
+        'align': 'center',
+        'valign': 'top',
+        'border': 1
+    })    
     
-    worksheet_s.write(1, 0, ugettext("Product Name (Must be filled)"), header)
-    worksheet_s.write(1, 1, ugettext("Product SKU (Must be filled and must be unique) Max_length:20"), header)
-    worksheet_s.write(1, 2, ugettext("Product Barcode (Must be unique) Max_length:10"), header)
+    worksheet_s.write(1, 0, ugettext("Product Name (Must be filled)"), bold_header)
+    worksheet_s.write(1, 1, ugettext("Product HSN Code"), header)
+    worksheet_s.write(1, 2, ugettext("Product SKU (Must be filled and must be unique) Max_length:20"), bold_header)
+    worksheet_s.write(1, 3, ugettext("Product Barcode (Must be unique) Max_length:10"), header)
+    worksheet_s.write(1, 4, ugettext("CGST Structure Name"), header)
+    worksheet_s.write(1, 5, ugettext("SGST Structure Name"), header)
+    worksheet_s.write(1, 6, ugettext("IGST Structure Name"), header)
     
     # column widths definition
     base_col_width = 25
-    # description_col_width = 10
     wide_col_width = 45
+    narrow_col_width = 15
 
     # column widths
-    worksheet_s.set_column('A:A', base_col_width)
-    worksheet_s.set_column('B:B', wide_col_width)
+    worksheet_s.set_column('A:A', wide_col_width)
+    worksheet_s.set_column('B:B', base_col_width)
     worksheet_s.set_column('C:C', wide_col_width)
+    worksheet_s.set_column('D:D', wide_col_width)
+    worksheet_s.set_column('E:E', wide_col_width)
+    worksheet_s.set_column('F:F', wide_col_width)
+    worksheet_s.set_column('G:G', wide_col_width)
     
     workbook.close()
     xlsx_data = output.getvalue()

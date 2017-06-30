@@ -103,22 +103,22 @@ def RegisterView(request):
                     create_journal_group(new_tenant,"Purchase")
                     
                     
-                    create_accountChart(new_tenant,"IGST Payments",\
-                        "Tax Expense", "IGST Payment Account", "igstpay", period, new_ledger, is_first_year=True)
+                    # create_accountChart(new_tenant,"IGST Payments",\
+                    #     "Tax Expense", "IGST Payment Account", "igstpay", period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"IGST Input",\
                         "Current Assets", "IGST Input Account", "igstin", period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"IGST Output",\
                         "Current Liabilities", "IGST Output Account", "igstout", period, new_ledger, is_first_year=True)
                     
-                    create_accountChart(new_tenant,"SGST Payments",\
-                        "Tax Expense", "SGST Payment Account", "sgstpay", period, new_ledger, is_first_year=True)
+                    # create_accountChart(new_tenant,"SGST Payments",\
+                    #     "Tax Expense", "SGST Payment Account", "sgstpay", period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"SGST Input",\
                         "Current Assets", "SGST Input Account", "sgstin", period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"SGST Output",\
                         "Current Liabilities", "SGST Output Account", "sgstout", period, new_ledger, is_first_year=True)
                     
-                    create_accountChart(new_tenant,"CGST Payments",\
-                        "Tax Expense", "CGST Payment Account", "cgstpay", period, new_ledger, is_first_year=True)
+                    # create_accountChart(new_tenant,"CGST Payments",\
+                    #     "Tax Expense", "CGST Payment Account", "cgstpay", period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"CGST Input",\
                         "Current Assets", "CGST Input Account", "cgstin", period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"CGST Output",\
@@ -157,10 +157,10 @@ def RegisterView(request):
                     bank_account=create_accountChart(new_tenant,"Bank","Current Assets", \
                         "Bank account", "bank", period, new_ledger, is_first_year=True)
 
-                    vendor_debit=create_accountChart(new_tenant, "Vendor Debit","Current Liabilities",\
+                    vendor_debit=create_accountChart(new_tenant, "Vendor Debit","Current Assets",\
                         "Debit Note Vendor Debit", "vd", period, new_ledger, is_first_year=True, is_contra=True)
 
-                    customer_credit=create_accountChart(new_tenant, "Customer Credit","Current Assets",\
+                    customer_credit=create_accountChart(new_tenant, "Customer Credit","Current Liabilities",\
                         "Credit Note Customer Credit", "cc", period, new_ledger, is_first_year=True, is_contra=True)
                     
                     create_accountChart(new_tenant, "Inventory","Current Assets",\

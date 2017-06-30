@@ -648,7 +648,7 @@ def import_product(request):
 				if (rows):
 					str1 = ' ,'.join(str(e) for e in rows)
 					messages.add_message(request, messages.WARNING, 'There was error in the following rows: .'+str1\
-							+". Either the compulsory parameters are empty or the SKU are not unique")
+							+". Either the compulsory parameters are empty or the SKU/Barcodes are not unique.")
 					messages.add_message(request, messages.INFO, 'The rest of the data have been uploaded successfully.')	
 				else:
 					messages.add_message(request, messages.SUCCESS, 'Data uploaded successfully.')

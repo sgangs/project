@@ -1,0 +1,206 @@
+$(function(){
+
+//This variable will store the student list added via json
+
+//This will help to remove the error modal.
+function clearmodal(){
+    window.setTimeout(function(){
+        bootbox.hideAll();
+    }, 2500);
+}
+
+var classid=1;
+var examid=1;
+
+
+$( ".exam" ).change(function() {
+    examid =parseInt($(".exam").find(':selected').data('id'));
+    (function() {
+        $.ajax({
+            url : "", 
+            type : "POST", 
+            data : { start: start,
+                end: end
+                // calltype: 'subject',
+                csrfmiddlewaretoken: csrf_token}, // data sent with the post request
+            dataType: 'json',
+            // handle a successful response
+            success : function(jsondata){
+                // console.log(jsondata);
+                draw_crossfilter(jsondata);
+
+            },
+            // handle a non-successful response
+            error : function() {
+                bootbox.alert({
+                    message: "No data found in the date range.", 
+                    onEscape: true }); // provide a bit more info about the error to the user
+                clearmodal();
+            }
+        });
+    }());
+});
+
+
+function draw_crossfilter(data){
+
+    var vendorChart = dc.rowChart("#subject-chart");
+    var dateChart = dc.rowChart("#class-chart");
+    var productChart = dc.pieChart("#marks-chart");
+    // var studentChart = dc.rowChart("#student-chart");
+    var dataTable = dc.dataTable("#table-graph");
+
+    //data format should be: {student name/id, class name, final_score, subject name}
+    var xdata=crossfilter(data);
+    total=xdata.size()
+    
+    var vendorDim=xdata.dimension(function(d) {return ""+d.subject;});
+    var dateDim=xdata.dimension(function(d) {return d.class;});
+    var productDim=xdata.dimension(function(d) {return d.student_id;});
+    // var marksDim = xdata.dimension(function(p) {
+    //     if (p.marks <35){
+    //         p.group = "0-35"
+    //     }
+    //     else if (p.marks >=35, p.marks<60){
+    //         p.group = "35-60"
+    //     }
+    //     else if (p.marks >=60, p.marks<80){
+    //         p.group = "60-80"
+    //     }
+    //     else{
+    //         p.group = "80-100"
+    //     }
+    //     return p.group;
+    // });
+
+    // function reduceAdd(p, v) {
+    //     ++p.count;
+    //     p.total += v.marks;
+    //     p.average = p.count ? p.total / p.count : 0;
+    //     return p;
+    // }
+    // function reduceRemove(p, v) {
+    //     --p.count;
+    //     p.total -= v.marks;
+    //     p.average = p.count ? p.total / p.count : 0;
+    //     return p;
+    // }
+    // function reduceInitial() {
+    //     return {count: 0, total: 0, average: 0};
+    // }
+
+        
+    vendorSumGroup = vendorDim.group()
+    dateSumGroup = dateDim.group();
+    productSumGroup = productDim.group();
+    // marksGroup = marksDim.group();
+
+    // subject_count=subjectAvgGroup.top(Infinity).length;
+    // class_count=classAvgGroup.top(Infinity).length;
+    
+    // var reducer = reductio().avg(function(d) { return d.marks; });
+    var reducer = reductio().sum(function(d) { return +d.number; });
+    reducer(vendorSumGroup);
+    reducer(dateSumGroup);
+    reducer(productSumGroup);
+    // reductio().avg(function(d) { return +d.marks; })(subjectAvgGroup);
+    // marksGroup = marksDim.groupAll()
+
+    function render_plots(){
+        $('.graphs').attr('hidden', false);
+        subjectChart
+                .height(subject_count*100)
+                // .width(300).height(200)
+                .dimension(subjectDim)
+                .group(subjectAvgGroup)
+                .valueAccessor(function(p) { 
+                    //console.log("p.value.average: ", p.value.avg) //displays the avg fine
+                    return p.value.avg; 
+                })
+                .title(function (d) {
+                  return (d.key + " Average Marks: " + d.value.avg.toFixed(2)) ;
+                })
+                .xAxis().ticks(5);
+
+        classChart
+                .height(class_count*100)
+                // .width(300).height(200)
+                .dimension(classDim)
+                .group(classAvgGroup)
+                .title(function (d) {
+                  return (d.key + " Average Marks: " + d.value.avg.toFixed(2)) ;
+                })
+                .valueAccessor(function(p) { 
+                    //console.log("p.value.average: ", p.value.avg) //displays the avg fine
+                    return p.value.avg; ;
+                });
+
+        marksChart
+                // .width(200).height(200)
+                .dimension(marksDim)
+                .group(marksGroup)
+                .innerRadius(20)
+                .renderLabel(true)
+                .title(function (d) {
+                  return ("No. of students in range " +d.key +": " + d.value) ;
+                });
+
+
+        studentChart
+                .height(total/subject_count*25)
+                // .width(800)
+                .dimension(studentDim)
+                .group(studentAvgGroup, "Student wise score")
+                .label(function (d) {
+                  return (d.key.split(' ')[1] +" "+d.key.split(' ')[2]) ;
+                })
+                .title(function (d) {
+                  return (d.key.split(' ')[1] +" "+d.key.split(' ')[2] + " Average Marks: " + d.value.avg.toFixed(2)) ;
+                })
+                .valueAccessor(function(p) { 
+                    //console.log("p.value.average: ", p.value.avg) //displays the avg fine
+                    return p.value.avg; 
+                })
+                .xAxis().ticks(20);
+                // .xAxis(d3.scale.linear().domain([0, 100]));
+
+        dataTable.width(800).height(800)
+            .dimension(studentDim)
+            .group(function(d) { return ""})
+            .size(300)
+            .columns([
+                function(d) { return d.student_id.split(' ')[1] +" "+d.student_id.split(' ')[2]; },
+                function(d) { return d.class;},
+                function(d) { return d.subject;},
+                function(d) { return d.marks; },
+            ])
+            .sortBy(function(d){ return d.class+ " " + d.student_id; })
+            // (optional) sort order, :default ascending
+            .order(d3.ascending);
+
+
+        dc.renderAll()
+
+        // marksChart.on ("renderlet", function(chart) {
+        //     dc.events.trigger(function() {
+        //         console.log(marksChart.filters());
+        //     });
+        // })
+        
+        // subjectChart.turnOnControls(true)
+        // classChart.turnOnControls(true)
+        // marksChart.turnOnControls(true)
+        // studentChart.turnOnControls(true)
+
+    };
+
+    render_plots();
+
+
+} //End of crossfilter
+});
+
+
+
+
+

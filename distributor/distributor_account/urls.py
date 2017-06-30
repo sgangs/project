@@ -28,4 +28,5 @@ urlpatterns = [
     url(r'^gst-purchase-report/$', views.new_gst_purchase, name='new_gst_purchase'),
     url(r'^journallist/account/(?P<pk_detail>[-\S]+)/$', views.account_journal_entries, name='account_journal_entries'),
     url(r'^journalview/(?P<pk_detail>[-\S]+)/$', views.journal_detail, name='journal_detail'),
+    url(r'^gst-payment/$', views.gst_payment, name='gst_payment'),
 ]
