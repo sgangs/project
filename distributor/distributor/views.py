@@ -12,6 +12,13 @@ from django.shortcuts import render, redirect
 from django.utils.timezone import localtime, now
 from django.views.generic import TemplateView
 
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.template import Context
+from django.template.loader import get_template
+from django.conf import settings
+
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
@@ -219,6 +226,21 @@ def RegisterView(request):
                     payment.tenant=new_tenant
                     payment.payment_account=customer_credit
                     payment.save()
+
+                    from_email = 'support@techassisto.com'
+                    to_email = new_tenant.email
+                    bcc_mail='sayantan@techassisto.com'
+                    subject = "Welcome to Tech Assisto: "+new_user.first_name
+                    # template = get_template('registration/welcome_email.html')
+                    # context = Context({'first_name': new_user.first_name, 'last_name': new_user.last_name})
+                    html_content = render_to_string('registration/welcome_email.html', {'first_name': new_user.first_name,\
+                                    'last_name': new_user.last_name})
+                    text_content = strip_tags(html_content)
+                    # msg = EmailMessage(subject, content, from_email, [to_email],[bcc_mail] )
+                    # msg.content_subtype = "html"
+                    msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email],[bcc_mail] )
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send(fail_silently=False)
                 except:
                     transaction.rollback()
 

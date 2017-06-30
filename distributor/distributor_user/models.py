@@ -90,7 +90,7 @@ class User(AbstractUser):
 	updated = models.DateTimeField(auto_now=True)
 	
 	class Meta(object):
-		unique_together = ('email','username')
+		unique_together = ('email',)
 
 
 class user_permission(models.Model):

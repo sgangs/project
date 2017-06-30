@@ -775,4 +775,26 @@ def excel_receipt(request, pk):
 		response.write(xlsx_data)
 		return response
 		
+@login_required
+def purchase_crossfilter(request):
+	return render(request,'purchase/vendor_payment_crossfilter.html', {'extension': 'base.html'})
+
+
+
+@api_view(['GET', 'POST'],)
+def receipts_crossfilter(request):
+	this_tenant=request.user.tenant
+	calltype = request.GET.get('calltype')
+	if calltype == 'purchase crossfilter':
+		start = request.GET.get('start')
+		end = request.GET.get('end')
+
+		receipt=purchase_receipt.objects.for_tenant(this_tenant).filter(date__range=[start,end])
+
+		line_items=list(receipt_line_item.objects.filter(purchase_receipt__in=receipt).values('id','product_name','product_sku',\
+			'line_total', 'purchase_receipt__vendor_name', 'purchase_receipt__warehouse_address',\
+			'purchase_receipt__supplier_invoice', 'purchase_receipt__date'))
+
+		jsondata = json.dumps(line_items, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
 		

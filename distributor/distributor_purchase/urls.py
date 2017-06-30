@@ -18,5 +18,8 @@ urlpatterns = [
     url(r'^receiptlist/$', views.receipt_list, name='receipt_list'),
     url(r'^debitnotereturn/$', views.debit_note_return_view, name='debit_note_return_view'),
     url(r'^productinventorydetails/$', views.product_inventory_details, name='product_inventory_details'),
+    url(r'^debitnotereturn/$', views.debit_note_return_view, name='debit_note_return_view'),
+    url(r'^purchase_graph/$', views.purchase_crossfilter, name='purchase_crossfilter'),
+    url(r'^purchase_graph/data/$', views.receipts_crossfilter, name='receipts_crossfilter'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

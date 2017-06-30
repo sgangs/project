@@ -2,26 +2,40 @@ $(function(){
 
 //This variable will store the student list added via json
 
-//This will help to remove the error modal.
-function clearmodal(){
-    window.setTimeout(function(){
-        bootbox.hideAll();
-    }, 2500);
-}
+var end = moment();
+var start = moment(end).subtract(60, 'days');
+var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
 
-var classid=1;
-var examid=1;
+$('.date_range').daterangepicker({
+    'showDropdowns': true,
+    'locale': {
+        format: 'DD/MM/YYYY',
+    },
+    "dateLimit": {
+        "days": 90
+    },
+    'autoApply':true,
+    // 'minDate': moment(start),
+    // 'maxDate': moment(end)  
+    // 'startDate' : start,
+    // 'endDate' : end,
+    },
+    function(start, end, label) {
+        startdate=start.format('YYYY-MM-DD');
+        enddate=end.format('YYYY-MM-DD');
+        $('.details').attr('disabled', false);
+});
 
-
-$( ".exam" ).change(function() {
-    examid =parseInt($(".exam").find(':selected').data('id'));
+$( ".get_data" ).click(function() {
+    // console.log("here");
+    console.log(startdate);
     (function() {
         $.ajax({
-            url : "", 
-            type : "POST", 
-            data : { start: start,
-                end: end
-                // calltype: 'subject',
+            url : "data/", 
+            type : "GET", 
+            data : { start: startdate,
+                end: enddate,
+                calltype: 'purchase crossfilter',
                 csrfmiddlewaretoken: csrf_token}, // data sent with the post request
             dataType: 'json',
             // handle a successful response
@@ -32,10 +46,7 @@ $( ".exam" ).change(function() {
             },
             // handle a non-successful response
             error : function() {
-                bootbox.alert({
-                    message: "No data found in the date range.", 
-                    onEscape: true }); // provide a bit more info about the error to the user
-                clearmodal();
+                swal("Oops...", "There were some errors. Please check the purchase data.", "error");
             }
         });
     }());
@@ -44,19 +55,24 @@ $( ".exam" ).change(function() {
 
 function draw_crossfilter(data){
 
-    var vendorChart = dc.rowChart("#subject-chart");
-    var dateChart = dc.rowChart("#class-chart");
-    var productChart = dc.pieChart("#marks-chart");
+    var vendorChart = dc.pieChart("#subject-chart");
+    // var dateChart = dc.barChart("#class-chart");
+    var productChart = dc.rowChart("#marks-chart");
     // var studentChart = dc.rowChart("#student-chart");
-    var dataTable = dc.dataTable("#table-graph");
+    // var dataTable = dc.dataTable("#table-graph");
 
     //data format should be: {student name/id, class name, final_score, subject name}
+    //data format should be: {vendor_name, warehouse_address, line_total, supplier_invoice, date, product_sku}
+    
     var xdata=crossfilter(data);
     total=xdata.size()
+
+    console.log(data)
+    console.log(total)
     
-    var vendorDim=xdata.dimension(function(d) {return ""+d.subject;});
-    var dateDim=xdata.dimension(function(d) {return d.class;});
-    var productDim=xdata.dimension(function(d) {return d.student_id;});
+    var vendorDim=xdata.dimension(function(d) {return ""+d.purchase_receipt__vendor_name;});
+    // var dateDim=xdata.dimension(function(d) {return d.purchase_receipt__date;});
+    var productDim=xdata.dimension(function(d) {return d.product_sku;});
     // var marksDim = xdata.dimension(function(p) {
     //     if (p.marks <35){
     //         p.group = "0-35"
@@ -91,106 +107,81 @@ function draw_crossfilter(data){
 
         
     vendorSumGroup = vendorDim.group()
-    dateSumGroup = dateDim.group();
+    // dateSumGroup = dateDim.group();
     productSumGroup = productDim.group();
     // marksGroup = marksDim.group();
 
     // subject_count=subjectAvgGroup.top(Infinity).length;
-    // class_count=classAvgGroup.top(Infinity).length;
+    product_count=productSumGroup.top(Infinity).length;
     
     // var reducer = reductio().avg(function(d) { return d.marks; });
-    var reducer = reductio().sum(function(d) { return +d.number; });
+    var reducer = reductio().sum(function(d) { return +d.line_total; });
     reducer(vendorSumGroup);
-    reducer(dateSumGroup);
+    // reducer(dateSumGroup);
     reducer(productSumGroup);
+
+    console.log("data we got: ")
+    
     // reductio().avg(function(d) { return +d.marks; })(subjectAvgGroup);
     // marksGroup = marksDim.groupAll()
 
     function render_plots(){
         $('.graphs').attr('hidden', false);
-        subjectChart
-                .height(subject_count*100)
-                // .width(300).height(200)
-                .dimension(subjectDim)
-                .group(subjectAvgGroup)
-                .valueAccessor(function(p) { 
-                    //console.log("p.value.average: ", p.value.avg) //displays the avg fine
-                    return p.value.avg; 
-                })
-                .title(function (d) {
-                  return (d.key + " Average Marks: " + d.value.avg.toFixed(2)) ;
-                })
-                .xAxis().ticks(5);
-
-        classChart
-                .height(class_count*100)
-                // .width(300).height(200)
-                .dimension(classDim)
-                .group(classAvgGroup)
-                .title(function (d) {
-                  return (d.key + " Average Marks: " + d.value.avg.toFixed(2)) ;
-                })
-                .valueAccessor(function(p) { 
-                    //console.log("p.value.average: ", p.value.avg) //displays the avg fine
-                    return p.value.avg; ;
-                });
-
-        marksChart
+        vendorChart
                 // .width(200).height(200)
-                .dimension(marksDim)
-                .group(marksGroup)
+                .dimension(vendorDim)
+                .group(vendorSumGroup)
                 .innerRadius(20)
                 .renderLabel(true)
                 .title(function (d) {
-                  return ("No. of students in range " +d.key +": " + d.value) ;
+                    console.log(d)
+                    return ("Vendor wise purchase " +d.key +": " + d.value.sum) ;
                 });
 
+        // classChart
+        //         .height(class_count*100)
+        //         // .width(300).height(200)
+        //         .dimension(classDim)
+        //         .group(classAvgGroup)
+        //         .title(function (d) {
+        //           return (d.key + " Average Marks: " + d.value.avg.toFixed(2)) ;
+        //         })
+        //         .valueAccessor(function(p) { 
+        //             //console.log("p.value.average: ", p.value.avg) //displays the avg fine
+        //             return p.value.avg; ;
+        //         });
 
-        studentChart
-                .height(total/subject_count*25)
-                // .width(800)
-                .dimension(studentDim)
-                .group(studentAvgGroup, "Student wise score")
-                .label(function (d) {
-                  return (d.key.split(' ')[1] +" "+d.key.split(' ')[2]) ;
-                })
-                .title(function (d) {
-                  return (d.key.split(' ')[1] +" "+d.key.split(' ')[2] + " Average Marks: " + d.value.avg.toFixed(2)) ;
-                })
+        productChart
+                .height(product_count*100)
+                // .width(300).height(200)
+                .dimension(productDim)
+                .group(productSumGroup)
                 .valueAccessor(function(p) { 
                     //console.log("p.value.average: ", p.value.avg) //displays the avg fine
-                    return p.value.avg; 
+                    return p.value.sum; 
                 })
-                .xAxis().ticks(20);
-                // .xAxis(d3.scale.linear().domain([0, 100]));
+                .title(function (d) {
+                    return (d.key + " Total : " + d.value.sum) ;
+                })
+                .xAxis().ticks(5);
 
-        dataTable.width(800).height(800)
-            .dimension(studentDim)
-            .group(function(d) { return ""})
-            .size(300)
-            .columns([
-                function(d) { return d.student_id.split(' ')[1] +" "+d.student_id.split(' ')[2]; },
-                function(d) { return d.class;},
-                function(d) { return d.subject;},
-                function(d) { return d.marks; },
-            ])
-            .sortBy(function(d){ return d.class+ " " + d.student_id; })
-            // (optional) sort order, :default ascending
-            .order(d3.ascending);
+
+        // dataTable.width(800).height(800)
+        //     .dimension(studentDim)
+        //     .group(function(d) { return ""})
+        //     .size(300)
+        //     .columns([
+        //         function(d) { return d.student_id.split(' ')[1] +" "+d.student_id.split(' ')[2]; },
+        //         function(d) { return d.class;},
+        //         function(d) { return d.subject;},
+        //         function(d) { return d.marks; },
+        //     ])
+        //     .sortBy(function(d){ return d.class+ " " + d.student_id; })
+        //     // (optional) sort order, :default ascending
+        //     .order(d3.ascending);
 
 
         dc.renderAll()
-
-        // marksChart.on ("renderlet", function(chart) {
-        //     dc.events.trigger(function() {
-        //         console.log(marksChart.filters());
-        //     });
-        // })
-        
-        // subjectChart.turnOnControls(true)
-        // classChart.turnOnControls(true)
-        // marksChart.turnOnControls(true)
-        // studentChart.turnOnControls(true)
 
     };
 
