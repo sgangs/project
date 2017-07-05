@@ -82,12 +82,12 @@ def get_product_inventory(request):
 def get_product_barcode(request):
 	this_tenant=request.user.tenant
 	response_data={}
+
 	if request.method == 'GET':
 		try:
 			product_barcode = request.GET.get('product_barcode')
 			warehouse_id = request.GET.get('warehouse_id')
-
-			product_data=Product.objects.for_tenant(this_tenant).get(barcode  = product_barcode)
+			
 			product_quantity=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,product=product_data,\
 					warehouse=warehouse_id).aggregate(Sum('quantity_available'))['quantity_available__sum']
 			product_rate=list(product_sales_rate.objects.for_tenant(this_tenant).filter(product=product_data).\
@@ -123,11 +123,14 @@ def sales_invoice_save(request):
 		calltype = request.data.get('calltype')
 		response_data = {}
 		this_tenant=request.user.tenant
-		if (calltype == 'save'):
+		if (calltype == 'save' or calltype == 'mobilesave'):
 			with transaction.atomic():
 				try:
 					date = date_first.date.today()
-					bill_data = json.loads(request.data.get('bill_details'))
+					if (calltype == 'save'):
+						bill_data = json.loads(request.data.get('bill_details'))
+					else:
+						bill_data = request.data.get('bill_details')
 					print(request.data)
 					# new_invoice=new_sales_invoice(this_tenant, request, 0)
 					
