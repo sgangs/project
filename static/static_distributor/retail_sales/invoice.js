@@ -273,6 +273,7 @@ function get_total(){
             this_final_total=this_total
             total+=this_final_total
             subtotal+=this_final_total-tax_total
+            this_total = this_total - tax_total
         }
         else{
             cgst_total=(this_total*cgst_percent)/100;

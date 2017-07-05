@@ -20,6 +20,7 @@ function load_list(){
                 "<td>"+this.tax_type+"</td>"+
                 "<td>"+this.tax_percent+ "%</td>"+
                 "<td>"+this.tax_value+"</td>"+
+                "<td>"+this.is_registered+"</td>"+
                 
                 // "<td>"+this.total+"</td>"+
                 // "<td>"+this.amount_paid+"</td>"+
