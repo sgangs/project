@@ -17,19 +17,36 @@ function load_products(){
             console.log(jsondata);
             $.each(jsondata, function(){
                 var url='/inventory/barcode/'+this.id+'/'
-                $('#product_table').append("<tr class='data' align='center'>"+
-                "<td hidden='true'>"+this.id+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
-                "<td>"+$.trim(this.hsn)+"</td>"+
-                "<td>"+this.sku+"</td>"+
-                "<td>"+$.trim(this.default_unit)+"</td>"+
-                "<td>"+$.trim(this.brand)+"</td>"+
-                "<td>"+$.trim(this.group)+"</td>"+
-                "<td>"+$.trim(this.remarks)+"</td>"+
-                "<td>"+$.trim(this.rates[0].tentative_sales_rate)+"</td>"+
-                "<td class='add_price'>Click to add sales rate</td>"+
-                "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
-                "</tr>");
+                if ($.trim(this.rates).length>0){
+                    $('#product_table').append("<tr class='data' align='center'>"+
+                    "<td hidden='true'>"+this.id+"</td>"+
+                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
+                    "<td>"+$.trim(this.hsn)+"</td>"+
+                    "<td>"+this.sku+"</td>"+
+                    "<td>"+$.trim(this.default_unit)+"</td>"+
+                    "<td>"+$.trim(this.brand)+"</td>"+
+                    "<td>"+$.trim(this.group)+"</td>"+
+                    "<td>"+$.trim(this.remarks)+"</td>"+
+                    "<td>"+$.trim(this.rates[0].tentative_sales_rate)+"</td>"+
+                    "<td class='add_price'>Click to add sales rate</td>"+
+                    "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
+                    "</tr>");
+                }
+                else{
+                    $('#product_table').append("<tr class='data' align='center'>"+
+                    "<td hidden='true'>"+this.id+"</td>"+
+                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
+                    "<td>"+$.trim(this.hsn)+"</td>"+
+                    "<td>"+this.sku+"</td>"+
+                    "<td>"+$.trim(this.default_unit)+"</td>"+
+                    "<td>"+$.trim(this.brand)+"</td>"+
+                    "<td>"+$.trim(this.group)+"</td>"+
+                    "<td>"+$.trim(this.remarks)+"</td>"+
+                    "<td></td>"+
+                    "<td class='add_price'>Click to add sales rate</td>"+
+                    "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
+                    "</tr>");   
+                }
             })
         },
         // handle a non-successful response
