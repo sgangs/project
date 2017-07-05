@@ -64,15 +64,15 @@ def get_tax_report(request):
 	response_data={}
 	if (calltype == 'all_list'):
 		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type',\
-			'tax_percent', 'tax_value','transaction_bill_no','date',)\
+			'tax_percent', 'tax_value','transaction_bill_no','date','is_registered')\
 			.order_by('transaction_type','date','tax_type','tax_percent'))
 	elif (calltype == 'short_summary'):
-		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='CGST').\
-					aggregate(Sum('tax_value'))['tax_value__sum']
-		response_data['sgst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='SGST').\
-					aggregate(Sum('tax_value'))['tax_value__sum']
-		response_data['igst_input']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=1,tax_type='IGST').\
-					aggregate(Sum('tax_value'))['tax_value__sum']
+		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
+					filter(transaction_type=1,tax_type='CGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
+		response_data['sgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
+					filter(transaction_type=1,tax_type='SGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
+		response_data['igst_input']=tax_transaction.objects.for_tenant(this_tenant).\
+					filter(transaction_type=1,tax_type='IGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
 		
 		response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='CGST').\
 					aggregate(Sum('tax_value'))['tax_value__sum']
@@ -470,3 +470,32 @@ def gst_payment(request):
 	return render(request, 'gst_report/gst_payment.html',{'extension':extension})
 
 
+@login_required
+#This view is for profit and loss
+def profit_loss_view(request):
+	extension="base.html"
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	# try:
+	response_data=get_profit_loss(request, start, end)
+	# except:
+		# response_data=[]
+	jsondata = json.dumps(response_data)
+	return render(request, 'account/profit_loss.html', {'accounts':jsondata, "start":start, "date":end, "call":"p-l", \
+					'extension':extension})
+
+
+@login_required
+#Show Balance Sheet
+def balance_sheet(request):
+	date=datetime.now()
+	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+	start=period.start
+	end=period.end
+	try:
+		response_data=get_balance_sheet(request, start, end)
+	except:
+		response_data=[]
+	jsondata = json.dumps(response_data)
+	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s'})

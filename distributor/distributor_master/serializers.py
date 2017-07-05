@@ -59,13 +59,22 @@ class AttributeSerializers (serializers.ModelSerializer):
 		model = Attribute
 		fields = ('id','name')
 
+class ProductRateSerializers (serializers.ModelSerializer):
+	product=serializers.StringRelatedField()
+	class Meta:
+		model = product_sales_rate
+		fields = ('id','product','tentative_sales_rate', 'is_tax_included')
+
 class ProductSerializers (serializers.ModelSerializer):
 	default_unit=serializers.StringRelatedField()
 	brand=serializers.StringRelatedField()
 	group=serializers.StringRelatedField()
+	# productSalesRate_product = serializers.StringRelatedField(many=True)
+	rates = ProductRateSerializers(source='productSalesRate_product', many=True)
 	class Meta:
 		model = Product
-		fields = ('id','name','sku', 'barcode', 'default_unit', 'brand','group','remarks')
+		fields = ('id','name','sku', 'barcode', 'default_unit', 'brand','group','remarks', 'rates')
+
 
 class ProductDetailSerializers (serializers.ModelSerializer):
 	default_unit=serializers.StringRelatedField()

@@ -99,6 +99,45 @@ class account_year(models.Model):
 		unique_together = (("account","accounting_period", "tenant"))
 
 
+class account_inventory(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	name=models.CharField(db_index=True, max_length =60)
+	key=models.CharField(db_index=True, max_length=15)
+	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountInventory_account_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+	
+	
+	class Meta:
+		unique_together = (("key", "tenant"),("name", "tenant"))
+		# ordering = ['account_type','name',]
+
+	def __str__(self):
+		return self.name
+
+class account_year_inventory(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	account_inventory=models.ForeignKey(account_inventory,db_index=True, related_name='accountYearInventory_accountInventory')
+	opening_debit=models.DecimalField("Opening Debit Balance", max_digits=12, decimal_places=2, default=0)
+	opening_credit=models.DecimalField("Opening Credit Balance", max_digits=12, decimal_places=2, default=0)
+	first_debit=models.DecimalField("Debit Balance as on date of registration", max_digits=12, decimal_places=2,\
+									blank=True, null=True)
+	first_credit=models.DecimalField("Credit Balance as on date of registration", max_digits=12, decimal_places=2,\
+									blank=True, null=True)	
+	current_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)	
+	closing_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	closing_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='accountYearInventory_accountingPeriod')
+	is_first_year=models.BooleanField(default=True)
+	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountYearInventory_account_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		unique_together = (("account_inventory","accounting_period", "tenant"))
+
+
 #This is to have each journal as group
 class journal_group(models.Model):
 	id=models.BigAutoField(primary_key=True)
@@ -174,6 +213,7 @@ class journal_entry(models.Model):
 		return self.account.name
 
 
+
 #This model is for modes of payment
 class payment_mode(models.Model):
 	id=models.BigAutoField(primary_key=True)
@@ -226,6 +266,7 @@ class tax_transaction(models.Model):
 	transaction_bill_no=models.BigIntegerField(blank=True, null=True)
 	date=models.DateField(db_index=True)
 	# is_conciled=models.BooleanField(default=False)
+	is_registered=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='taxTransaction_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

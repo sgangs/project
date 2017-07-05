@@ -14,6 +14,7 @@ function load_products(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            console.log(jsondata);
             $.each(jsondata, function(){
                 var url='/inventory/barcode/'+this.id+'/'
                 $('#product_table').append("<tr class='data' align='center'>"+
@@ -25,6 +26,7 @@ function load_products(){
                 "<td>"+$.trim(this.brand)+"</td>"+
                 "<td>"+$.trim(this.group)+"</td>"+
                 "<td>"+$.trim(this.remarks)+"</td>"+
+                "<td>"+$.trim(this.rates[0].tentative_sales_rate)+"</td>"+
                 "<td class='add_price'>Click to add sales rate</td>"+
                 "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
                 "</tr>");

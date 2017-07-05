@@ -3,6 +3,7 @@ local.py
 settings.py
 email.py
 secret.py
+payment_secret.py
 new_simple.html
 manufacturing/**
 school/school_user/static/**/*

@@ -1,0 +1,29 @@
+{% extends "landingbase.html" %}
+
+{% block title %}
+<title>
+    Error 
+</title>
+
+{% endblock %}
+
+{% block content %}
+{% load staticfiles %}
+<div class="row">
+  <!-- <div class="col-md-6 col-md-offset-3 text-center"> -->
+  <div class="col-md-6 text-center">
+    <br>
+    <h2 style="padding-bottom:10px;">You are not maintaining inventory.<br> Hence you are not allowed in this territory </h2>
+    <h4 style="padding-bottom:30px;">Never mind, Assisto is there for your assistance. Always!!</h4>
+    <h2 style="padding-bottom:10px;"><i class="fa fa-exclamation-triangle" style="color:red"></i> Bad Request <small>No inventory error</small></h2>
+    <p style="padding-bottom:30px;">Hey.. there's too much to stock to take care of!!<br></p>
+    <p><h3><a href="{% url 'login' %}" style="color:#6bd4fa;">Click here</a> to return to home page</h3></p>
+  </div>
+  <div class="col-md-6 text-center">
+    <p><img src="{% static 'gif/inventory.gif' %}" alt=""></p>
+  </div>
+</div>
+{% endblock %}
+
+
+

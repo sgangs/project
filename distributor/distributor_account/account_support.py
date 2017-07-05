@@ -5,7 +5,7 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext
 
-from .models import Account, account_year, accounting_period, journal_entry
+from .models import Account, account_year,account_inventory, account_year_inventory, accounting_period, journal_entry
 
 def create_new_accounts_year(new_period, this_tenant):
     acoounts_list=Account.objects.for_tenant(this_tenant).all()
@@ -74,6 +74,8 @@ def get_profit_loss(request, start, end, sent='p-l'):
     tax_expense=0
     profit=0
     for item in account_list:
+        this_debit=True
+        this_credit=True
         total=0
         journals=journal_entry.objects.for_tenant(request.user.tenant).\
             filter(journal__date__range=(start,end), account=item)
@@ -81,43 +83,61 @@ def get_profit_loss(request, start, end, sent='p-l'):
         journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
         if (journal_debit['value__sum'] == None):
             journal_debit['value__sum'] = 0
+            this_debit = False
         if (journal_credit['value__sum'] == None):
             journal_credit['value__sum'] = 0
+            this_credit = False
         if (item.account_type in ('dirrev','indev')):
             total-=journal_debit['value__sum']
             total+=journal_credit['value__sum']
-            if(item.account_type in ('Revenue','Fees')):
+            if(item.account_type in ('dirrev')):
                 income+=total
                 if (sent=='p-l'):
-                    response_data.append({'data_type':'income','account':item.name,'total':str(total)})
+                    if (this_debit or this_credit):
+                        response_data.append({'data_type':'income','account':item.name,'total':str(total)})
             else:
                 other_income+=total
                 if (sent == 'p-l'):
-                    response_data.append({'data_type':'other_income','account':item.name,'total':str(total)})
+                    if (this_debit or this_credit):
+                        response_data.append({'data_type':'other_income','account':item.name,'total':str(total)})
         elif (item.account_type in ('direxp', 'taxexp','indexp')):
             total+=journal_debit['value__sum']
             total-=journal_credit['value__sum']
             if(item.account_type in ('direxp')):
                 expense+=total
                 if (sent == 'p-l'):
-                    response_data.append({'data_type':'expense','account':item.name,'total':str(total)})
-            elif(item.account_type in ('indexp')):
+                    if (this_debit or this_credit):
+                        response_data.append({'data_type':'expense','account':item.name,'total':str(total)})
+            # elif(item.account_type in ('indexp')):
+            #     other_expense+=total
+            #     if (sent == 'p-l'):
+            #         response_data.append({'data_type':'other_expense','account':item.name,'total':str(total)})
+            else:
                 other_expense+=total
                 if (sent == 'p-l'):
-                    response_data.append({'data_type':'other_expense','account':item.name,'total':str(total)})
-            else:
-                tax_expense+=total
-                if (sent == 'p-l'):
-                    response_data.append({'data_type':'tax_expense','account':item.name,'total':str(total)})
+                    if (this_debit or this_credit):
+                        response_data.append({'data_type':'other_expense','account':item.name,'total':str(total)})
+            # else:
+            #     tax_expense+=total
+            #     if (sent == 'p-l'):
+            #         response_data.append({'data_type':'tax_expense','account':item.name,'total':str(total)})
         
-        gross_income=income-expense
+        inventory_acct=account_inventory.objects.for_tenant(request.user.tenant).get(name__exact="Inventory")
+        acct_period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+        inventory_this_year=account_year_inventory.objects.for_tenant(request.user.tenant).\
+                        get(account_inventory=inventory_acct, accounting_period = acct_period)
+        opening_stock=inventory_this_year.opening_debit - inventory_this_year.opening_credit
+        closing_stock=inventory_this_year.current_debit - inventory_this_year.current_credit
+        gross_income=income-expense-opening_stock+closing_stock
         net_income=gross_income+other_income-other_expense
-        income_after_tax=net_income-tax_expense
+        # income_after_tax=net_income-tax_expense
 
     if (sent == 'p-l'):
         response_data.append({'data_type':'gross','income':str(gross_income)})
         response_data.append({'data_type':'net','income':str(net_income)})
-        response_data.append({'data_type':'net_after_tax','income':str(income_after_tax)})
+        response_data.append({'data_type':'opening','income':str(opening_stock)})
+        response_data.append({'data_type':'closing','income':str(closing_stock)})
+        # response_data.append({'data_type':'net_after_tax','income':str(income_after_tax)})
         return response_data
     return income_after_tax
 

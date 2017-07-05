@@ -49,7 +49,7 @@ class Tenant(models.Model):
 	trial=models.BooleanField('Is the tenant under trail?')
 	trial_from=models.DateField(null=True, blank=True)
 	trial_to=models.DateField(null=True, blank=True)
-	paid_until=models.DateField(null=True, blank=True)
+	paid_due=models.DateField(null=True, blank=True)
 	is_active=models.BooleanField(default=True)
 	updated = models.DateTimeField(auto_now=True)
 
@@ -74,6 +74,8 @@ class tenant_payment(models.Model):
 	# cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	# sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	# igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	payment_no=models.BigIntegerField()
+	is_processed=models.BooleanField(default=False)
 	paid_on=models.DateField(blank=True, null=True)
 	no_customers=models.PositiveSmallIntegerField(default=1)
 	no_sms=models.PositiveSmallIntegerField(default=0)
@@ -111,6 +113,7 @@ class user_permission(models.Model):
 	can_create_sales=models.BooleanField()
 	can_authorize_sales=models.BooleanField()
 	updated = models.DateTimeField(auto_now=True)
+
 
 
 

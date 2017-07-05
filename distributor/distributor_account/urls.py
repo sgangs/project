@@ -22,6 +22,7 @@ urlpatterns = [
 
     url(r'^trialbalance/data/$', views.trial_balance_data, name='trial_balance_data'),
     url(r'^trialbalance/$', views.trial_balance_view, name='trial_balance_view'),
+    url(r'^profitloss/$', views.profit_loss_view, name='profit_loss_view'),
     # url(r'^invoice/api/getproduct$', views.get_product, name='get_product'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
     url(r'^gst-purchase-report/getdata/$', views.get_gst_purchase, name='get_gst_purchase'),

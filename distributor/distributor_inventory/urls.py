@@ -3,6 +3,8 @@ from django.contrib import admin
 from . import views
 
 urlpatterns = [
+
+    url(r'^noinventory/$', views.not_maintained_inventory, name='not_maintained_inventory'),
     url(r'^getproduct/$', views.get_product, name='get_product'),
     url(r'^getcurrentdata$', views.inventory_data, name='inventory_data'),
     url(r'^currentinventory/$', views.inventory_template, name='inventory_template'),

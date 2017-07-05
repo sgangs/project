@@ -6,8 +6,8 @@
       if(hash =='') {
         return;
       }
-      var payuForm = document.forms.payuForm;
-      payuForm.submit();
+      // var payuForm = document.forms.payuForm;
+      // payuForm.submit();
     }
   </script>
   </head>
@@ -21,7 +21,8 @@
       <br/>
       {% endif %}
      
-      <form action={{ action }} method="post" name="payuForm">{% csrf_token %}
+      <form action={{ action }} method="post" name="payuForm">
+      {% csrf_token %}
       <input type="hidden" name="key" value="{{ MERCHANT_KEY }}" />
       <input type="hidden" name="hash_string" value="{{ hash_string }}" />
       <input type="hidden" name="hash" value="{{ hashh }}"/>

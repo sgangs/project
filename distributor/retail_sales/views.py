@@ -17,7 +17,7 @@ from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Customer, Warehouse, product_sales_rate
 from distributor_inventory.models import Inventory
-from distributor_account.models import Account, tax_transaction
+from distributor_account.models import Account, tax_transaction, account_inventory, account_year_inventory, accounting_period
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 
@@ -128,7 +128,7 @@ def sales_invoice_save(request):
 				try:
 					date = date_first.date.today()
 					bill_data = json.loads(request.data.get('bill_details'))
-
+					print(request.data)
 					# new_invoice=new_sales_invoice(this_tenant, request, 0)
 					
 					customer_phone = request.data.get('customer_phone')
@@ -143,8 +143,6 @@ def sales_invoice_save(request):
 					subtotal=Decimal(request.data.get('subtotal'))
 					cgsttotal=Decimal(request.data.get('cgsttotal'))
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
-					
-					print(cgsttotal)
 					
 					total=Decimal(request.data.get('total'))
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
@@ -378,17 +376,33 @@ def sales_invoice_save(request):
 
 					if maintain_inventory:
 						#COGS Journal Entry
-						if (total_purchase_price<1):
-							raise IntegrityError
-						journal=new_journal(this_tenant, date,"Sales",remarks, trn_id=new_invoice.id, trn_type=7)
-						account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
-						new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
-						account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
-						new_journal_entry(this_tenant, journal, total_purchase_price, account, 2, date)
-						debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-						credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-						if (debit != credit):
-							raise IntegrityError
+						# if (total_purchase_price<1):
+						# 	raise IntegrityError
+						# journal=new_journal(this_tenant, date,"Sales",remarks, trn_id=new_invoice.id, trn_type=7)
+						# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
+						# new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
+						# account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+						# new_journal_entry(this_tenant, journal, total_purchase_price, account, 2, date)
+						# debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+						# credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+						# if (debit != credit):
+						# 	raise IntegrityError
+
+						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+											get(account_inventory=inventory_acct, accounting_period = acct_period)
+						inventory_acct_year.current_debit-=total_purchase_price
+						inventory_acct_year.save()
+
+						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
+						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+											get(account_inventory=inventory_acct, accounting_period = acct_period)
+						inventory_acct_year.current_debit+=total_purchase_price
+						inventory_acct_year.save()
+
+
 					response_data=new_invoice.id
 				except:
 					transaction.rollback()

@@ -1,0 +1,29 @@
+{% extends "landingbase.html" %}
+
+{% block title %}
+<title>
+    Error 
+</title>
+
+{% endblock %}
+
+{% block content %}
+{% load staticfiles %}
+<div class="row">
+  <!-- <div class="col-md-6 col-md-offset-3 text-center"> -->
+  <div class="col-md-6 text-center">
+    <br>
+    <h2 style="padding-bottom:10px;">You're lost. </h2>
+    <h4 style="padding-bottom:30px;">Never mind, Assisto is there for your assistance. Always!!</h4>
+    <h2 style="padding-bottom:10px;"><i class="fa fa-exclamation-triangle" style="color:red"></i> Bad Request <small>400 error</small></h2>
+    <p style="padding-bottom:30px;">Hey.. this bad request made me cough!!<br></p>
+    <p><a href="{% url 'login' %}" style="color:#6bd4fa;">Click here</a> for assistance on travelling back to home page</p>
+  </div>
+  <div class="col-md-6 text-center">
+    <p><img src="{% static 'gif/error.gif' %}" alt=""></p>
+  </div>
+</div>
+{% endblock %}
+
+
+

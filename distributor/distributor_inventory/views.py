@@ -34,13 +34,18 @@ from .forms import *
 from .models import *
 from .serializers import *
 from .inventory_utils import *
-
+from .inventory_control import *
 
 
 @login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def inventory_template(request):
 	extension="base.html"
 	return render (request, 'inventory/inventory_list.html',{'extension':extension})
+
+@login_required
+def not_maintained_inventory(request):
+	return render (request, 'error/not_maintained_inventory.html')
 
 
 # @login_required
@@ -64,6 +69,7 @@ def inventory_data(request):
 
 
 @login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def opening_inventory(request):
 	extension="base.html"
 	return render (request, 'inventory/opening_inventory.html',{'extension':extension})
@@ -176,11 +182,13 @@ def get_product_inventory(request):
 	return HttpResponse(jsondata)
 
 @login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def inventory_transfer_template(request):
 	extension="base.html"
 	return render (request, 'inventory/inventory_transfer.html',{'extension':extension})
 
 @login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def inventory_wastage_template(request):
 	extension="base.html"
 	return render (request, 'inventory/inventory_wastage.html',{'extension':extension})
@@ -280,6 +288,7 @@ def inventory_transfer_data(request):
 
 
 @login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def import_opening_inventory(request):
 	this_tenant=request.user.tenant
 	if request.method == "POST":
@@ -413,6 +422,7 @@ def product_valuation_movement_data(request):
 		
 
 @login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def product_valuation_movement_template(request):
 	extension="base.html"
 	return render (request, 'inventory/product_movement.html',{'extension':extension})

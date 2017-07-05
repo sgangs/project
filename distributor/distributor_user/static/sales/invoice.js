@@ -1,7 +1,7 @@
 $(function(){
 vat_type=["No VAT", "On MRP", "On actual"];
 vat_type_reverse={"No VAT":0, "On MRP":1, "On actual":2};
-var vat_input, vat_percent, unit_data, default_unit, unit_multi={}, unit_names={};
+var vat_input, vat_percent, unit_data, default_unit, unit_multi={}, unit_names={}, maintain_inventory;
 
 $(document).on('keydown.autocomplete', '.name', function() {
     var el=this;
@@ -10,7 +10,8 @@ $(document).on('keydown.autocomplete', '.name', function() {
         minLength: 3,
         timeout: 200,
         select: function( event, ui ) {
-            $(el).closest('tr').addClass("updating");
+            maintain_inventory=ui['item']['inventory']
+            console.log(ui['item']['inventory'])
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
             default_unit=ui['item']['unit']
             $(el).closest('tr').find('td:nth-child(6) .unit').val(ui['item']['unit_id']);
@@ -21,7 +22,10 @@ $(document).on('keydown.autocomplete', '.name', function() {
             $(el).closest('tr').find('td:nth-child(18) input').val(ui['item']['sgst']);
             $(el).closest('tr').find('td:nth-child(20) input').val(ui['item']['igst']);
             $('.unit').selectpicker('refresh');
-            get_product_warehouse(el, ui['item']['id'])
+            if (maintain_inventory){
+                $(el).closest('tr').addClass("updating");
+                get_product_warehouse(el, ui['item']['id'])
+            }
         }
     });
 });
@@ -163,12 +167,16 @@ $('.details').on("click", ".delete", function() {
 $(".details").on("keyup", ".qty", function(){
     var el=this;
     get_total();
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 $(".details").on("keydown", ".qty", function(){
     var el=this;
     get_total();
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 
 
@@ -210,22 +218,30 @@ $(".details").on("keydown", ".sr", function(){
 $(".details").on("keyup", ".freet", function(){
     var el=this;
     get_total();
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 $(".details").on("keydown", ".freet", function(){
     var el=this;
     get_total();
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 
 $(".details").on("keyup", ".free", function(){
     var el=this;
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 
 $(".details").on("keydown", ".free", function(){
     var el=this;
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 
 $(".details").on("change", ".dt", function(){
@@ -274,7 +290,9 @@ $(".details").on("change", ".unit", function(){
     var unit_id = $(this).find(':selected').data('id');
     unit_multi_selected=unit_multi[unit_id]
     $(this).closest('tr').find('td:nth-child(7)').html(unit_multi_selected);
-    get_qty_avl(this);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 
 
@@ -551,8 +569,13 @@ function new_data(){
         // if (isNaN(free_tax)){
         //     free_tax=0;
         // }
+        if (maintain_inventory){
+            var qty_proceed= get_qty_avl(this);
+        }
+        else{
+            qty_proceed = true;
+        }
         
-        var qty_proceed= get_qty_avl(this);
         if (!qty_proceed){
             swal("Oops...", "You don't have enough quantity available. ", "error");
             proceed=false;

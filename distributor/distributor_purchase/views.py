@@ -18,7 +18,8 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Vendor, Warehouse
-from distributor_account.models import Account, tax_transaction, payment_mode
+from distributor_account.models import Account, tax_transaction, payment_mode,accounting_period,\
+									account_inventory, account_year_inventory
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor_inventory.inventory_utils import create_new_inventory_ledger
@@ -151,6 +152,8 @@ def purchase_receipt_save(request):
 					cgst_total=0
 					sgst_total=0
 					igst_total=0
+
+					vendor_gst=vendor.gst
 
 			#saving the receipt_line_item and linking them with foreign key to receipt
 					for data in bill_data:
@@ -302,6 +305,10 @@ def purchase_receipt_save(request):
 							new_tax_transaction.transaction_bill_no=new_receipt.receipt_id
 							new_tax_transaction.date=date
 							new_tax_transaction.tenant=this_tenant
+							if vendor_gst:
+								new_tax_transaction.is_registered = True
+							else:
+								new_tax_transaction.is_registered = False
 							new_tax_transaction.save()
 
 					for k,v in sgst_paid.items():
@@ -315,6 +322,10 @@ def purchase_receipt_save(request):
 							new_tax_transaction.transaction_bill_no=new_receipt.receipt_id
 							new_tax_transaction.date=date
 							new_tax_transaction.tenant=this_tenant
+							if vendor_gst:
+								new_tax_transaction.is_registered = True
+							else:
+								new_tax_transaction.is_registered = False
 							new_tax_transaction.save()
 
 					for k,v in igst_paid.items():
@@ -328,13 +339,17 @@ def purchase_receipt_save(request):
 							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
 							new_tax_transaction.date=date
 							new_tax_transaction.tenant=this_tenant
+							if vendor_gst:
+								new_tax_transaction.is_registered = True
+							else:
+								new_tax_transaction.is_registered = False
 							new_tax_transaction.save()
 
 					if this_tenant.maintain_inventory:
 						#Journal Entry for tenants with inventory
 						remarks="Purchase Receipt No: "+str(new_receipt.receipt_id)
 						journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=1)
-						account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Purchase")
 						new_journal_entry(this_tenant, journal, subtotal, account, 1, date)
 						if (cgst_total>0):
 							account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Input")
@@ -354,28 +369,35 @@ def purchase_receipt_save(request):
 						if (debit != credit):
 							raise IntegrityError
 
-					# else:
-					# 	remarks="Purchase Receipt No: "+str(new_receipt.receipt_id)
-					# 	journal=new_journal(this_tenant, date,"Purchase",remarks)
-					# 	account= Account.objects.for_tenant(this_tenant).get(name__exact="Purchase")
-					# 	new_journal_entry(this_tenant, journal, subtotal, account, 1, date)
-					# 	if (cgst_total>0):
-					# 		account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Input")
-					# 		new_journal_entry(this_tenant, journal, cgst_total, account, 1, date)
-					# 	if (sgst_total>0):
-					# 		account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Input")
-					# 		new_journal_entry(this_tenant, journal, sgst_total, account, 1, date)
-					# 	if (igst_total>0):
-					# 		account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Input")
-					# 		new_journal_entry(this_tenant, journal, igst_total, account, 1, date)
-						
-					# 	account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					# 	new_journal_entry(this_tenant, journal, total, account, 2, date)
+						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+											get(account_inventory=inventory_acct, accounting_period = acct_period)
+						inventory_acct_year.current_debit+=subtotal
+						inventory_acct_year.save()
 
-					# 	debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-					# 	credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-					# 	if (debit != credit):
-					# 		raise IntegrityError
+					else:
+						remarks="Purchase Receipt No: "+str(new_receipt.receipt_id)
+						journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=1)
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Purchase")
+						new_journal_entry(this_tenant, journal, subtotal, account, 1, date)
+						if (cgst_total>0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Input")
+							new_journal_entry(this_tenant, journal, cgst_total, account, 1, date)
+						if (sgst_total>0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Input")
+							new_journal_entry(this_tenant, journal, sgst_total, account, 1, date)
+						if (igst_total>0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Input")
+							new_journal_entry(this_tenant, journal, igst_total, account, 1, date)
+						
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+						new_journal_entry(this_tenant, journal, total, account, 2, date)
+
+						debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+						credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+						if (debit != credit):
+							raise IntegrityError
 
 					response_data=new_receipt.id
 				except:

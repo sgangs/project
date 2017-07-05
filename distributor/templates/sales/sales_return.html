@@ -20,25 +20,23 @@
     <div class="col-md-12">
         <div class="row">
             <div class="col-xs-6 text-left"  id='pos_print'>
-                <address class='invoiceid'>
-                    <strong >Invoice No.:</strong>
+                <address class='invoiceid'>                    
                 </address>
             </div>
             <div class="col-xs-6 text-right"  id='pos_print'>
                 <address class='date'>
-                    <strong>Original Date:</strong>
+                    
                 </address>
             </div>
         </div>
         <div class="row">
             <div class="col-xs-6 text-left"  id='pos_print'>
                 <address class='customer'>
-                    <strong>Customer:</strong>
                 </address>
             </div>
             <div class="col-xs-6 text-right" id='not_pos_print'>
                 <address class='warehouse'>
-                    <strong>Delivery From:</strong>
+                    
                     </address>
             </div>
         </div>
@@ -86,17 +84,20 @@
 <table class="table table-striped table-bordered details text-center">
 	<thead>
     	<tr class="text-center" id='pos_print'> 
-        	<th class="text-center"><h5>Item</h5></th>
+        	<th class="text-center"></th>
+            <th class="text-center"><h5>Item</h5></th>
+            <th class="text-center"><h5>Qty (Sold)</h5></th>
             <th class="text-center"><h5>Qty (Return)</h5></th>
             <!-- <th class="text-center hidden-print"><h5>Free w/o tax</h5></th>
             <th class="text-center hidden-print"><h5>Free with tax</h5></th> -->
             <th class="text-center" id='not_pos_print'><h5>Unit</h5></th>
             <!-- <th class="text-center visible-print-block"><h5>Free</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>Sales Price</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Type-1</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Value-1</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Type-2</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Value-2</h5></th>
+            <th class="text-center" id='not_pos_print' hidden><h5>Sales Price(Discounted)</h5></th>
+            <th class="text-center" id='not_pos_print'><h5>Sales Price(Return)</h5></th>
+            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Type-1</h5></th> -->
+            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Value-1</h5></th> -->
+            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Type-2</h5></th> -->
+            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Value-2</h5></th> -->
             <th class="text-center" id='not_pos_print'><h5>Taxable Total (Return)</h5></th>
             <!-- <th class="text-center" id='not_pos_print'><h5>VAT Type</h5></th> -->
             <!-- <th class="text-center" id='not_pos_print'><h5>VAT %</h5></th> -->

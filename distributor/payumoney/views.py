@@ -8,10 +8,11 @@ from random import randint
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.template.context_processors import csrf
 
+@csrf_exempt
 def Home(request):
-	MERCHANT_KEY = "JBZaLc"
-	key="JBZaLc"
-	SALT = "GQs7yium"
+	MERCHANT_KEY = "4934580"
+	key="rjQUPktU"
+	SALT = "e5iIg1jwi8"
 	PAYU_BASE_URL = "https://test.payu.in/_payment"
 	action = ''
 	posted={}
@@ -20,8 +21,8 @@ def Home(request):
 	hash_object = hashlib.sha256(b'randint(0,20)')
 	txnid=hash_object.hexdigest()[0:20]
 	hashh = ''
-	posted['txnid']=txnid
-	hashSequence = "key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5|udf6|udf7|udf8|udf9|udf10"
+	posted['txnid']="1234"
+	hashSequence = "key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||"
 	posted['key']=key
 	hash_string=''
 	hashVarsSeq=hashSequence.split('|')
@@ -32,11 +33,12 @@ def Home(request):
 			hash_string+=''
 		hash_string+='|'
 	hash_string+=SALT
-	hash_string.encode('utf-8')
-	# hashh=hashlib.sha512(hash_string).hexdigest().lower()
-	hashh=hashlib.sha512(b'aaa').hexdigest().lower()
+	print(hash_string)
+	hash_string=hash_string.encode('utf-8')
+	hashh=hashlib.sha512(hash_string).hexdigest().lower()
 	action =PAYU_BASE_URL
-	if(posted.get("key")!=None and posted.get("txnid")!=None and posted.get("productinfo")!=None and posted.get("firstname")!=None and posted.get("email")!=None):
+	if(posted.get("key")!=None and posted.get("txnid")!=None and posted.get("productinfo")!=None and \
+				posted.get("firstname")!=None and posted.get("email")!=None):
 		return render_to_response('payumoney/current_datetime.html',RequestContext(request,\
 			{"posted":posted,"hashh":hashh,"MERCHANT_KEY":MERCHANT_KEY,"txnid":txnid,\
 			"hash_string":hash_string,"action":"https://test.payu.in/_payment" }))
@@ -61,7 +63,8 @@ def success(request):
 	salt="GQs7yium"
 	try:
 		additionalCharges=request.POST["additionalCharges"]
-		retHashSeq=additionalCharges+'|'+salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+txnid+'|'+key
+		retHashSeq=additionalCharges+'|'+salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+\
+				txnid+'|'+key
 	except Exception:
 		retHashSeq = salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+txnid+'|'+key
 	hashh=hashlib.sha512(retHashSeq).hexdigest().lower()
@@ -90,7 +93,8 @@ def failure(request):
 	salt="GQs7yium"
 	try:
 		additionalCharges=request.POST["additionalCharges"]
-		retHashSeq=additionalCharges+'|'+salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+txnid+'|'+key
+		retHashSeq=additionalCharges+'|'+salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+\
+				txnid+'|'+key
 	except Exception:
 		retHashSeq = salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+txnid+'|'+key
 	hashh=hashlib.sha512(retHashSeq).hexdigest().lower()

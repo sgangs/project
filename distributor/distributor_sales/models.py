@@ -111,7 +111,7 @@ class invoice_line_item(models.Model):
 	sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
-	other_data = JSONField()
+	other_data = JSONField(blank=True, null=True)
 
 	discount_type=models.PositiveSmallIntegerField(default=0)
 	discount_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)

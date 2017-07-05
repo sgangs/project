@@ -3,7 +3,7 @@ from django.db import IntegrityError, transaction
 
 from distributor.variable_list import account_type_general
 from distributor_user.models import User, Tenant
-from distributor_account.models import Account, journal_group , ledger_group, account_year
+from distributor_account.models import Account, journal_group , ledger_group, account_year, account_inventory, account_year_inventory
 from distributor_master.models import Dimension, Unit
  
 
@@ -47,6 +47,32 @@ def create_accountChart(tenant, name, acc_type, remarks, key, period, ledgername
 def create_account_year(tenant, account_selected, period, is_first_year = False):
     account=account_year()
     account.account=account_selected
+    account.opening_debit=0
+    account.opening_credit=0
+    account.current_debit=0
+    account.current_credit=0
+    account.accounting_period=period
+    account.is_first_year=True
+    account.tenant=tenant
+    account.save()
+
+
+def create_accountInventory(tenant, name, acc_type, remarks, key, period, ledgername, is_first_year = False, is_contra=False):
+	with transaction.atomic():
+		try:
+			account=account_inventory()
+			account.name=name
+			account.key=key
+			account.tenant=tenant
+			account.save()
+			create_account_year_inventory(tenant, account, period, is_first_year)
+			return account
+		except:
+			transaction.rollback()
+
+def create_account_year_inventory(tenant, account_selected, period, is_first_year):
+    account=account_year_inventory()
+    account.account_inventory=account_selected
     account.opening_debit=0
     account.opening_credit=0
     account.current_debit=0

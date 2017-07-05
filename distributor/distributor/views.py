@@ -70,7 +70,7 @@ def RegisterView(request):
                     new_tenant.trial=True
                     now_time=localtime(now()).replace(hour=0, minute=0, second=0, microsecond=0)
                     new_tenant.trial_from=now_time
-                    new_tenant.trial_to=now_time+date_first.timedelta(days=120)
+                    new_tenant.trial_to=now_time+date_first.timedelta(days=30)
                     new_tenant.save()
                     new_user.tenant=new_tenant
                     new_user.save()
@@ -140,23 +140,22 @@ def RegisterView(request):
                     
                     #This account will consider COGS return - as we store purchase value only in COGS
                     #this contra is something like purchase contra
-                    create_accountChart(new_tenant,"Cost of Goods Sold Contra", "Direct Expense",\
-                        "Parent COGS Contra Accounts", "cogs contra", period, new_ledger, is_first_year=True, is_contra=True)
+                    # create_accountInventory(new_tenant,"Cost of Goods Sold Contra", "Direct Expense",\
+                    #     "Parent COGS Contra Accounts", "cogs contra", period, new_ledger, is_first_year=True, is_contra=True)
                         #This is used to consider sales return - check if it should be expense or revenue
-                    create_accountChart(new_tenant,"Sales Contra", "Direct Revenue",\
-                        "Contra Sales Account", "sales contra", period, new_ledger, is_first_year=True, is_contra=True)
-                        
+                    
                     create_accountChart(new_tenant,"Inventory Waste Expense", "Direct Expense",\
                         "Parent Inventory Wastage", "inventory waste", period, new_ledger, is_first_year=True, is_contra=True)
                     
                     #Rounding off
                     create_accountChart(new_tenant,"Rounding Adjustment",\
                         "Direct Expense", "Rounding Adjustment Account", "round", period, new_ledger, is_first_year=True)
-
+                    # if not new_tenant.maintain_inventory:
                     #Purchase account only if user choses not to maintain inventory
-
-                    # create_accountChart(new_tenant,"Purchase","Direct Expense", "Purchase Account", "purchase", period, \
-                    #     new_ledger, is_first_year=True)
+                    create_accountChart(new_tenant,"Purchase","Direct Expense", "Purchase Account", "purchase", period, \
+                        new_ledger, is_first_year=True)
+                    create_accountChart(new_tenant,"Purchase Return","Direct Expense", "Purchase Return Account",\
+                    "pur_return", period, new_ledger, is_first_year=True, is_contra=True)
                     
                     cash_account=create_accountChart(new_tenant,"Cash","Current Assets", \
                         "Cash in hand account", "cash", period, new_ledger, is_first_year=True)
@@ -170,9 +169,9 @@ def RegisterView(request):
                     customer_credit=create_accountChart(new_tenant, "Customer Credit","Current Liabilities",\
                         "Credit Note Customer Credit", "cc", period, new_ledger, is_first_year=True, is_contra=True)
                     
-                    create_accountChart(new_tenant, "Inventory","Current Assets",\
+                    create_accountInventory(new_tenant, "Inventory","Current Assets",\
                         "Parent Inventory Account", "inventory", period, new_ledger, is_first_year=True)
-                    create_accountChart(new_tenant,"Cost of Goods Sold",\
+                    create_accountInventory(new_tenant,"Cost of Goods Sold",\
                         "Direct Expense", "Parent COGS Accounts", "cogs", period, new_ledger, is_first_year=True)
                     
                     create_accountChart(new_tenant,"Accounts Payable",\
@@ -182,6 +181,9 @@ def RegisterView(request):
                         period, new_ledger, is_first_year=True)
                     create_accountChart(new_tenant,"Sales","Direct Revenue", "Parent Sales Accounts", "sales",\
                         period, new_ledger, is_first_year=True)
+
+                    create_accountChart(new_tenant,"Sales Return","Direct Revenue", "Parent Sales Return Accounts", "sales_return",\
+                        period, new_ledger, is_first_year=True, is_contra=True)
                     
                     dimension=create_dimension(new_tenant, "Number", "For numbers")
                     create_unit(new_tenant, dimension, "Number", "No", 1)
@@ -271,7 +273,7 @@ def custom_password_reset(request, from_email, subject_template_name, password_r
 
 
 @login_required
-@api_view(['GET'],)
+# @api_view(['GET'],)
 def landing(request):
     this_tenant=request.user.tenant
     end=date_first.date.today()
@@ -280,6 +282,25 @@ def landing(request):
     	sales_daily=retail_sales_day_wise(start, end, this_tenant)
     else:
     	sales_daily=sales_day_wise(start, end, this_tenant)
+    invoice_value=sales_raised_value(start, end, this_tenant)
+    payment_value=sales_collected_value(start, end, this_tenant)
+    current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+    return render(request,'landing.html', {'sales_daily':json.dumps(sales_daily, cls=DjangoJSONEncoder),\
+            'invoice_value':json.dumps(invoice_value, cls=DjangoJSONEncoder), \
+            'payment_value':json.dumps(payment_value, cls=DjangoJSONEncoder), 'current_account':current_year})
+
+
+
+@login_required
+# @api_view(['GET'],)
+def payment_landing(request):
+    this_tenant=request.user.tenant
+    end=date_first.date.today()
+    start=end-date_first.timedelta(days=30)
+    if (this_tenant.tenant_type == 2):
+        sales_daily=retail_sales_day_wise(start, end, this_tenant)
+    else:
+        sales_daily=sales_day_wise(start, end, this_tenant)
     invoice_value=sales_raised_value(start, end, this_tenant)
     payment_value=sales_collected_value(start, end, this_tenant)
     current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
