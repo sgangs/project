@@ -60,7 +60,7 @@ load_unit()
 
 function load_unit(){
     $.ajax({
-        url : "/master/dimensionunit/unitdata/", 
+        url : "/master/dimensionunit/unitdata/onlybase", 
         type: "GET",
         dataType: 'json',
         // handle a successful response
@@ -156,7 +156,8 @@ function load_attribute(){
 
 
 $("#product_table").on("click", ".barcode", function(){
-    var newurl=$(this).closest('tr').find('td:nth-child(10) a').attr('href');
+    var newurl=$(this).closest('tr').find('td:nth-child(11) a').attr('href');
+    console.log(newurl)
     $('a.barcodetag').attr('href', newurl);
     productid=$(this).closest('tr').find('td:nth-child(1)').html();
     productname=$(this).closest('tr').find('td:nth-child(2)').html();
@@ -277,7 +278,6 @@ function new_product(){
         proceed = false;
         swal("Oops...", "Product must have a name and sku/product code.", "error");
     }
-    console.log(barcode);
     if (proceed){
         (function() {
             $.ajax({
@@ -474,6 +474,7 @@ $("#product_table").on("click", ".link", function(){
             $('.name_data_prod').val(jsondata['name'])
             $('.sku_data_prod').val(jsondata['sku'])
             $('.barcode_data_prod').val(jsondata['barcode'])
+            $('.hsn_data_prod').val(jsondata['hsn_code'])            
             $('#cgst_data_prod').val(tax_array[jsondata['cgst']])
             $('#sgst_data_prod').val(tax_array[jsondata['sgst']])
             $('#igst_data_prod').val(tax_array[jsondata['igst']])
@@ -520,6 +521,7 @@ function update_data(){
     name_update=$('.name_data_prod').val()
     sku_update=$('.sku_data_prod').val()
     barcode_update=$('.barcode_data_prod').val()
+    hsn_update=$('.hsn_data_prod').val()
     cgst_update=$('#cgst_data_prod').val()
     sgst_update=$('#sgst_data_prod').val()
     igst_update=$('#igst_data_prod').val()
@@ -537,6 +539,7 @@ function update_data(){
                     name: name_update,
                     sku:sku_update,
                     barcode: barcode_update,
+                    hsn: hsn_update,
                     cgst:cgst_update,
                     sgst:sgst_update,
                     igst:igst_update,

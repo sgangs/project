@@ -11,18 +11,19 @@ from django.template.context_processors import csrf
 @csrf_exempt
 def Home(request):
 	MERCHANT_KEY = "4934580"
-	key="rjQUPktU"
-	SALT = "e5iIg1jwi8"
-	PAYU_BASE_URL = "https://test.payu.in/_payment"
+	key="abcd"
+	SALT = "qwerrty"
+	PAYU_BASE_URL = "https://secure.payu.in/_payment"
 	action = ''
 	posted={}
 	for i in request.POST:
 		posted[i]=request.POST[i]
 	hash_object = hashlib.sha256(b'randint(0,20)')
-	txnid=hash_object.hexdigest()[0:20]
+	# txnid=hash_object.hexdigest()[0:20]
+	txnid="1234"
 	hashh = ''
 	posted['txnid']="1234"
-	hashSequence = "key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||"
+	hashSequence = "key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5|||||"
 	posted['key']=key
 	hash_string=''
 	hashVarsSeq=hashSequence.split('|')
@@ -40,11 +41,11 @@ def Home(request):
 	if(posted.get("key")!=None and posted.get("txnid")!=None and posted.get("productinfo")!=None and \
 				posted.get("firstname")!=None and posted.get("email")!=None):
 		return render_to_response('payumoney/current_datetime.html',RequestContext(request,\
-			{"posted":posted,"hashh":hashh,"MERCHANT_KEY":MERCHANT_KEY,"txnid":txnid,\
-			"hash_string":hash_string,"action":"https://test.payu.in/_payment" }))
+			{"posted":posted,"hashh":hashh,"key":key,"txnid":txnid,\
+			"hash_string":hash_string,"action":"https://secure.payu.in/_payment" }))
 	else:
 		return render_to_response('payumoney/current_datetime.html',RequestContext(request,\
-			{"posted":posted,"hashh":hashh,"MERCHANT_KEY":MERCHANT_KEY,"txnid":txnid,\
+			{"posted":posted,"hashh":hashh,"key":key,"txnid":txnid,\
 			"hash_string":hash_string,"action":"." }))
 
 @csrf_protect
@@ -60,7 +61,7 @@ def success(request):
 	key=request.POST["key"]
 	productinfo=request.POST["productinfo"]
 	email=request.POST["email"]
-	salt="GQs7yium"
+	salt="qwerty"
 	try:
 		additionalCharges=request.POST["additionalCharges"]
 		retHashSeq=additionalCharges+'|'+salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+\
@@ -90,7 +91,7 @@ def failure(request):
 	key=request.POST["key"]
 	productinfo=request.POST["productinfo"]
 	email=request.POST["email"]
-	salt="GQs7yium"
+	salt="qwerty"
 	try:
 		additionalCharges=request.POST["additionalCharges"]
 		retHashSeq=additionalCharges+'|'+salt+'|'+status+'|||||||||||'+email+'|'+firstname+'|'+productinfo+'|'+amount+'|'+\

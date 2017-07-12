@@ -36,6 +36,7 @@ class purchase_receipt(models.Model):
 	warehouse_city=models.CharField(max_length=50)
 	warehouse_pin=models.CharField(max_length=8)
 	
+	#GST Type  means B2B registered, 2 means B2B unregistered.
 	gst_type=models.PositiveSmallIntegerField(default=1)
 	grand_discount_type=models.PositiveSmallIntegerField(default=0)
 	grand_discount=models.DecimalField(max_digits=8, decimal_places=2, default=0)
@@ -99,20 +100,21 @@ class receipt_line_item(models.Model):
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
 	unit=models.CharField(max_length=20)
-	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
+	unit_multi=models.DecimalField(max_digits=8, decimal_places=2, default=1)
 
-	quantity=models.PositiveSmallIntegerField(default=0)
-	free_without_tax=models.PositiveSmallIntegerField(default=0)
-	free_with_tax=models.PositiveSmallIntegerField(default=0)
+	quantity=models.DecimalField(max_digits=10, decimal_places=3)
+	quantity_returned=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	# free_without_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	# free_with_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 
 	batch=models.CharField(max_length=20, blank=True, null=True)
 	serial_no=models.CharField(max_length=100, blank=True, null=True) #This is for items with serial no
 	manufacturing_date=models.DateField(blank=True, null=True)
 	expiry_date=models.DateField(blank=True, null=True)
 	
-	purchase_price=models.DecimalField(max_digits=10, decimal_places=2)
-	tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
+	purchase_price=models.DecimalField(max_digits=12, decimal_places=2)
+	tentative_sales_price=models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+	mrp=models.DecimalField('MRP', max_digits=12, decimal_places=2, blank=True, null=True)
 	
 	discount_type=models.PositiveSmallIntegerField(default=0)
 	discount_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
@@ -228,7 +230,7 @@ class debit_note_line_item(models.Model):
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 
-	quantity=models.PositiveSmallIntegerField(default=0)
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	
 	purchase_price=models.DecimalField(max_digits=10, decimal_places=2)
 	tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)

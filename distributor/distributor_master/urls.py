@@ -24,6 +24,7 @@ urlpatterns = [
     
     url(r'^dimensionunit/dimensiondata/$', views.dimension_view, name='dimension_view'),
     url(r'^dimensionunit/unitdata/$', views.unit_view, name='unit_view'),
+    url(r'^dimensionunit/unitdata/onlybase/$', views.unit_base, name='unit_base'),
     url(r'^dimensionunit/$', views.dimension_unit_data, name='dimension_unit_data'),
 
     url(r'^manufacbrand/manufacdata/$', views.manufacturer_view, name='manufacturer_view'),

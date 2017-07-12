@@ -23,8 +23,12 @@
                 <address class='invoiceid'>                    
                 </address>
             </div>
+            <div class="col-xs-6 text-left" hidden>
+                <label class="control-label">Sales Invoice ID</label>                
+                <input class="form-control sales_inv_pk">
+            </div>
             <div class="col-xs-6 text-right"  id='pos_print'>
-                <address class='date'>
+                <address class='original_date'>
                     
                 </address>
             </div>
@@ -85,6 +89,8 @@
 	<thead>
     	<tr class="text-center" id='pos_print'> 
         	<th class="text-center"></th>
+            <th class="text-center" hidden>ID</th>
+            <th class="text-center" hidden><h5>ID</h5></th>
             <th class="text-center"><h5>Item</h5></th>
             <th class="text-center"><h5>Qty (Sold)</h5></th>
             <th class="text-center"><h5>Qty (Return)</h5></th>

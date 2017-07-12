@@ -23,7 +23,7 @@
      
       <form action={{ action }} method="post" name="payuForm">
       {% csrf_token %}
-      <input type="hidden" name="key" value="{{ MERCHANT_KEY }}" />
+      <input type="hidden" name="key" value="{{ key }}" />
       <input type="hidden" name="hash_string" value="{{ hash_string }}" />
       <input type="hidden" name="hash" value="{{ hashh }}"/>
        <input type="hidden" name="posted" value="{{ posted }}"/>

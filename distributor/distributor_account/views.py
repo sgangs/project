@@ -164,7 +164,7 @@ def account_details_view(request):
 	if request.method == 'GET':
 		# accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["igstin","igstout","igstpay", \
 		# 	 "sgstin","sgstout", "sgstpay", "cgstin","cgstout", "cgstpay"])
-		accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["vatin","vatout","vatpay",])
+		accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["vatin","vatout","vatpay", "pur_return", "sales_return"])
 		for item in accounts:
 			this_account_year=account_year.objects.get(account=item, accounting_period=current_year)
 			response_data.append({'id':item.id,'name':item.name,'key':item.key, 'type':type_dict[item.account_type], \

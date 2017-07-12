@@ -320,6 +320,14 @@ def unit_view(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
+@api_view(['GET','POST'],)
+def unit_base(request):
+	if request.method == 'GET':
+		units=Unit.objects.for_tenant(request.user.tenant).filter(multiplier=1).order_by('dimension',)
+		serializer = UnitSerializers(units, many=True)		
+		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
+		return Response(serializer.data)
+		
 # @login_required
 @api_view(['GET','POST'],)
 def attribute_view(request):
@@ -372,16 +380,11 @@ def product_view(request):
 			name=request.data.get('name')
 			sku=request.data.get('sku')
 			barcode=request.data.get('barcode')
-			if barcode:
-				try:
-					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
-				except:
-					is_product=''
-				if is_product:
-					raise IntegrityError
+			print(barcode)
 			cgst=request.data.get('cgst')
 			sgst=request.data.get('sgst')
 			igst=request.data.get('igst')
+			hsn=request.data.get('hsn')
 			taxes=tax_structure.objects.for_tenant(this_tenant).all()
 			# state=request.data.get('state')
 			if not sku:
@@ -392,14 +395,27 @@ def product_view(request):
 			old_product=Product.objects.for_tenant(this_tenant).get(id=pk)
 			old_product.name=name
 			old_product.sku=sku
+			
 			if barcode:
-				old_product.barcode=barcode
+				try:
+					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
+					print(is_product)
+				except:
+					is_product=''
+				if is_product:
+					if (is_product.id != old_product.id):
+						raise IntegrityError
+				old_product.barcode = barcode
+
+
 			if cgst:
 				old_product.cgst=taxes.get(id=cgst)
 			if sgst:
 				old_product.sgst=taxes.get(id=sgst)
 			if igst:
 				old_product.igst=taxes.get(id=igst)
+			if hsn:
+				old_product.hsn_code=hsn
 			old_product.save()
 
 		jsondata = json.dumps(response_data)

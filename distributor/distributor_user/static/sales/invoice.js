@@ -1,7 +1,7 @@
 $(function(){
 vat_type=["No VAT", "On MRP", "On actual"];
 vat_type_reverse={"No VAT":0, "On MRP":1, "On actual":2};
-var vat_input, vat_percent, unit_data, default_unit, unit_multi={}, unit_names={}, maintain_inventory;
+var vat_input, vat_percent, unit_data, default_unit, unit_multi={}, unit_names={}, maintain_inventory, tsp, mrp;
 
 $(document).on('keydown.autocomplete', '.name', function() {
     var el=this;
@@ -291,8 +291,10 @@ $(".details").on("change", ".unit", function(){
     unit_multi_selected=unit_multi[unit_id]
     $(this).closest('tr').find('td:nth-child(7)').html(unit_multi_selected);
     if (maintain_inventory){
+        var el=this;
         get_qty_avl(el);
     }
+    // get_total();
 });
 
 
@@ -313,6 +315,16 @@ function get_qty_avl(el){
         free_tax=0;
     // }
     var unit_multi_selected = parseFloat($(el).closest('tr').find('td:nth-child(7)').html());
+    // var ori_tsp=parseFloat($(el).closest('tr').find('td:nth-child(8)').html());
+    // $(el).closest('tr').find('td:nth-child(8)').html(ori_tsp*unit_multi_selected);
+    // var ori_mrp=parseFloat($(el).closest('tr').find('td:nth-child(9)').html());
+    // $(el).closest('tr').find('td:nth-child(9)').html(ori_mrp*unit_multi_selected);
+    // var ori_sr=parseFloat($(el).closest('tr').find('td:nth-child(10) input').val());
+    // $(el).closest('tr').find('td:nth-child(10) input').val(ori_sr*unit_multi_selected);
+    // console.log (ori_sr);
+    // console.log(unit_multi_selected);
+
+
     quantity_avl=quantity_avl/unit_multi_selected;
     if (!$(el).closest('tr').hasClass("has-error")){
         if ((quantity+free+free_tax)>quantity_avl ){

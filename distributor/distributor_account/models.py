@@ -213,6 +213,59 @@ class journal_entry(models.Model):
 		return self.account.name
 
 
+#transaction options are:
+#1 - Purchase
+#2 - Purchase Payment
+#3 - Purchase Debit Note
+#4 - Sales
+#5 - Sales Collection
+#6 - Sales Credit Note
+#7 - Retail Sales
+#8 - Retail Credit Note
+
+class journal_inventory(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	date=models.DateField(default=datetime.now)
+	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
+	trn_type=models.PositiveSmallIntegerField(db_index=True,blank=True, null=True)
+	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalInventory_account_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+	# def get_absolute_url(self):
+	# 	return reverse('accounts:journal_detail', kwargs={'detail':self.slug})
+
+	# class Meta:
+	# 	unique_together = (("key", "tenant"))
+	# 	ordering = ('date','group',)
+
+	def __str__(self):
+		return str(self.date)
+
+#This is to link to journal entry line items
+class journal_entry_inventory(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	transaction_type=((1,'Debit'),
+		(2,'Credit'),)
+	journal=models.ForeignKey(journal_inventory,db_index=True, related_name='journalEntryInventory_journalInventory')
+	account=models.ForeignKey(account_inventory,related_name='journalEntryInventory_accountInventory')
+	transaction_type=models.PositiveSmallIntegerField('Transaction type', choices=transaction_type)
+	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalEntryInventory_account_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+	
+	#def get_absolute_url(self):
+	#	return reverse('master_detail', kwargs={'detail':self.slug})
+
+	class Meta:
+		# unique_together = (("journal", "account"))
+		ordering = ('journal','-transaction_type',)
+
+	def __str__(self):
+		return self.account.name
+
+
 
 #This model is for modes of payment
 class payment_mode(models.Model):
@@ -252,9 +305,10 @@ class inventory_value(models.Model):
 #Tax trn type: 
 #1 for purchase,
 #2 for sales, 
-#3 for purchase debit note
-#4 for sales credit note
+#3 for sales credit note
+#4 for purchase debit note
 #5 for retail sales
+#6 for retail sales credit note
 
 class tax_transaction(models.Model):
 	id=models.BigAutoField(primary_key=True)

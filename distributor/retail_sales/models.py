@@ -88,6 +88,7 @@ class invoice_line_item(models.Model):
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
+	product_hsn=models.CharField(max_length=20, blank=True, null=True)
 	
 	# vat_type=models.CharField(max_length =15)
 	# tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -95,7 +96,8 @@ class invoice_line_item(models.Model):
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 
-	quantity=models.PositiveSmallIntegerField(default=0)
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	quantity_returned=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	
 	batch=models.CharField(max_length=20, blank=True, null=True)
 	serial_no=models.CharField(max_length=100, blank=True, null=True) #This is for items with serial no
@@ -103,6 +105,7 @@ class invoice_line_item(models.Model):
 	expiry_date=models.DateField(blank=True, null=True)
 	
 	sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+	is_tax_included=models.BooleanField(default=False)
 	# tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	# mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
 	other_data = JSONField(blank=True, null=True)
@@ -144,3 +147,106 @@ class invoice_line_item(models.Model):
 # 	tenant=models.ForeignKey(Tenant,related_name='salesPayment_sales_user_tenant')
 # 	objects = TenantManager()
 # 	updated = models.DateTimeField(auto_now=True)
+
+
+class sales_return(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	invoice=models.ForeignKey(retail_invoice,blank=True, null=True,\
+						related_name='retailSalesReturn_retailInvoice', on_delete=models.SET_NULL)
+	return_id = models.PositiveIntegerField(db_index=True)
+	date=models.DateField(default=dt.date.today)
+	customer=models.ForeignKey(retail_customer,blank=True, null=True,\
+						related_name='retailSalesReturn_retailsales_master_retailCustomer', on_delete=models.SET_NULL)
+	customer_name=models.CharField(db_index=True, max_length=200, blank=True, null=True,)
+	customer_address=models.CharField(max_length=200, blank=True, null=True)
+	customer_phone_no=PhoneNumberField(db_index=True, blank=True, null=True,)
+	customer_email=models.EmailField(blank=True, null=True)
+	customer_gender=models.CharField(max_length=1,blank=True, null=True,)
+	customer_dob=models.DateField(blank=True, null=True)
+	
+	warehouse=models.ForeignKey(Warehouse, blank=True, null=True,\
+						related_name='retailSalesReturn_sales_master_warehouse', on_delete=models.SET_NULL)
+	warehouse_address=models.TextField()
+	warehouse_state=models.CharField(max_length=4)
+	warehouse_city=models.CharField(max_length=50)
+	warehouse_pin=models.CharField(max_length=8)
+	
+	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
+	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	total=models.DecimalField(max_digits=12, decimal_places=2)
+	# itemwise_discount_total=models.DecimalField(max_digits=12, decimal_places=2)
+	# purchase_order=models.ForeignKey(purchase_order, blank=True, null=True related_name='purchaseReceipt_purchaseOrder')
+	tenant=models.ForeignKey(Tenant,related_name='retailSalesReturn_sales_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+#	def get_absolute_url(self):
+#		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
+
+	#the save method is overriden to give unique invoice ids, slug and customer_name
+	def save(self, *args, **kwargs):
+		if not self.id:
+			tenant=self.tenant.key
+			today=dt.date.today()
+			today_string=today.strftime('%y%m%d')
+			next_return_number='001'
+			last_return=type(self).objects.filter(tenant=self.tenant).\
+						filter(return_id__contains=today_string).order_by('return_id').last()
+			if last_return:
+				last_return_id=str(last_return.return_id)
+				last_return_number=int(last_return_id[6:])
+				next_return_number='{0:03d}'.format(last_return_number + 1)
+			self.return_id=int(today_string + next_return_number)
+			
+		super(sales_return, self).save(*args, **kwargs)
+
+	# class Meta:
+	# 	ordering = ('date',)
+
+	def __str__(self):
+		# return  '%s %s %s' % (self.receipt_id, self.vendor, self.date)
+		return  '%s %s' % (self.return_id, self.date)
+
+	# def get_absolute_url(self):
+		# return reverse('purchase:invoice_detail', kwargs={'detail':self.slug})
+
+
+#This model is for line items of a purchase invoice
+class return_line_item(models.Model):
+	sales_return=models.ForeignKey(sales_return, related_name='retailReturnLineItem_salesReturn')
+	product=models.ForeignKey(Product,blank=True, null=True, related_name='retailReturnLineItem_sales_master_product', \
+							on_delete=models.SET_NULL)
+	date=models.DateField(default=dt.date.today)
+	# product_pk=models.BigIntegerField(blank=True, null=True)
+	product_name=models.CharField(max_length =200)
+	product_sku=models.CharField(max_length =50)
+	product_hsn=models.CharField(max_length=20, blank=True, null=True)
+	
+	unit=models.CharField(max_length=20)
+	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
+
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	
+	batch=models.CharField(max_length=20, blank=True, null=True)
+	serial_no=models.CharField(max_length=100, blank=True, null=True) #This is for items with serial no
+	manufacturing_date=models.DateField(blank=True, null=True)
+	expiry_date=models.DateField(blank=True, null=True)
+	
+	return_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+	other_data = JSONField(blank=True, null=True)
+
+	cgst_percent=models.DecimalField(max_digits=4, decimal_places=2, default=0)
+	sgst_percent=models.DecimalField(max_digits=4, decimal_places=2, default=0)
+	
+	cgst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+	sgst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+	
+	line_before_tax=models.DecimalField(max_digits=12, decimal_places=2)
+	line_total=models.DecimalField(max_digits=12, decimal_places=2)
+
+	
+	tenant=models.ForeignKey(Tenant,related_name='retailReturnLineItem_sales_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)

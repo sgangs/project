@@ -20,5 +20,8 @@ urlpatterns = [
     url(r'^collectionlistview/$', views.collection_list_view, name='collection_list_view'),
     url(r'^invoice/salesreturn/data/$', views.get_return_data, name='get_return_data'),
     url(r'^invoice/salesreturn/$', views.sales_return_view, name='sales_return_view'),
+    url(r'^invoice/salesreturn/save/$', views.sales_return_save, name='sales_return_save'),
+    url(r'^salesreturn/$', views.return_list_view, name='return_list_view'),
+    url(r'^salesreturn/listall/$', views.all_return, name='all_return'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

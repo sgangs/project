@@ -16,8 +16,8 @@ class Inventory (models.Model):
 	id=models.BigAutoField(primary_key=True)
 	product=models.ForeignKey(Product, related_name='inventory_inventory_master_product')
 	warehouse=models.ForeignKey(Warehouse, related_name='inventory_inventory_master_warehouse')
-	purchase_quantity=models.PositiveSmallIntegerField(db_index=True)
-	quantity_available=models.PositiveSmallIntegerField(db_index=True)
+	purchase_quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	quantity_available=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	purchase_date=models.DateField(db_index=True, blank=True, null=True)
 	batch=models.CharField(max_length=20, blank=True, null=True)
 	manufacturing_date=models.DateField(blank=True, null=True)
@@ -45,7 +45,7 @@ class initial_inventory (models.Model):
 	id=models.BigAutoField(primary_key=True)
 	product=models.ForeignKey(Product, related_name='initialInventory_inventory_master_product')
 	warehouse=models.ForeignKey(Warehouse, related_name='initialInventory_inventory_master_warehouse')
-	quantity=models.PositiveSmallIntegerField(db_index=True)  #This will be updated as purchase_qunatity in actual inventory table
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)  #This will be updated as purchase_qunatity in actual inventory table
 	batch=models.CharField(max_length=20, blank=True, null=True)
 	manufacturing_date=models.DateField(blank=True, null=True)
 	expiry_date=models.DateField(blank=True, null=True)
@@ -73,7 +73,7 @@ class inventory_reserve (models.Model):
 	product=models.ForeignKey(Product, related_name='inventoryReserve_inventory_master_product')
 	warehouse=models.ForeignKey(Warehouse, related_name='inventoryReserve_inventory_master_warehouse')
 	serial_no=models.CharField(max_length=100, blank=True, null=True) #This is for items with serial no
-	quantity_reserve=models.PositiveSmallIntegerField(default=0)
+	quantity_reserve=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	date=models.DateField(db_index=True, blank=True, null=True)
 	batch=models.CharField(max_length=20, blank=True, null=True)
 	manufacturing_date=models.DateField(blank=True, null=True)
@@ -104,7 +104,7 @@ class inventory_ledger (models.Model):
 	warehouse=models.ForeignKey(Warehouse, related_name='inventoryLedger_inventory_master_warehouse')	
 	transaction_type=models.PositiveSmallIntegerField('Transaction type', db_index=True, choices=transaction_choices)
 	date=models.DateField(db_index=True)
-	quantity=models.PositiveSmallIntegerField()
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	purchase_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	#To consider average inventory cost
 	inventory_average_cost=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True) 
@@ -175,7 +175,7 @@ class inventory_transfer_items (models.Model):
 	inventory_id=models.BigIntegerField()
 	transfer=models.ForeignKey(inventory_transfer,related_name='inventoryTransferItems_inventoryTransfer')
 	product=models.ForeignKey(Product, related_name='inventoryTransferItem_inventory_master_product')
-	quantity=models.PositiveSmallIntegerField()
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	unit=models.ForeignKey(Unit, related_name='inventoryTransferItem_inventory_master_unit')
 	purchase_date=models.DateField(blank=True, null=True)
 	batch=models.CharField(max_length=20, blank=True, null=True)
@@ -199,7 +199,7 @@ class inventory_wastage (models.Model):
 	purchase_price=models.DecimalField(db_index=True, max_digits=10, decimal_places=2, blank=True, null=True)
 	#To consider average inventory cost
 	inventory_average_cost=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-	quantity=models.PositiveSmallIntegerField(db_index=True)
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	tenant=models.ForeignKey(Tenant,related_name='inventoryWastage_inventory_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

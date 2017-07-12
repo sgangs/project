@@ -33,12 +33,18 @@ function get_product_rate(el, product_id){
         // handle a successful response
         success : function(jsondata) {
             updating_row=$('.details').find('.updating')
-            // console.log(jsondata['rate']);
+            console.log(jsondata);
             // console.log(jsondata['rate'][0]['tentative_sales_rate']);
-            
-            $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
-            $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
-            $(updating_row).find('td:nth-child(11)').html(jsondata['rate'][0]['is_tax_included']);
+            if (jsondata['rate'][0]){
+                $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
+                // $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
+                $(updating_row).find('td:nth-child(11)').html(jsondata['rate'][0]['is_tax_included']);
+            }
+            else{
+                $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
+                // $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
+                $(updating_row).find('td:nth-child(11)').html(false);   
+            }
             $(updating_row).removeClass('updating');
             
             // May have to consider multiple sales rate
@@ -302,6 +308,7 @@ function get_total(){
     $('.total_receipt').html(total.toFixed(2))
 };
 
+
 $('.addmore').click(function(){
     count=$('.details tr').length;
     var data='<tr class="data">'+
@@ -316,20 +323,14 @@ $('.addmore').click(function(){
     '<td colspan="1"><input class="form-control da"></td>'+
     '<td colspan="1" class="total" hidden>0.00</td>'+
     '<td colspan="1" hidden class="is_tax"></td>'+
-    '<td colspan="1" hidden><input class="form-control cgstp"></td>'+
-    '<td colspan="1" hidden class="cgstv" ></td>'+
-    '<td colspan="1" hidden><input class="form-control sgstp"></td>'+
-    '<td colspan="1" hidden class="sgstv"></td>'+
+    '<td colspan="1" class="cgstp" hidden><input class="form-control dv2"></td>'+
+    '<td colspan="1" class="cgstv" hidden></td>'+
+    '<td colspan="1" class="sgstp" hidden><input class="form-control dv2"></td>'+
+    '<td colspan="1" class="sgstv" hidden></td>'+
     '<td colspan="1" class="tv">0.00</td></tr>'
     $('.details').append(data);
 
-    // $('.dt').selectpicker('refresh');
-    // $('.dt2').selectpicker('refresh');
-    
-    
 })
-
-
 
 
 $('.submit').click(function(e) {
@@ -416,7 +417,7 @@ function new_data(){
             disc_amt=0
         }
 
-
+        var is_tax = $(this).find('td:nth-child(11)').html();
 
         var cgst_p = parseFloat($(this).find('td:nth-child(12) input').val());
         var cgst_v = parseFloat($(this).find('td:nth-child(13)').html());
@@ -449,6 +450,7 @@ function new_data(){
             sgst_v: sgst_v,
             taxable_total: taxable_total,
             line_total: line_total,
+            is_tax: is_tax
         };
         items.push(item);
     });
@@ -471,23 +473,21 @@ function new_data(){
                     subtotal: subtotal,
                     cgsttotal: cgst_total_sum,
                     sgsttotal: sgst_total_sum,
-                    // taxtotal: taxtotal,
+                    // is_tax: is_tax,
                     total: total,
                     bill_details: JSON.stringify(items),
                     calltype: "save",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
-                // contentType: "application/json",
-                        // handle a successful response
+                
                 success : function(jsondata) {
                     var show_success=true
                     if (show_success){
                         swal("Hooray", "New sale invoice generated", "success");
-                        // var url='/sales/invoice/detailview/'+jsondata+'/'
-                        // location.href = url;
-                        setTimeout(location.reload(true),1000);
+                        var url='/retailsales/invoice/detailview/'+jsondata+'/'
+                        location.href = url;
+                        // setTimeout(location.reload(true),1000);
                     }
-                    //console.log(jsondata);
                 },
                 // handle a non-successful response
                 error : function() {

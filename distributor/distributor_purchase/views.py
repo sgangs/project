@@ -19,7 +19,7 @@ from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Vendor, Warehouse
 from distributor_account.models import Account, tax_transaction, payment_mode,accounting_period,\
-									account_inventory, account_year_inventory
+									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor_inventory.inventory_utils import create_new_inventory_ledger
@@ -61,7 +61,7 @@ def get_product(request):
 			response_data.append(item_json)
 			data = json.dumps(response_data)
 		else:
-			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].\
+			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:5].\
 						select_related('default_unit', 'tax')
 			response_data = []
 			for item in products:
@@ -134,6 +134,9 @@ def purchase_receipt_save(request):
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
 					igsttotal=Decimal(request.data.get('igsttotal'))
 					total=Decimal(request.data.get('total'))
+					sum_total = subtotal+cgsttotal+sgsttotal
+					if (abs(sum_total - total) <0.90 ):
+						total = sum_total
 					duedate=request.data.get('duedate')
 
 					bill_data = json.loads(request.data.get('bill_details'))
@@ -203,7 +206,7 @@ def purchase_receipt_save(request):
 						tentative_sales_price=Decimal(data['sales'])/multiplier
 						mrp=Decimal(data['mrp'])/multiplier
 
-						original_quantity=int(data['quantity'])
+						original_quantity=Decimal(data['quantity']) + Decimal(0.000)
 						quantity=original_quantity*multiplier
 						
 						LineItem = receipt_line_item()
@@ -223,6 +226,8 @@ def purchase_receipt_save(request):
 						LineItem.unit=unit.symbol
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
+						# print(LineItem.quantity)
+						# print(type(LineItem.quantity))
 						if (product.has_batch):
 							LineItem.batch=batch
 							LineItem.manufacturing_date=manufacturing_date
@@ -375,6 +380,19 @@ def purchase_receipt_save(request):
 											get(account_inventory=inventory_acct, accounting_period = acct_period)
 						inventory_acct_year.current_debit+=subtotal
 						inventory_acct_year.save()
+						new_journal_inv=journal_inventory()
+						new_journal_inv.date=date
+						new_journal_inv.transactionansaction_bill_id=new_receipt.id
+						new_journal_inv.trn_type=1
+						new_journal_inv.tenant=this_tenant
+						new_journal_inv.save()
+						new_entry_inv=journal_entry_inventory()
+						new_entry_inv.transaction_type=1
+						new_entry_inv.journal=new_journal_inv
+						new_entry_inv.account=inventory_acct
+						new_entry_inv.value=subtotal
+						new_entry_inv.tenant=this_tenant
+						new_entry_inv.save()
 
 					else:
 						remarks="Purchase Receipt No: "+str(new_receipt.receipt_id)

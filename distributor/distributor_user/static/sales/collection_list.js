@@ -45,6 +45,32 @@ function load_receipts(){
 }
 
 
+var end = moment();
+var start = moment(end).subtract(60, 'days');
+var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
+// console.log(start.format('DD-MM-YYYY'));
+
+$('.date_range').daterangepicker({
+    'showDropdowns': true,
+    'locale': {
+        format: 'DD/MM/YYYY',
+    },
+    "dateLimit": {
+        "days": 90
+    },
+    'autoApply':true,
+    // 'minDate': moment(start),
+    // 'maxDate': moment(end)  
+    'startDate' : start,
+    'endDate' : end,
+    },
+    function(start, end, label) {
+        startdate=start.format('YYYY-MM-DD');
+        enddate=end.format('YYYY-MM-DD');
+        $('.details').attr('disabled', false);
+});
+
+
 
 });
 

@@ -93,9 +93,12 @@ $('.get_data').click(function load_movement(){
                 // handle a successful response
             success : function(jsondata) {
                 $("#product_movement .data").remove();
+                var count=0;
+                var final_qty=0;
+                var final_rate=0;
                 $.each(jsondata, function(){
                     if (typeof(this.date) == 'undefined'){
-                        $('#product_movement').prepend("<tr class='data' align='center'>"+
+                        $('#product_movement').append("<tr class='data' align='center'>"+
                         "<td hidden='true'></td>"+
                         "<td>"+trn_type[parseInt(this.transaction_type)]+"</td>"+
                         "<td></td>"+
@@ -105,7 +108,12 @@ $('.get_data').click(function load_movement(){
                         "</tr>");
                     }
                     else{
-                        $('#product_movement').prepend("<tr class='data' align='center'>"+
+                        if (count == 0){
+                            final_qty = this.current_qty;
+                            final_rate = this.current_val;
+                        }
+                        count++;     
+                        $('#product_movement').append("<tr class='data' align='center'>"+
                         "<td hidden='true'></td>"+
                         "<td>"+trn_type[parseInt(this.transaction_type)]+"</td>"+
                         "<td>"+this.date.split("-").reverse().join("-")+"</td>"+
@@ -115,6 +123,18 @@ $('.get_data').click(function load_movement(){
                         "</tr>");   
                     }
                 })
+                if (count >0){
+                    $('#product_movement').prepend("<tr class='data' align='center'>"+
+                        "<td hidden='true'></td>"+
+                        "<td>Closing Balance</td>"+
+                        "<td></td>"+
+                        "<td></td>"+
+                        "<td>"+final_qty+"</td>"+
+                        "<td>Rs."+final_rate+"</td>"+
+                        "</tr>");
+
+                }
+                console.log(final_qty);
             },
                 // handle a non-successful response
             error : function() {

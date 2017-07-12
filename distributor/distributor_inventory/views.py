@@ -340,26 +340,31 @@ def write_pdf_view(request, pk_detail):
 		
 		# Start writing the PDF here
 		# p.drawString(100, 100, 'Hello world.')
-		barcode = code128.Code128(barcode,barHeight=15*mm,barWidth = 0.25*mm, humanReadable=True)
-		y=5
-		for i in range(12):
-			x=5
-			for j in range(4):
-				barcode.drawOn(p,x*mm,y*mm)
-				x=x+52.5
-			y=y+24.75
+		if barcode:
+			barcode = code128.Code128(barcode,barHeight=15*mm,barWidth = 0.25*mm, humanReadable=True)
+			y=5
+			for i in range(12):
+				x=5
+				for j in range(4):
+					barcode.drawOn(p,x*mm,y*mm)
+					x=x+52.5
+				y=y+24.75
+				
 			
-		
 
-		# End writing
-		p.showPage()
-		p.save()
+			# End writing
+			p.showPage()
+			p.save()
 
-		pdf = buffer.getvalue()
-		buffer.close()
-		response.write(pdf)
+			pdf = buffer.getvalue()
+			buffer.close()
+			response.write(pdf)
 
-		return response
+			return response
+		else:
+			messages.add_message(request, messages.WARNING, "Barcode for the product doesn't exist")
+			return redirect('master:product_data')
+
 	except:
 		messages.add_message(request, messages.WARNING, "Barcode for the product doesn't exist")
 		return redirect('master:product_data')
@@ -380,7 +385,7 @@ def product_valuation_movement_data(request):
 	elif (calltype == 'productid'):
 		productbarcode=request.GET.get('product')
 		product=Product.objects.for_tenant(this_tenant).get(id=productbarcode)
-	response_data=list(inventory_ledger.objects.filter(product=product, warehouse=warehouse, date__gt=date).order_by('-date','id').\
+	response_data=list(inventory_ledger.objects.filter(product=product, warehouse=warehouse, date__gte=date).order_by('-date','-id').\
 					values('quantity','purchase_price', 'transaction_type','date', 'actual_sales_price'))
 	current_avl=Inventory.objects.filter(product=product, warehouse=warehouse, quantity_available__gt=0)
 	current_val=0
@@ -392,17 +397,17 @@ def product_valuation_movement_data(request):
 	open_val=current_val
 	open_qty=current_qty
 	if (len(response_data) == 0):
-		response_data=[{'transaction_type' : 0, 'current_qty':current_qty,'current_val':current_val }]
+		response_data=[{'transaction_type' : 0, 'current_qty':current_qty,'current_val':round(current_val,2) }]
 	else:
 		for item in response_data:
 			if item['transaction_type'] in [1,3,4,8,10]:
 				item['current_qty']=open_qty
-				item['current_val']=open_val
+				item['current_val']=round(open_val,2)
 				open_qty-=item['quantity']
 				open_val-=(item['purchase_price']*item['quantity'])
 			else:
 				item['current_qty']=open_qty
-				item['current_val']=open_val
+				item['current_val']=round(open_val,2)
 				open_qty+=item['quantity']
 				open_val+=(item['purchase_price']*item['quantity'])
 	

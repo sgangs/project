@@ -17,50 +17,24 @@ $('.get_invoice').click(function(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata)
-            load_data(jsondata)
-            // $(".prod_data .prod_indi_data").remove();
-            // $.each(jsondata, function(){
-            //     $('.prod_data').append("<tr class='prod_indi_data'>"+
-            //     "<td class='prod_tsp'>"+this.tentative_sales_price +"</td>"+
-            //     "<td class='prod_mrp'>"+this.mrp+"</td>"+
-            //     "<td class='prod_qa'>"+this.available+"</td>"+
-            //     "<td class='prod_qa'>"+default_unit+"</td>"+
-            //     "</tr>");
-            // })
-            // $('#productdetails').modal('show');
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "No product inventory exist.", "error");
-        }
-    });
-})
-
-
-function load_data(pk){
-    $.ajax({
-        url : "/sales/invoice/detail/"+pk+"/", 
-        type: "GET",
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
+            // load_data(jsondata)
             $('.invoice_meta').attr('hidden', false);
             $('.details .data').remove()
             igst_total=0;
             taxtotal = parseFloat(jsondata['cgsttotal']) + parseFloat(jsondata['sgsttotal']) + parseFloat(jsondata['igsttotal'])
             $('.invoiceid').html("<strong >Invoice No.: </strong>"+jsondata['invoice_id']);
+            $('.sales_inv_pk').val(jsondata['id'])
+            
             date=jsondata['date']
             date=date.split("-").reverse().join("-")
-            $('.date').html("<strong>Original Date: </strong>"+date);
-            // $('.customer').append(jsondata['customer_name']+
-            //         ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']);
+            $('.original_date').html("<strong>Original Date: </strong>"+date);
             $('.customer').html("<strong>Customer: </strong>"+jsondata['customer_name']);
             $('.warehouse').html("<strong>Delivery From: </strong>"+jsondata['warehouse_address']+',<br>'
                                     +jsondata['warehouse_city']);
             $('.subtotal_receipt').html(jsondata['subtotal']);
             $('.taxtotal_receipt').html(taxtotal.toFixed(2));
             $('.total_receipt').html(jsondata['total']);
+            
             $.each(jsondata['line_items'], function(){
                 igst_total+=this.igst_value;
                 // free_total=parseFloat(this.free_with_tax)+parseFloat(this.free_without_tax)
@@ -86,29 +60,15 @@ function load_data(pk){
                 
                 $('.details').append("<tr class='data text-center'>"+
                     '<td colspan="1" class="first"><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>'+
+                    "<td hidden>"+this.id+"</td>"+
+                    "<td hidden>"+this.product_id+"</td>"+
                     "<td>"+this.product_name+"</td>"+
-                    "<td><input class='form-control qty_avl' value="+this.quantity+" disabled></td>"+
-                    "<td><input class='form-control qty' value="+this.quantity+"></td>"+
-                    // "<td id='not_print'>"+this.free_without_tax+"</td>"+
-                    // "<td id='not_print'>"+this.free_with_tax+"</td>"+
+                    "<td><input class='form-control qty_avl' value="+(this.quantity - this.quantity_returned)+" disabled></td>"+
+                    "<td><input class='form-control qty' value="+(this.quantity - this.quantity_returned)+"></td>"+
                     "<td id='not_pos_print'>"+this.unit+"</td>"+
-                    // "<td class='visible-print-block'>"+free_total+"</td>"+
                     "<td id='not_pos_print' hidden><input class='form-control sp' value="+sales_rate.toFixed(2)+" disabled></td>"+
                     "<td id='not_pos_print'><input class='form-control sr' value="+sales_rate+"></td>"+
-                    // "<td id='not_pos_print'><input class='form-control dt1' value="+discount_types[this.discount_type]+"></td>"+
-                    // '<td colspan="1"><select class="form-control select dt">'+
-                    //     '<option data-id=0 title="-">No Discount</option>'+
-                    //     '<option data-id=1 title=%>Percent(%)</option>'+
-                    //     '<option data-id=2 title="V">Value(V)</option>'+
-                    //     '</select></td>'+
-                    // "<td id='not_pos_print'><input class='form-control dv' value="+this.discount_value+"></td>"+
-                    // "<td id='not_pos_print'><input class='form-control dt2' value="+discount_types[this.discount2_type]+"></td>"+
-                    // '<td colspan="1"><select class="form-control selectpicker dt2">'+
-                    //     '<option data-id=0 title="-">No Discount</option>'+
-                    //     '<option data-id=1 title=%>Percent(%)</option>'+
-                    //     '<option data-id=2 title="V">Value(V)</option>'+
-                    //     '</select></td>'+
-                    // "<td id='not_pos_print'><input class='form-control dv2' value="+this.discount2_value+"></td>"+
+                    
                     "<td id='not_pos_print'>"+this.line_tax+"</td>"+
                     "<td><input class='form-control cgstp' value="+this.cgst_percent+"></td>"+
                     "<td>"+this.cgst_value+"</td>"+
@@ -120,19 +80,94 @@ function load_data(pk){
                     "</tr>");
                 $('.dt').selectpicker('refresh');
                 $('.dt2').selectpicker('refresh');
-                // $('dt').val(this.discount_type);
-                // $('dt2').val(this.discount2_type);
-                // $('.dt').selectpicker('refresh');
-                // $('.dt2').selectpicker('refresh');
             });
-
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "There were some issues in fetching the data.", "error");
+            swal("Oops...", "No sales invoice exist.", "error");
         }
     });
-}
+})
+
+
+// function load_data(pk){
+//     $.ajax({
+//         url : "/sales/invoice/detail/"+pk+"/", 
+//         type: "GET",
+//         dataType: 'json',
+//         // handle a successful response
+//         success : function(jsondata) {
+//             $('.invoice_meta').attr('hidden', false);
+//             $('.details .data').remove()
+//             igst_total=0;
+//             taxtotal = parseFloat(jsondata['cgsttotal']) + parseFloat(jsondata['sgsttotal']) + parseFloat(jsondata['igsttotal'])
+//             $('.invoiceid').html("<strong >Invoice No.: </strong>"+jsondata['invoice_id']);
+//             $('.sales_inv_pk').val(jsondata['id'])
+            
+//             date=jsondata['date']
+//             date=date.split("-").reverse().join("-")
+//             $('.original_date').html("<strong>Original Date: </strong>"+date);
+//             $('.customer').html("<strong>Customer: </strong>"+jsondata['customer_name']);
+//             $('.warehouse').html("<strong>Delivery From: </strong>"+jsondata['warehouse_address']+',<br>'
+//                                     +jsondata['warehouse_city']);
+//             $('.subtotal_receipt').html(jsondata['subtotal']);
+//             $('.taxtotal_receipt').html(taxtotal.toFixed(2));
+//             $('.total_receipt').html(jsondata['total']);
+            
+//             $.each(jsondata['line_items'], function(){
+//                 igst_total+=this.igst_value;
+//                 // free_total=parseFloat(this.free_with_tax)+parseFloat(this.free_without_tax)
+//                 sales_rate=parseFloat(this.sales_price)
+//                 qty=parseFloat(this.quantity)
+//                 d1_type=this.discount_type
+//                 d2_type=this.discount2_type
+//                 if (d1_type == 1){
+//                     d1_val=(this.discount_value*sales_rate/100);
+//                     sales_rate-=d1_val
+//                 }
+//                 else if(d1_type == 2){
+//                     d1_val=this.discount_value;
+//                     sales_rate-=(d1_val/qty)
+//                 }
+//                 if (d2_type == 1){
+//                     d2_val=(this.discount2_value*sales_rate/100);
+//                 }
+//                 else if(d2_type == 2){
+//                     d2_val=this.discount2_value;
+//                     sales_rate-=(d2_val/qty)
+//                 }
+                
+//                 $('.details').append("<tr class='data text-center'>"+
+//                     '<td colspan="1" class="first"><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>'+
+//                     "<td hidden>"+this.id+"</td>"+
+//                     "<td hidden>"+this.product_id+"</td>"+
+//                     "<td>"+this.product_name+"</td>"+
+//                     "<td><input class='form-control qty_avl' value="+(this.quantity - this.quantity_returned)+" disabled></td>"+
+//                     "<td><input class='form-control qty' value="+(this.quantity - this.quantity_returned)+"></td>"+
+//                     "<td id='not_pos_print'>"+this.unit+"</td>"+
+//                     "<td id='not_pos_print' hidden><input class='form-control sp' value="+sales_rate.toFixed(2)+" disabled></td>"+
+//                     "<td id='not_pos_print'><input class='form-control sr' value="+sales_rate+"></td>"+
+                    
+//                     "<td id='not_pos_print'>"+this.line_tax+"</td>"+
+//                     "<td><input class='form-control cgstp' value="+this.cgst_percent+"></td>"+
+//                     "<td>"+this.cgst_value+"</td>"+
+//                     "<td><input class='form-control sgstp' value="+this.sgst_percent+"></td>"+
+//                     "<td>"+this.sgst_value+"</td>"+
+//                     "<td class='is_igst'><input class='form-control igstp' value="+this.igst_percent+"></td>"+
+//                     "<td class='is_igst'>"+this.igst_value+"</td>"+
+//                     "<td>"+this.line_total+"</td>"+
+//                     "</tr>");
+//                 $('.dt').selectpicker('refresh');
+//                 $('.dt2').selectpicker('refresh');
+//             });
+
+//         },
+//         // handle a non-successful response
+//         error : function() {
+//             swal("Oops...", "There were some issues in fetching the data.", "error");
+//         }
+//     });
+// }
 
 
 $('.details').on("mouseenter", ".first", function() {
@@ -189,8 +224,8 @@ $(".details").on("keydown", ".igstp", function(){
 
 
 function get_qty_avl(el){
-    var quantity =  parseFloat($(el).closest('tr').find('td:nth-child(4) input').val());
-    var quantity_avl = parseFloat($(el).closest('tr').find('td:nth-child(3) input').val());
+    var quantity =  parseFloat($(el).closest('tr').find('td:nth-child(6) input').val());
+    var quantity_avl = parseFloat($(el).closest('tr').find('td:nth-child(5) input').val());
     var unit = $(el).closest('tr').find('td:nth-child(5)').html();
     
     if (!$(el).closest('tr').hasClass("has-error")){
@@ -264,15 +299,15 @@ function get_total(){
         cgst_total=(this_total*cgst_percent)/100;
         sgst_total=(this_total*sgst_percent)/100;
         igst_total=(this_total*igst_percent)/100;
-        $(a[i]).find('td:nth-child(10) ').html(cgst_total.toFixed(2))
-        $(a[i]).find('td:nth-child(12) ').html(sgst_total.toFixed(2))
-        $(a[i]).find('td:nth-child(14) ').html(igst_total.toFixed(2))
+        $(a[i]).find('td:nth-child(12) ').html(cgst_total.toFixed(2))
+        $(a[i]).find('td:nth-child(14) ').html(sgst_total.toFixed(2))
+        $(a[i]).find('td:nth-child(16) ').html(igst_total.toFixed(2))
 
-        $(a[i]).find('td:nth-child(8) ').html(this_total.toFixed(2))
+        $(a[i]).find('td:nth-child(10) ').html(this_total.toFixed(2))
         vat_total=0;
         
         this_final_total=this_total+cgst_total+sgst_total+igst_total
-        $(a[i]).find('td:nth-child(15) ').html(this_final_total.toFixed(2))
+        $(a[i]).find('td:nth-child(17) ').html(this_final_total.toFixed(2))
         subtotal=subtotal+this_total
         tax_total=tax_total+cgst_total+sgst_total+igst_total
     }
@@ -282,5 +317,159 @@ function get_total(){
     $('.taxtotal_receipt').html(tax_total.toFixed(2))
     $('.total_receipt').html(total.toFixed(2))
 };
+
+
+
+$('.submit').click(function(e) {
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure you want to generate a new sales return?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, generate new sales return!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){new_data()},600)            
+        }
+    })
+});
+    
+function new_data(){
+    var items=[];
+    var proceed=true;
+    invoiceid=$('.sales_inv_pk').val()
+    date=$('.date').val()
+    
+    subtotal=parseFloat($('.subtotal_receipt').html());
+    var cgsttotal=0, sgsttotal=0, igsttotal=0;
+    total=parseFloat($('.total_receipt').html());
+    
+    if (invoiceid == '' || typeof(invoiceid) =='undefined' || $.trim(date) == '' || typeof(date) =='undefined'){
+        proceed = false;
+        swal("Oops...", "Please select/enter original invoice and return invoice date. ", "error");
+    }
+    
+    $(".details tr.data").each(function() {
+        var line_item_id = $(this).find('td:nth-child(2)').html();
+        var product_id = $(this).find('td:nth-child(3)').html();
+        
+        var quantity_avl = parseFloat($(this).find('td:nth-child(5) input').val());
+        var quantity = parseFloat($(this).find('td:nth-child(6) input').val());
+        
+        console.log(quantity_avl)
+        console.log(quantity)
+        
+        if (quantity == '' || quantity =='undefined'){
+            proceed=false;
+            swal("Oops...", "Please enter a quantity ", "error");
+            $(this).closest('tr').addClass("has-error");
+        }
+        
+        if (quantity > quantity_avl){
+            swal("Oops...", "Sales return quantoty is more than original quantity. ", "error");
+            proceed=false;
+        }
+
+        
+        var return_price = $(this).find('td:nth-child(9) input').val();
+        
+        if (return_price == '' || return_price =='undefined' || typeof(return_price) == 'undefined'){
+            proceed=false;
+            swal("Oops...", "Please enter a sales return rate ", "error");
+            $(this).closest('tr').addClass("has-error");
+        }
+        
+        var cgst_p = parseFloat($(this).find('td:nth-child(11) input').val());
+        var cgst_v = parseFloat($(this).find('td:nth-child(12)').html());
+        if (isNaN(cgst_p)){
+            cgst_p=0;
+            cgst_v=0;
+        }
+        cgsttotal+=cgst_v
+        
+        var sgst_p = parseFloat($(this).find('td:nth-child(13) input').val());
+        var sgst_v = parseFloat($(this).find('td:nth-child(14)').html());
+        if (isNaN(sgst_p)){
+            sgst_p=0;
+            sgst_v=0;
+        }
+        sgsttotal+=sgst_v
+
+        var igst_p = parseFloat($(this).find('td:nth-child(15) input').val());
+        var igst_v = parseFloat($(this).find('td:nth-child(16)').html());
+        if (isNaN(igst_p)){
+            igst_p=0;
+            igst_v=0;
+        }
+        igsttotal+=igst_v
+        
+        var taxable_total = $(this).find('td:nth-child(10)').html();
+        var line_total = $(this).find('td:nth-child(17)').html();
+        
+        var item = {
+            line_item_id: line_item_id,
+            product_id : product_id,
+            quantity: quantity,
+            return_price: return_price,
+            cgst_p: cgst_p,
+            cgst_v:cgst_v,
+            sgst_p: sgst_p,
+            sgst_v: sgst_v,
+            igst_p: igst_p,
+            igst_v: igst_v,
+            taxable_total: taxable_total,
+            line_total: line_total,
+        };
+        items.push(item);
+    });
+    console.log(cgsttotal);
+    console.log(items);
+    
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "save/" , 
+                type: "POST",
+                data:{invoiceid:invoiceid,
+                    date:date.split("/").reverse().join("-"),
+                    subtotal: subtotal,
+                    cgsttotal: cgsttotal,
+                    sgsttotal: sgsttotal,
+                    igsttotal: igsttotal,
+                    total: total,
+                    bill_details: JSON.stringify(items),
+                    calltype: "save",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // contentType: "application/json",
+                        // handle a successful response
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "New sales return generated", "success");
+                        // var url='/sales/invoice/detailview/'+jsondata+'/'
+                        // location.href = url;
+                        // setTimeout(location.reload(true),1000);
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }
+    else{
+        // swal("Oops...", "Please note that vendor and warehouse details must be filled."+
+        //     "Also please check the highlightd rows", "error");
+    }
+}
+
+
 
 });
