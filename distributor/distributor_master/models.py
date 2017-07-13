@@ -59,7 +59,7 @@ class Unit(models.Model):
 class tax_structure(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True, max_length=50)
-	percentage=models.PositiveSmallIntegerField()
+	percentage=models.DecimalField(max_digits=5, decimal_places=2)
 	tenant=models.ForeignKey(Tenant,related_name='taxStructure_master_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

@@ -45,15 +45,15 @@ def get_product(request):
 			item_json['inventory'] = this_tenant.maintain_inventory
 			# item_json['vat_type'] = item.vat_type
 			try:
-				item_json['cgst'] = item.cgst.percentage
+				item_json['cgst'] = str(item.cgst.percentage)
 			except:
 				item_json['cgst'] = 0
 			try:
-				item_json['sgst'] = item.sgst.percentage
+				item_json['sgst'] = str(item.sgst.percentage)
 			except:
 				item_json['sgst'] = 0
 			try:
-				item_json['igst'] = item.igst.percentage
+				item_json['igst'] = str(item.igst.percentage)
 			except:
 				item_json['igst'] = 0
 			response_data.append(item_json)

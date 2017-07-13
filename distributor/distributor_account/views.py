@@ -478,7 +478,7 @@ def profit_loss_view(request):
 	start=period.start
 	end=period.end
 	# try:
-	response_data=get_profit_loss(request, start, end)
+	response_data=get_profit_loss(request, start, end, period)
 	# except:
 		# response_data=[]
 	jsondata = json.dumps(response_data)
@@ -489,13 +489,14 @@ def profit_loss_view(request):
 @login_required
 #Show Balance Sheet
 def balance_sheet(request):
+	extension="base.html"
 	date=datetime.now()
 	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
 	start=period.start
 	end=period.end
-	try:
-		response_data=get_balance_sheet(request, start, end)
-	except:
-		response_data=[]
+	# try:
+	response_data=get_balance_sheet(request, start, end, period)
+	# except:
+		# response_data=[]
 	jsondata = json.dumps(response_data)
-	return render(request, 'accounts/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s'})
+	return render(request, 'account/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s', 'extension':extension})

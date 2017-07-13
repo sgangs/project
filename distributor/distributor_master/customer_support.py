@@ -107,7 +107,7 @@ def product_register(excel_data, this_tenant):
                                 igst=taxes.get(name=row[6])
                             except:
                                 pass
-                        objects_product.append(Product(name=row[0], sku=row[1],barcode=row[2], default_unit=unit,\
+                        objects_product.append(Product(name=row[0], sku=row[2],barcode=row[3], default_unit=unit,\
                             cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
                 else:
                     if row[4]:
@@ -125,7 +125,7 @@ def product_register(excel_data, this_tenant):
                             igst=taxes.get(name=row[6])
                         except:
                             pass
-                    objects_product.append(Product(name=row[0], sku=row[1], default_unit=unit,\
+                    objects_product.append(Product(name=row[0], sku=row[2], default_unit=unit,\
                         cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
             
     with transaction.atomic():

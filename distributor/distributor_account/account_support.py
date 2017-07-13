@@ -63,7 +63,7 @@ def get_trial_balance(request, start, end):
 
 
 #This function is used to provide profit loss details
-def get_profit_loss(request, start, end, sent='p-l'):
+def get_profit_loss(request, start, end, period, sent='p-l'):
     account_list=Account.objects.for_tenant(request.user.tenant).filter(account_type__in=('dirrev','indrev',\
         'direxp', 'taxexp','indexp'))
     response_data=[]
@@ -77,14 +77,22 @@ def get_profit_loss(request, start, end, sent='p-l'):
         this_debit=True
         this_credit=True
         total=0
-        journals=journal_entry.objects.for_tenant(request.user.tenant).\
-            filter(journal__date__range=(start,end), account=item)
-        journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
-        journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
-        if (journal_debit['value__sum'] == None):
+        journal_debit={}
+        journal_credit={}
+        # journals=journal_entry.objects.for_tenant(request.user.tenant).\
+        #     filter(journal__date__range=(start,end), account=item)
+        # journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
+        # journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
+        account_year_data=account_year.objects.for_tenant(request.user.tenant).\
+            get(account=item, accounting_period = period)
+        journal_debit['value__sum']=account_year_data.current_debit
+        journal_credit['value__sum']=account_year_data.current_credit
+        # if (journal_debit['value__sum'] == None):
+        if (journal_debit['value__sum'] == 0):
             journal_debit['value__sum'] = 0
             this_debit = False
-        if (journal_credit['value__sum'] == None):
+        # if (journal_credit['value__sum'] == None):
+        if (journal_credit['value__sum'] == 0):
             journal_credit['value__sum'] = 0
             this_credit = False
         if (item.account_type in ('dirrev','indev')):
@@ -139,12 +147,12 @@ def get_profit_loss(request, start, end, sent='p-l'):
         response_data.append({'data_type':'closing','income':str(closing_stock)})
         # response_data.append({'data_type':'net_after_tax','income':str(income_after_tax)})
         return response_data
-    return income_after_tax
+    return net_income
 
 
 #This function is used to provide profit loss details
-def get_balance_sheet(request, start, end):
-    account_list=Account.objects.for_tenant(request.user.tenant).filter(account_type__in=('ca','rec','nca'\
+def get_balance_sheet(request, start, end, period):
+    account_list=Account.objects.for_tenant(request.user.tenant).filter(account_type__in=('ca','rec','nca',\
                     'cl','pay', 'ncl', 'equ'))
     response_data=[]
     asset=0
@@ -157,44 +165,60 @@ def get_balance_sheet(request, start, end):
     profit=0
     for item in account_list:
         total=0
+        this_debit=True
+        this_credit=True
         journals=journal_entry.objects.for_tenant(request.user.tenant).\
             filter(journal__date__range=(start,end), account=item)
         journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
         journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
         if (journal_debit['value__sum'] == None):
             journal_debit['value__sum'] = 0
+            this_debit = False
         if (journal_credit['value__sum'] == None):
             journal_credit['value__sum'] = 0
+            this_credit = False
         if (item.account_type in ('ca','rec','ncsa')):
             total+=journal_debit['value__sum']
             total-=journal_credit['value__sum']
             if(item.account_type in ('ca','rec')):
                 asset+=total
-                response_data.append({'data_type':'assets','account':item.name,'total':str(total)})
+                if (this_debit or this_credit):
+                    response_data.append({'data_type':'assets','account':item.name,'total':str(total)})
             elif (item.account_type in ('nca')):
                 long_asset+=total
-                response_data.append({'data_type':'long_assets','account':item.name,'total':str(total)})
+                if (this_debit or this_credit):
+                    response_data.append({'data_type':'long_assets','account':item.name,'total':str(total)})
         elif (item.account_type in ('cl', 'ncl', 'pay')):
             total-=journal_debit['value__sum']
             total+=journal_credit['value__sum']
             if(item.account_type in ('cl','pay')):
                 liability+=total
-                response_data.append({'data_type':'liability','account':item.name,'total':str(total)})
+                if (this_debit or this_credit):
+                    response_data.append({'data_type':'liability','account':item.name,'total':str(total)})
             else:
                 long_liability+=total
-                response_data.append({'data_type':'long_liability','account':item.name,'total':str(total)})
+                if (this_debit or this_credit):
+                    response_data.append({'data_type':'long_liability','account':item.name,'total':str(total)})
         elif(item.account_type in ('equ')):
             total-=journal_debit['value__sum']
             total+=journal_credit['value__sum']
             drawings+=total
-            response_data.append({'data_type':'liability','account':item.name,'total':str(total)})
+            if (this_debit or this_credit):
+                response_data.append({'data_type':'liability','account':item.name,'total':str(total)})
+
+    inventory_acc=account_inventory.objects.for_tenant(request.user.tenant).get(name="Inventory")
+    inventory_closing=account_year_inventory.objects.for_tenant(request.user.tenant).get(account_inventory=inventory_acc, accounting_period=period)
+    response_data.append({'data_type':'assets','account':"Closing Inventory",\
+                    'total':str(inventory_closing.current_debit-inventory_closing.current_credit)})
             
-    total_asset=asset+long_asset
-    profit=get_profit_loss(request,start,end,sent="balance-sheet")
+    total_asset=asset+long_asset+(inventory_closing.current_debit-inventory_closing.current_credit)
+    profit=get_profit_loss(request,start,end, period, sent="balance-sheet")
     total_liability=liability+long_liability+profit+drawings
     response_data.append({'data_type':'total_asset','total':str(total_asset)})
     response_data.append({'data_type':'profit','total':str(profit)})
     response_data.append({'data_type':'total_liability','total':str(total_liability)})
+
+    # print(response_data)
     return response_data
             
 
