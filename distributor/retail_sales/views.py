@@ -45,6 +45,7 @@ def get_product(request):
 			item_json['label'] = item.name
 			item_json['unit_id'] = item.default_unit.id
 			item_json['unit'] = item.default_unit.symbol
+			item_json['inventory'] = this_tenant.maintain_inventory
 			# item_json['vat_type'] = item.vat_type
 			try:
 				item_json['cgst'] = item.cgst.percentage
@@ -55,7 +56,7 @@ def get_product(request):
 			except:
 				item_json['sgst'] = 0
 			response_data.append(item_json)
-		data = json.dumps(response_data)
+		data = json.dumps(response_data, cls=DjangoJSONEncoder)
 	else:
 		data = 'fail'
 	mimetype = 'application/json'
@@ -115,7 +116,7 @@ def get_product_barcode(request):
 			#Check if json response has any error. If so, display error.
 			response_data['error']='Product Does not exist'
 	
-	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
 

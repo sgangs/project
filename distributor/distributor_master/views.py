@@ -368,7 +368,7 @@ def product_view(request):
 			product=Product.objects.for_tenant(this_tenant).get(id=productid)
 			serializer = ProductDetailSerializers(product)
 		else:
-			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by('sku').\
+			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by('sku', 'name').\
 					select_related('default_unit','brand','group')
 			serializer = ProductSerializers(products, many=True)
 		return Response(serializer.data)

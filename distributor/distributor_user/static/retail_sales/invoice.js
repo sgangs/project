@@ -1,7 +1,7 @@
 $(function(){
 vat_type=["No VAT", "On MRP", "On actual"];
 vat_type_reverse={"No VAT":0, "On MRP":1, "On actual":2};
-var vat_input, vat_percent, unit_data, unit_multi={}, unit_names={};
+var vat_input, vat_percent, unit_data, unit_multi={}, maintain_inventory, unit_names={};
 
 $(document).on('keydown.autocomplete', '.name', function() {
     var el=this;
@@ -11,6 +11,7 @@ $(document).on('keydown.autocomplete', '.name', function() {
         timeout: 200,
         select: function( event, ui ) {
             // console.log(ui['item']);
+            maintain_inventory=ui['item']['inventory']
             $(el).closest('tr').addClass("updating");
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
             $(el).closest('tr').find('td:nth-child(6) input').val(ui['item']['unit']);
@@ -148,12 +149,16 @@ $('.details').on("click", ".delete", function() {
 $(".details").on("keyup", ".qty", function(){
     var el=this;
     get_total();
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 $(".details").on("keydown", ".qty", function(){
     var el=this;
     get_total();
-    get_qty_avl(el);
+    if (maintain_inventory){
+        get_qty_avl(el);
+    }
 });
 
 
@@ -389,10 +394,12 @@ function new_data(){
         }
 
         
-        var qty_proceed= get_qty_avl(this);
-        if (!qty_proceed){
-            swal("Oops...", "You don't have enough quantity available. ", "error");
-            proceed=false;
+        if (maintain_inventory){
+            var qty_proceed= get_qty_avl(this);
+            if (!qty_proceed){
+                swal("Oops...", "You don't have enough quantity available. ", "error");
+                proceed=false;
+            }
         }
 
         var unit_id = $(this).find('td:nth-child(7)').html();
