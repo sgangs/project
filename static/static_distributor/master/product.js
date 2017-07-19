@@ -14,14 +14,13 @@ function load_products(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
             $.each(jsondata, function(){
                 var url='/inventory/barcode/'+this.id+'/'
                 if ($.trim(this.rates).length>0){
                     $('#product_table').append("<tr class='data' align='center'>"+
                     "<td hidden='true'>"+this.id+"</td>"+
                     "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
-                    "<td>"+$.trim(this.hsn)+"</td>"+
+                    "<td>"+$.trim(this.hsn_code)+"</td>"+
                     "<td>"+this.sku+"</td>"+
                     "<td>"+$.trim(this.default_unit)+"</td>"+
                     "<td>"+$.trim(this.brand)+"</td>"+
@@ -36,7 +35,7 @@ function load_products(){
                     $('#product_table').append("<tr class='data' align='center'>"+
                     "<td hidden='true'>"+this.id+"</td>"+
                     "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
-                    "<td>"+$.trim(this.hsn)+"</td>"+
+                    "<td>"+$.trim(this.hsn_code)+"</td>"+
                     "<td>"+this.sku+"</td>"+
                     "<td>"+$.trim(this.default_unit)+"</td>"+
                     "<td>"+$.trim(this.brand)+"</td>"+
@@ -468,7 +467,6 @@ $("#product_table").on("click", ".link", function(){
         dataType: 'json',
             // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
             $('#modal_product_details').modal('show');
             $('.id_data_prod').val(jsondata['id'])
             $('.name_data_prod').val(jsondata['name'])

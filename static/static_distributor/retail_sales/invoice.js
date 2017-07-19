@@ -491,7 +491,7 @@ function new_data(){
                     var show_success=true
                     if (show_success){
                         swal("Hooray", "New sale invoice generated", "success");
-                        var url='/retailsales/invoice/detailview/'+jsondata+'/'
+                        var url='/retailsales/invoice/detailview/'+jsondata['pk']+'/'
                         location.href = url;
                         // setTimeout(location.reload(true),1000);
                     }

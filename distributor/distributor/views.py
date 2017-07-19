@@ -228,7 +228,6 @@ def RegisterView(request):
                     payment.tenant=new_tenant
                     payment.payment_account=customer_credit
                     payment.save()
-                    print("here")
                     from_email = 'support@techassisto.com'
                     to_email = new_tenant.email
                     bcc_mail='sayantan@techassisto.com'

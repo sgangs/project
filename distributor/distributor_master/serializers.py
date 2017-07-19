@@ -73,7 +73,7 @@ class ProductSerializers (serializers.ModelSerializer):
 	rates = ProductRateSerializers(source='productSalesRate_product', many=True)
 	class Meta:
 		model = Product
-		fields = ('id','name','sku', 'barcode', 'default_unit', 'brand','group','remarks', 'rates')
+		fields = ('id','name','sku','hsn_code', 'barcode', 'default_unit', 'brand','group','remarks', 'rates')
 
 
 class ProductDetailSerializers (serializers.ModelSerializer):

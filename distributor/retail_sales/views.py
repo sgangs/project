@@ -101,6 +101,7 @@ def get_product_barcode(request):
 			response_data['rate']=product_rate
 			response_data['product_id']=product_data.id
 			response_data['product_name']=product_data.name
+			response_data['product_hsn']=product_data.hsn_code
 			response_data['unit_id']=product_data.default_unit.id
 			response_data['unit']=product_data.default_unit.symbol
 
@@ -455,7 +456,8 @@ def sales_invoice_save(request):
 						new_entry_inv.save()
 
 
-					response_data=new_invoice.id
+					response_data['pk']=new_invoice.id
+					response_data['id']=new_invoice.invoice_id
 				except:
 					transaction.rollback()
 
@@ -471,8 +473,8 @@ def invoice_details(request, pk):
 			'warehouse_address','warehouse_city', 'warehouse_pin','subtotal','cgsttotal','sgsttotal',\
 		'total','amount_paid').get(id=pk)
 		
-		line_items=list(invoice_line_item.objects.filter(retail_invoice=invoice['id']).values('id','product_name','product_hsn','product_id',\
-			'unit','unit_multi','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
+		line_items=list(invoice_line_item.objects.filter(retail_invoice=invoice['id']).order_by('id').values('id','product_name','product_hsn',\
+			'product_id','unit','unit_multi','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
 			'is_tax_included', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
 		invoice['line_items']=line_items
 

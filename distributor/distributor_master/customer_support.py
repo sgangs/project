@@ -79,7 +79,7 @@ def product_register(excel_data, this_tenant):
         elif (row[2] in product_id):
             row_no.append(i+1)
         else:
-            product_id[row[1]]=i
+            product_id[row[2]]=i
             try:
                 Product.objects.for_tenant(this_tenant).get(sku=row[2])
                 row_no.append(i+1)
@@ -87,11 +87,17 @@ def product_register(excel_data, this_tenant):
                 cgst = None
                 sgst = None
                 igst = None
+                hsn = None
                 if row[3]:
                     try:
                         Product.objects.for_tenant(this_tenant).get(barcode=row[3])
                         row_no.append(i+1)
                     except:
+                        if row[1]:
+                            try:
+                                hsn=str(int(row[1]))
+                            except:
+                                pass
                         if row[4]:
                             try:
                                 cgst=taxes.get(name=row[4])
@@ -107,9 +113,14 @@ def product_register(excel_data, this_tenant):
                                 igst=taxes.get(name=row[6])
                             except:
                                 pass
-                        objects_product.append(Product(name=row[0], sku=row[2],barcode=row[3], default_unit=unit,\
+                        objects_product.append(Product(name=row[0],hsn_code=hsn, sku=row[2],barcode=row[3], default_unit=unit,\
                             cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
                 else:
+                    if row[1]:
+                            try:
+                                hsn=str(int(row[1]))
+                            except:
+                                pass
                     if row[4]:
                         try:
                             cgst=taxes.get(name=row[4])
@@ -125,7 +136,7 @@ def product_register(excel_data, this_tenant):
                             igst=taxes.get(name=row[6])
                         except:
                             pass
-                    objects_product.append(Product(name=row[0], sku=row[2], default_unit=unit,\
+                    objects_product.append(Product(name=row[0], hsn_code=hsn, sku=row[2], default_unit=unit,\
                         cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
             
     with transaction.atomic():
@@ -152,7 +163,7 @@ def customer_format():
     })
     
     worksheet_s.write(1, 0, ugettext("Customer Name (Must be filled) Max_length:200"), header)
-    worksheet_s.write(1, 1, ugettext("Short Name/Code (Must be filled and must be unique) Max_length:40"), header)
+    worksheet_s.write(1, 1, ugettext("Short Name/Code (Must be filled and must be unique) Max_length:30"), header)
     worksheet_s.write(1, 2, ugettext("Address Line 1"), header)
     worksheet_s.write(1, 3, ugettext("Address Line 2"), header)
     worksheet_s.write(1, 4, ugettext("State (Please Contact Us For State List)"), header)
@@ -216,7 +227,7 @@ def product_format():
     worksheet_s.write(1, 0, ugettext("Product Name (Must be filled)"), bold_header)
     worksheet_s.write(1, 1, ugettext("Product HSN Code"), header)
     worksheet_s.write(1, 2, ugettext("Product SKU (Must be filled and must be unique) Max_length:20"), bold_header)
-    worksheet_s.write(1, 3, ugettext("Product Barcode (Must be unique) Max_length:10"), header)
+    worksheet_s.write(1, 3, ugettext("Product Barcode (Must be unique) Max_length:20"), header)
     worksheet_s.write(1, 4, ugettext("CGST Structure Name"), header)
     worksheet_s.write(1, 5, ugettext("SGST Structure Name"), header)
     worksheet_s.write(1, 6, ugettext("IGST Structure Name"), header)
