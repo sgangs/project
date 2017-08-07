@@ -10,11 +10,12 @@ $(document).on('keydown.autocomplete', '.name', function() {
         minLength: 3,
         timeout: 200,
         select: function( event, ui ) {
+            console.log(ui['item']['unit_id'])
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
-            $(el).closest('tr').find('td:nth-child(6) .unit').val(ui['item']['unit']);
-            $(el).closest('tr').find('td:nth-child(15) input').val(ui['item']['cgst']);
-            $(el).closest('tr').find('td:nth-child(17) input').val(ui['item']['sgst']);
-            $(el).closest('tr').find('td:nth-child(19) input').val(ui['item']['igst']);
+            $(el).closest('tr').find('td:nth-child(7) .unit').val(ui['item']['unit_id']);
+            $(el).closest('tr').find('td:nth-child(16) input').val(ui['item']['cgst']);
+            $(el).closest('tr').find('td:nth-child(18) input').val(ui['item']['sgst']);
+            $(el).closest('tr').find('td:nth-child(20) input').val(ui['item']['igst']);
             // vat_input=ui['item']['vat_type']
             // $(el).closest('tr').find('td:nth-child(17) ').html(vat_type[vat_input]);
             // vat_percent=ui['item']['tax']
@@ -193,26 +194,25 @@ $( ".gdt" ).change(function() {
 });
 
 function get_total(){
-    var subtotal=0, total=0, tax_total=0;
+    var subtotal=0, total=0, tax_total=0, cgst_grand_total=0, sgst_grand_total=0, igst_grand_total=0;
     for (var a = document.querySelectorAll('table.details tbody tr'), i = 0; a[i]; ++i) {
         // get all cells with input field
         cells = a[i].querySelectorAll('input:last-child');
         // console.log(cells);
         var quantity=parseFloat($(cells[2]).val());
-        // var free_tax_qty=parseFloat($(cells[4]).val());
-        var free_tax_qty=0;
-        var pur_rate=$(cells[4]).val()
-        var mrp=$(cells[6]).val()
+        var free_tax_qty=parseFloat($(cells[3]).val());
+        var pur_rate=$(cells[5]).val()
+        var mrp=$(cells[7]).val()
         var vat_total=0
-        discount_type=$(a[i]).find('td:nth-child(10) :selected').data('id');
-        discount_val=$(cells[7]).val();
-        discount_type_2=$(a[i]).find('td:nth-child(12) :selected').data('id');
-        discount_val_2=$(cells[8]).val();
+        discount_type=$(a[i]).find('td:nth-child(11) :selected').data('id');
+        discount_val=$(cells[8]).val();
+        discount_type_2=$(a[i]).find('td:nth-child(13) :selected').data('id');
+        discount_val_2=$(cells[9]).val();
         // vat_input=parseInt(vat_type_reverse[$(a[i]).find('td:nth-child(17)').html()]);
         // vat_percent=parseFloat($(a[i]).find('td:nth-child(18)').html());
-        cgst_percent=parseFloat($(cells[9]).val());
-        sgst_percent=parseFloat($(cells[10]).val());
-        igst_percent=parseFloat($(cells[11]).val());
+        cgst_percent=parseFloat($(cells[10]).val());
+        sgst_percent=parseFloat($(cells[11]).val());
+        igst_percent=parseFloat($(cells[12]).val());
         if(isNaN(pur_rate)){
             pur_rate=0;
         }
@@ -232,13 +232,15 @@ function get_total(){
         if(isNaN(igst_percent)){
             igst_percent=0;
         }
-        // if(isNaN(free_tax_qty)){
-        //     free_tax_qty=0;
-        // }
+        // console.log(free_tax_qty);
+        if(isNaN(free_tax_qty)){
+            free_tax_qty=0;
+        }
         
-        var this_total=quantity*pur_rate
+        var this_total=(quantity)*pur_rate
+        var this_total_plus_free=(quantity+free_tax_qty)*pur_rate
+        var pur_disc_rate=(quantity+free_tax_qty)*pur_rate
         
-        pur_disc_rate=pur_rate
         if (discount_type == 1){
             pur_disc_rate=pur_disc_rate-(discount_val*this_total/100);
             this_total=(this_total)-(discount_val*this_total/100);
@@ -255,23 +257,26 @@ function get_total(){
             pur_disc_rate=pur_disc_rate - discount_val_2/quantity;
             this_total=(this_total - discount_val_2);
         }
-        cgst_total=(this_total*cgst_percent)/100;
-        sgst_total=(this_total*sgst_percent)/100;
-        igst_total=(this_total*igst_percent)/100;
-        $(a[i]).find('td:nth-child(16) ').html(cgst_total.toFixed(2))
-        $(a[i]).find('td:nth-child(18) ').html(sgst_total.toFixed(2))
-        $(a[i]).find('td:nth-child(20) ').html(igst_total.toFixed(2))
+        cgst_total=(pur_disc_rate*cgst_percent)/100;
+        sgst_total=(pur_disc_rate*sgst_percent)/100;
+        igst_total=(pur_disc_rate*igst_percent)/100;
+        $(a[i]).find('td:nth-child(17) ').html(cgst_total.toFixed(2))
+        $(a[i]).find('td:nth-child(19) ').html(sgst_total.toFixed(2))
+        $(a[i]).find('td:nth-child(21) ').html(igst_total.toFixed(2))
         // if (vat_input == 1){
             // vat_total=(mrp*(quantity+free_tax_qty))-(mrp*(quantity+free_tax_qty))/(100+vat_percent)*100;
         // }
         // else if (vat_input == 2){
             // vat_total=((pur_disc_rate*(quantity+free_tax_qty))*vat_percent)/100;
         // }
-        $(a[i]).find('td:nth-child(14) ').html(this_total.toFixed(2));
+        $(a[i]).find('td:nth-child(15) ').html(this_total.toFixed(2));
         this_final_total=this_total+cgst_total+sgst_total+igst_total;
-        $(a[i]).find('td:nth-child(21) ').html(this_final_total.toFixed(2));
+        $(a[i]).find('td:nth-child(22) ').html(this_final_total.toFixed(2));
         subtotal=subtotal+this_total;
         tax_total+=cgst_total+sgst_total+igst_total;
+        cgst_grand_total+=cgst_total;
+        sgst_grand_total+=sgst_total;
+        igst_grand_total+=igst_total;
     }
     total=subtotal+tax_total
     gd_type=$('.gdt').find(':selected').data('id')
@@ -291,6 +296,8 @@ function get_total(){
     $('.subtotal_receipt').html(subtotal.toFixed(2))
     $('.grand_discount').html(gd_calculated.toFixed(2))
     $('.taxtotal_receipt').html(tax_total.toFixed(2))
+    $('.cgsttotal_receipt').html(cgst_grand_total.toFixed(2))
+    $('.sgsttotal_receipt').html(sgst_grand_total.toFixed(2))
     $('.total_receipt').html(total.toFixed(2))
 };
 
@@ -302,7 +309,7 @@ $('.addmore').click(function(){
     '<td colspan="3"><input class="form-control name"></td>'+
     '<td colspan="1"><input class="form-control qty"></td>'+
     // '<td colspan="1"><input class="form-control free"></td>'+
-    // '<td colspan="1"><input class="form-control freet"></td>'+
+    '<td colspan="1"><input class="form-control freet"></td>'+
     '<td colspan="1" hidden><input class="unitid"></td>'+
     '<td colspan="1"><select class="form-control selectpicker unit" id="unit"></select></td>'+
     '<td colspan="1"><input class="form-control pr"></td>'+
@@ -406,47 +413,48 @@ function new_data(){
             // free=0;
         // }
         
-        // var free_tax = parseInt($(this).find('td:nth-child(6) input').val());
-        // if (isNaN(free_tax)){
-        //     free_tax=0;
-        // }
+        var free_tax = parseInt($(this).find('td:nth-child(5) input').val());
+        if (isNaN(free_tax)){
+            free_tax=0;
+        }
         
-        var unit_id = $(this).find('td:nth-child(6) :selected').data('id');
+        var unit_id = $(this).find('td:nth-child(7) :selected').data('id');
         if (unit_id == '' || unit_id =='undefined'){
             proceed=false;
             swal("Oops...", "Please enter the purchase unit ", "error");
             $(this).closest('tr').addClass("has-error");
         }
 
-        var purchase = $(this).find('td:nth-child(7) input').val();
+        var purchase = $(this).find('td:nth-child(8) input').val();
         if (purchase == '' || purchase =='undefined'){
             proceed=false;
             swal("Oops...", "Please enter the actual purchase rate ", "error");
             $(this).closest('tr').addClass("has-error");
         }
 
-        var sales = $(this).find('td:nth-child(8) input').val();
+        var sales = $(this).find('td:nth-child(9) input').val();
         if (sales == '' || sales =='undefined'){
-            proceed=false;
-            swal("Oops...", "Please enter a tentative sales rate ", "error");
-            $(this).closest('tr').addClass("has-error");
+            sales = ''
+            // proceed=false;
+            // swal("Oops...", "Please enter a tentative sales rate ", "error");
+            // $(this).closest('tr').addClass("has-error");
         }
         
-        var mrp = $(this).find('td:nth-child(9) input').val();
+        var mrp = $(this).find('td:nth-child(10) input').val();
         
-        var disc_type = $(this).find('td:nth-child(10) :selected').data('id');
-        var disc = parseFloat($(this).find('td:nth-child(11) input').val());
+        var disc_type = $(this).find('td:nth-child(11) :selected').data('id');
+        var disc = parseFloat($(this).find('td:nth-child(12) input').val());
         if (isNaN(disc)){
             disc=0;
         }
-        var disc_type_2 = $(this).find('td:nth-child(12) :selected').data('id');
-        var disc_2 = parseFloat($(this).find('td:nth-child(13) input').val());
+        var disc_type_2 = $(this).find('td:nth-child(13) :selected').data('id');
+        var disc_2 = parseFloat($(this).find('td:nth-child(14) input').val());
         if (isNaN(disc_2)){
             disc_2=0;
         }
         
-        var cgst_p = parseFloat($(this).find('td:nth-child(15) input').val());
-        var cgst_v = parseFloat($(this).find('td:nth-child(16)').html());
+        var cgst_p = parseFloat($(this).find('td:nth-child(16) input').val());
+        var cgst_v = parseFloat($(this).find('td:nth-child(17)').html());
         if (isNaN(cgst_p)){
             cgst_p=0;
             cgst_v=0;
@@ -454,8 +462,8 @@ function new_data(){
 
         cgsttotal+=cgst_v
         
-        var sgst_p = parseFloat($(this).find('td:nth-child(17) input').val());
-        var sgst_v = parseFloat($(this).find('td:nth-child(18)').html());
+        var sgst_p = parseFloat($(this).find('td:nth-child(18) input').val());
+        var sgst_v = parseFloat($(this).find('td:nth-child(19)').html());
         if (isNaN(sgst_p)){
             sgst_p=0;
             sgst_v=0;
@@ -463,8 +471,8 @@ function new_data(){
 
         sgsttotal+=sgst_v
 
-        var igst_p = parseFloat($(this).find('td:nth-child(19) input').val());
-        var igst_v = parseFloat($(this).find('td:nth-child(20)').html());
+        var igst_p = parseFloat($(this).find('td:nth-child(20) input').val());
+        var igst_v = parseFloat($(this).find('td:nth-child(21)').html());
         if (isNaN(igst_p)){
             igst_p=0;
             igst_v=0;
@@ -472,14 +480,14 @@ function new_data(){
 
         igsttotal+=igst_v
 
-        var taxable_total = $(this).find('td:nth-child(14)').html();
-        var line_total = $(this).find('td:nth-child(21)').html();
+        var taxable_total = $(this).find('td:nth-child(15)').html();
+        var line_total = $(this).find('td:nth-child(22)').html();
         
         var item = {
             product_id : product_id,
             quantity: quantity,
             // free: free,
-            // free_tax:free_tax,
+            free_tax:free_tax,
             unit_id: unit_id,
             purchase: purchase,
             sales: sales,

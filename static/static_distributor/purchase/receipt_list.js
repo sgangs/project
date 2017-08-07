@@ -95,12 +95,13 @@ $('.unpaid').click(function(e) {
 var end = moment();
 var start = moment(end).subtract(60, 'days');
 var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
+var dateChanged=false;
 // console.log(start.format('DD-MM-YYYY'));
 
 $('.date_range').daterangepicker({
     'showDropdowns': true,
     'locale': {
-        format: 'DD/MM/YYYY',
+        format: 'DD-MM-YYYY',
     },
     "dateLimit": {
         "days": 90
@@ -112,6 +113,7 @@ $('.date_range').daterangepicker({
     'endDate' : end,
     },
     function(start, end, label) {
+        dateChanged=true;
         startdate=start.format('YYYY-MM-DD');
         enddate=end.format('YYYY-MM-DD');
         $('.details').attr('disabled', false);
@@ -136,6 +138,12 @@ $('.apply_filter').click(function(e) {
         sent_with='overdue_receipts'
     }
     invoice_no=$('.invoice_no').val()
+    if (!dateChanged){
+        startdate = startdate.split("-").reverse().join("-")
+        enddate = enddate.split("-").reverse().join("-")
+        dateChanged= true; 
+    }
+    // console.log(startdate);
 
     $.ajax({
         url : "listall/", 

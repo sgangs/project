@@ -29,6 +29,7 @@ function load_customers(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            console.log(jsondata);
             $.each(jsondata, function(){
                 if (typeof(states[this.state]) == 'undefined'){
                     $('#customer').append("<tr class='data' align='center'>"+
@@ -123,6 +124,8 @@ function new_data(){
     cst=$('.cst').val()
     tin=$('.tin').val()
     gst=$('.gst').val()
+    dl1=$('.dl1').val()
+    dl2=$('.dl2').val()
     details=$('.details').val()
     zone=$(".zone").find(':selected').data('id');
     // var year=parseInt($('.year').val());
@@ -149,6 +152,8 @@ function new_data(){
                     cst:cst,
                     tin:tin,
                     gst:gst,
+                    dl1:dl1,
+                    dl2:dl2,
                     details:details,
                     zone:zone,
                     calltype: "newcustomer",
@@ -202,6 +207,8 @@ $("#customer").on("click", ".link", function(){
             $('.cst_data').val(jsondata['cst'])
             $('.tin_data').val(jsondata['tin'])
             $('.gst_data').val(jsondata['gst'])
+            $('.dl1_data').val(jsondata['dl_1'])
+            $('.dl2_data').val(jsondata['dl_2'])
             $('.remarks').val(jsondata['details'])
             $('.editable').attr('disabled', true);
         },
@@ -283,6 +290,8 @@ function update_data(){
     cst_data=$('.cst_data').val()
     tin_data=$('.tin_data').val()
     gst_data=$('.gst_data').val()
+    dl1_data=$('.dl1_data').val()
+    dl2_data=$('.dl2_data').val()
     details_data=$('.details_data').val()
     // phone_update_check();
     // zone=$(".zone").find(':selected').data('id');
@@ -308,6 +317,8 @@ function update_data(){
                     cst:cst_data,
                     tin:tin_data,
                     gst:gst_data,
+                    dl1: dl1_data,
+                    dl2:dl2_data,
                     details:details_data,
                     // zone:zone,
                     calltype: "updatecustomer",
