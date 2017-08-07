@@ -100,11 +100,13 @@ def opening_inventory_data(request):
 			purchase_price=Decimal(request.POST.get('purchase'))
 			tentative_sales_price=request.POST.get('tsp')
 			mrp=request.POST.get('mrp')
+			date=request.POST.get('date')
 
+			if not date:
+				date=this_tenant.registered_on
 			product=Product.objects.for_tenant(this_tenant).get(id=productid)
 			warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=warehouseid)
 			total_inventory_value=quantity*purchase_price
-			print(total_inventory_value)
 			with transaction.atomic():
 				try:
 					new_initial_inventory=initial_inventory()
@@ -124,7 +126,7 @@ def opening_inventory_data(request):
 					new_inventory=Inventory()
 					new_inventory.product=product
 					new_inventory.warehouse=warehouse
-					new_inventory.purchase_date=this_tenant.registered_on
+					new_inventory.purchase_date=date
 					new_inventory.purchase_quantity=quantity
 					new_inventory.quantity_available=quantity
 					# new_inventory.batch=batch

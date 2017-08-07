@@ -73,7 +73,6 @@ function load_inventory(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
             $.each(jsondata, function(){
                 $('#opening_inventory').append("<tr class='data text-center'>"+
                     "<td>"+this.product+"</td>"+
@@ -128,6 +127,7 @@ function new_data(){
         proceed = false;
         swal("Oops...", "Please select an unit", "error");
     }
+    date=$('.date').val();
     quantity=parseInt($('.qty').val())
     if (isNaN(quantity) ){
         proceed = false;
@@ -143,6 +143,9 @@ function new_data(){
     }
     tsp=$('.tsp').val()
     mrp=$('.mrp').val()
+
+    // console.log(date);
+    // console.log(date.split("/").reverse().join("-"));
     
     if (proceed){
         (function() {
@@ -153,7 +156,7 @@ function new_data(){
                     warehouse:warehouseid,
                     unit:unitid,
                     quantity:quantity,
-                    // date:date.split("/").reverse().join("-"),
+                    date:date.split("/").reverse().join("-"),
                     purchase: purchase,
                     tsp: tsp,
                     mrp: mrp,
@@ -179,8 +182,7 @@ function new_data(){
         }());
     }
     else{
-        swal("Oops...", "Please note that vendor and warehouse details must be filled."+
-            "Also please check the highlightd rows", "error");
+        swal("Oops...", "Please enter warehouse data and product details.", "error");
     }
 }
 

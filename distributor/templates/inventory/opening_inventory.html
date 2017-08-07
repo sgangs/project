@@ -111,6 +111,10 @@
 				<div class="form-group detailsdiv">
 					<label for="classname" class="control-label">MRP</label>
 					<input type="number" class="form-control mrp new_val">						
+				</div>
+				<div class="form-group datediv">
+					<label for="classname" class="control-label">Inventory Purchase Date</label>
+					<input type="text" class="form-control date new_val">						
 				</div>				
 			</form>    
 	   	</div>
@@ -124,8 +128,12 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 
-<!-- Moment JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+
+<!-- Bootstrap Datepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
 
 {% load static from staticfiles %}
 
@@ -136,13 +144,20 @@
 $('.open').attr('data-toggle',"modal")
 $('.open').attr('data-target',"#newinv")
 csrf_token='{{csrf_token}}';
+
 $('.date').datepicker({
 	autoclose: true,
-	    // endDate: moment(),
-	    // endDate: '0d',
+	// endDate: moment(),
+	endDate: '0d',
 	todayHighlight: true,
 	format: 'dd/mm/yyyy',    
 });
+// $('.date').datepicker({
+// 	autoclose: true,
+// 	todayHighlight: true,
+// 	format: 'dd/mm/yyyy',    
+// });
+$(".date").datepicker("setDate", new Date());
 </script>
 
 <style type="text/css">
