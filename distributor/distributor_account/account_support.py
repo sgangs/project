@@ -1,11 +1,15 @@
 from io import BytesIO
 import xlsxwriter
+import datetime as dt
+import calendar
+from dateutil.relativedelta import relativedelta
 
-from django.db.models import Sum
+
+from django.db.models import Sum, F, Case, Value, When, DecimalField
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext
 
-from .models import Account, account_year,account_inventory, account_year_inventory, accounting_period, journal_entry
+from .models import *
 
 def create_new_accounts_year(new_period, this_tenant):
     acoounts_list=Account.objects.for_tenant(this_tenant).all()
@@ -222,3 +226,67 @@ def get_balance_sheet(request, start, end, period):
     return response_data
             
 
+def get_income_expense(this_tenant, no_months):
+    today=dt.date.today()
+    response_data=[]
+    # last_month=today-relativedelta(months=1)
+    # last_month_start=last_month.replace(day=1)
+    #Get data of current month here
+    last_date_max=today-relativedelta(months=no_months+4)
+    # this_month_start=today.replace(day=1)
+    # print(last_month_start)
+    
+    #Steps: Get Accounts. Get Journals in date range. Filter journal entries of those journal in date range contianing those accounts
+    #Sum the total debit & total credit to get actual data 
+    all_journals=Journal.objects.for_tenant(this_tenant).filter(date__range=(last_date_max,today)).all()
+    all_cogs_journals=journal_inventory.objects.for_tenant(this_tenant).filter(date__range=(last_date_max,today)).all()
+
+    income_accounts=Account.objects.for_tenant(this_tenant).filter(account_type__in=['dirrev', 'indrev']).all()
+    expense_accounts=Account.objects.for_tenant(this_tenant).filter(account_type__in=['direxp', 'indexp']).\
+                    exclude(name__in=['Purchase', 'Purchase Return']).all()
+    cogs_accounts=account_inventory.objects.for_tenant(this_tenant).get(name='Cost of Goods Sold')
+    
+    
+    # print(current_income_entries['credit'])
+    # print(current_expense_entries)
+    # print(response_data)
+
+    for i in range(no_months):
+        last_month=today-relativedelta(months=i)
+        last_month_start=last_month.replace(day=1)
+        last_month_end=last_month.replace(day = calendar.monthrange(last_month.year, last_month.month)[1])
+
+        current_journals=all_journals.filter(date__range=(last_month_start,last_month_end)).all()
+        current_cogs_journals=all_cogs_journals.filter(date__range=(last_month_start,last_month_end)).all()
+
+        current_income_entries=journal_entry.objects.filter(journal__in=current_journals,account__in=income_accounts).\
+                    aggregate(debit=Sum(Case(When(transaction_type=1, then='value'),output_field=DecimalField())),\
+                        credit=Sum(Case(When(transaction_type=2, then='value'),output_field=DecimalField())))
+        current_expense_entries=journal_entry.objects.filter(journal__in=current_journals,account__in=expense_accounts).\
+                    aggregate(debit=Sum(Case(When(transaction_type=1, then='value'),output_field=DecimalField())),\
+                        credit=Sum(Case(When(transaction_type=2, then='value'),output_field=DecimalField())))
+
+        current_COGS_entries=journal_entry_inventory.objects.filter(journal__in=current_cogs_journals,account=cogs_accounts).\
+                    aggregate(debit=Sum(Case(When(transaction_type=1, then='value'),output_field=DecimalField())),\
+                        credit=Sum(Case(When(transaction_type=2, then='value'),output_field=DecimalField())))
+        if (current_income_entries['credit'] == None):
+            current_income_entries['credit'] = 0
+        if (current_income_entries['debit'] == None):
+            current_income_entries['debit'] = 0
+        
+        if (current_expense_entries['debit'] == None):
+            current_expense_entries['debit'] = 0
+        if (current_expense_entries['credit'] == None):
+            current_expense_entries['credit'] = 0
+        
+        if (current_COGS_entries['debit'] == None):
+            current_COGS_entries['debit'] = 0
+        if (current_COGS_entries['credit'] == None):
+            current_COGS_entries['credit'] = 0
+
+        current_month=last_month_start.month
+        response_data.append({'month': calendar.month_name[current_month], 'income':current_income_entries['credit']-current_income_entries['debit'],\
+                            'expense':(current_expense_entries['debit']+current_COGS_entries['debit'])-\
+                            (current_expense_entries['credit']+current_COGS_entries['credit'])})
+
+    return response_data

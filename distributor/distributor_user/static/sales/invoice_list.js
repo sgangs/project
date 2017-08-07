@@ -12,6 +12,9 @@ $('.all').click(function(){
 
 $('.apply_reset').click(function(){
     load_invoices();
+    $('select').val([]).selectpicker('refresh');
+    date_update();
+    dateChanged=false;
 });
 
 function load_invoices(){
@@ -23,6 +26,7 @@ function load_invoices(){
         // handle a successful response
         success : function(jsondata) {
             $("#receipt_table .data").remove();
+            $('#filter').modal('hide');
             if (incerease == true){
                 page_no+=1;
             }
@@ -78,7 +82,7 @@ $('.unpaid').click(function(e) {
         // handle a successful response
         success : function(jsondata) {
             $("#receipt_table .data").remove();
-            all_invoices = true; unpaid_invoices = false; overdue_invoices=false;
+            all_invoices = false; unpaid_invoices = false; overdue_invoices=false;
             $('.all').show();
             $('.unpaid').hide();
             $('.overdue').show();
@@ -146,16 +150,22 @@ function load_metadata(){
     });
 }
 
-// var end = new Date();
 var end = moment();
 var start = moment(end).subtract(60, 'days');
+var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
+var dateChanged=false;
+date_update();
 
+function date_update(){
+// var end = new Date();
 // console.log(start.format('DD-MM-YYYY'));
+startdate=start.format('DD-MM-YYYY');
+enddate=end.format('DD-MM-YYYY');
 
 $('.date_range').daterangepicker({
     'showDropdowns': true,
     'locale': {
-        format: 'DD/MM/YYYY',
+        format: 'DD-MM-YYYY',
     },
     "dateLimit": {
         "days": 90
@@ -167,10 +177,12 @@ $('.date_range').daterangepicker({
     'endDate' : end,
     },
     function(start, end, label) {
+        dateChanged=true;
         startdate=start.format('YYYY-MM-DD');
         enddate=end.format('YYYY-MM-DD');
         $('.details').attr('disabled', false);
 });
+};
 
 
 load_customer()
@@ -192,8 +204,8 @@ function load_customer(){
                     'text': this.name + ": "+ this.key
                 }));
             });
-            $('#customer').selectpicker('refresh')
-            $('#customer_filter').selectpicker('refresh')
+            $('#customer').selectpicker('refresh');
+            $('#customer_filter').selectpicker('refresh');
         },
         // handle a non-successful response
         error : function() {
@@ -206,22 +218,34 @@ function load_customer(){
 $('.apply_filter').click(function(e) {
     var customers=[];
     $.each($(".customer_filter option:selected"), function(){
-        vendorid=$(this).data('id')
-        var customer={
-            customerid: customerid
-        };
-        customers.push(customer);
+        customerid=$(this).data('id');
+        // if (customerid == 'undefined' || typeof(customerid) == undefined){
+        if ($.trim(customerid).length>0){
+            console.log("Here with id: "+customerid+" & type: "+typeof(customerid));
+            var customer={
+                customerid: customerid
+            };
+            customers.push(customer);
+        }        
     });
-    if (unpaid_receipts){
-        sent_with='unpaid_receipts'
+    if (unpaid_invoices){
+        sent_with='unpaid_invoices';
     }
-    else if(all_receipts){
-        sent_with='all_receipts'
+    else if(all_invoices){
+        sent_with='all_invoices';
     }
-    else if(overdue_receipts){
-        sent_with='overdue_receipts'
-    }
-    invoice_no=$('.invoice_no').val()
+    // else if(overdue_receipts){
+    //     sent_with='overdue_receipts'
+    // }
+    invoice_no=$('.invoice_no').val();
+    
+    // console.log(dateChanged)
+    if (!dateChanged){
+        startdate = startdate.split("-").reverse().join("-")
+        enddate = enddate.split("-").reverse().join("-")
+        dateChanged= true;
+    } 
+    // console.log(enddate);
 
     $.ajax({
         url : "listall/", 
@@ -239,24 +263,26 @@ $('.apply_filter').click(function(e) {
             $("#receipt_table .data").remove();
             $('#filter').modal('hide');
             $.each(jsondata, function(){
-                var url='/purchase/receipt/detailview/'+this.id+'/'
+                var url='/sales/invoice/detailview/'+this.id+'/'
+                var download_url='/sales/invoice/excel/'+this.id+'/'
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
-                "<td>"+this.supplier_invoice+"</td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+$.trim(this.payable_by)+"</td>"+
-                "<td>"+this.vendor_name+"</td>"+
+                "<td>"+this.customer_name+"</td>"+
                 "<td>"+this.total+"</td>"+
                 "<td>"+this.amount_paid+"</td>"+
+                "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
+                        "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No purchase receipt exist.", "error");
+            swal("Oops...", "No sales invoice exist.", "error");
         }
     });
 

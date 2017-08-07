@@ -38,7 +38,7 @@
                     <h6 style="font-size: 25px; font-family: 'Righteous';">Collection Pending:</h6>
                 </div> -->
                 
-            </div>            
+            </div>   
             <div class="col-lg-4 col-md-4 col-xs-12 ">
                 <div>
                     <label title="Invoiced vs Collected: Pie chart">Invoiced vs Collected (last 30 days)<small></small>
@@ -51,6 +51,11 @@
                     <div id ="teacherattendanceChart" class="chart bar" data-value="0"></div>
                 </div> -->
             </div>
+            <div class="col-md-8 col-xs-12 ">  
+                <label title="Income/Expense for last 4 months">Income/Expense for last 4 months
+                    <canvas id="income-expense" width="600" height="300"></canvas>
+                </label>
+            </div>
         </div>
 </div>
 
@@ -61,12 +66,13 @@
     <!-- <script src="{% static 'landing/fancycharts.min.js' %}"></script> -->
 
     <!-- D3, Dc and Crossfilter.js -->
-    <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+    <!-- <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
     <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/d3.js"></script>
     <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/dc.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/reductio/0.6.3/reductio.min.js"></script>
 
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js"></script> -->
+    
     <!-- Moment JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
 
@@ -74,13 +80,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
 
     
-    
     <script>
         csrf_token='{{csrf_token}}';
         var sales_daily='{{sales_daily|escapejs}}'
         // var retail_sales_daily='{{retail_sales_daily|escapejs}}'
         var invoice_value=parseFloat(JSON.parse('{{invoice_value|escapejs}}'));
-        var payment_value=parseFloat(JSON.parse('{{payment_value|escapejs}}'))
+        var payment_value=parseFloat(JSON.parse('{{payment_value|escapejs}}'));
+        var income_expense=(JSON.parse('{{income_expense|escapejs}}'));
         // var colors = ["#008062", "#68367c"];
         // var chart = new Fancychart(200, payment_value, colors, '#e5e5e5');
         // var percent_staff = 0;

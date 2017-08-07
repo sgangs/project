@@ -1,0 +1,75 @@
+{% extends extension %}
+
+{%block title%}
+<title>Sales Report</title>
+
+<!--Chart.js (for graph)-->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script> -->
+
+<!-- D3, Dc and Crossfilter.js -->
+{% endblock %}
+
+{% block content%}
+	
+<h3>Sales Report View</h3>
+<h1></h1>
+
+<div class ="graphs" hidden=true>
+	<div class='dc-data-count row col-xs-12'>
+		<span class='filter-count'></span>
+		<h4>Selected out of <span class='total-count'></span> records.</h4>
+	</div>
+
+	<br>
+	<br>
+	<!-- <div id='chart'><a class='reset'href='javascript:dc.filterAll();dc.redrawAll();'><button type="button" class='resetclick btn btn-primary btn-xs'>Reset All filters</button></a></div>
+	
+	<h1></h1> -->
+
+	<div class = "row">
+		<div id="product-chart" class="col-xs-6 col-md-4"><label>Product Wise Sales</label></div>
+		<div id="customer-chart" class="col-xs-6 col-md-4"><label>Customer Wise Sales</label></div>
+		<div id="tax-chart" class="col-xs-6 col-md-4"><label>Tax Wise Sales</label></div>
+	</div>
+	 
+	<!-- <div id="student-chart"><label>Sales data</label></div> -->
+	
+	<br>	
+
+	<div class='row-fluid'>
+		<div class='span12 table-graph'>
+			<label>Table for Invoice Wise Details</label>
+			<table class='table table-hover dc-data-table' id='table-graph'>
+			<thead>
+			<tr class='header'>
+				<th>Invoice No</th>
+				<th>Customer Name</th>
+				<th>Product</th>
+				<th>Quantity</th>
+				<th>Value</th>
+			</tr>
+			</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- <button type="button" class='submit btn btn-primary btn-xs' disabled="true" title="Click submit to record class atendance.">Submit</button> -->
+
+<!-- <button type="button" class='reset btn btn-primary btn-xs'>Reset</button>
+ -->
+
+<script>
+	csrf_token='{{csrf_token}}';	
+</script>
+
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/d3.js"></script>
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/dc.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/reductio/0.6.3/reductio.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'sales/sales_report_crossfilter.js' %}"></script>
+
+{% endblock %}

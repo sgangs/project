@@ -99,3 +99,6 @@ gst_invoice_type=((1,'B2BR'), #B2B Registered
 			(10,'B2BSSUPC'), #B2B Supplementary Credit Note
 			(11,'B2CSSUPD'), #B2C Supplementary Debit Note
 			(12,'B2CSSUPC'),) #B2C Supplementary Credit Note
+
+#This value is used to determine the point where B2CL & B2CS gets segregated. Initially this value is Rs. 2,50,000
+small_large_limt = 250000

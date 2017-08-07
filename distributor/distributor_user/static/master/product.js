@@ -156,7 +156,6 @@ function load_attribute(){
 
 $("#product_table").on("click", ".barcode", function(){
     var newurl=$(this).closest('tr').find('td:nth-child(11) a').attr('href');
-    console.log(newurl)
     $('a.barcodetag').attr('href', newurl);
     productid=$(this).closest('tr').find('td:nth-child(1)').html();
     productname=$(this).closest('tr').find('td:nth-child(2)').html();

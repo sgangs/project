@@ -61,7 +61,7 @@ def get_product(request):
 			response_data.append(item_json)
 			data = json.dumps(response_data)
 		else:
-			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:5].\
+			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:8].\
 						select_related('default_unit', 'tax')
 			response_data = []
 			for item in products:
@@ -84,7 +84,7 @@ def get_product(request):
 				except:
 					item_json['igst'] = 0
 				response_data.append(item_json)
-			data = json.dumps(response_data)
+			data = json.dumps(response_data, cls=DjangoJSONEncoder)
 	else:
 		data = 'fail'
 	mimetype = 'application/json'
@@ -108,7 +108,6 @@ def product_inventory_details(request):
 def purchase_receipt_new(request):
 	return render(request,'purchase/purchase_receipt.html', {'extension': 'base.html'})
 	
-@login_required
 @api_view(['GET','POST'],)
 def purchase_receipt_save(request):
 	if request.method == 'POST':
@@ -199,15 +198,28 @@ def purchase_receipt_save(request):
 						multiplier=unit.multiplier
 						
 						original_purchase_price=Decimal(data['purchase'])
-						original_tentative_sales_price=Decimal(data['sales'])
-						original_mrp=Decimal(data['mrp'])
+						
+						original_free_with_tax=Decimal(data['free_tax'])
+
+						try:
+							original_tentative_sales_price=Decimal(data['sales'])
+						except:
+							original_tentative_sales_price=0
+						try:
+							original_mrp=Decimal(data['mrp'])
+						except:
+							original_mrp=0
 						
 						purchase_price=Decimal(original_purchase_price/multiplier)
-						tentative_sales_price=Decimal(data['sales'])/multiplier
-						mrp=Decimal(data['mrp'])/multiplier
+						tentative_sales_price=original_tentative_sales_price/multiplier
+						mrp=original_mrp/multiplier
 
-						original_quantity=Decimal(data['quantity']) + Decimal(0.000)
+						# original_quantity=Decimal(data['quantity']) + Decimal(0.000)
+						original_quantity=Decimal(data['quantity'])
 						quantity=original_quantity*multiplier
+						free_with_tax=original_free_with_tax*multiplier
+						free_without_tax=0
+						total_free=free_without_tax+free_with_tax
 						
 						LineItem = receipt_line_item()
 						LineItem.purchase_receipt = new_receipt
@@ -226,6 +238,7 @@ def purchase_receipt_save(request):
 						LineItem.unit=unit.symbol
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
+						LineItem.free_with_tax=original_free_with_tax
 						# print(LineItem.quantity)
 						# print(type(LineItem.quantity))
 						if (product.has_batch):
@@ -254,14 +267,13 @@ def purchase_receipt_save(request):
 							inventory.purchase_quantity=quantity
 							inventory.quantity_available=quantity
 							inventory.purchase_date=date
-							if product.has_batch:
-								inventory.batch=batch
-								inventory.manufacturing_date=manufacturing_date
-								inventory.expiry_date=expiry_date
-							if product.has_instance:
-								inventory.serial_no=serial_no
+							# if product.has_batch:
+							# 	inventory.batch=batch
+							# 	inventory.manufacturing_date=manufacturing_date
+							# 	inventory.expiry_date=expiry_date
+							# if product.has_instance:
+							# 	inventory.serial_no=serial_no
 							if not discount_value:
-								# inventory.purchase_price=purchase_price
 								pass
 							else:
 								if (discount_type == 1):
@@ -280,8 +292,30 @@ def purchase_receipt_save(request):
 							inventory.mrp=mrp
 							inventory.tenant=this_tenant
 							inventory.save()
+							if (total_free>0):
+								inventory=Inventory()
+								inventory.product=product
+								inventory.warehouse=warehouse
+								inventory.purchase_quantity=total_free
+								inventory.quantity_available=total_free
+								inventory.purchase_date=date
+								# if product.has_batch:
+								# 	inventory.batch=batch
+								# 	inventory.manufacturing_date=manufacturing_date
+								# 	inventory.expiry_date=expiry_date
+								# if product.has_instance:
+								# 	inventory.serial_no=serial_no
+								inventory.purchase_price=0
+								inventory.tentative_sales_price=tentative_sales_price
+								inventory.mrp=mrp
+								inventory.tenant=this_tenant
+								inventory.save()
 							create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
 								purchase_price, mrp,new_receipt.receipt_id, this_tenant)
+							if total_free>0:
+								create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
+								0, mrp,new_receipt.receipt_id, this_tenant)
+							
 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 							warehouse_valuation_change.valuation+=quantity*purchase_price
 							warehouse_valuation_change.save()
@@ -527,7 +561,7 @@ def receipts_details(request, pk):
 		receipt['tenant_address']=this_tenant.address_1+","+this_tenant.address_2
 		
 		line_items=list(receipt_line_item.objects.filter(purchase_receipt=receipt['id']).values('id','product_name','product_hsn',\
-			'unit','unit_multi','quantity','purchase_price', 'tentative_sales_price','mrp','discount_type',\
+			'unit','unit_multi','quantity','free_with_tax','purchase_price', 'tentative_sales_price','mrp','discount_type',\
 			'discount_value','discount2_type','discount2_value','cgst_percent','sgst_percent','igst_percent',\
 			'cgst_value','sgst_value','igst_value','line_tax','line_total'))
 		receipt['line_items']=line_items
@@ -818,7 +852,6 @@ def excel_receipt(request, pk):
 @login_required
 def purchase_crossfilter(request):
 	return render(request,'purchase/vendor_payment_crossfilter.html', {'extension': 'base.html'})
-
 
 
 @api_view(['GET', 'POST'],)

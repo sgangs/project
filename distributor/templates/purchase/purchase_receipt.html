@@ -89,8 +89,8 @@
         	<th colspan="1"><h5></h5></th>
         	<th colspan="3"><h5>Item</h5></th>
             <th colspan="1"><h5>Qty</h5></th>
-            <!-- <th colspan="1"><h5>Free w/o tax</h5></th>
-            <th colspan="1"><h5>Free with tax</h5></th> -->
+            <!-- <th colspan="1"><h5>Free w/o tax</h5></th> -->
+            <th colspan="1"><h5>Free</h5></th>
             <th colspan="1" hidden></th>
             <th colspan="1"><h5>Unit</h5></th>
             <th colspan="1"><h5>Purchase Rate</h5></th>
@@ -121,8 +121,8 @@
 			<td colspan="1" class='first'><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>
 			<td colspan="3"><input class="form-control name"></td>
             <td colspan="1"><input class="form-control qty"></td>
-            <!-- <td colspan="1"><input class="form-control free"></td>
-            <td colspan="1"><input class="form-control freet"></td> -->
+            <!-- <td colspan="1"><input class="form-control free"></td>-->
+            <td colspan="1"><input class="form-control freet"></td>
 			<td colspan="1" hidden><input class="unitid"></td>
 			<td colspan="1">
 				<select class="form-control selectpicker unit" id='unit'>
@@ -235,10 +235,20 @@
 				<td>Rs.</td>
 		        <td class='grand_discount'>0.00</td>
 			</tr>
-			<tr>
+			<tr hidden>
 				<td>Tax Total</td>
 				<td>Rs.</td>
 		        <td class='taxtotal_receipt'>0.00</td>
+			</tr>
+			<tr>
+				<td>CGST Total</td>
+				<td>Rs.</td>
+		        <td class='cgsttotal_receipt'>0.00</td>
+			</tr>
+			<tr>
+				<td>SGST Total</td>
+				<td>Rs.</td>
+		        <td class='sgsttotal_receipt'>0.00</td>
 			</tr>
 			<tr>
 				<td>Total Payable</td>

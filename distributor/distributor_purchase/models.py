@@ -28,6 +28,8 @@ class purchase_receipt(models.Model):
 	vendor_city=models.CharField(max_length=50, blank=True, null=True)
 	vendor_pin=models.CharField(max_length=8, blank=True, null=True)
 	vendor_gst=models.CharField(max_length=20, blank=True, null=True)
+	dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
+	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse,blank=True, null=True, \
 						related_name='purchaseReceipt_purchase_master_warehouse', on_delete=models.SET_NULL)
@@ -105,7 +107,7 @@ class receipt_line_item(models.Model):
 	quantity=models.DecimalField(max_digits=10, decimal_places=3)
 	quantity_returned=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	# free_without_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
-	# free_with_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	free_with_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 
 	batch=models.CharField(max_length=20, blank=True, null=True)
 	serial_no=models.CharField(max_length=100, blank=True, null=True) #This is for items with serial no
@@ -171,6 +173,8 @@ class debit_note(models.Model):
 	vendor_state=models.CharField(max_length=4,blank=True, null=True)
 	vendor_city=models.CharField(max_length=50, blank=True, null=True)
 	vendor_pin=models.CharField(max_length=8, blank=True, null=True)
+	dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
+	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse,blank=True, null=True, \
 						related_name='debitNote_purchase_master_warehouse', on_delete=models.SET_NULL)

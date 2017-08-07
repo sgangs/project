@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>
+    Settings 
+</title>
+
+{% endblock %}
+
+{% block content %}
+{% load staticfiles %}
+<div class="row">
+  <!-- <div class="col-md-6 col-md-offset-3 text-center"> -->
+  <div class="col-md-7 text-center">
+    <!-- <br> -->
+    <h3 style="padding-bottom:10px;" class='name'>Details Of </h3>
+        <!-- <div class="form-group companynamediv">
+          <label for="classname" class="control-label">Company Name</label>
+          <input type="text" class="form-control name" maxlength="100" disabled>)
+    </div> -->
+    <br>
+    <form class=".form-horizontal">
+      <div class="form-group row companyaddressdiv">
+        <label class="control-label col-sm-3 col-form-label">Address Line 1</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control address1" maxlength="100" disabled>
+        </div>
+      </div>
+      <div class="form-group row companyaddressdiv">
+        <label class="control-label col-sm-3 col-form-label">Address Line 2</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control address2" maxlength="100" disabled>
+        </div>
+      </div>
+      <div class="form-group row companyaddressdiv">
+        <label class="control-label col-sm-3 col-form-label">Pincode</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control pin" maxlength="100" disabled>
+        </div>
+      </div>
+      <div class="form-group row companynamediv">
+        <label class="control-label col-sm-3 col-form-label">GST Number</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control gst" maxlength="100">
+        </div>
+      </div>
+      <div class="form-group row companydl1div">
+        <label class="control-label col-sm-3 col-form-label">Drug License 1</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control dl1" maxlength="100">
+        </div>
+      </div>
+      <div class="form-group row companydl2div">
+        <label class="control-label col-sm-3 col-form-label">Drug License 2</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control dl2" maxlength="100">
+        </div>
+      </div>
+    </form>
+
+  </div>
+  <div class="col-md-5 text-center">
+    <p><img src="{% static 'gif/details.gif' %}" alt=""></p>
+  </div>
+
+  {% load static from staticfiles %}
+
+  <script src="{% static 'user_tenant/tenant_settings.js' %}"></script>
+</div>
+{% endblock %}
+
+
+

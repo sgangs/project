@@ -21,6 +21,7 @@ from distributor_account.models import Account, tax_transaction, account_invento
 								journal_inventory, journal_entry_inventory
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
+from distributor.variable_list import small_large_limt
 
 from .sales_utils import *
 from .models import *
@@ -183,6 +184,14 @@ def sales_invoice_save(request):
 					new_invoice.cgsttotal=cgsttotal
 					new_invoice.sgsttotal=sgsttotal
 					# new_invoice.taxtotal=taxtotal
+					
+					#This will provide the details, whether this is B2CL or B2CS
+					# if (subtotal<small_large_limt):
+					# 	new_invoice.gst_type=3
+					# else:
+					# 	new_invoice.gst_type=2
+					
+
 					new_invoice.total = total
 					new_invoice.amount_paid = total
 					new_invoice.save()
@@ -382,7 +391,7 @@ def sales_invoice_save(request):
 					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
 					
 					if (cgst_total>0):
-						account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
+						account_inventorycount= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
 						new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
 
 					if (sgst_total>0):

@@ -2,6 +2,7 @@ from io import BytesIO
 import django_excel as excel
 from decimal import Decimal
 import xlrd
+import datetime as dt
 
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
@@ -29,7 +30,8 @@ from reportlab.lib.units import mm
 
 from distributor_master.models import Unit, Product, Warehouse
 from distributor_user.models import Tenant
-from distributor_account.models import Account, accounting_period, account_year
+from distributor_account.models import Account, tax_transaction, payment_mode, accounting_period,\
+									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory
 from .forms import *
 from .models import *
 from .serializers import *
@@ -58,12 +60,12 @@ def inventory_data(request):
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
 					select_related('product', 'warehouse').values('product__name','product__sku','purchase_date','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
-					annotate(available=Sum('quantity_available')).order_by('purchase_date'))
+					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name','purchase_date',))
 	if (calltype == 'current'):
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
 					select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
-					annotate(available=Sum('quantity_available')).order_by('product__sku'))
+					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name'))
 	jsondata = json.dumps(current_inventory, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -102,6 +104,7 @@ def opening_inventory_data(request):
 			product=Product.objects.for_tenant(this_tenant).get(id=productid)
 			warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=warehouseid)
 			total_inventory_value=quantity*purchase_price
+			print(total_inventory_value)
 			with transaction.atomic():
 				try:
 					new_initial_inventory=initial_inventory()
@@ -138,13 +141,33 @@ def opening_inventory_data(request):
 					warehouse_valuation_change.valuation+=total_inventory_value
 					warehouse_valuation_change.save()
 
-					inventory_account=Account.objects.for_tenant(this_tenant).get(name='Inventory')
+					# inventory_account=Account.objects.for_tenant(this_tenant).get(name='Inventory')
+					# current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+					# inventory_account_data=account_year.objects.for_tenant(this_tenant).get(account=inventory_account, \
+					# 						accounting_period=current_period)
+					# inventory_account_data.first_debit=total_inventory_value
+					# inventory_account_data.current_debit+=total_inventory_value
+					# inventory_account_data.save()
+
+					inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 					current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
-					inventory_account_data=account_year.objects.for_tenant(this_tenant).get(account=inventory_account, \
-											accounting_period=current_period)
-					inventory_account_data.first_debit=total_inventory_value
-					inventory_account_data.current_debit+=total_inventory_value
-					inventory_account_data.save()
+					inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+												get(account_inventory=inventory_acct, accounting_period = current_period)
+					try:
+						inventory_acct_year.first_debit+=total_inventory_value
+					except:
+						inventory_acct_year.first_debit=total_inventory_value
+					try:
+						inventory_acct_year.opening_debit+=total_inventory_value
+					except:
+						inventory_acct_year.opening_debit=total_inventory_value
+					try:
+						inventory_acct_year.current_debit+=total_inventory_value
+					except:
+						inventory_acct_year.current_debit=total_inventory_value
+					inventory_acct_year.save()
+
+
 				except:
 					transaction.rollback()
 		jsondata = json.dumps(response_data)

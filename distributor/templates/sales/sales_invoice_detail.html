@@ -20,59 +20,56 @@
 <div id='print' class="print">
 <div class="row">
         <div class="col-md-12">
-        	<div class="col-xs-6 receipt-title" id='pos_print'>
-    			<h3 class='invoiceid'>Tax Invoice: </h3>
-            <hr>    
-    		</div>
-    		<div class="col-xs-6 text-right"  id='pos_print'>
-    			<h3 class='date'>Date: </h3>
-    		<hr>
-    		</div>
-    		<div class="row">
-    			<div class="col-xs-6 text-left"  id='pos_print'>
+        	<!-- <div class="row"> -->
+    			<div class="col-xs-4 text-left"  id='pos_print'>
     				<address class='customer'>
-    				<strong>Customer:</strong>
+    				<strong><font size="2">Customer:</font></strong>
     					<br>
     				</address>
     			</div>
-    			<div class="col-xs-6 text-right" id='not_pos_print'>
+                <div class="col-xs-4 text-center" id='pos_print'>
+                    <h3 class='invoiceid'><font size="3">Tax Invoice: </font></h3>
+                    <h3 class='date'><font size="3">Date: </font></h3>
+                </div>
+                <div class="col-xs-4 text-right" id='not_pos_print'>
     				<address class='warehouse'>
-        			<strong>Sold By:</strong>
+        			<strong><font size="2">Sold By:</font></strong>
         				<br>
     				</address>
     			</div>
-    		</div>
+    		<!-- </div> -->
     		
     	</div>
     </div>
 
 
-<div class="" id='pos_print'>	
+<div class="" id='pos_print' >	
 <table class="table table-striped table-bordered details text-center">
 	<thead>
     	<tr class="text-center" id='pos_print'> 
-        	<th class="text-center"><h5>Item</h5></th>
-            <th class="text-center"><h5>HSN Code</h5></th>
-            <th class="text-center"><h5>Qty</h5></th>
+        	<th class="text-center"><font size="1">Item</font></th>
+            <th class="text-center"><font size="1">HSN</font></th>
+            <th class="text-center"><font size="1">Qty</font></th>
             <!-- <th class="text-center hidden-print"><h5>Free w/o tax</h5></th>
             <th class="text-center hidden-print"><h5>Free with tax</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>Unit</h5></th>
+            <th class="text-center hidden-print" id='not_pos_print'><font size="1">Unit</font></th>
             <!-- <th class="text-center visible-print-block"><h5>Free</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>Sales Price</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Type-1</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Value-1</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Type-2</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Value-2</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Taxable Total</h5></th>
+            <th class="text-center" id='not_pos_print'><font size="1">Sales Price</font></th>
+            <th class="text-center" id='not_pos_print'><font size="1">MRP</font></th>
+            <th class="text-center hidden-print"><font size="1">Disc. Type-1</font></th>
+            <th class="text-center"><font size="1">Disc.-1</font></th>
+            <th class="text-center hidden-print"><font size="1">Disc. Type-2</font></th>
+            <th class="text-center" id='not_pos_print'><font size="1">Disc.-2</font></th>
+            <th class="text-center" id='not_pos_print'><font size="1">Taxable Total</font></th>
             <!-- <th class="text-center" id='not_pos_print'><h5>VAT Type</h5></th> -->
             <!-- <th class="text-center" id='not_pos_print'><h5>VAT %</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>CGST %</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>CGST Amt</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>SGST %</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>SGST Amt</h5></th>
-            <th class="text-center is_igst" id='not_pos_print'><h5>IGST %</h5></th>
-            <th class="text-center is_igst" id='not_pos_print'><h5>IGST Amt</h5></th>
-            <th class="text-center"><h5>Total</h5></th>
+            <th class="text-center" id='not_pos_print'><font size="1">CGST %</font></th>
+            <th class="text-center" id='not_pos_print'><font size="1">CGST Amt</font></th>
+            <th class="text-center" id='not_pos_print'><font size="1">SGST %</font></th>
+            <th class="text-center" id='not_pos_print'><font size="1">SGST Amt</font></th>
+            <th class="text-center is_igst" id='not_pos_print'><font size="1">IGST %</font></th>
+            <th class="text-center is_igst" id='not_pos_print'><font size="1">IGST Amt</font></th>
+            <th class="text-center"><font size="1">Total</font></th>
         </tr>
 	</thead>
 	<tbody>
@@ -84,7 +81,7 @@
 
 
 <div class="row text-right">
-	<div class="col-xs-6" id='not_pos_print'>
+	<div class="col-xs-6" id='not_pos_print' hidden>
 		<table class="table metadata boderless">
 			<tr class='text-left'>
 				<td colspan="1" class='text-left'>Payment Due date</td>
@@ -94,23 +91,35 @@
 			</tr>						
 		</table>
 	</div>
-	<div class="col-xs-4 col-xs-offset-2"  id='pos_print'>
+</div>
+<div class="row">
+	<div class="col-xs-12"  id='pos_print'>
 		<table class="table metadata boderless" >
 			<tr>
-				<td>Subtotal</td>
-				<td>Rs.</td>
-		        <td class='subtotal_receipt'></td>
-			</tr>
-			<tr>
+				<!-- <td><font size="2"></font></td> -->
+				<!-- <td><font size="2"></font></td> -->
+		        <td class='subtotal_receipt'><font size="2">Subtotal: Rs. </font></td>
+			<!-- </tr> -->
+			<!-- <tr>
 				<td>Tax Total</td>
 				<td>Rs.</td>
 		        <td class='taxtotal_receipt'></td>
-			</tr>
-			<tr>
-				<td>Total Payable</td>
-				<td>Rs.</td>
-		        <td class='total_receipt'></td>
-			</tr>
+			</tr> -->
+            <!-- <tr> -->
+                <!-- <td><font size="2">CGST</font></td> -->
+                <!-- <td><font size="2"></font></td> -->
+                <td class='cgsttotal_receipt'><font size="2">CGST Total: Rs. </font></td>
+            <!-- </tr> -->
+            <!-- <tr> -->
+                <!-- <td><font size="2">SGST</font></td> -->
+                <!-- <td><font size="2">Rs.</font></td> -->
+                <td class='sgsttotal_receipt'><font size="2">SGST Total: Rs. </font></td>
+            <!-- </tr> -->
+			<!-- <tr> -->
+				<!-- <td><font size="2"></font></td> -->
+				<!-- <td><font size="2">Rs.</font></td> -->
+		        <td class='total_receipt'><font size="2">Total Payable: Rs. </td>
+			<!-- </tr> -->
 		</table>
 	</div>
 </div>

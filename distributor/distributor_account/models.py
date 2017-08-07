@@ -313,7 +313,7 @@ class inventory_value(models.Model):
 class tax_transaction(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	transaction_type=models.PositiveSmallIntegerField(db_index=True) 
-	tax_type=models.CharField(db_index=True, max_length=5) #VAT/CGST/SGST/IGST
+	tax_type=models.CharField(db_index=True, max_length=5) #CGST/SGST/IGST
 	tax_percent=models.DecimalField(max_digits=5, db_index=True, decimal_places=2, default=0)
 	tax_value=models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)

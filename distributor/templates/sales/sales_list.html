@@ -159,32 +159,57 @@
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
-		    	<div class="form-group vendordiv">
-					<label for="classname" class="control-label">Select Customer</label>
-					<select class="form-control selectpicker customer_filter" id="customer_filter" multiple data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Customer(s)</option>				
-					</select>
+		    	<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group vendordiv">
+							<label for="classname" class="control-label">Filter by Customer (Select from dropdown)</label>
+							<select class="form-control selectpicker customer_filter" id="customer_filter" multiple data-live-search="true">
+							</select>
+						</div>
+					</div>
 				</div>
-				<div class="form-group invoicediv">
-					<label for="classname" class="control-label">Filter by Sales Invoice No</label>
-					<input type="text" class="form-control invoice_id">
+				<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group invoicediv">
+							<label for="classname" class="control-label">Filter by Product</label>
+							<input type="text" class="form-control product_name" placeholder="Start typing the product name">
+							<div hidden><input type="text" class="form-control product_id" disabled></div>
+						</div>
+					</div>
 				</div>
-				<div class="form-group datediv">
-					<label for="classname" class="control-label">Filter By Date Range</label>
-					<input type="text" class="form-control date_range">
+				<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group invoicediv">
+							<label for="classname" class="control-label">Filter by Sales Invoice No</label>
+							<input type="text" class="form-control invoice_no">
+						</div>
+					</div>
 				</div>
-				<div class="form-group vendordiv">
-					<label for="classname" class="control-label">Filter by Invoice Type</label>
-					<select class="form-control selectpicker customer_filter" id="type_filter">
-						<option disabled selected hidden style='display: none' value>Select Invoice Type</option>
-						<option data-id="1">B2B Registered</option>
-						<option data-id="2">B2B Unregistered</option>
-					</select>
+				<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group datediv">
+							<label for="classname" class="control-label">Filter By Date Range</label>
+							<input type="text" class="form-control date_range">
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group vendordiv">
+							<label for="classname" class="control-label">Filter by Invoice Type</label>
+							<select class="form-control selectpicker customer_filter" id="type_filter">
+								<option disabled selected hidden style='display: none' value>Select Invoice Type</option>
+								<option data-id="1">B2B Registered</option>
+								<option data-id="2">B2B Unregistered</option>
+							</select>
+						</div>
+					</div>
 				</div>
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
-		    	<button type="button" class="btn btn-primary apply">Apply Filters</button>
+		    	<button type="button" class="btn btn-primary btn-sm apply_filter">Apply Filters</button>
+		    	<button type="button" class="btn btn-primary btn-sm apply_reset">Reset all</button>
 		    </div>
 	    </div
 	</div>
@@ -227,9 +252,22 @@ $('.date_payment').datepicker({
 });
 $(".date_payment").datepicker("setDate", new Date());
 
-
-
 </script>
+
+<style type="text/css">
+	.modal-dialog {
+	width: 80%;
+	height: 80%;
+	margin: auto;
+	padding: 5%;
+}
+
+.modal-content {
+	height: auto;
+	min-height: 80%;
+	border-radius: 0;
+}
+</style>
 
 {% endblock %}
 

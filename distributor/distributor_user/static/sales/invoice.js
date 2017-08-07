@@ -523,21 +523,58 @@ $('.submit').click(function(e) {
     swal({
         title: "Are you sure?",
         text: "Are you sure you want to generate a new sales invoice?",
-        type: "warning",
+        type: "info",
         showCancelButton: true,
-        confirmButtonColor: "#DD6B55",
+        confirmButtonColor: "#11BB55",
         confirmButtonText: "Yes, generate new sales invoice!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
     }, function(isConfirm){
         if (isConfirm){
-            setTimeout(function(){new_data()},600)            
+            setTimeout(function(){new_data(false)},600)            
         }
     })
 });
+
+$('.submit_final').click(function(e) {
+    swal({
+        title: "Are You Sure To Finalize?",
+        text: "Are you sure you want to finalize a new sales invoice?<p>Note that it cannot be edited</p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, finalize & generate new sales invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){reconfirm()},600)            
+        }
+    })
+});
+
+function reconfirm() {
+    swal({
+        title: "Please Reconfirm.",
+        text: "<p>Are you sure you want to finalize a new sales invoice?</p><p>Note that it cannot be edited</p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, finalize & generate new sales invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){new_data(true)},600)            
+        }
+    })
+};
+
     
-function new_data(){
+function new_data(is_final){
     var items=[];
     var proceed=true;
     customerid=$('.customer').find(':selected').data('id');
@@ -681,6 +718,7 @@ function new_data(){
                 url : "save/" , 
                 type: "POST",
                 data:{customer:customerid,
+                    is_final: is_final,
                     warehouse:warehouseid,
                     date:date.split("/").reverse().join("-"),
                     grand_discount_type: grand_discount_type,

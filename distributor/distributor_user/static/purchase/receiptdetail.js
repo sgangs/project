@@ -26,7 +26,10 @@ function load_data(){
                 '<br>Address: '+jsondata['tenant_address']+'<br>GST: '+$.trim(jsondata['tenant_gst'])+'</p>');
             $('.warehouse').append(jsondata['warehouse_address']);
             $('.subtotal_receipt').append(jsondata['subtotal']);
+            // $('.taxtotal_receipt').append(taxtotal.toFixed(2));
             $('.taxtotal_receipt').append(taxtotal.toFixed(2));
+            $('.cgsttotal_receipt').append((parseFloat(jsondata['cgsttotal'])).toFixed(2));
+            $('.sgsttotal_receipt').append((parseFloat(jsondata['sgsttotal'])).toFixed(2));
             $('.total_receipt').append(jsondata['total']);
             $.each(jsondata['line_items'], function(){
                 var d1_val=0.00, d2_val=0.00;
@@ -56,7 +59,7 @@ function load_data(){
                     "<td span='4'>"+$.trim(this.product_hsn)+"</td>"+
                     "<td>"+this.quantity+"</td>"+
                     // "<td class='hidden-print'>"+this.free_without_tax+"</td>"+
-                    // "<td class='hidden-print'>"+this.free_with_tax+"</td>"+
+                    "<td>"+this.free_with_tax+"</td>"+
                     "<td>"+this.unit+"</td>"+
                     // "<td class='visible-print-block'>"+free_total+"</td>"+
                     "<td>"+this.purchase_price+"</td>"+
@@ -71,10 +74,10 @@ function load_data(){
                     // "<td class='visible-print-block'>"+d2_val+"</td>"+
                     "<td>"+d2_val.toFixed(2)+"</td>"+
                     "<td>"+this.line_tax+"</td>"+
-                    "<td>"+this.cgst_percent+"</td>"+
-                    "<td>"+this.cgst_value+"</td>"+
-                    "<td>"+this.sgst_percent+"</td>"+
-                    "<td>"+this.sgst_value+"</td>"+
+                    "<td class='is_not_igst'>"+this.cgst_percent+"</td>"+
+                    "<td class='is_not_igst'>"+this.cgst_value+"</td>"+
+                    "<td class='is_not_igst'>"+this.sgst_percent+"</td>"+
+                    "<td class='is_not_igst'>"+this.sgst_value+"</td>"+
                     "<td class='is_igst'>"+this.igst_percent+"</td>"+
                     "<td class='is_igst'>"+this.igst_value+"</td>"+
                     // "<td>"+this.tax_percent+"</td>"+
@@ -130,8 +133,11 @@ function load_data(){
 
 $('.printout').click(function(){
     if (igst_total == 0 || isNaN(igst_total)){
-        console.log("hewres");
         $('.is_igst').addClass('hidden-print');
+
+    }
+    else{
+        $('.is_not_igst').addClass('hidden-print');
 
     }
      window.print();

@@ -44,10 +44,10 @@ def customer_view(request):
 		if (calltype == 'one_customer'):
 			customerid = request.GET.get('customerid')
 			customer=Customer.objects.for_tenant(this_tenant).get(id=customerid)
-			serializer = VendorSerializers(customer)
+			serializer = CustomerSerializers(customer)
 		else:
 			customers=Customer.objects.for_tenant(this_tenant).order_by('key').all()
-			serializer = VendorSerializers(customers, many=True)
+			serializer = CustomerSerializers(customers, many=True)
 		return Response(serializer.data)
 	elif request.method == 'POST':
 		calltype = request.data.get('calltype')
@@ -64,6 +64,8 @@ def customer_view(request):
 			cst=request.data.get('cst')
 			tin=request.data.get('tin')
 			gst=request.data.get('gst')
+			dl1=request.data.get('dl1')
+			dl2=request.data.get('dl2')
 			details=request.data.get('details')
 			zone_id=request.data.get('zone')
 			if (zone_id):
@@ -80,6 +82,8 @@ def customer_view(request):
 			new_customer.cst=cst
 			new_customer.tin=tin
 			new_customer.gst=gst
+			new_customer.dl_2=dl2
+			new_customer.dl_1=dl1
 			new_customer.details=details
 			if (zone_id):
 				new_customer.zone=zone_selected
@@ -100,7 +104,10 @@ def customer_view(request):
 			cst=request.data.get('cst')
 			tin=request.data.get('tin')
 			gst=request.data.get('gst')
+			dl1=request.data.get('dl1')
+			dl2=request.data.get('dl2')
 			details=request.data.get('details')
+			print(dl1)
 			# zone_id=request.data.get('zone')
 			# if (zone_id):
 				# zone_selected=Zone.objects.for_tenant(this_tenant).get(id=zone_id)
@@ -116,6 +123,8 @@ def customer_view(request):
 			old_customer.cst=cst
 			old_customer.tin=tin
 			old_customer.gst=gst
+			old_customer.dl_2=dl2
+			old_customer.dl_1=dl1
 			old_customer.details=details
 			# if (zone_id):
 			# 	old_customer.zone=zone_selected

@@ -247,6 +247,8 @@ class AbstractCustomer(models.Model):
 	key=models.CharField(max_length=20)
 	address_1=models.CharField("Address Line 1",max_length=200, blank=True, null=True)
 	address_2=models.CharField("Address Line 2", max_length=200, blank=True, null=True)
+	dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
+	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	state=models.CharField(max_length=4,choices=state_list, blank=True, null=True)
 	city=models.CharField("City", max_length=50, blank=True, null=True)
 	pin=models.CharField("Pincode", max_length=8, blank=True, null=True)

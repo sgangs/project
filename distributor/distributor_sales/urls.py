@@ -12,6 +12,11 @@ urlpatterns = [
     url(r'^invoice/excel/(?P<pk>[-\S]+)/$', views.excel_invoice, name='excel_invoice'),
     url(r'^invoicelist/$', views.invoice_list, name='invoice_list'),
     url(r'^invoicelist/listall/$', views.all_invoices, name='all_invoices'),
+    
+    url(r'^invoice/salesedit/$', views.sales_edit_view, name='sales_edit_view'),
+    url(r'^invoice/salesedit/data/$', views.edit_invoice_details, name='edit_invoice_details'),
+    url(r'^invoice/salesedit/save/$', views.sales_invoice_edit, name='sales_invoice_edit'),
+    
     url(r'^invoicelist/metadata/$', views.invoices_metadata, name='invoices_metadata'),
     url(r'^invoice/$', views.new_sales_invoice, name='new_sales_invoice'),
     url(r'^invoice/paymentsave/$', views.payment_register, name='payment_register'),
@@ -23,5 +28,7 @@ urlpatterns = [
     url(r'^invoice/salesreturn/save/$', views.sales_return_save, name='sales_return_save'),
     url(r'^salesreturn/$', views.return_list_view, name='return_list_view'),
     url(r'^salesreturn/listall/$', views.all_return, name='all_return'),
+    url(r'^salesreport/$', views.sales_report, name='sales_report'),
+    url(r'^salesreport/data/$', views.sales_report_data, name='sales_report_data'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

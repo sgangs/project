@@ -24,6 +24,8 @@ class Tenant(models.Model):
 	tin=models.CharField("TIN Number",max_length=20, blank=True, null=True)
 	# cst=models.PositiveIntegerField("CST Number", blank=True, null=True)
 	gst=models.CharField("GST Number",max_length=20,  blank=True, null=True)
+	dl_1=models.CharField("Drug License 1",max_length=10,  blank=True, null=True)
+	dl_2=models.CharField("Drug License 2",max_length=10,  blank=True, null=True)
 
 	# pan=models.CharField("PAN Number",max_length=20, blank=True, null=True)
 	# tin=models.CharField("TIN Number",max_length=20, blank=True, null=True)

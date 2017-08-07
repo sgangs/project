@@ -74,12 +74,13 @@ def get_tax_report(request):
 		response_data['igst_input']=tax_transaction.objects.for_tenant(this_tenant).\
 					filter(transaction_type=1,tax_type='IGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
 		
-		response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='CGST').\
+		response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type__in=[2,5],tax_type='CGST').\
 					aggregate(Sum('tax_value'))['tax_value__sum']
-		response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='SGST').\
+		response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type__in=[2,5],tax_type='SGST').\
 					aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='IGST').\
 					aggregate(Sum('tax_value'))['tax_value__sum']
+		print (response_data)
 
 
 		if not response_data['cgst_input']:

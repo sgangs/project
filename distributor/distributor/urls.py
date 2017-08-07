@@ -37,8 +37,10 @@ urlpatterns = [
     url(r'^refreshthetoken/', refresh_jwt_token),
 
     url(r'^landing/$', views.landing, name='landing'),
+    url(r'^tenant-user-metadata/$', views.tenant_user_metadata, name='tenant_user_metadata'),
 
     url(r'^master/', include('distributor_master.urls',namespace='master', app_name='master')),
+    url(r'^user/', include('distributor_user.urls',namespace='user', app_name='user')),
     url(r'^purchase/', include('distributor_purchase.urls',namespace='purchase', app_name='purchase')),
     url(r'^sales/', include('distributor_sales.urls',namespace='sales', app_name='sales')),
     url(r'^retailsales/', include('retail_sales.urls',namespace='retailsales', app_name='retailsales')),

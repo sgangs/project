@@ -10,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext
 # from school.id_definition import make_id
 # from school_genadmin.models import Batch
-from .models import Customer, Unit, Product, tax_structure
+from .models import Customer, Unit, Product, tax_structure, Zone
 from distributor.variable_list import state_list
 
 
@@ -44,14 +44,20 @@ def customer_register(excel_data, this_tenant):
         elif (row[1] in customer_key):
             row_no.append(i+1)
         else:
+            zone=None
             customer_key[row[1]]=i
+            if (row[12] != None or row[12] != ""):
+                try:
+                    zone=Zone.objects.for_tenant(this_tenant).get(key=row[12])
+                except:
+                    pass
             try:
                 Customer.objects.for_tenant(this_tenant).get(key=row[1])
                 row_no.append(i+1)
             except:
                 row[4]=state_dict[row[4]]
                 objects_customer.append(Customer(name=row[0], key=row[1],address_1=row[2], address_2=row[3], state=row[4],\
-                    city=row[5],pin=row[6],phone_no=row[7], cst=row[8], tin=row[9], gst=row[10], details=row[11], tenant=this_tenant))
+                    city=row[5],pin=row[6],phone_no=row[7], cst=row[8], tin=row[9], gst=row[10], details=row[11],zone=zone, tenant=this_tenant))
 
     with transaction.atomic():
         try:

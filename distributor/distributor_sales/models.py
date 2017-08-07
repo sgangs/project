@@ -27,6 +27,8 @@ class sales_invoice(models.Model):
 	customer_city=models.CharField(max_length=50, blank=True, null=True)
 	customer_pin=models.CharField(max_length=8, blank=True, null=True)
 	customer_gst=models.CharField(max_length=20, blank=True, null=True)
+	dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
+	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse, blank=True, null=True,\
 						related_name='salesInvoice_sales_master_warehouse', on_delete=models.SET_NULL)
@@ -34,8 +36,10 @@ class sales_invoice(models.Model):
 	warehouse_state=models.CharField(max_length=4)
 	warehouse_city=models.CharField(max_length=50)
 	warehouse_pin=models.CharField(max_length=8)
+
+	is_final=models.BooleanField(default=True)
 	
-	#GST Type 1 means B2B registered, 2 means B2B unregistered.
+	#GST Type 1 means B2B registered, 2 means B2CL, 3 means B2CS.
 	gst_type=models.PositiveSmallIntegerField(default=1)
 	grand_discount_type=models.PositiveSmallIntegerField(default=0)
 	grand_discount=models.DecimalField(max_digits=8, decimal_places=2, default=0)
@@ -61,7 +65,8 @@ class sales_invoice(models.Model):
 	def save(self, *args, **kwargs):
 		if not self.id:
 			tenant=self.tenant.key
-			today=dt.date.today()
+			# today=dt.date.today()
+			today=dt.datetime.strptime(self.date, "%Y-%m-%d").date()
 			today_string=today.strftime('%y%m%d')
 			next_invoice_number='001'
 			last_invoice=type(self).objects.filter(tenant=self.tenant).\
@@ -98,6 +103,7 @@ class invoice_line_item(models.Model):
 	vat_type=models.CharField(max_length =15)
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
+	#Add fk to unit as well.
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=8, decimal_places=2, default=1)
 
@@ -172,6 +178,8 @@ class sales_return(models.Model):
 	customer_city=models.CharField(max_length=50, blank=True, null=True)
 	customer_pin=models.CharField(max_length=8, blank=True, null=True)
 	customer_gst=models.CharField(max_length=20, blank=True, null=True)
+	dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
+	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse, blank=True, null=True,\
 						related_name='salesReturn_sales_master_warehouse', on_delete=models.SET_NULL)

@@ -33,6 +33,9 @@ from distributor_inventory.models import warehouse_valuation
 from distributor_master.models import Warehouse
 from distributor_sales.sales_utils import sales_day_wise, sales_raised_value, sales_collected_value
 from retail_sales.sales_utils import retail_sales_day_wise
+from distributor_account.account_support import get_income_expense
+from distributor.variable_list import state_list
+
 from .user_creation import *
 
 #landing page
@@ -131,12 +134,12 @@ def RegisterView(request):
                     create_accountChart(new_tenant,"CGST Output",\
                         "Current Liabilities", "CGST Output Account", "cgstout", period, new_ledger, is_first_year=True)
                     
-                    create_accountChart(new_tenant,"VAT Payments",\
-                        "Tax Expense", "VAT Payment Account", "vatpay", period, new_ledger, is_first_year=True)
-                    create_accountChart(new_tenant,"VAT Input",\
-                        "Current Assets", "VAT Input Account", "vatin", period, new_ledger, is_first_year=True)
-                    create_accountChart(new_tenant,"VAT Output",\
-                        "Current Liabilities", "VAT Output Account", "vatout", period, new_ledger, is_first_year=True)
+                    # create_accountChart(new_tenant,"VAT Payments",\
+                    #     "Tax Expense", "VAT Payment Account", "vatpay", period, new_ledger, is_first_year=True)
+                    # create_accountChart(new_tenant,"VAT Input",\
+                    #     "Current Assets", "VAT Input Account", "vatin", period, new_ledger, is_first_year=True)
+                    # create_accountChart(new_tenant,"VAT Output",\
+                    #     "Current Liabilities", "VAT Output Account", "vatout", period, new_ledger, is_first_year=True)
                     
                     #This account will consider COGS return - as we store purchase value only in COGS
                     #this contra is something like purchase contra
@@ -284,10 +287,31 @@ def landing(request):
     invoice_value=sales_raised_value(start, end, this_tenant)
     payment_value=sales_collected_value(start, end, this_tenant)
     current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+    income_expense=get_income_expense(this_tenant,4)
+    # print(income_expense)
     return render(request,'landing.html', {'sales_daily':json.dumps(sales_daily, cls=DjangoJSONEncoder),\
             'invoice_value':json.dumps(invoice_value, cls=DjangoJSONEncoder), \
-            'payment_value':json.dumps(payment_value, cls=DjangoJSONEncoder), 'current_account':current_year})
+            'payment_value':json.dumps(payment_value, cls=DjangoJSONEncoder),'income_expense':json.dumps(income_expense, cls=DjangoJSONEncoder),\
+            'current_account':current_year})
 
+# @login_required
+@api_view(['GET'],)
+def tenant_user_metadata(request):
+    this_user=request.user
+    this_tenant=request.user.tenant
+    state_dict=dict((x, y) for x, y in state_list)
+    response_data = {}
+    response_data['tenant_name']=this_tenant.name
+    response_data['tenant_gst']=this_tenant.gst
+    if this_tenant.address_2 == None or this_tenant.address_2 == 'null':
+        response_data['tenant_address']=this_tenant.address_1
+    else:
+        response_data['tenant_address']=this_tenant.address_1+", "+this_tenant.address_2
+    response_data['tenant_state']=state_dict[this_tenant.state]
+    response_data['first_name']=this_user.first_name
+    response_data['last_name']=this_user.last_name
+    jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+    return HttpResponse(jsondata)
 
 
 @login_required
