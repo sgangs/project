@@ -241,7 +241,7 @@ def sales_invoice_save(request):
 						is_tax=data['is_tax']
 						if (is_tax == 'true'):
 							is_tax = True
-						elif(is_tax == 'false' or is_tax.strip() == ''):
+						elif(is_tax == 'false'):
 							is_tax = False
 
 						cgst_total+=cgst_v
@@ -516,10 +516,10 @@ def all_invoices(request):
 			# receipts_paginated=paginator.page(page_no)
 			# for item in receipts_paginated:
 			# 	print(item)
-		elif (calltype== 'customer_pending'):
-			customerid = request.GET.get('customerid')
-			invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid).\
-				values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')
+		# elif (calltype== 'customer_pending'):
+		# 	customerid = request.GET.get('customerid')
+		# 	invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid).\
+		# 		values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')
 		response_data = list(invoices)		
 		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
@@ -655,7 +655,6 @@ def sales_return_save(request):
 
 						if this_tenant.maintain_inventory:
 							product_items=json.loads(line_item.other_data)['detail']
-							print(product_items)
 							quantity_left=quantity
 							total_quantity=0
 							total_left=quantity_left+already_returned
@@ -675,8 +674,7 @@ def sales_return_save(request):
 										quantity_left=quantity_left-total_useful
 									else:
 										total_useful=quantity_left
-									print(total_useful)
-
+									
 									inventory=Inventory()
 									inventory.product=product
 									inventory.warehouse=invoice.warehouse

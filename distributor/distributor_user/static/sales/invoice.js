@@ -151,6 +151,36 @@ function load_customers(){
     });
 }
 
+
+$('.customer').on('change', function() {
+    customerid=$('.customer').find(':selected').data('id')
+    $.ajax({
+        url : "/sales/invoice/customerpending/", 
+        type: "GET",
+        data:{customerid:customerid,},
+        dataType: 'json',
+        // beforeSend: function(){
+        //     $('#loadingdetails').modal('show');
+        // },
+        // handle a successful response
+        success : function(jsondata) {
+            // $('#loadingdetails').modal('hide');
+            if (jsondata['invoice_count']>0){
+                $('.value').html("Rs."+jsondata['value_pending']);
+                $('.count').html(jsondata['invoice_count']);
+                $('#pendingdetails').modal('show');
+                setTimeout(function() {$('#pendingdetails').modal('hide');}, 3000);
+            }
+        },
+        // handle a non-successful response
+        error : function() {
+            // $('#loadingdetails').modal('hide');
+            swal("Oops...", "No customer data exist.", "error");
+        }
+    });
+})
+
+
 $('.details').on("mouseenter", ".first", function() {
     $( this ).children( ".delete" ).show();
 });

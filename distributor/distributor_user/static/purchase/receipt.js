@@ -240,13 +240,17 @@ function get_total(){
         var this_total=(quantity)*pur_rate
         var this_total_plus_free=(quantity+free_tax_qty)*pur_rate
         var pur_disc_rate=(quantity+free_tax_qty)*pur_rate
-        
+
+        // console.log(discount_type);
+        // console.log(discount_type_2)
+		// console.log(pur_disc_rate);
+
         if (discount_type == 1){
             pur_disc_rate=pur_disc_rate-(discount_val*this_total/100);
             this_total=(this_total)-(discount_val*this_total/100);
         }
         else if(discount_type == 2){
-            pur_disc_rate=pur_disc_rate - discount_val/quantity;
+            pur_disc_rate=pur_disc_rate - discount_val;
             this_total=(this_total - discount_val);
         }
         if (discount_type_2 == 1){
@@ -254,9 +258,11 @@ function get_total(){
             this_total=(this_total)-(discount_val_2*this_total/100);
         }
         else if(discount_type_2 == 2){
-            pur_disc_rate=pur_disc_rate - discount_val_2/quantity;
+            pur_disc_rate=pur_disc_rate - discount_val_2;
             this_total=(this_total - discount_val_2);
         }
+
+        console.log(pur_disc_rate);
         cgst_total=(pur_disc_rate*cgst_percent)/100;
         sgst_total=(pur_disc_rate*sgst_percent)/100;
         igst_total=(pur_disc_rate*igst_percent)/100;

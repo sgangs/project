@@ -17,17 +17,25 @@ urlpatterns = [
     url(r'^invoice/salesedit/data/$', views.edit_invoice_details, name='edit_invoice_details'),
     url(r'^invoice/salesedit/save/$', views.sales_invoice_edit, name='sales_invoice_edit'),
     
+    url(r'^invoice/openinvoice/listall/$', views.open_invoice_list, name='open_invoice_list'),
+    url(r'^invoice/openinvoice/save/$', views.finalize_open_invoices, name='finalize_open_invoices'),
+    url(r'^invoice/openinvoice/$', views.open_invoices, name='open_invoices'),
+    
     url(r'^invoicelist/metadata/$', views.invoices_metadata, name='invoices_metadata'),
     url(r'^invoice/$', views.new_sales_invoice, name='new_sales_invoice'),
     url(r'^invoice/paymentsave/$', views.payment_register, name='payment_register'),
     url(r'^salestotalvalue/$', views.sales_total_values, name='sales_total_values'),
+    
     url(r'^collectionlist/$', views.collection_list, name='collection_list'),
     url(r'^collectionlistview/$', views.collection_list_view, name='collection_list_view'),
+    url(r'^invoice/customerpending/$', views.get_customer_pending, name='get_customer_pending'),
+    
     url(r'^invoice/salesreturn/data/$', views.get_return_data, name='get_return_data'),
     url(r'^invoice/salesreturn/$', views.sales_return_view, name='sales_return_view'),
     url(r'^invoice/salesreturn/save/$', views.sales_return_save, name='sales_return_save'),
     url(r'^salesreturn/$', views.return_list_view, name='return_list_view'),
     url(r'^salesreturn/listall/$', views.all_return, name='all_return'),
+    
     url(r'^salesreport/$', views.sales_report, name='sales_report'),
     url(r'^salesreport/data/$', views.sales_report_data, name='sales_report_data'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    

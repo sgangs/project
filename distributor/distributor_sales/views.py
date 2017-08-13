@@ -342,17 +342,20 @@ def sales_invoice_save(request):
 						if maintain_inventory:						
 							#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
 							for k,v in price_list.items():
-								new_inventory_ledger=inventory_ledger()
-								new_inventory_ledger.product=product
-								new_inventory_ledger.warehouse=warehouse
-								new_inventory_ledger.transaction_type=2
-								new_inventory_ledger.date=date
-								new_inventory_ledger.quantity=v['quantity']
-								new_inventory_ledger.actual_sales_price=actual_sales_price
-								new_inventory_ledger.purchase_price=v['pur_rate']
-								new_inventory_ledger.transaction_bill_id=new_invoice.invoice_id
-								new_inventory_ledger.tenant=this_tenant
-								new_inventory_ledger.save()
+								new_inventory_ledger_sales(product, warehouse, 2, date, v['quantity'],\
+										v['pur_rate'], actual_sales_price,  new_invoice.invoice_id, this_tenant)
+								
+								# new_inventory_ledger=inventory_ledger()
+								# new_inventory_ledger.product=product
+								# new_inventory_ledger.warehouse=warehouse
+								# new_inventory_ledger.transaction_type=2
+								# new_inventory_ledger.date=date
+								# new_inventory_ledger.quantity=v['quantity']
+								# new_inventory_ledger.actual_sales_price=actual_sales_price
+								# new_inventory_ledger.purchase_price=v['pur_rate']
+								# new_inventory_ledger.transaction_bill_id=new_invoice.invoice_id
+								# new_inventory_ledger.tenant=this_tenant
+								# new_inventory_ledger.save()
 							
 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 							warehouse_valuation_change.valuation-=total_purchase_price
@@ -371,75 +374,53 @@ def sales_invoice_save(request):
 						else:
 							igst_paid[igst_p]=igst_v
 
-
+					#create tax transactions.
+					#tax_transaction(cgst_paid, sgst_paid, igst_paid, 2, new_invoice.id, new_invoice.invoice_id, date, this_tenant, customer_gst)
+					is_customer_gst = True if customer_gst else False
+					print(is_customer_gst)
 					for k,v in cgst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
-							new_tax_transaction.tax_type="CGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("CGST",2, k, v, new_invoice.id, new_invoice.invoice_id, date, this_tenant, is_customer_gst)
 
 					for k,v in sgst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
-							new_tax_transaction.tax_type="SGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("SGST",2, k, v, new_invoice.id, new_invoice.invoice_id, date, this_tenant, is_customer_gst)
 
 					for k,v in igst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
-							new_tax_transaction.tax_type="IGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("IGST",2, k, v, new_invoice.id, new_invoice.invoice_id, date, this_tenant, is_customer_gst)
+							
+							# new_tax_transaction=tax_transaction()
+							# new_tax_transaction.transaction_type=2
+							# new_tax_transaction.tax_type="IGST"
+							# new_tax_transaction.tax_percent=k
+							# new_tax_transaction.tax_value=v
+							# new_tax_transaction.transaction_bill_id=new_invoice.id
+							# new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+							# new_tax_transaction.date=date
+							# new_tax_transaction.tenant=this_tenant
+							# if customer_gst:
+							# 	new_tax_transaction.is_registered = True
+							# else:
+							# 	new_tax_transaction.is_registered = False
+							# new_tax_transaction.save()
 
-					#One more journal entry for COGS needs to be done
 					if (final_save == True):
-						remarks="Sales Invoice No: "+str(new_invoice.invoice_id)
-						journal=new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
-						account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
+						remarks = "Sales Invoice No: "+str(new_invoice.invoice_id)
+						journal = new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
+						account = Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
 						new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
 						
 						if (cgst_total>0):
-							account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
+							account = Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
 							new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
 
 						if (sgst_total>0):
-							account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
+							account = Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
 							new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
 
 						if (igst_total>0):
-							account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
+							account = Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
 							new_journal_entry(this_tenant, journal, igst_total, account, 2, date)
 							
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
@@ -528,33 +509,24 @@ def sales_total_values(request):
 def invoice_list(request):
 	return render(request,'sales/sales_list.html', {'extension': 'base.html'})
 
-# @login_required
 @api_view(['GET'],)
 def all_invoices(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
+		response_data={}
 		if (calltype == 'all_invoices'):
-			# page_no = request.GET.get('page')
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
 				'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')[:300]
-			# page_no=1
-			# paginator = Paginator(invoices, 3)
-			# receipts_paginated=paginator.page(page_no)
-			# for item in receipts_paginated:
-			# 	print(item)
+		
 		elif (calltype == 'unpaid_invoices'):
-			# page_no = request.GET.get('page')
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().filter(final_payment_date__isnull=True)\
 			.values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')[:300]
-			# page_no=1
-			# paginator = Paginator(invoices, 3)
-			# receipts_paginated=paginator.page(page_no)
-			# for item in receipts_paginated:
-			# 	print(item)
+		
 		elif (calltype== 'customer_pending'):
 			customerid = request.GET.get('customerid')
-			invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid).\
+			invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid, is_final=True, final_payment_date__isnull=True,).\
 				values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')[:300]
 
 		elif (calltype == 'apply_filter'):
@@ -563,10 +535,10 @@ def all_invoices(request):
 			end=request.GET.get('end')
 			invoice_no=request.GET.get('invoice_no')
 			productid=request.GET.get('productid')
-			receipts=[]
 			sent_with=request.GET.get('sent_with')
 			if (start and end):
 				invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
+							select_related('invoiceLineItem_salesInvoice').\
 							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
 			if (len(customers)>0):
 				customers_list=[]
@@ -585,13 +557,15 @@ def all_invoices(request):
 					invoices=invoices.filter(final_payment_date__isnull=True).\
 						all()
 			if invoice_no:
-				invoices=invoices.filter(sales_invoice__icontains=invoice_no)
+				invoices=invoices.filter(invoice_id__icontains=invoice_no)
 			if productid:
 				product=Product.objects.for_tenant(this_tenant).get(id=productid)
-				line_items=invoice_line_item.objects.filter(sales_invoice__in=invoices, product=product).all()
-				invoices=invoices.filter(invoiceLineItem_salesInvoice__in=line_items).\
+				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
 						values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
-		response_data = list(invoices)
+		if page_no:
+			response_data =  paginate_data(page_no, 10, list(invoices))
+		else:
+			response_data['object']=list(invoices)
 		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
@@ -639,7 +613,7 @@ def edit_invoice_details(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
 		invoice_id = request.GET.get('invoice_id')
-		invoice=sales_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date',\
+		invoice=sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date',\
 		'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address','warehouse_city',\
 		'warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
 		'total','amount_paid').get(invoice_id=invoice_id)
@@ -685,16 +659,24 @@ def payment_register(request):
 		date = request.data.get('date')
 		payment_details = json.loads(request.data.get('payment_details'))
 		mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
-		for item in payment_details:
-			invoice_id=item['invoice_pk']
-			amount_received=Decimal(item['amount'])
-			# cheque_rtgs_number=item['cheque_rtgs_number']
-			with transaction.atomic():
-				try:
+		invoiceids=""
+		cheque_rtgs_all=""
+		payment_pk={}
+		total_amount_received=0
+		with transaction.atomic():
+			try:
+				for item in payment_details:
+					invoice_id=item['invoice_pk']
+					amount_received=Decimal(item['amount'])
+					total_amount_received+=amount_received
+					cheque_rtgs_number=item['cheque_rtgs_number']
+			
 					invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
 					invoice.amount_paid+=amount_received
 					if (round(invoice.total - invoice.amount_paid) == 0):
 						invoice.final_payment_date=date
+					elif (round(invoice.total - invoice.amount_paid) < 0):
+						raise IntegrityError
 					invoice.save()
 
 					new_sales_payment = sales_payment()
@@ -707,15 +689,22 @@ def payment_register(request):
 					# new_purchase_payment.remarks=remarks
 					new_sales_payment.tenant=this_tenant
 					new_sales_payment.save()
+					invoiceids+= str(invoice.invoice_id)+", "
+					cheque_rtgs_all+= cheque_rtgs_number+", "
+					payment_pk[str(invoice.invoice_id)]=new_sales_payment.id
+				payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+				if len(cheque_rtgs_all)>0:
+					invoiceids+= "Cheque No:  "+cheque_rtgs_all
+				print(invoiceids)
+				# raise IntegrityError
+				journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
+					,trn_id=new_sales_payment.id, trn_type=5, other_data=payment_json)
+				account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
+				new_journal_entry(this_tenant, journal, amount_received, account, 2, date)
+				new_journal_entry(this_tenant, journal, amount_received, mode.payment_account, 1, date)
 
-					journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+str(invoice.invoice_id)\
-						,trn_id=new_sales_payment.id, trn_type=5)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
-					new_journal_entry(this_tenant, journal, amount_received, account, 2, date)
-					new_journal_entry(this_tenant, journal, amount_received, mode.payment_account, 1, date)
-				
-				except:
-					transaction.rollback()
+			except:
+				transaction.rollback()
 
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
@@ -750,25 +739,8 @@ def sales_invoice_edit(request):
 
 					old_invoice = sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
 					date = old_invoice.date
-					# new_invoice=sales_return()
-					# new_invoice.tenant=this_tenant
-					# new_invoice.invoice=invoice
-
-					# old_invoice.date = date
 					
-					# new_invoice.customer=invoice.customer
-					# new_invoice.customer_name=invoice.customer_name
-					# new_invoice.customer_address=invoice.customer_address
-					# new_invoice.customer_state=invoice.customer_state
-					# new_invoice.customer_city=invoice.customer_city
-					# new_invoice.customer_pin=invoice.customer_pin
-					# new_invoice.customer_gst=invoice.customer.gst
 
-					# new_invoice.warehouse=invoice.warehouse
-					# new_invoice.warehouse_address=invoice.warehouse_address
-					# new_invoice.warehouse_state=invoice.warehouse_state
-					# new_invoice.warehouse_city=invoice.warehouse_city
-					# new_invoice.warehouse_pin=invoice.warehouse_pin
 					old_invoice.is_final=final_save
 					old_invoice.subtotal=subtotal
 					old_invoice.cgsttotal=cgsttotal
@@ -779,10 +751,7 @@ def sales_invoice_edit(request):
 						old_invoice.gst_type=3
 					else:
 						old_invoice.gst_type=2
-			# 		new_invoice.amount_paid = 0
 					old_invoice.save()
-					
-			# 		products_cost=0
 					
 					cgst_paid={}
 					sgst_paid={}
@@ -804,37 +773,46 @@ def sales_invoice_edit(request):
 					all_line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice=old_invoice)
 					
 					#Undo change in inventory
-					for item in all_line_items:
-						productid=item.product
-						multiplier=item.unit_multi
-						# print(multiplier)
-						try:
-							original_tentative_sales_price=item.tentative_sales_price
-							tentative_sales_price=original_tentative_sales_price/multiplier
-						except:
-							tentative_sales_price=0
-						try:
-							original_mrp=item.mrp
-							mrp=original_mrp/multiplier
-						except:
-							mrp=0
-						product_items=json.loads(item.other_data)['detail']
-						for each_item in product_items:
-							inventory=Inventory()
-							inventory.product=productid
-							inventory.warehouse=this_warehouse
-							inventory.purchase_quantity=Decimal(each_item['quantity'])
-							inventory.quantity_available=Decimal(each_item['quantity'])
-							inventory.purchase_date=each_item['date']
-							inventory.purchase_price=Decimal(each_item['pur_rate'])
-							inventory.tentative_sales_price=tentative_sales_price
-							inventory.mrp=mrp
-							inventory.tenant=this_tenant
-							inventory.save()
+					old_total_purchase_price=0
+					if maintain_inventory:
+						for item in all_line_items:
+							productid=item.product
+							multiplier=item.unit_multi
+							# print(multiplier)
+							try:
+								original_tentative_sales_price=item.tentative_sales_price
+								tentative_sales_price=original_tentative_sales_price/multiplier
+							except:
+								tentative_sales_price=0
+							try:
+								original_mrp=item.mrp
+								mrp=original_mrp/multiplier
+							except:
+								mrp=0
+							product_items=json.loads(item.other_data)['detail']
+							for each_item in product_items:
+								old_total_purchase_price+=Decimal(each_item['quantity'])*Decimal(each_item['pur_rate'])
+								inventory=Inventory()
+								inventory.product=productid
+								inventory.warehouse=this_warehouse
+								inventory.purchase_quantity=Decimal(each_item['quantity'])
+								inventory.quantity_available=Decimal(each_item['quantity'])
+								inventory.purchase_date=each_item['date']
+								inventory.purchase_price=Decimal(each_item['pur_rate'])
+								inventory.tentative_sales_price=tentative_sales_price
+								inventory.mrp=mrp
+								inventory.tenant=this_tenant
+								inventory.save()
+
+							#Update Warehouse Valuation
+						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+						warehouse_valuation_change.valuation+=old_total_purchase_price
+						warehouse_valuation_change.save()
 							
-					# delete inventory_ledger()
-					inventory_ledger.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,transaction_bill_id=old_invoice.invoice_id).\
-								delete()
+						# delete inventory_ledger() - only if you maintain inventory
+						inventory_ledger.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,\
+								transaction_bill_id=old_invoice.invoice_id).delete()
+					
 					# delete tax_transaction
 					tax_transaction.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,transaction_bill_id=old_invoice.id).\
 								delete()
@@ -908,9 +886,7 @@ def sales_invoice_edit(request):
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
 									product=productid, warehouse=warehouse, \
 									tentative_sales_price=original_tentative_sales_price, mrp=original_mrp).order_by('purchase_date')
-							# if (len(product_list) == 0):
-							# 	product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
-							# 		product=productid, warehouse=warehouse).order_by('purchase_date')
+							
 							quantity_updated=quantity
 							i=0
 							for item in product_list:
@@ -985,19 +961,9 @@ def sales_invoice_edit(request):
 						LineItem.save()
 
 						if maintain_inventory:						
-							#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
 							for k,v in price_list.items():
-								new_inventory_ledger=inventory_ledger()
-								new_inventory_ledger.product=product
-								new_inventory_ledger.warehouse=warehouse
-								new_inventory_ledger.transaction_type=2
-								new_inventory_ledger.date=date
-								new_inventory_ledger.quantity=v['quantity']
-								new_inventory_ledger.actual_sales_price=actual_sales_price
-								new_inventory_ledger.purchase_price=v['pur_rate']
-								new_inventory_ledger.transaction_bill_id=old_invoice.invoice_id
-								new_inventory_ledger.tenant=this_tenant
-								new_inventory_ledger.save()
+								new_inventory_ledger_sales(product, warehouse, 2, date, v['quantity'],\
+										v['pur_rate'], actual_sales_price,  old_invoice.invoice_id, this_tenant)
 							
 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 							warehouse_valuation_change.valuation-=total_purchase_price
@@ -1016,57 +982,18 @@ def sales_invoice_edit(request):
 						else:
 							igst_paid[igst_p]=igst_v
 
-
+					is_customer_gst = True if customer_gst else False
 					for k,v in cgst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
-							new_tax_transaction.tax_type="CGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=old_invoice.id
-							new_tax_transaction.transaction_bill_no=old_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("CGST",2, k, v, old_invoice.id, old_invoice.invoice_id, date, this_tenant, is_customer_gst)
 
 					for k,v in sgst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
-							new_tax_transaction.tax_type="SGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=old_invoice.id
-							new_tax_transaction.transaction_bill_no=old_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("SGST",2, k, v, old_invoice.id, old_invoice.invoice_id, date, this_tenant, is_customer_gst)
 
 					for k,v in igst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=2
-							new_tax_transaction.tax_type="IGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=old_invoice.id
-							new_tax_transaction.transaction_bill_no=old_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("IGST",2, k, v, old_invoice.id, old_invoice.invoice_id, date, this_tenant, is_customer_gst)
 
 					#One more journal entry for COGS needs to be done
 					if (final_save):
@@ -1175,6 +1102,192 @@ def get_return_data(request):
 	# jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	# return HttpResponse(jsondata)
 
+
+@api_view(['GET'],)
+def get_customer_pending(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		customerid = request.GET.get('customerid')
+		customer=Customer.objects.for_tenant(this_tenant).get(id=customerid)
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customer, final_payment_date__isnull=True).all()
+		value_pending=invoices.aggregate(pending=Sum('total')-Sum('amount_paid'))['pending']
+		invoice_count=invoices.count()
+		
+		response_data['value_pending'] = value_pending
+		response_data['invoice_count'] = invoice_count
+		
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+
+@login_required
+def open_invoices(request):
+	extension = 'base.html'
+	return render(request,'sales/open_invoice_list.html', {'extension': extension})
+
+
+@api_view(['GET'],)
+def open_invoice_list(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	page_no=request.GET.get('page_no')
+	invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date',\
+		'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address','warehouse_city',\
+		'warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
+		'total','amount_paid').all())
+	if page_no:
+		response_data=paginate_data(page_no, 10, invoices)
+	else:
+		response_data['object'] = invoices
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@api_view(['GET','POST'],)
+def finalize_open_invoices(request):
+	this_tenant=request.user.tenant
+	invoices_pk=json.loads(request.POST.get('invoices_list'))
+	# print(invoices_pk)
+	calltype=request.POST.get('calltype')
+	response_data = {}
+	with transaction.atomic():
+		try:
+			if (calltype=="Finalize"):
+				for pk in invoices_pk:
+					new_invoice=sales_invoice.objects.get(id=pk['invoice_id'])
+					new_invoice.is_final=True
+					new_invoice.save()
+					date=new_invoice.date
+					total_purchase_price = 0
+					remarks="Sales Invoice No: "+str(new_invoice.invoice_id)
+					line_items=invoice_line_item.objects.filter(sales_invoice=new_invoice)
+					for item in line_items:
+						product_items=json.loads(item.other_data)['detail']
+						total_purchase_price += Decimal(product_items[0]['pur_rate'])*Decimal(product_items[0]['quantity'])
+					
+					journal=new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
+					new_journal_entry(this_tenant, journal, new_invoice.subtotal, account, 2, date)
+						
+					if (new_invoice.cgsttotal>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
+						new_journal_entry(this_tenant, journal, new_invoice.cgsttotal, account, 2, date)
+
+					if (new_invoice.sgsttotal>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
+						new_journal_entry(this_tenant, journal, new_invoice.sgsttotal, account, 2, date)
+
+					if (new_invoice.igsttotal>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
+						new_journal_entry(this_tenant, journal, new_invoice.igsttotal, account, 2, date)
+										
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
+					new_journal_entry(this_tenant, journal, new_invoice.total, account, 1, date)
+									
+					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+
+					if (debit != credit):
+						raise IntegrityError
+
+					if this_tenant.maintain_inventory:
+						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+								get(account_inventory=inventory_acct, accounting_period = acct_period)
+						inventory_acct_year.current_debit-=total_purchase_price
+						inventory_acct_year.save()
+
+						new_journal_inv=journal_inventory()
+						new_journal_inv.date=date
+						new_journal_inv.transaction_bill_id=new_invoice.id
+						new_journal_inv.trn_type=4
+						new_journal_inv.tenant=this_tenant
+						new_journal_inv.save()
+						new_entry_inv=journal_entry_inventory()
+						new_entry_inv.transaction_type=2
+						new_entry_inv.journal=new_journal_inv
+						new_entry_inv.account=inventory_acct
+						new_entry_inv.value=total_purchase_price
+						new_entry_inv.tenant=this_tenant
+						new_entry_inv.save()
+							
+						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
+						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+								get(account_inventory=inventory_acct, accounting_period = acct_period)
+						inventory_acct_year.current_debit+=total_purchase_price
+						inventory_acct_year.save()
+							
+						new_journal_inv=journal_inventory()
+						new_journal_inv.date=date
+						new_journal_inv.transaction_bill_id=new_invoice.id
+						new_journal_inv.trn_type=4
+						new_journal_inv.tenant=this_tenant
+						new_journal_inv.save()
+						new_entry_inv=journal_entry_inventory()
+						new_entry_inv.transaction_type=1
+						new_entry_inv.journal=new_journal_inv
+						new_entry_inv.account=inventory_acct
+						new_entry_inv.value=total_purchase_price
+						new_entry_inv.tenant=this_tenant
+						new_entry_inv.save()
+
+			elif(calltype == "Delete"):
+				total_purchase_price=0
+				maintain_inventory=this_tenant.maintain_inventory
+				for pk in invoices_pk:
+					new_invoice=sales_invoice.objects.get(id=pk['invoice_id'])
+					line_items=invoice_line_item.objects.filter(sales_invoice=new_invoice)
+					warehouse=new_invoice.warehouse
+					date=new_invoice.date
+					if (maintain_inventory):
+						for item in line_items:
+							productid=item.product
+							multiplier=item.unit_multi
+							try:
+								original_tentative_sales_price=item.tentative_sales_price
+								tentative_sales_price=original_tentative_sales_price/multiplier
+							except:
+								tentative_sales_price=0
+							try:
+								original_mrp=item.mrp
+								mrp=original_mrp/multiplier
+							except:
+								mrp=0
+							product_items=json.loads(item.other_data)['detail']
+							for each_item in product_items:
+								total_purchase_price+=Decimal(each_item['quantity'])*Decimal(each_item['pur_rate'])
+								inventory=Inventory()
+								inventory.product=productid
+								inventory.warehouse=warehouse
+								inventory.purchase_quantity=Decimal(each_item['quantity'])
+								inventory.quantity_available=Decimal(each_item['quantity'])
+								inventory.purchase_date=each_item['date']
+								inventory.purchase_price=Decimal(each_item['pur_rate'])
+								inventory.tentative_sales_price=tentative_sales_price
+								inventory.mrp=mrp
+								inventory.tenant=this_tenant
+								inventory.save()
+							
+						# delete inventory_ledger()
+						inventory_ledger.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,\
+							transaction_bill_id=new_invoice.invoice_id).delete()
+					# delete tax_transaction
+					tax_transaction.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,transaction_bill_id=new_invoice.id).\
+								delete()
+					#delete invoice and line item
+					new_invoice.delete()
+
+				if (maintain_inventory):
+					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+					warehouse_valuation_change.valuation+=total_purchase_price
+					warehouse_valuation_change.save()
+		except:
+			transaction.rollback()	
+
+
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
 
 @api_view(['POST'],)
 def sales_return_save(request):
@@ -1581,14 +1694,8 @@ def all_return(request):
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
 		if (calltype == 'all_returns'):
-			# page_no = request.GET.get('page')
 			invoices=sales_return.objects.for_tenant(this_tenant).all().select_related('invoice').values('invoice__invoice_id','invoice__date',\
 			'return_id','date','customer_name','total',).order_by('-date', '-invoice_id')[:300]
-			# page_no=1
-			# paginator = Paginator(invoices, 3)
-			# receipts_paginated=paginator.page(page_no)
-			# for item in receipts_paginated:
-			# 	print(item)
 		response_data = list(invoices)		
 		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
@@ -1596,21 +1703,6 @@ def all_return(request):
 
 @login_required
 def sales_report(request):
-	# classes = class_section.objects.for_tenant(this_tenant)
-	# current_academic_year=academic_year.objects.for_tenant(this_tenant).get(current_academic_year=True)
-	# exams = Exam.objects.for_tenant(request.user.tenant).filter(year=current_academic_year.year)
-	# if request.method == 'POST':
-		# calltype = request.POST.get('calltype')
-		# response_data = []
-		# if (calltype == 'subject'):
-			# called_for='Exam'
-			# response_data=get_exam_report(request, called_for, classes)
-			#response_data=["Ram"]
-			#This is just randomly checking mail
-			
-		# jsondata = json.dumps(response_data)
-		# return HttpResponse(jsondata)
-
 	return render(request,'sales/view_salesreport_crossfilter.html', {'extension': 'base.html'})
 
 @login_required

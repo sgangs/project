@@ -29,6 +29,10 @@ $('.get_invoice').click(function(){
             date=date.split("-").reverse().join("-")
             $('.original_date').html("<strong>Date: </strong>"+date);
             $('.customer').html("<strong>Customer: </strong>"+jsondata['customer_name']);
+
+            $('.editCustomerAddress').val(jsondata['customer_address']);
+            $('.editCustomerGST').val(jsondata['customer_gst']);
+
             $('.warehouse').html("<strong>Delivery From: </strong>"+jsondata['warehouse_address']+',<br>'
                                     +jsondata['warehouse_city']);
             $('.subtotal_receipt').html(jsondata['subtotal']);
@@ -95,6 +99,10 @@ $('.get_invoice').click(function(){
     });
 })
 
+
+$('.editMetaData').click(function(){
+    $('#billMetaData').modal('show');
+});
 
 
 

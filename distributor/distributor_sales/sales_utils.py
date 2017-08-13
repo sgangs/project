@@ -1,10 +1,11 @@
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
-
-#from datetime import datetime
-from distributor_sales.models import sales_invoice, sales_payment
 from django.db.models import Sum
-from distributor_account.models import Account, Journal, journal_entry
+
+from distributor_account.models import Account, Journal, journal_entry, tax_transaction
+from distributor_inventory.models import Inventory, inventory_ledger
+from distributor_sales.models import sales_invoice, sales_payment
 # from distributor_master.models import Product, Unit
 
 def new_sales_invoice(tenant, customer, warehouse, date, duedate,
@@ -84,3 +85,49 @@ def sales_raised_value(start, end, tenant):
 def sales_collected_value(start, end, tenant):
 	payment_value=sales_payment.objects.for_tenant(tenant).filter(paid_on__range=(start,end)).aggregate(Sum('amount_received'))
 	return payment_value['amount_received__sum']
+
+
+def new_inventory_ledger_sales(product, warehouse, trn_type, date, quantity, pur_rate, sales_rate, invoice_id, this_tenant):
+	new_inventory_ledger=inventory_ledger()
+	new_inventory_ledger.product=product
+	new_inventory_ledger.warehouse=warehouse
+	new_inventory_ledger.transaction_type=trn_type
+	new_inventory_ledger.date=date
+	new_inventory_ledger.quantity=quantity
+	new_inventory_ledger.actual_sales_price=sales_rate
+	new_inventory_ledger.purchase_price=pur_rate
+	new_inventory_ledger.transaction_bill_id=invoice_id
+	new_inventory_ledger.tenant=this_tenant
+	new_inventory_ledger.save()
+
+def new_tax_transaction_sales(tax_type, trn_type, percent, value, invoice_pk, invoice_id,  date, this_tenant, is_registered):
+	new_tax_transaction=tax_transaction()
+	new_tax_transaction.transaction_type=trn_type
+	new_tax_transaction.tax_type=tax_type
+	new_tax_transaction.tax_percent=percent
+	new_tax_transaction.tax_value=value
+	new_tax_transaction.transaction_bill_id=invoice_pk
+	new_tax_transaction.transaction_bill_no=invoice_id
+	new_tax_transaction.date=date
+	new_tax_transaction.tenant=this_tenant
+	new_tax_transaction.is_registered = is_registered
+	new_tax_transaction.save()
+
+def paginate_data(page_no, total_per_page, objects):
+	response_data={}
+	paginator = Paginator(objects, total_per_page)
+	object_paginated=paginator.page(page_no)
+			
+	objects_list=objects[(int(page_no)-1)*total_per_page:int(page_no)*total_per_page]
+	index = paginator.page_range.index(object_paginated.number)
+	max_index = len(paginator.page_range)
+	start_index = index - 3 if index >= 3 else 0
+
+	end_index = index + 3 if index <= max_index - 3 else max_index
+		
+	response_data['object']=objects_list
+	response_data['start']=start_index
+	response_data['end']=end_index
+	# response_data['has_previous']=paginator.has_previous()
+	# response_data['has_next']=paginator.has_next()
+	return response_data 

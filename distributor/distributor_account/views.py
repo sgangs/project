@@ -67,6 +67,7 @@ def get_tax_report(request):
 			'tax_percent', 'tax_value','transaction_bill_no','date','is_registered')\
 			.order_by('transaction_type','date','tax_type','tax_percent'))
 	elif (calltype == 'short_summary'):
+		#This data can also be taken from chart of accounts
 		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
 					filter(transaction_type=1,tax_type='CGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['sgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
@@ -80,9 +81,7 @@ def get_tax_report(request):
 					aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='IGST').\
 					aggregate(Sum('tax_value'))['tax_value__sum']
-		print (response_data)
-
-
+		
 		if not response_data['cgst_input']:
 			response_data['cgst_input']=0
 		if not response_data['sgst_input']:

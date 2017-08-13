@@ -1,10 +1,9 @@
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from django.db import models
-from django.db.models import signals
+from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
-import datetime as dt
 from datetime import datetime
 
 from distributor_user.models import Tenant
@@ -52,10 +51,27 @@ class ledger_group(models.Model):
 		return self.name
 
 
+#This is a ledger group. here will be a general ledger. User can add ledger groups thereafter.
+class accounting_group(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	name=models.CharField(db_index=True, max_length=20)
+	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountingGroup_account_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		unique_together = (("name", "tenant"))
+		
+	def __str__(self):
+		return self.name
+
+
+
 #This is a list of ledgers
 class Account(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	ledger_group=models.ForeignKey(ledger_group, db_index=True, related_name='account_ledgerGroup')
+	ledger_group=models.ForeignKey(ledger_group, db_index=True, related_name='account_ledgerGroup', blank=True, null=True)
+	accounting_group=models.ForeignKey(accounting_group, db_index=True, related_name='account_accountingGroup', blank=True, null=True)
 	name=models.CharField(db_index=True, max_length =60)
 	remarks=models.TextField(blank=True, null=True)
 	account_type=models.CharField('Account type', max_length=30,choices=account_type_general)
@@ -174,6 +190,7 @@ class Journal(models.Model):
 	remarks=models.CharField(max_length=80, blank=True, null=True)
 	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
 	trn_type=models.PositiveSmallIntegerField(db_index=True,blank=True, null=True)
+	other_data = JSONField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journal_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

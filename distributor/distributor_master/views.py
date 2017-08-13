@@ -361,7 +361,7 @@ def attribute_view(request):
 @api_view(['GET','POST'],)
 def warehouse_view(request):
 	if request.method == 'GET':
-		warehouses=Warehouse.objects.for_tenant(request.user.tenant).filter(is_active=True).order_by('default')
+		warehouses=Warehouse.objects.for_tenant(request.user.tenant).filter(is_active=True).order_by('-default')
 		serializer = WarehouseSerializers(warehouses, many=True)
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)

@@ -106,7 +106,7 @@ def RegisterView(request):
                     period.is_first_year=True
                     period.tenant=new_tenant
                     period.save()
-                    new_ledger=create_ledger_group(new_tenant, "General")
+                    new_ledger=create_ledger_group(new_tenant, "Bank")
                     
                     create_journal_group(new_tenant,"General")                            
                     create_journal_group(new_tenant,"Sales")
@@ -114,79 +114,79 @@ def RegisterView(request):
                     
                     
                     # create_accountChart(new_tenant,"IGST Payments",\
-                    #     "Tax Expense", "IGST Payment Account", "igstpay", period, new_ledger, is_first_year=True)
+                    #     "Tax Expense", "IGST Payment Account", "igstpay", period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"IGST Input",\
-                        "Current Assets", "IGST Input Account", "igstin", period, new_ledger, is_first_year=True)
+                        "Current Assets", "IGST Input Account", "igstin", period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"IGST Output",\
-                        "Current Liabilities", "IGST Output Account", "igstout", period, new_ledger, is_first_year=True)
+                        "Current Liabilities", "IGST Output Account", "igstout", period, ledgername=None, is_first_year=True)
                     
                     # create_accountChart(new_tenant,"SGST Payments",\
-                    #     "Tax Expense", "SGST Payment Account", "sgstpay", period, new_ledger, is_first_year=True)
+                    #     "Tax Expense", "SGST Payment Account", "sgstpay", period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"SGST Input",\
-                        "Current Assets", "SGST Input Account", "sgstin", period, new_ledger, is_first_year=True)
+                        "Current Assets", "SGST Input Account", "sgstin", period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"SGST Output",\
-                        "Current Liabilities", "SGST Output Account", "sgstout", period, new_ledger, is_first_year=True)
+                        "Current Liabilities", "SGST Output Account", "sgstout", period, ledgername=None, is_first_year=True)
                     
                     # create_accountChart(new_tenant,"CGST Payments",\
-                    #     "Tax Expense", "CGST Payment Account", "cgstpay", period, new_ledger, is_first_year=True)
+                    #     "Tax Expense", "CGST Payment Account", "cgstpay", period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"CGST Input",\
-                        "Current Assets", "CGST Input Account", "cgstin", period, new_ledger, is_first_year=True)
+                        "Current Assets", "CGST Input Account", "cgstin", period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"CGST Output",\
-                        "Current Liabilities", "CGST Output Account", "cgstout", period, new_ledger, is_first_year=True)
+                        "Current Liabilities", "CGST Output Account", "cgstout", period, ledgername=None, is_first_year=True)
                     
                     # create_accountChart(new_tenant,"VAT Payments",\
-                    #     "Tax Expense", "VAT Payment Account", "vatpay", period, new_ledger, is_first_year=True)
+                    #     "Tax Expense", "VAT Payment Account", "vatpay", period, ledgername=None, is_first_year=True)
                     # create_accountChart(new_tenant,"VAT Input",\
-                    #     "Current Assets", "VAT Input Account", "vatin", period, new_ledger, is_first_year=True)
+                    #     "Current Assets", "VAT Input Account", "vatin", period, ledgername=None, is_first_year=True)
                     # create_accountChart(new_tenant,"VAT Output",\
-                    #     "Current Liabilities", "VAT Output Account", "vatout", period, new_ledger, is_first_year=True)
+                    #     "Current Liabilities", "VAT Output Account", "vatout", period, ledgername=None, is_first_year=True)
                     
                     #This account will consider COGS return - as we store purchase value only in COGS
                     #this contra is something like purchase contra
                     # create_accountInventory(new_tenant,"Cost of Goods Sold Contra", "Direct Expense",\
-                    #     "Parent COGS Contra Accounts", "cogs contra", period, new_ledger, is_first_year=True, is_contra=True)
+                    #     "Parent COGS Contra Accounts", "cogs contra", period, ledgername=None, is_first_year=True, is_contra=True)
                         #This is used to consider sales return - check if it should be expense or revenue
                     
                     create_accountChart(new_tenant,"Inventory Waste Expense", "Direct Expense",\
-                        "Parent Inventory Wastage", "inventory waste", period, new_ledger, is_first_year=True, is_contra=True)
+                        "Parent Inventory Wastage", "inventory waste", period, ledgername=None, is_first_year=True, is_contra=True)
                     
                     #Rounding off
                     create_accountChart(new_tenant,"Rounding Adjustment",\
-                        "Direct Expense", "Rounding Adjustment Account", "round", period, new_ledger, is_first_year=True)
+                        "Direct Expense", "Rounding Adjustment Account", "round", period, ledgername=None, is_first_year=True)
                     # if not new_tenant.maintain_inventory:
                     #Purchase account only if user choses not to maintain inventory
                     create_accountChart(new_tenant,"Purchase","Direct Expense", "Purchase Account", "purchase", period, \
-                        new_ledger, is_first_year=True)
+                        ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"Purchase Return","Direct Expense", "Purchase Return Account",\
-                    "pur_return", period, new_ledger, is_first_year=True, is_contra=True)
+                    "pur_return", period, ledgername=None, is_first_year=True, is_contra=True)
                     
                     cash_account=create_accountChart(new_tenant,"Cash","Current Assets", \
-                        "Cash in hand account", "cash", period, new_ledger, is_first_year=True)
+                        "Cash in hand account", "cash", period, ledgername=None, is_first_year=True)
 
                     bank_account=create_accountChart(new_tenant,"Bank","Current Assets", \
-                        "Bank account", "bank", period, new_ledger, is_first_year=True)
+                        "Bank account", "bank", period, ledgername=None, is_first_year=True)
 
                     vendor_debit=create_accountChart(new_tenant, "Vendor Debit","Current Assets",\
-                        "Debit Note Vendor Debit", "vd", period, new_ledger, is_first_year=True, is_contra=True)
+                        "Debit Note Vendor Debit", "vd", period, ledgername=None, is_first_year=True, is_contra=True)
 
                     customer_credit=create_accountChart(new_tenant, "Customer Credit","Current Liabilities",\
-                        "Credit Note Customer Credit", "cc", period, new_ledger, is_first_year=True, is_contra=True)
+                        "Credit Note Customer Credit", "cc", period, ledgername=None, is_first_year=True, is_contra=True)
                     
                     create_accountInventory(new_tenant, "Inventory","Current Assets",\
-                        "Parent Inventory Account", "inventory", period, new_ledger, is_first_year=True)
+                        "Parent Inventory Account", "inventory", period, ledgername=None, is_first_year=True)
                     create_accountInventory(new_tenant,"Cost of Goods Sold",\
-                        "Direct Expense", "Parent COGS Accounts", "cogs", period, new_ledger, is_first_year=True)
+                        "Direct Expense", "Parent COGS Accounts", "cogs", period, ledgername=None, is_first_year=True)
                     
                     create_accountChart(new_tenant,"Accounts Payable",\
-                        "Current Liabilities", "Parent Accounts Payable Accounts", "payable", period, new_ledger, is_first_year=True)
+                        "Current Liabilities", "Parent Accounts Payable Accounts", "payable", period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"Accounts Receivable",\
                         "Current Assets", "Parent Accounts Receivable Accounts", "receivable",\
-                        period, new_ledger, is_first_year=True)
+                        period, ledgername=None, is_first_year=True)
                     create_accountChart(new_tenant,"Sales","Direct Revenue", "Parent Sales Accounts", "sales",\
-                        period, new_ledger, is_first_year=True)
+                        period, ledgername=None, is_first_year=True)
 
                     create_accountChart(new_tenant,"Sales Return","Direct Revenue", "Parent Sales Return Accounts", "sales_return",\
-                        period, new_ledger, is_first_year=True, is_contra=True)
+                        period, ledgername=None, is_first_year=True, is_contra=True)
                     
                     dimension=create_dimension(new_tenant, "Number", "For numbers")
                     create_unit(new_tenant, dimension, "Number", "No", 1)

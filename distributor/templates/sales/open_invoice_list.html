@@ -2,7 +2,7 @@
 
 {%block title%}
 
-<title>Sales Invoices</title>
+<title>Open Sales Invoices</title>
 
 <link href="https://fonts.googleapis.com/css?family=Crimson+Text:400,700" rel="stylesheet">
 
@@ -11,7 +11,7 @@
 {% block content%}
 	
 
-<div class="row">
+<!-- <div class="row">
 	<div class="col-xs-4">
     	<div class="panel panel-info">
         	<div class="panel-heading">
@@ -43,95 +43,38 @@
 			</div>
 		</div>
 	</div>
-</div> 
+</div>  -->
 
 
 
 <div>
-	<button type="submit" class="btn btn-primary btn-sm all"><i class="fa fa-star"></i> View All Invoices</button>
-	<button type="submit" class="btn btn-primary btn-sm unpaid"><i class="fa fa-star"></i> View Unpaid Invoices</button>
-	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa--exclamation-circle"></i> View Overdue Invoices</button>
-	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
+	<!-- <button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button> -->
+	<button title="Click to Filter" class="btn btn-success btn-xs filterbtn"><i class="fa fa-filter"></i></button>
+	<button title="Click to Finalize Invoices" class="btn btn-primary btn-xs finalizebtn"><i class="fa fa-check"></i></button>
+	<!-- <button type="submit" title="Click to Cancel Invoices" class="btn btn-warning btn-xs cancelbtn"><i class="fa fa-close"></i></button> -->
+	<button title="Click to Delete Invoices" class="btn btn-danger btn-xs deletebtn"><i class="fa fa-minus"></i></button>
+	<button title="Hints" class="btn btn-info btn-sm hintbtn" style='float:right;'><i class="fa fa-exclamation-circle"> Hints</i></button>
 </div>
 <br>
-<div>
-	<button type="submit" class="btn btn-primary btn-sm purpay"><i class="fa fa-rupee"></i> Sales Collection</button>
-</div>
 <br>
 
 <div class="table-responsive">
-    	<table class="table table-striped table-bordered table-hover" id="receipt_table">
+    <table class="table table-striped table-bordered table-hover" id="receipt_table">
       	<thead class="thead-inverse header-background">
         	<tr>
+	            <th class="text-center" hidden></th>
 	            <th class="text-center" hidden></th>
 	            <th class="text-center">Invoice No.</th>
 	            <th class="text-center">Invoice Date</th>
 	            <th class="text-center">Due Date</th>
 	            <th class="text-center">Customer</th>
-	            <th class="text-center">Total Invoice Amount</th>
-	            <th class="text-center">Total Amount Paid</th>
-	            <th class="text-center">Download Excel</th>
+	            <th class="text-center">Total Amount</th>
+	            <th class="text-center">Select</th>
 			</tr>
 		</thead>
-        <tbody>        	
+        <tbody>
         </tbody>
-  	</table> 
-</div>
-
-<div class="prev_next">
-	<div class='add_nav'>
-	</div>
-</div>
-
-
-<!-- Modal -->
-<div class="modal fade" id="payment" tabindex="-1" role="dialog" aria-labelledby="paymentLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document">
-	    <div class="modal-content">
-		    <div class="modal-header">
-		    	<h4 class="modal-title" id="myModalLabel">Sales Invoice Collection Entry</h4>
-		    </div>
-	    <div class="modal-body">
-		    <form action="" method="post">
-		    	<div class="form-group namediv">
-					<label for="classname" class="control-label">Select Customer</label>
-					<select class="form-control selectpicker customer" id="customer" data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Customer</option>				
-					</select>
-				</div>
-				<div class="form-group namediv">
-					<label for="classname" class="control-label">Select Payment Mode</label>
-					<select class="form-control selectpicker mode" id="mode" data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Payment Mode</option>				
-					</select>
-				</div>
-				<div class="form-group modediv">
-					<label for="classname" class="control-label">Payment Date</label>
-					<input class="form-control date_payment">
-				</div>
-				<div class="form-group detaildiv" hidden>
-					<table class="table table-striped table-bordered table-hover" id="payment_table">
-				      	<thead class="thead-inverse header-background">
-				        	<tr>
-					            <th class="text-center" hidden></th>
-					            <th class="text-center">Invoice No.</th>
-					            <th class="text-center">Invoice Value</th>
-					            <!-- <th class="text-center">Amount Already Paid</th> -->
-					            <th class="text-center">Amount Pending</th>
-					            <th class="text-center" title="Select if payment is made against this invoice">Select Invoice</th>
-					            <th class="text-center">Amount 	Currently Paid</th>
-					            <th class="text-center">Cheque/NEFT/RTGS No.</th>
-							</tr>
-						</thead>
-					</table>
-				</div>				
-			</form>    
-	   	</div>
-		    <div class="modal-footer">
-		    	<button type="button" class="btn btn-primary register" disabled>Register Payment</button>
-		    </div>
-	    </div>
-	</div>
+    </table>
 </div>
 
 <!-- Modal -->
@@ -143,14 +86,6 @@
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
-		    	<div class="row">
-			    	<div class="col-xs-10">
-						<div class="form-group datediv">
-							<label for="classname" class="control-label">Filter By Date Range</label>
-							<input type="text" class="form-control date_range">
-						</div>
-					</div>
-				</div>
 		    	<div class="row">
 			    	<div class="col-xs-10">
 				    	<div class="form-group vendordiv">
@@ -172,8 +107,16 @@
 				<div class="row">
 			    	<div class="col-xs-10">
 						<div class="form-group invoicediv">
-							<label for="classname" class="control-label">Search by Sales Invoice No</label>
-							<input type="text" class="form-control invoice_no" placeholder="Enter Invoice No">
+							<label for="classname" class="control-label">Filter by Sales Invoice No</label>
+							<input type="text" class="form-control invoice_no">
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group datediv">
+							<label for="classname" class="control-label">Filter By Date Range</label>
+							<input type="text" class="form-control date_range">
 						</div>
 					</div>
 				</div>
@@ -195,11 +138,62 @@
 		    	<button type="button" class="btn btn-primary btn-sm apply_filter">Apply Filters</button>
 		    	<button type="button" class="btn btn-primary btn-sm apply_reset">Reset all</button>
 		    </div>
-	    </div
+	    </div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="hint" tabindex="-1" role="dialog" aria-labelledby="hintLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Hints on Invoice Status</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label for="classname" class="control-label">Open</label>
+							<p>These are invoices, which are generated but not finalized. You can edit open invoices, but you cannot accept payment against open invoices. This page shows the list of open invoices.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label for="classname" class="control-label">Finalize</label>
+							<p>Once you finalize an invoice, the invoice data gets permanently stored. You can see the corresponding ledger in accounts and the movement shall reflect in your accounting, inventory and receivables.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label for="classname" class="control-label">Delete</label>
+							<p>Once you delete an invoice, all invoices data gets deleted and you will not be able to view the invoice in future. It can happen that next invoices will end up using this invoice number.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label for="classname" class="control-label">Cancel</label>
+							<p>Once you cancel an invoice, the invoice data gets permanently deleted, but the invoice metadata remains. You can always check your list of canceled invoices.</p>
+						</div>
+					</div>
+				</div>
+			</form>    
+	   	</div>		    
+	    </div>
 	</div>
 </div>
 
 
+<div class="prev_next">
+	<div class='add_nav'>
+	</div>
+</div>
 
 <!-- Sweetalert JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
@@ -217,14 +211,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.js"></script>
 
 {% load static from staticfiles %}
-
-<script src="{% static 'sales/invoice_list.js' %}"></script>
-
+ <script src="{% static 'sales/open_invoice_list.js' %}"></script>
 <script>
 csrf_token='{{csrf_token}}';
-$('.purpay').attr('data-toggle',"modal")
-$('.purpay').attr('data-target',"#payment")
-
 $('.filterbtn').attr('data-toggle',"modal")
 $('.filterbtn').attr('data-target',"#filter")
 

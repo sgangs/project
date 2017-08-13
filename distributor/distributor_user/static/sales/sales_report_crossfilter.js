@@ -206,7 +206,7 @@ function draw_crossfilter(data){
             .dimension(invoiceDim)
             .group(function(d) { return ""})
             // .group(invoiceAvgGroup)
-            .size(300)
+            .size(50)
             .columns([
                 function(d) { return d.invoice_no; },
                 function(d) { return d.customer_name;},
