@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^invoice/save/$', views.sales_invoice_save, name='sales_invoice_save'),
     url(r'^invoice/detailview/(?P<pk>[-\S]+)/$$', views.invoice_detail_view, name='invoice_detail_view'),
     url(r'^invoice/detail/(?P<pk>[-\S]+)/$', views.invoice_details, name='invoice_details'),
+    url(r'^invoice/invoicenodetails/$', views.invoice_details_with_no, name='invoice_details_with_no'),
     url(r'^invoicelist/$', views.invoice_list, name='invoice_list'),
     url(r'^invoicelist/listall/$', views.all_invoices, name='all_invoices'),
     # url(r'^invoicelist/metadata/$', views.invoices_metadata, name='invoices_metadata'),

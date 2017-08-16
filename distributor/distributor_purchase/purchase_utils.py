@@ -3,7 +3,7 @@ from distributor_purchase.models import purchase_receipt
 # from distributor_master.models import Product, Unit
 
 def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, duedate,
-				grand_discount_type, grand_discount_value, subtotal, cgsttotal, sgsttotal, igsttotal, total, amount_paid = 0):
+				subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, amount_paid = 0):
 
 	vendor_name=vendor.name
 	ven_address=vendor.address_1+", "+vendor.address_2
@@ -52,6 +52,7 @@ def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, dued
 	new_receipt.cgsttotal=cgsttotal
 	new_receipt.sgsttotal=sgsttotal
 	new_receipt.igsttotal=igsttotal
+	new_receipt.roundoff=round_value
 	new_receipt.total = total
 	new_receipt.duedate = duedate
 	new_receipt.amount_paid = 0

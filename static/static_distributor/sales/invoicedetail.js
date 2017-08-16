@@ -37,13 +37,15 @@ function load_data(){
                 $('.warehouse').append('<font size="2">'+jsondata['tenant_name']+'<br>'+jsondata['warehouse_address']+
                     ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<font size="2">');
             }
-            $('.subtotal_receipt').append(jsondata['subtotal']);
+            $('.subtotal_receipt').append('<font size="2">'+jsondata['subtotal']+'<font size="2">');
             // $('.taxtotal_receipt').append(taxtotal.toFixed(2));
             cgst_fixed=parseFloat(jsondata['cgsttotal']).toFixed(2);
             sgst_fixed=parseFloat(jsondata['sgsttotal']).toFixed(2)
             $('.cgsttotal_receipt').append('<font size="2">'+cgst_fixed+'<font size="2">');
             $('.sgsttotal_receipt').append('<font size="2">'+sgst_fixed+'<font size="2">');
-            $('.total_receipt').append('<font size="2">'+jsondata['total']+'<font size="2">');
+            $('.total_receipt').append('<font size="2">'+(parseFloat(jsondata['total'])-parseFloat(jsondata['roundoff'])).toFixed(2)+'<font size="2">');
+            $('.roundoff_receipt').append('<font size="2">'+jsondata['roundoff']+'<font size="2">');
+            $('.payable_receipt').append('<font size="2">'+jsondata['total']+'<font size="2">');
             $.each(jsondata['line_items'], function(){
                 igst_total+=this.igst_value;
                 var d1_val=0.00, d2_val=0.00;

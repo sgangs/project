@@ -47,6 +47,7 @@ class purchase_receipt(models.Model):
 	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	roundoff=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
 	# itemwise_discount_total=models.DecimalField(max_digits=12, decimal_places=2)
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)

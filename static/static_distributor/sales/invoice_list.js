@@ -1,43 +1,58 @@
 $(function(){
 
 var total_payment=0, page_no=0, incerease = true, decrease=false, all_invoices = true,
-    unpaid_invoices = false, overdue_invoices=false;
+    unpaid_invoices = false, overdue_invoices=false, filter_applied=false;
 
-load_invoices()
+load_invoices(1)
 
 $('.all').click(function(){
-    load_invoices();
-    page_no+=1;
+    load_invoices(1);
 });
 
 $('.apply_reset').click(function(){
-    load_invoices();
+    filter_applied=false;
+    load_invoices(1);
     $('select').val([]).selectpicker('refresh');
+    $('.product_name').val('');
+    $('.product_id').val('');
+    $('.invoice_no').val('');
     date_update();
     dateChanged=false;
 });
 
-function load_invoices(){
+function apply_navbutton(jsondata, page_no){
+    $('.navbtn').remove()
+    for (i =jsondata['start']+1; i<=jsondata['end']; i++){
+        if (i==page_no){
+                    // $('.add_nav').append("<a href='#' class='btn nav_btn btn-sm btn-default' data=1 style='margin-right:0.2%'>"+i+"</a>")
+            $('.add_nav').append("<button title='Your Current Page' class='btn btn-sm navbtn btn-info' "+
+                "value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+        else{
+            $('.add_nav').append("<button title='Go to page no: "+i+"' class='btn btn-sm navbtn btn-default'"+
+                " value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+    }
+}
+
+function load_invoices(page_no){
     $.ajax({
         url : "listall/", 
         type: "GET",
-        data:{ calltype:"all_invoices"},
+        data:{ calltype:"all_invoices",
+            page_no:page_no},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
             $("#receipt_table .data").remove();
             $('#filter').modal('hide');
-            if (incerease == true){
-                page_no+=1;
-            }
-            else{
-                page_no-=1;
-            }
+            
             all_invoices = true; unpaid_invoices = false; overdue_invoices=false;
+            
             $('.all').hide();
             $('.unpaid').show();
             $('.overdue').show();
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/sales/invoice/detailview/'+this.id+'/'
                 var download_url='/sales/invoice/excel/'+this.id+'/'
                 date=this.date
@@ -54,6 +69,7 @@ function load_invoices(){
                         "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
+            apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
         error : function() {
@@ -62,31 +78,25 @@ function load_invoices(){
     });
 }
 
-// Taking care of navigation
+$('.unpaid').click(function(){
+    load_unpaid_invoices(1);
+});
 
-function navigation(){
-    if (all_invoices == true){
-        load_invoices
-    }
-    else if (unpaid_invoices == true){
-        
-    }
-}
-
-$('.unpaid').click(function(e) {
+function load_unpaid_invoices(page_no) {
     $.ajax({
         url : "listall/", 
         type: "GET",
-        data:{ calltype:"unpaid_invoices"},
+        data:{ calltype:"unpaid_invoices",
+            page_no: page_no},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
             $("#receipt_table .data").remove();
-            all_invoices = false; unpaid_invoices = false; overdue_invoices=false;
+            all_invoices = false; unpaid_invoices = true; overdue_invoices=false;
             $('.all').show();
             $('.unpaid').hide();
             $('.overdue').show();
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/sales/invoice/detailview/'+this.id+'/'
                 var download_url='/sales/invoice/excel/'+this.id+'/'
                 date=this.date
@@ -103,6 +113,7 @@ $('.unpaid').click(function(e) {
                         "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
+            apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
         error : function() {
@@ -110,7 +121,7 @@ $('.unpaid').click(function(e) {
         }
     });
 
-});
+};
 
 
 $("#receipt_table").on("click", ".link", function(){
@@ -129,7 +140,6 @@ function load_metadata(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
             if (jsondata['invoice_value']['total__sum']==null){
                 jsondata['invoice_value']['total__sum']='0.00'
             }
@@ -214,8 +224,31 @@ function load_customer(){
     });
 }
 
+// This is used to overlay autocomplete over the modal.
+$( ".product_name" ).autocomplete({
+  appendTo: "#filter"
+});
 
-$('.apply_filter').click(function(e) {
+$(document).on('keydown.autocomplete', '.product_name', function() {
+    var el=this;
+    $(this).autocomplete({
+        source : "/inventory/getproduct/", 
+        minLength: 3,
+        timeout: 200,
+        select: function( event, ui ) {
+            $('.product_id').val(ui['item']['id']);
+        }
+    });
+});
+
+$('.apply_filter').click(function(e){
+    filter_data(1);
+});
+
+
+
+function filter_data(page_no) {
+    console.log(page_no)
     var customers=[];
     $.each($(".customer_filter option:selected"), function(){
         customerid=$(this).data('id');
@@ -238,6 +271,7 @@ $('.apply_filter').click(function(e) {
     //     sent_with='overdue_receipts'
     // }
     invoice_no=$('.invoice_no').val();
+    productid=$('.product_id').val();
     
     // console.log(dateChanged)
     if (!dateChanged){
@@ -254,15 +288,18 @@ $('.apply_filter').click(function(e) {
             sent_with: sent_with,
             start: startdate,
             end: enddate,
+            productid: productid,
             invoice_no: invoice_no,
             customers: JSON.stringify(customers),
+            page_no: page_no,
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            filter_applied=true;
             $("#receipt_table .data").remove();
             $('#filter').modal('hide');
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/sales/invoice/detailview/'+this.id+'/'
                 var download_url='/sales/invoice/excel/'+this.id+'/'
                 date=this.date
@@ -279,6 +316,7 @@ $('.apply_filter').click(function(e) {
                         "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
+            apply_navbutton(jsondata, page_no);
         },
         // handle a non-successful response
         error : function() {
@@ -286,8 +324,22 @@ $('.apply_filter').click(function(e) {
         }
     });
 
-});
+}
 
+$(".add_nav").on("click", ".navbtn", function(){
+    console.log(unpaid_invoices)
+    console.log(all_invoices)
+    console.log(filter_applied)
+    if (filter_applied){
+        filter_data($(this).val())
+    }
+    else if (all_invoices){
+        load_invoices($(this).val())
+    }
+    else if (unpaid_invoices){
+        load_unpaid_invoices($(this).val())
+    }
+});
 
 load_payment()
 
@@ -327,20 +379,24 @@ $('.customer').change(function() {
                         // handle a successful response
                 success : function(jsondata) {
                     $("#payment_table .payment_data").remove();
-                    $('.detaildiv').attr('hidden',false);
-                    $('.register').attr('disabled',false);
-                    $.each(jsondata, function(){
-                        pending=parseFloat(this.total) - parseFloat(this.amount_paid)
-                        $('#payment_table').append("<tr class='payment_data' align='center'>"+
-                        "<td hidden='true'>"+this.id+"</td>"+
-                        "<td>"+this.invoice_id+"</td>"+
-                        "<td>"+this.total+"</td>"+
-                        // "<td>"+this.amount_paid+"</td>"+
-                        "<td>"+pending.toFixed(2)+"</td>"+
-                        "<td><input type='checkbox'></td>"+
-                        "<td><input type = 'number' class='form-control'></td>"+
-                        "</tr>");
-                    });
+                    if (jsondata.object.length>0){
+                    
+                        $('.detaildiv').attr('hidden',false);
+                        $('.register').attr('disabled',false);
+                        $.each(jsondata.object, function(){
+                            pending=parseFloat(this.total) - parseFloat(this.amount_paid)
+                            $('#payment_table').append("<tr class='payment_data' align='center'>"+
+                            "<td hidden='true'>"+this.id+"</td>"+
+                            "<td>"+this.invoice_id+"</td>"+
+                            "<td>"+this.total+"</td>"+
+                            // "<td>"+this.amount_paid+"</td>"+
+                            "<td>"+pending.toFixed(2)+"</td>"+
+                            "<td><input type='checkbox'></td>"+
+                            "<td><input type = 'number' class='form-control'></td>"+
+                            "<td><input type = 'text' class='form-control cheque_rtgs'></td>"+
+                            "</tr>");
+                        });
+                    }
                 },
                         // handle a non-successful response
                 error : function() {
@@ -355,20 +411,20 @@ $('.customer').change(function() {
 
 $('.register').click(function(e) {
     var total_payment_check=0
+    var count = 0
     $("#payment_table tr.payment_data").each(function() {
-        console.log("here")
         var is_paid = $(this).find('td:nth-child(5) input').is(":checked");
         if (is_paid){
-            console.log("over here")
             var amount = parseFloat($(this).find('td:nth-child(6) input').val());
             total_payment_check+=amount
+            count++
         }
     });
 
     swal({
         title: "Are you sure?",
-        text: "<p>Are you sure you want to register payment details?</p><p>Total Payments to be recorded: Rs."
-                +total_payment_check+"</p>",
+        text: "<p>Are you sure you want to register payment details?</p><p>Total Payments to be recorded: <b>Rs."
+                +total_payment_check+"</b></p><p> Total number of invoices against which payment is made: <b>"+count+"</b></p>",
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
@@ -382,6 +438,10 @@ $('.register').click(function(e) {
         }
     })
 });
+
+function reconfirm(){
+
+}
     
 function new_data(){
     var items=[];
@@ -391,7 +451,6 @@ function new_data(){
     customerid=$('.customer').find(':selected').data('id');
     modeid=$('.mode').find(':selected').data('id');
     date=$('.date_payment').val();
-
     //we need to consider payment mode as well.
     
     if (customerid == '' || customerid =='undefined' || modeid == '' || modeid =='undefined'){
@@ -404,24 +463,37 @@ function new_data(){
             timer:2500,
         });
     }
+
     if (date == '' || date =='undefined'){
         proceed = false;
         swal({
             title: "Oops..",
-            text: "Please tner the payment colletion date.",
+            text: "Please enter the payment collection date.",
             type: "error",
             allowOutsideClick: true,
             timer:2500,
         });   
     }
+
+    if (modeid == '' || modeid =='undefined' || typeof(modeid) == 'undefined' ){
+        proceed = false;
+        swal({
+            title: "Oops..",
+            text: "Please select a payment mode.",
+            type: "error",
+            allowOutsideClick: true,
+            timer:2500,
+        });   
+    }
+
     $("#payment_table tr.payment_data").each(function() {
         var invoice_pk = $(this).find('td:nth-child(1)').html();
         var amount_pending=$(this).find('td:nth-child(4)').html();
         var is_paid = $(this).find('td:nth-child(5) input').is(":checked");
-        console.log(is_paid);
         if (is_paid){
             bill_count+=1;
             var amount = parseFloat($(this).find('td:nth-child(6) input').val());
+            var cheque_rtgs_number = $(this).find('td:nth-child(7) input').val()
             total_payment+=amount
             if (isNaN(amount) || amount<=0){
                 proceed=false;
@@ -451,14 +523,13 @@ function new_data(){
                 var item = {
                     invoice_pk : invoice_pk,
                     amount: amount,
+                    cheque_rtgs_number: cheque_rtgs_number,
                 };
                 items.push(item);
             }
         }
     });
-    // console.log(items);
-    console.log(date);
-    
+
     if (isNaN(total_payment)){
         proceed=false;
     }

@@ -6,6 +6,13 @@ var pk;
 discount_types=['No Discount','Percent(%)','Value(V)' ]
 
 
+function round_off(value){
+    value=parseInt(value*1000)/1000
+    value=parseFloat(value.toFixed(2))
+    return value
+}
+
+
 $('.get_invoice').click(function(){
     invoice_id=$('.sales_inv_no').val()
     $.ajax({
@@ -29,11 +36,16 @@ $('.get_invoice').click(function(){
             date=date.split("-").reverse().join("-")
             $('.original_date').html("<strong>Date: </strong>"+date);
             $('.customer').html("<strong>Customer: </strong>"+jsondata['customer_name']);
+
+            $('.editCustomerAddress').val(jsondata['customer_address']);
+            $('.editCustomerGST').val(jsondata['customer_gst']);
+
             $('.warehouse').html("<strong>Delivery From: </strong>"+jsondata['warehouse_address']+',<br>'
                                     +jsondata['warehouse_city']);
             $('.subtotal_receipt').html(jsondata['subtotal']);
             $('.taxtotal_receipt').html(taxtotal.toFixed(2));
             $('.total_receipt').html(jsondata['total']);
+            $('.round').html(jsondata['roundoff']);
             
             $.each(jsondata['line_items'], function(){
                 igst_total+=this.igst_value;
@@ -95,6 +107,10 @@ $('.get_invoice').click(function(){
     });
 })
 
+
+$('.editMetaData').click(function(){
+    $('#billMetaData').modal('show');
+});
 
 
 
@@ -175,6 +191,25 @@ $(".details").on("keyup", ".dv2", function(){
 $(".details").on("keydown", ".dv2", function(){
     get_total();
 });
+
+$(".billdata").on("keyup", ".round", function(){
+    round_manual();
+});
+$(".billdata").on("keydown", ".round", function(){
+    round_manual();
+});
+
+
+function round_manual(argument) {
+    subtotal = parseFloat($('.subtotal_receipt').html());
+    console.log(subtotal);
+    taxtotal = parseFloat($('.taxtotal_receipt').html());
+    console.log(taxtotal);
+    round_value = parseFloat($('.round').val());
+    total = round_off(subtotal + taxtotal + round_value);
+    console.log(total);
+    $('.total_receipt').html(total.toFixed(2));
+}
 
 
 function get_qty_avl(el){
@@ -259,7 +294,7 @@ function get_total(){
             // free_tax_qty=0;
         // }
         
-        var this_total=quantity*sales_rate
+        var this_total=round_off(quantity*sales_rate)
         
         sales_disc_rate=sales_rate
         if (discount_type == 1){
@@ -278,47 +313,29 @@ function get_total(){
             sales_disc_rate=sales_disc_rate - discount_val_2/quantity;
             this_total=(this_total - discount_val_2);
         }
-        // if (vat_input == 1){
-        //     vat_total=(mrp*(quantity+free_tax_qty))-(mrp*(quantity+free_tax_qty))/(100+vat_percent)*100;
-        // }
-        // else if (vat_input == 2){
-        //     vat_total=((sales_disc_rate*(quantity+free_tax_qty))*vat_percent)/100;
-        // }
-
-        cgst_total=(this_total*cgst_percent)/100;
-        sgst_total=(this_total*sgst_percent)/100;
-        igst_total=(this_total*igst_percent)/100;
+        
+        cgst_total=round_off((this_total*cgst_percent)/100);
+        sgst_total=round_off((this_total*sgst_percent)/100);
+        igst_total=round_off((this_total*igst_percent)/100);
         $(a[i]).find('td:nth-child(19) ').html(cgst_total.toFixed(2))
         $(a[i]).find('td:nth-child(21) ').html(sgst_total.toFixed(2))
         $(a[i]).find('td:nth-child(23) ').html(igst_total.toFixed(2))
 
         $(a[i]).find('td:nth-child(17) ').html(this_total.toFixed(2))
-        vat_total=0;
-        // this_final_total=this_total+vat_total
-        this_final_total=this_total+cgst_total+sgst_total+igst_total
+        
+        this_final_total=round_off(this_total+cgst_total+sgst_total+igst_total)
         $(a[i]).find('td:nth-child(24) ').html(this_final_total.toFixed(2))
-        subtotal=subtotal+this_total
-        tax_total=tax_total+cgst_total+sgst_total+igst_total
+        subtotal=round_off(subtotal+this_total)
+        tax_total=round_off(tax_total+cgst_total+sgst_total+igst_total)
     }
-    total=subtotal+tax_total
-    // gd_type=$('.gdt').find(':selected').data('id')
-    // gd_value=parseFloat($('.gd').val())
-    // var gd_calculated=0;
-    // if(isNaN(gd_value)){
-    //     gd_value=0;
-    // }
-    // if (gd_type == 1){
-    //     gd_calculated=(gd_value*subtotal/100)
-    //     total=total-gd_calculated;
-    // }
-    // else if(gd_type == 2){
-    //     gd_calculated=gd_value
-    //     total=(total-gd_calculated);
-    // }
+    total=round_off(subtotal+tax_total);
+    round_value=round_off((Math.round(total)-total));
+    payable=round_off(total+round_value);
+    // console.log(round_value)
     $('.subtotal_receipt').html(subtotal.toFixed(2))
-    // $('.grand_discount').html(gd_calculated.toFixed(2))
     $('.taxtotal_receipt').html(tax_total.toFixed(2))
-    $('.total_receipt').html(total.toFixed(2))
+    $('.round').val(round_value.toFixed(2))
+    $('.total_receipt').html(payable.toFixed(2))
 };
 
 
@@ -347,10 +364,13 @@ function edit_data(){
     invoiceid=$('.sales_inv_pk').val()
     // grand_discount_type=$('.gdt').find(':selected').data('id');
     // grand_discount_value=$('.gd').val();
-    subtotal=parseFloat($('.subtotal_receipt').html());
+    subtotal=round_off(parseFloat($('.subtotal_receipt').html()));
     // taxtotal=parseFloat($('.taxtotal_receipt').html());
     var cgsttotal=0, sgsttotal=0, igsttotal=0;
-    total=parseFloat($('.total_receipt').html());
+    
+    round_value=round_off(parseFloat($('.round').val()));
+
+    total=round_off(parseFloat($('.total_receipt').html()));
     if (invoiceid == '' || typeof(invoiceid) =='undefined'){
         proceed = false;
         swal("Oops...", "Please select/enter original invoice. ", "error");
@@ -412,7 +432,7 @@ function edit_data(){
         }
         
         var disc_type = $(this).find('td:nth-child(11) :selected').data('id');
-        var disc = parseFloat($(this).find('td:nth-child(12) input').val());
+        var disc = round_off(parseFloat($(this).find('td:nth-child(12) input').val()));
         if (isNaN(disc)){
             disc=0;
         }
@@ -475,10 +495,15 @@ function edit_data(){
         };
         items.push(item);
     });
-    console.log(invoiceid);
-    // console.log(subtotal);
-    // console.log(cgsttotal);
-    // console.log(total);
+    cgsttotal = round_off(cgsttotal);
+    sgsttotal = round_off(sgsttotal);
+    igsttotal = round_off(igsttotal)
+    
+    console.log(subtotal);
+    console.log(cgsttotal);
+    console.log(sgsttotal);
+    console.log(total);
+    console.log(round_value);
     
     if (proceed){
         (function() {
@@ -495,6 +520,7 @@ function edit_data(){
                     cgsttotal: cgsttotal,
                     sgsttotal: sgsttotal,
                     igsttotal: igsttotal,
+                    round_value: round_value,
                     total: total,
                     // duedate: duedate.split("/").reverse().join("-"),
                     bill_details: JSON.stringify(items),

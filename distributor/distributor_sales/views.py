@@ -114,10 +114,11 @@ def sales_invoice_save(request):
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
 					igsttotal=Decimal(request.data.get('igsttotal'))
 					total=Decimal(request.data.get('total'))
-					sum_total = subtotal+cgsttotal+sgsttotal
+					round_value=Decimal(request.data.get('round_value'))
+					# sum_total = subtotal+cgsttotal+sgsttotal
 					
-					if (abs(sum_total - total) <0.90 ):
-						total = sum_total
+					# if (abs(sum_total - total) <0.90 ):
+						# total = sum_total
 					duedate=request.data.get('duedate')
 
 					
@@ -180,6 +181,7 @@ def sales_invoice_save(request):
 					new_invoice.cgsttotal=cgsttotal
 					new_invoice.sgsttotal=sgsttotal
 					new_invoice.igsttotal=igsttotal
+					new_invoice.roundoff = round_value
 					new_invoice.total = total
 					new_invoice.duedate = duedate
 					new_invoice.amount_paid = 0
@@ -422,7 +424,13 @@ def sales_invoice_save(request):
 						if (igst_total>0):
 							account = Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
 							new_journal_entry(this_tenant, journal, igst_total, account, 2, date)
-							
+
+						if (round_value!=0):
+							account = Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
+							new_journal_entry(this_tenant, journal, round_value, account, 2, date)
+						
+
+						total_round=total+round_value
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
 						new_journal_entry(this_tenant, journal, total, account, 1, date)
 						
@@ -592,7 +600,7 @@ def invoice_details(request, pk):
 	if request.method == 'GET':
 		invoice=sales_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date',\
 		'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_city',\
-		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
+		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff',\
 		'total','amount_paid', 'dl_1', 'dl_2').get(id=pk)
 		
 		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id',\
@@ -730,10 +738,8 @@ def sales_invoice_edit(request):
 					cgsttotal=Decimal(request.data.get('cgsttotal'))
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
 					igsttotal=Decimal(request.data.get('igsttotal'))
+					round_value=Decimal(request.data.get('round_value'))
 					total=Decimal(request.data.get('total'))
-					sum_total = subtotal+cgsttotal+sgsttotal
-					if (abs(sum_total - total) <0.90 ):
-						total = sum_total
 					
 					bill_data = json.loads(request.data.get('bill_details'))
 
@@ -746,6 +752,7 @@ def sales_invoice_edit(request):
 					old_invoice.cgsttotal=cgsttotal
 					old_invoice.sgsttotal=sgsttotal
 					old_invoice.igsttotal=igsttotal
+					old_invoice.roundoff=round_value
 					old_invoice.total = total
 					if (subtotal<small_large_limt):
 						old_invoice.gst_type=3
@@ -1013,6 +1020,10 @@ def sales_invoice_edit(request):
 						if (igst_total>0):
 							account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
 							new_journal_entry(this_tenant, journal, igst_total, account, 2, date)
+
+						if (round_value!=0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
+							new_journal_entry(this_tenant, journal, round_value, account, 2, date)
 							
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
 						new_journal_entry(this_tenant, journal, total, account, 1, date)
@@ -1179,6 +1190,12 @@ def finalize_open_invoices(request):
 					if (new_invoice.igsttotal>0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
 						new_journal_entry(this_tenant, journal, new_invoice.igsttotal, account, 2, date)
+
+					#Change here
+
+					if (new_invoice.roundoff!=0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
+						new_journal_entry(this_tenant, journal, new_invoice.roundoff, account, 2, date)
 										
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
 					new_journal_entry(this_tenant, journal, new_invoice.total, account, 1, date)
@@ -1186,6 +1203,8 @@ def finalize_open_invoices(request):
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
 
+					print(debit)
+					print(credit)
 					if (debit != credit):
 						raise IntegrityError
 

@@ -492,6 +492,28 @@ def invoice_details(request, pk):
 		jsondata = json.dumps(invoice, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
+@api_view(['GET',],)
+def invoice_details_with_no(request):
+	this_tenant=request.user.tenant
+	invoice_no=request.GET.get('invoice_no')
+	print(invoice_no)
+	if request.method == 'GET':
+		invoice=retail_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date','customer_name',\
+			'warehouse_address','warehouse_city', 'warehouse_pin','subtotal','cgsttotal','sgsttotal',\
+		'total','amount_paid').get(invoice_id=invoice_no)
+		
+		line_items=list(invoice_line_item.objects.filter(retail_invoice=invoice['id']).order_by('id').values('id','product_name','product_hsn',\
+			'product_id','unit','unit_multi','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
+			'is_tax_included', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
+		
+		invoice['line_items']=line_items
+
+		invoice['tenant_name']=this_tenant.name
+		
+		jsondata = json.dumps(invoice, cls=DjangoJSONEncoder)
+		print(jsondata)
+		return HttpResponse(jsondata)
+
 @login_required
 def invoice_detail_view(request, pk):
 	return render(request,'retail_sales/retail_invoice_detail.html', {'extension': 'base.html', 'pk':pk})

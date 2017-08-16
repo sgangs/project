@@ -154,7 +154,7 @@
 		    	<h4 class="modal-title" id="myModalLabel">Pending Invoice Summary</h4>
 		    </div>
 	    	<div class="modal-body">
-		   		<table class="table table-striped table-bordered prod_data">
+		   		<table class="table table-striped table-bordered">
 					<thead>
 				    	<tr>
 				        	<th colspan="1"><h5>Total Pending Amount</h5></th>
@@ -208,7 +208,7 @@
 		</table>
 	</div>
 </div>
-<div class="row text-right">
+<div class="row text-right billdata">
 	<div class="col-xs-6">
 		<table class="table metadata boderless">
 			<tr>
@@ -235,6 +235,11 @@
 				<td>Tax Total</td>
 				<td>Rs.</td>
 		        <td class='taxtotal_receipt'>0.00</td>
+			</tr>
+			<tr>
+				<td>Round Off</td>
+				<td>Rs.</td>
+		        <td><input type="number" class="form-control round" min="-0.99" max="0.99" step="0.01" value="0.00"></td>
 			</tr>
 			<tr>
 				<td>Total Payable</td>

@@ -30,6 +30,7 @@ function load_data(){
             $('.taxtotal_receipt').append(taxtotal.toFixed(2));
             $('.cgsttotal_receipt').append((parseFloat(jsondata['cgsttotal'])).toFixed(2));
             $('.sgsttotal_receipt').append((parseFloat(jsondata['sgsttotal'])).toFixed(2));
+            $('.round').append(jsondata['roundoff']);
             $('.total_receipt').append(jsondata['total']);
             $.each(jsondata['line_items'], function(){
                 var d1_val=0.00, d2_val=0.00;

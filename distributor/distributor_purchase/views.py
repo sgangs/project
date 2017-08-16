@@ -123,19 +123,21 @@ def purchase_receipt_save(request):
 					warehouse_id=request.data.get('warehouse')
 					date=request.data.get('date')
 					
-					grand_discount_type=request.data.get('grand_discount_type')
-					try:
-						grand_discount_value=Decimal(request.data.get('grand_discount_value'))
-					except:
-						grand_discount_value=0
+					# grand_discount_type=request.data.get('grand_discount_type')
+					# try:
+					# 	grand_discount_value=Decimal(request.data.get('grand_discount_value'))
+					# except:
+					# 	grand_discount_value=0
 					subtotal=Decimal(request.data.get('subtotal'))
 					cgsttotal=Decimal(request.data.get('cgsttotal'))
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
 					igsttotal=Decimal(request.data.get('igsttotal'))
+					round_value=Decimal(request.data.get('round_value'))
 					total=Decimal(request.data.get('total'))
 					sum_total = subtotal+cgsttotal+sgsttotal
-					if (abs(sum_total - total) <0.90 ):
-						total = sum_total
+					
+					# if (abs(sum_total - total) <0.90 ):
+					# 	total = sum_total
 					duedate=request.data.get('duedate')
 
 					bill_data = json.loads(request.data.get('bill_details'))
@@ -145,7 +147,7 @@ def purchase_receipt_save(request):
 
 					
 					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate,\
-							grand_discount_type, grand_discount_value, subtotal, cgsttotal, sgsttotal, igsttotal, total, 0)
+							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, 0)
 					
 					vat_paid={}
 					cgst_paid={}
@@ -399,6 +401,9 @@ def purchase_receipt_save(request):
 						if (igst_total>0):
 							account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Input")
 							new_journal_entry(this_tenant, journal, igst_total, account, 1, date)
+						if (round_value!=0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
+							new_journal_entry(this_tenant, journal, round_value, account, 1, date)
 						
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
 						new_journal_entry(this_tenant, journal, total, account, 2, date)						
@@ -553,8 +558,7 @@ def receipts_details(request, pk):
 	if request.method == 'GET':
 		receipt=purchase_receipt.objects.for_tenant(this_tenant).values('id','receipt_id','supplier_invoice',\
 		'date','vendor_name','vendor_address','vendor_city','vendor_pin','vendor_gst','warehouse_address','warehouse_city',\
-		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
-		'total','amount_paid').get(id=pk)
+		'warehouse_pin','payable_by','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff','total','amount_paid').get(id=pk)
 
 		receipt['tenant_name']=this_tenant.name
 		receipt['tenant_gst']=this_tenant.gst

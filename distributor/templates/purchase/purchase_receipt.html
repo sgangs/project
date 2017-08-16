@@ -212,7 +212,7 @@
 		</table>
 	</div>
 </div>
-<div class="row text-right">
+<div class="row text-right billdata">
 	<div class="col-xs-6">
 		<table class="table metadata boderless">
 			<tr>
@@ -230,11 +230,11 @@
 				<td>Rs.</td>
 		        <td><span class='subtotal_receipt'>0.00</span></td>
 			</tr>
-			<tr>
+			<!-- <tr>
 				<td>Grand Discount</td>
 				<td>Rs.</td>
 		        <td class='grand_discount'>0.00</td>
-			</tr>
+			</tr> -->
 			<tr hidden>
 				<td>Tax Total</td>
 				<td>Rs.</td>
@@ -249,6 +249,11 @@
 				<td>SGST Total</td>
 				<td>Rs.</td>
 		        <td class='sgsttotal_receipt'>0.00</td>
+			</tr>
+			<tr>
+				<td>Round Off</td>
+				<td>Rs.</td>
+		        <td ><input type="number" min="-0.99" max="0.99" step="0.01" class='form-control round'></td>
 			</tr>
 			<tr>
 				<td>Total Payable</td>
