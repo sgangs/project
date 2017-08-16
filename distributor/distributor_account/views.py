@@ -193,7 +193,10 @@ def account_details_view(request):
 			credit=Decimal(request.POST.get('credit'))
 		except:
 			credit=0.00
-		ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledgerid)
+		try:
+			ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledgerid)
+		except:
+			ledger = None
 		with transaction.atomic():
 			try:
 				new_account=Account()
