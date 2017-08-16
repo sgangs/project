@@ -309,7 +309,7 @@ def journal_entry_data(request):
 		entries = json.loads(request.data.get('entries'))
 		with transaction.atomic():
 			try:
-				journal=new_journal(this_tenant,date,group_name,remarks)
+				journal=new_journal(this_tenant,date,group_name,remarks, trn_id=None, trn_type=9, other_data=None)
 				for item in entries:
 					trn_type=item['trn_type']
 					accountid=item['accountid']

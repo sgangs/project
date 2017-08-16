@@ -181,6 +181,7 @@ class journal_group(models.Model):
 #6 - Sales Credit Note
 #7 - Retail Sales
 #8 - Retail Credit Note
+#9 - Journal Entry
 
 #This is a list of journal entry
 class Journal(models.Model):

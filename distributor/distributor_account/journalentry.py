@@ -4,7 +4,7 @@ from .models import Account, Journal, journal_entry, journal_group, accounting_p
 from distributor_user.models import Tenant
 
 #def new_journal(tenant, date, group,journal_type = None, key=None):
-def new_journal(tenant, date, group_name, remarks='', trn_id='', trn_type='', other_data=None):
+def new_journal(tenant, date, group_name, remarks='', trn_id=None, trn_type=None, other_data=None):
 	journal_group_selected=journal_group.objects.for_tenant(tenant).get(name = group_name)
 	journal=Journal()
 	journal.tenant=tenant
