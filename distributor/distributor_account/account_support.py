@@ -116,6 +116,7 @@ def get_profit_loss(request, start, end, period, sent='p-l'):
             total+=journal_debit['value__sum']
             total-=journal_credit['value__sum']
             if(item.account_type in ('direxp')):
+                # print(item.name)
                 expense+=total
                 if (sent == 'p-l'):
                     if (this_debit or this_credit):

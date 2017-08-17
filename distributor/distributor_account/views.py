@@ -315,6 +315,7 @@ def journal_entry_data(request):
 					accountid=item['accountid']
 					account=Account.objects.for_tenant(this_tenant).get(id=accountid)
 					value=item['value']
+					# new_journal_entry(this_tenant, journal, value, account, trn_type, date)
 					# new_journal_entry(this_tenant, journal, value, account, trn_type)
 
 					entry=journal_entry()
@@ -331,6 +332,9 @@ def journal_entry_data(request):
 						account_journal_year.current_debit=account_journal_year.current_debit+value
 					elif (trn_type == 2):
 						account_journal_year.current_credit=account_journal_year.current_credit+value
+					else:
+						raise IntegrityError
+					account_journal_year.save()
 
 				debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 				credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
