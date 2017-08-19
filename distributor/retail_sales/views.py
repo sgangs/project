@@ -431,7 +431,7 @@ def sales_invoice_save(request):
 
 						new_journal_inv=journal_inventory()
 						new_journal_inv.date=date
-						new_journal_inv.transactionansaction_bill_id=new_invoice.id
+						new_journal_inv.transaction_bill_no=new_invoice.id
 						new_journal_inv.trn_type=7
 						new_journal_inv.tenant=this_tenant
 						new_journal_inv.save()
@@ -450,12 +450,12 @@ def sales_invoice_save(request):
 						inventory_acct_year.current_debit+=total_purchase_price
 						inventory_acct_year.save()
 
-						new_journal_inv=journal_inventory()
-						new_journal_inv.date=date
-						new_journal_inv.transactionansaction_bill_id=new_invoice.id
-						new_journal_inv.trn_type=8
-						new_journal_inv.tenant=this_tenant
-						new_journal_inv.save()
+						# new_journal_inv=journal_inventory()
+						# new_journal_inv.date=date
+						# new_journal_inv.transactionansaction_bill_id=new_invoice.id
+						# new_journal_inv.trn_type=8
+						# new_journal_inv.tenant=this_tenant
+						# new_journal_inv.save()
 						new_entry_inv=journal_entry_inventory()
 						new_entry_inv.transaction_type=1
 						new_entry_inv.journal=new_journal_inv
@@ -496,7 +496,6 @@ def invoice_details(request, pk):
 def invoice_details_with_no(request):
 	this_tenant=request.user.tenant
 	invoice_no=request.GET.get('invoice_no')
-	print(invoice_no)
 	if request.method == 'GET':
 		invoice=retail_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date','customer_name',\
 			'warehouse_address','warehouse_city', 'warehouse_pin','subtotal','cgsttotal','sgsttotal',\
@@ -511,7 +510,7 @@ def invoice_details_with_no(request):
 		invoice['tenant_name']=this_tenant.name
 		
 		jsondata = json.dumps(invoice, cls=DjangoJSONEncoder)
-		print(jsondata)
+		# print(jsondata)
 		return HttpResponse(jsondata)
 
 @login_required
@@ -836,7 +835,7 @@ def sales_return_save(request):
 
 						new_journal_inv=journal_inventory()
 						new_journal_inv.date=date
-						new_journal_inv.transactionansaction_bill_id=new_invoice.id
+						new_journal_inv.transaction_bill_id=new_invoice.id
 						new_journal_inv.trn_type=8
 						new_journal_inv.tenant=this_tenant
 						new_journal_inv.save()
@@ -855,12 +854,12 @@ def sales_return_save(request):
 						inventory_acct_year.current_debit-=total_purchase_price
 						inventory_acct_year.save()
 
-						new_journal_inv=journal_inventory()
-						new_journal_inv.date=date
-						new_journal_inv.transactionansaction_bill_id=new_invoice.id
-						new_journal_inv.trn_type=8
-						new_journal_inv.tenant=this_tenant
-						new_journal_inv.save()
+						# new_journal_inv=journal_inventory()
+						# new_journal_inv.date=date
+						# new_journal_inv.transactionansaction_bill_id=new_invoice.id
+						# new_journal_inv.trn_type=8
+						# new_journal_inv.tenant=this_tenant
+						# new_journal_inv.save()
 						new_entry_inv=journal_entry_inventory()
 						new_entry_inv.transaction_type=2
 						new_entry_inv.journal=new_journal_inv
@@ -898,3 +897,31 @@ def eod_sales_data(request):
 def eod_sales_report(request):
 	extension = 'base.html'
 	return render(request,'retail_sales/eod_sales.html', {'extension': extension})
+
+
+@api_view(['GET'],)
+def invoice_purchase_wise_details(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
+		response_data=[]
+		# if (calltype == 'all_invoices'):
+		# invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
+		# 	'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')[:300]
+		invoices=retail_invoice.objects.for_tenant(this_tenant).all()
+		line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice__in=invoices)
+		total_overall=0
+		for item in line_items:
+			total_pur=0
+			product_items=json.loads(item.other_data)['detail']
+			for i in product_items:
+				total_pur += Decimal(i['pur_rate'])*Decimal(i['quantity'])
+			response_data.append({'invoice_no':item.retail_invoice.invoice_id,'product':item.product_name,'quantity':item.quantity,\
+					'sales': item.line_before_tax, 'purchase': total_pur,})
+			total_overall+=total_pur
+		response_data.append({'total_overall': total_overall})
+		
+		
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

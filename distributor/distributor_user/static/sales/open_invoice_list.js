@@ -282,6 +282,26 @@ $('.deletebtn').click(function(){
     })
 });
 
+$('.cancelbtn').click(function(){
+    // post_data("Delete");
+    swal({
+        title: "Are you sure?",
+        text: "<p>Are you sure you want to cancel the invoice?</p><p>Note that you cannot edit this invoice once deleted. "+
+                "You can see the list of canceled invoices. </p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, cancel invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){reconfirm("Cancel")},600)            
+        }
+    })
+});
+
 function reconfirm(calltype){
    swal({
         title: "Please Reconfirm",

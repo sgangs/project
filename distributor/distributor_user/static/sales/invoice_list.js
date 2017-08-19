@@ -6,18 +6,25 @@ var total_payment=0, page_no=0, incerease = true, decrease=false, all_invoices =
 load_invoices(1)
 
 $('.all').click(function(){
-    load_invoices(1);
-});
-
-$('.apply_reset').click(function(){
     filter_applied=false;
-    load_invoices(1);
     $('select').val([]).selectpicker('refresh');
     $('.product_name').val('');
     $('.product_id').val('');
     $('.invoice_no').val('');
     date_update();
     dateChanged=false;
+    load_invoices(1);
+});
+
+$('.apply_reset').click(function(){
+    filter_applied=false;
+    $('select').val([]).selectpicker('refresh');
+    $('.product_name').val('');
+    $('.product_id').val('');
+    $('.invoice_no').val('');
+    date_update();
+    dateChanged=false;
+    load_invoices(1);
 });
 
 function apply_navbutton(jsondata, page_no){
@@ -79,6 +86,13 @@ function load_invoices(page_no){
 }
 
 $('.unpaid').click(function(){
+    filter_applied=false;
+    $('select').val([]).selectpicker('refresh');
+    $('.product_name').val('');
+    $('.product_id').val('');
+    $('.invoice_no').val('');
+    date_update();
+    dateChanged=false;
     load_unpaid_invoices(1);
 });
 
@@ -248,7 +262,6 @@ $('.apply_filter').click(function(e){
 
 
 function filter_data(page_no) {
-    console.log(page_no)
     var customers=[];
     $.each($(".customer_filter option:selected"), function(){
         customerid=$(this).data('id');
@@ -327,9 +340,9 @@ function filter_data(page_no) {
 }
 
 $(".add_nav").on("click", ".navbtn", function(){
-    console.log(unpaid_invoices)
-    console.log(all_invoices)
-    console.log(filter_applied)
+    // console.log(unpaid_invoices)
+    // console.log(all_invoices)
+    // console.log(filter_applied)
     if (filter_applied){
         filter_data($(this).val())
     }

@@ -13,6 +13,9 @@ urlpatterns = [
     url(r'^invoice/invoicenodetails/$', views.invoice_details_with_no, name='invoice_details_with_no'),
     url(r'^invoicelist/$', views.invoice_list, name='invoice_list'),
     url(r'^invoicelist/listall/$', views.all_invoices, name='all_invoices'),
+
+    url(r'^invoice/purchasedetails/$', views.invoice_purchase_wise_details, name='invoice_purchase_wise_details'),
+
     # url(r'^invoicelist/metadata/$', views.invoices_metadata, name='invoices_metadata'),
     url(r'^invoice/$', views.new_sales_invoice, name='new_sales_invoice'),
     url(r'^invoice/salesreturn$', views.sales_return_view, name='sales_return_view'),

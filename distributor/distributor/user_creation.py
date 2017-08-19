@@ -28,7 +28,10 @@ def create_journal_group(tenant, name):
 
 #This function is used to create new accountChart
 def create_accountChart(tenant, name, acc_type, remarks, key, period, ledgername=None, is_first_year = False, is_contra=False):
-	ledger=ledger_group.objects.filter(tenant=tenant).get(name=ledgername)
+	try:
+		ledger=ledger_group.objects.filter(tenant=tenant).get(name=ledgername)
+	except:
+		ledger=None
 	with transaction.atomic():
 		try:
 			account=Account()

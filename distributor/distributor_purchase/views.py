@@ -24,6 +24,7 @@ from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor_inventory.inventory_utils import create_new_inventory_ledger
 
+from distributor.global_utils import paginate_data
 from .purchase_utils import *
 from .serializers import *
 from .models import *
@@ -421,7 +422,7 @@ def purchase_receipt_save(request):
 						inventory_acct_year.save()
 						new_journal_inv=journal_inventory()
 						new_journal_inv.date=date
-						new_journal_inv.transactionansaction_bill_id=new_receipt.id
+						new_journal_inv.transaction_bill_no=new_receipt.id
 						new_journal_inv.trn_type=1
 						new_journal_inv.tenant=this_tenant
 						new_journal_inv.save()
@@ -468,12 +469,7 @@ def purchase_receipt_save(request):
 @api_view(['GET','POST'],)
 def all_receipts(request):
 	this_tenant=request.user.tenant
-	# page=1
-	# paginator = Paginator(receipts, 25)
-	# print(paginator.page(1))
-	# receipts_paginated=paginator.page(page)
-	# for item in receipts_paginated:
-	# 	print(item)
+	page_no = request.GET.get('page_no')
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
 		if (calltype == 'all_receipt'):
@@ -525,7 +521,15 @@ def all_receipts(request):
 			receipts=purchase_receipt.objects.for_tenant(this_tenant).filter(vendor=vendor, final_payment_date__isnull=True).\
 				values('id','receipt_id', 'supplier_invoice', \
 				'date','vendor_name','total', 'amount_paid', 'payable_by')
-		response_data = list(receipts)
+		# response_data = list(receipts)
+
+		# page_no = 1
+		response_data={}
+		# print(receipts.count())
+		if page_no:
+			response_data =  paginate_data(page_no, 10, list(receipts))
+		else:
+			response_data['object']=list(receipts)
 		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

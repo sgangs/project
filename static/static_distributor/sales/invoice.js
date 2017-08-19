@@ -75,6 +75,7 @@ $('.prod_data').on('click','.prod_indi_data', function(){
     $(updating_row).find('td:nth-child(8)').html(tsp);
     $(updating_row).find('td:nth-child(9)').html(mrp);
     $(updating_row).find('td:nth-child(10) input').val(tsp);
+    // $(updating_row).find('td:nth-child(4) input').focus();
     $(updating_row).removeClass('updating');
     $('#productdetails').modal('hide');
     // console.log(mrp)

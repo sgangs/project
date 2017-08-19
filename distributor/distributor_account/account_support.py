@@ -230,12 +230,7 @@ def get_balance_sheet(request, start, end, period):
 def get_income_expense(this_tenant, no_months):
     today=dt.date.today()
     response_data=[]
-    # last_month=today-relativedelta(months=1)
-    # last_month_start=last_month.replace(day=1)
-    #Get data of current month here
     last_date_max=today-relativedelta(months=no_months+4)
-    # this_month_start=today.replace(day=1)
-    # print(last_month_start)
     
     #Steps: Get Accounts. Get Journals in date range. Filter journal entries of those journal in date range contianing those accounts
     #Sum the total debit & total credit to get actual data 

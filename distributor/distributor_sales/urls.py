@@ -12,6 +12,8 @@ urlpatterns = [
     url(r'^invoice/excel/(?P<pk>[-\S]+)/$', views.excel_invoice, name='excel_invoice'),
     url(r'^invoicelist/$', views.invoice_list, name='invoice_list'),
     url(r'^invoicelist/listall/$', views.all_invoices, name='all_invoices'),
+
+    url(r'^invoicelist/purchasedetails/$', views.invoice_purchase_wise_details, name='invoice_purchase_wise_details'),
     
     url(r'^invoice/salesedit/$', views.sales_edit_view, name='sales_edit_view'),
     url(r'^invoice/salesedit/data/$', views.edit_invoice_details, name='edit_invoice_details'),

@@ -23,6 +23,7 @@ from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor.variable_list import small_large_limt
 
+from distributor.global_utils import paginate_data
 from .sales_utils import *
 from .models import *
 from .serializers import *
@@ -379,7 +380,6 @@ def sales_invoice_save(request):
 					#create tax transactions.
 					#tax_transaction(cgst_paid, sgst_paid, igst_paid, 2, new_invoice.id, new_invoice.invoice_id, date, this_tenant, customer_gst)
 					is_customer_gst = True if customer_gst else False
-					print(is_customer_gst)
 					for k,v in cgst_paid.items():
 						if v>0:
 							new_tax_transaction_sales("CGST",2, k, v, new_invoice.id, new_invoice.invoice_id, date, this_tenant, is_customer_gst)
@@ -482,12 +482,12 @@ def sales_invoice_save(request):
 							inventory_acct_year.current_debit+=total_purchase_price
 							inventory_acct_year.save()
 
-							new_journal_inv=journal_inventory()
-							new_journal_inv.date=date
-							new_journal_inv.transaction_bill_id=new_invoice.id
-							new_journal_inv.trn_type=4
-							new_journal_inv.tenant=this_tenant
-							new_journal_inv.save()
+							# new_journal_inv=journal_inventory()
+							# new_journal_inv.date=date
+							# new_journal_inv.transaction_bill_id=new_invoice.id
+							# new_journal_inv.trn_type=4
+							# new_journal_inv.tenant=this_tenant
+							# new_journal_inv.save()
 							new_entry_inv=journal_entry_inventory()
 							new_entry_inv.transaction_type=1
 							new_entry_inv.journal=new_journal_inv
@@ -570,10 +570,43 @@ def all_invoices(request):
 				product=Product.objects.for_tenant(this_tenant).get(id=productid)
 				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
 						values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+		
+		# elif (calltype == 'apply_filter'):
+		# 	invoices=sales_invoice.objects.for_tenant(this_tenant).filter(invoiceLineItem_salesInvoice__isnull=True).\
+		# 			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+
+		print(invoices.count())
 		if page_no:
 			response_data =  paginate_data(page_no, 10, list(invoices))
 		else:
 			response_data['object']=list(invoices)
+	# print(response_data)	
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def invoice_purchase_wise_details(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
+		response_data=[]
+		# if (calltype == 'all_invoices'):
+		# invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
+		# 	'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')[:300]
+		invoices=sales_invoice.objects.for_tenant(this_tenant).all()
+		line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice__in=invoices)
+		total_overall=0
+		for item in line_items:
+			total_pur=0
+			product_items=json.loads(item.other_data)['detail']
+			for i in product_items:
+				total_pur += Decimal(i['pur_rate'])*Decimal(i['quantity'])
+			response_data.append({'invoice_no':item.sales_invoice.invoice_id,'product':item.product_name,'quantity':item.quantity,\
+					'sales': item.line_tax, 'purchase': total_pur, 'is_final':item.sales_invoice.is_final})
+			total_overall+=total_pur
+		response_data.append({'total_overall': total_overall})
+		
 		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
@@ -692,7 +725,7 @@ def payment_register(request):
 					new_sales_payment.payment_mode_name=mode.name
 					new_sales_payment.sales_invoice=invoice
 					new_sales_payment.amount_received=amount_received
-					# new_purchase_payment.cheque_rtgs_number=cheque_rtgs_number
+					new_sales_payment.cheque_rtgs_number=cheque_rtgs_number
 					new_sales_payment.paid_on=date
 					# new_purchase_payment.remarks=remarks
 					new_sales_payment.tenant=this_tenant
@@ -703,7 +736,6 @@ def payment_register(request):
 				payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
 				if len(cheque_rtgs_all)>0:
 					invoiceids+= "Cheque No:  "+cheque_rtgs_all
-				print(invoiceids)
 				# raise IntegrityError
 				journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
 					,trn_id=new_sales_payment.id, trn_type=5, other_data=payment_json)
@@ -1063,12 +1095,12 @@ def sales_invoice_edit(request):
 							inventory_acct_year.current_debit+=total_purchase_price
 							inventory_acct_year.save()
 
-							new_journal_inv=journal_inventory()
-							new_journal_inv.date=date
-							new_journal_inv.transaction_bill_id=old_invoice.id
-							new_journal_inv.trn_type=4
-							new_journal_inv.tenant=this_tenant
-							new_journal_inv.save()
+							# new_journal_inv=journal_inventory()
+							# new_journal_inv.date=date
+							# new_journal_inv.transaction_bill_id=old_invoice.id
+							# new_journal_inv.trn_type=4
+							# new_journal_inv.tenant=this_tenant
+							# new_journal_inv.save()
 							new_entry_inv=journal_entry_inventory()
 							new_entry_inv.transaction_type=1
 							new_entry_inv.journal=new_journal_inv
@@ -1088,9 +1120,19 @@ def sales_invoice_edit(request):
 @api_view(['GET'],)
 def collection_list(request):
 	if request.method == 'GET':
-		payments=sales_payment.objects.for_tenant(request.user.tenant).all()
-		serializer = CollectionSerializers(payments, many=True)		
-		return Response(serializer.data)
+		page_no=request.GET.get('page_no');
+		response_data={}
+		payments=sales_payment.objects.for_tenant(request.user.tenant).order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
+		# print(payments)
+		payments_paginated=paginate_data(page_no, 10, list(payments))
+		# print(payments_paginated)
+		serializer = CollectionSerializers(payments_paginated['object'], many=True)
+		# serializer = list(payments_paginated['object'].values('payment_mode_name', 'amount_received'))
+		response_data['object']  = serializer.data
+		response_data['end'] = payments_paginated['end']
+		response_data['start'] = payments_paginated['start']
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
 
 @login_required
 def collection_list_view(request):
@@ -1145,7 +1187,7 @@ def open_invoice_list(request):
 	invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date',\
 		'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address','warehouse_city',\
 		'warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
-		'total','amount_paid').all())
+		'total','amount_paid').all().order_by('-date', '-invoice_id'))
 	if page_no:
 		response_data=paginate_data(page_no, 10, invoices)
 	else:
@@ -1173,7 +1215,8 @@ def finalize_open_invoices(request):
 					line_items=invoice_line_item.objects.filter(sales_invoice=new_invoice)
 					for item in line_items:
 						product_items=json.loads(item.other_data)['detail']
-						total_purchase_price += Decimal(product_items[0]['pur_rate'])*Decimal(product_items[0]['quantity'])
+						for i in product_items:
+							total_purchase_price += Decimal(i['pur_rate'])*Decimal(i['quantity'])
 					
 					journal=new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
@@ -1203,8 +1246,6 @@ def finalize_open_invoices(request):
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
 
-					print(debit)
-					print(credit)
 					if (debit != credit):
 						raise IntegrityError
 
@@ -1237,12 +1278,12 @@ def finalize_open_invoices(request):
 						inventory_acct_year.current_debit+=total_purchase_price
 						inventory_acct_year.save()
 							
-						new_journal_inv=journal_inventory()
-						new_journal_inv.date=date
-						new_journal_inv.transaction_bill_id=new_invoice.id
-						new_journal_inv.trn_type=4
-						new_journal_inv.tenant=this_tenant
-						new_journal_inv.save()
+						# new_journal_inv=journal_inventory()
+						# new_journal_inv.date=date
+						# new_journal_inv.transaction_bill_id=new_invoice.id
+						# new_journal_inv.trn_type=4
+						# new_journal_inv.tenant=this_tenant
+						# new_journal_inv.save()
 						new_entry_inv=journal_entry_inventory()
 						new_entry_inv.transaction_type=1
 						new_entry_inv.journal=new_journal_inv
@@ -1296,6 +1337,66 @@ def finalize_open_invoices(request):
 								delete()
 					#delete invoice and line item
 					new_invoice.delete()
+
+				if (maintain_inventory):
+					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+					warehouse_valuation_change.valuation+=total_purchase_price
+					warehouse_valuation_change.save()
+
+			elif(calltype == "Cancel"):
+				total_purchase_price=0
+				maintain_inventory=this_tenant.maintain_inventory
+				for pk in invoices_pk:
+					new_invoice=sales_invoice.objects.get(id=pk['invoice_id'])
+					line_items=invoice_line_item.objects.filter(sales_invoice=new_invoice)
+					warehouse=new_invoice.warehouse
+					date=new_invoice.date
+					if (maintain_inventory):
+						for item in line_items:
+							productid=item.product
+							multiplier=item.unit_multi
+							try:
+								original_tentative_sales_price=item.tentative_sales_price
+								tentative_sales_price=original_tentative_sales_price/multiplier
+							except:
+								tentative_sales_price=0
+							try:
+								original_mrp=item.mrp
+								mrp=original_mrp/multiplier
+							except:
+								mrp=0
+							product_items=json.loads(item.other_data)['detail']
+							for each_item in product_items:
+								total_purchase_price+=Decimal(each_item['quantity'])*Decimal(each_item['pur_rate'])
+								inventory=Inventory()
+								inventory.product=productid
+								inventory.warehouse=warehouse
+								inventory.purchase_quantity=Decimal(each_item['quantity'])
+								inventory.quantity_available=Decimal(each_item['quantity'])
+								inventory.purchase_date=each_item['date']
+								inventory.purchase_price=Decimal(each_item['pur_rate'])
+								inventory.tentative_sales_price=tentative_sales_price
+								inventory.mrp=mrp
+								inventory.tenant=this_tenant
+								inventory.save()
+							
+						# delete inventory_ledger()
+						inventory_ledger.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,\
+							transaction_bill_id=new_invoice.invoice_id).delete()
+					# delete tax_transaction
+					tax_transaction.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,transaction_bill_id=new_invoice.id).\
+								delete()
+					#delete line item
+					# line_items.delete()
+					#update invoices
+					new_invoice.subtotal=0
+					new_invoice.cgsttotal = 0
+					new_invoice.sgsttotal = 0
+					new_invoice.roundoff=0
+					new_invoice.total = 0
+					new_invoice.final_payment_date=date_first.date.today()
+					new_invoice.is_final = True
+					new_invoice.save()
 
 				if (maintain_inventory):
 					warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
@@ -1660,12 +1761,12 @@ def sales_return_save(request):
 						inventory_acct_year.current_debit-=total_purchase_price
 						inventory_acct_year.save()
 
-						new_journal_inv=journal_inventory()
-						new_journal_inv.date=date
-						new_journal_inv.transaction_bill_id=new_invoice.id
-						new_journal_inv.trn_type=6
-						new_journal_inv.tenant=this_tenant
-						new_journal_inv.save()
+						# new_journal_inv=journal_inventory()
+						# new_journal_inv.date=date
+						# new_journal_inv.transaction_bill_id=new_invoice.id
+						# new_journal_inv.trn_type=6
+						# new_journal_inv.tenant=this_tenant
+						# new_journal_inv.save()
 						new_entry_inv=journal_entry_inventory()
 						new_entry_inv.transaction_type=2
 						new_entry_inv.journal=new_journal_inv
@@ -1739,4 +1840,6 @@ def sales_report_data(request):
 
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+
 	

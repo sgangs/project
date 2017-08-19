@@ -1,32 +1,51 @@
 $(function(){
 
-var total_payment=0, all_receipts = true, unpaid_receipts = false, overdue_receipts=false;
+var total_payment=0, all_receipts = true, unpaid_receipts = false, overdue_receipts=false, filter_applied=false;
 
-load_receipts()
+load_receipts(1)
 
 $('.all').click(function(){
-    load_receipts();
+    load_receipts(1);
 });
 
 $('.apply_reset').click(function(){
-    load_receipts();
+    filter_applied=false;
+    load_receipts(1);
 });
 
-function load_receipts(){
+function apply_navbutton(jsondata, page_no){
+    console.log(jsondata);
+    $('.navbtn').remove()
+    for (i =jsondata['start']+1; i<=jsondata['end']; i++){
+        if (i==page_no){
+                    // $('.add_nav').append("<a href='#' class='btn nav_btn btn-sm btn-default' data=1 style='margin-right:0.2%'>"+i+"</a>")
+            $('.add_nav').append("<button title='Your Current Page' class='btn btn-sm navbtn btn-info' "+
+                "value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+        else{
+            $('.add_nav').append("<button title='Go to page no: "+i+"' class='btn btn-sm navbtn btn-default'"+
+                " value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+    }
+}
+
+function load_receipts(page_no){
     $.ajax({
         url : "listall/", 
         type: "GET",
-        data:{ calltype:"all_receipt"},
+        data:{ calltype:"all_receipt",
+                page_no: page_no,},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            // console.log(jsondata);
             $("#receipt_table .data").remove();
             $('.all').hide();
             $('.unpaid').show();
             $('.overdue').show();
             $('#filter').modal('hide');
             all_receipts=true, unpaid_receipts = false; overdue_receipts = false;
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
                 var download_url='/purchase/receipt/excel/'+this.id+'/'
                 date=this.date
@@ -44,6 +63,8 @@ function load_receipts(){
                         "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
+
+            apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
         error : function() {
@@ -52,11 +73,17 @@ function load_receipts(){
     });
 }
 
-$('.unpaid').click(function(e) {
+$('.unpaid').click(function(){
+    load_unpaid_receipts(1);
+});
+
+
+function load_unpaid_receipts(page_no) {
     $.ajax({
         url : "listall/", 
         type: "GET",
-        data:{ calltype:"unpaid_receipt"},
+        data:{ calltype:"unpaid_receipt",
+                page_no: page_no,},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
@@ -65,7 +92,7 @@ $('.unpaid').click(function(e) {
             $('.overdue').show();
             $("#receipt_table .data").remove();
             all_receipts=false, unpaid_receipts = true; overdue_receipts = false;
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
                 var download_url='/purchase/receipt/excel/'+this.id+'/'
                 date=this.date
@@ -83,6 +110,8 @@ $('.unpaid').click(function(e) {
                         "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
+
+            apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
         error : function() {
@@ -90,7 +119,7 @@ $('.unpaid').click(function(e) {
         }
     });
 
-});
+};
 
 var end = moment();
 var start = moment(end).subtract(60, 'days');
@@ -119,7 +148,13 @@ $('.date_range').daterangepicker({
         $('.details').attr('disabled', false);
 });
 
-$('.apply_filter').click(function(e) {
+
+$('.apply_filter').click(function(e){
+    filter_data(1);
+});
+
+
+function filter_data(page_no) {
     var vendors=[];
     $.each($(".vendor_filter option:selected"), function(){
         vendorid=$(this).data('id')
@@ -153,15 +188,18 @@ $('.apply_filter').click(function(e) {
             start: startdate,
             end: enddate,
             invoice_no: invoice_no,
+            page_no: page_no,
             vendors: JSON.stringify(vendors),
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            filter_applied=true;
             $("#receipt_table .data").remove();
             $('#filter').modal('hide');
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
+                var download_url='/purchase/receipt/excel/'+this.id+'/'
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
@@ -173,8 +211,12 @@ $('.apply_filter').click(function(e) {
                 "<td>"+this.vendor_name+"</td>"+
                 "<td>"+this.total+"</td>"+
                 "<td>"+this.amount_paid+"</td>"+
+                "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
+                        "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
             })
+
+            apply_navbutton(jsondata, page_no);
         },
         // handle a non-successful response
         error : function() {
@@ -182,6 +224,21 @@ $('.apply_filter').click(function(e) {
         }
     });
 
+};
+
+$(".add_nav").on("click", ".navbtn", function(){
+    // console.log(unpaid_invoices)
+    // console.log(all_invoices)
+    // console.log(filter_applied)
+    if (filter_applied){
+        filter_data($(this).val())
+    }
+    else if (all_receipts){
+        load_receipts($(this).val())
+    }
+    else if (unpaid_invoices){
+        load_unpaid_invoices($(this).val())
+    }
 });
 
 $("#receipt_table").on("click", ".link", function(){

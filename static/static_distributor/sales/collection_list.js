@@ -1,20 +1,23 @@
 $(function(){
 
-var total_payment=0;
+var total_payment=0, page_no=0;
 
-load_receipts()
+load_receipts(1);
 
-function load_receipts(){
+function load_receipts(page_no){
     $.ajax({
         url : "/sales/collectionlist/", 
         type: "GET",
         // data:{ calltype:"all_receipt"},
+        data:{ page_no: page_no},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $("#payment_table .data").remove();
+            $('.navbtn').remove();
 
-            $.each(jsondata, function(){
-                // console.log(this.purchase_receipt.id);
+            $.each(jsondata['object'], function(){
+                console.log(this);
                 rec_date=this.sales_invoice.date
                 rec_date=rec_date.split("-").reverse().join("-")
 
@@ -36,6 +39,17 @@ function load_receipts(){
                 "<td>"+$.trim(this.cheque_rtgs_number)+"</td>"+
                 "</tr>");
             })
+            for (i =jsondata['start']+1; i<=jsondata['end']; i++){
+                if (i==page_no){
+                    // $('.add_nav').append("<a href='#' class='btn nav_btn btn-sm btn-default' data=1 style='margin-right:0.2%'>"+i+"</a>")
+                    $('.add_nav').append("<button title='Your Current Page' class='btn btn-sm navbtn btn-info' "+
+                        "value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+                }
+                else{
+                    $('.add_nav').append("<button title='Go to page no: "+i+"' class='btn btn-sm navbtn btn-default'"+
+                        " value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+                }
+            }
         },
         // handle a non-successful response
         error : function() {
@@ -44,6 +58,9 @@ function load_receipts(){
     });
 }
 
+$(".add_nav").on("click", ".navbtn", function(){
+    load_receipts($(this).val())
+});
 
 var end = moment();
 var start = moment(end).subtract(60, 'days');
