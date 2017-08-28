@@ -136,7 +136,7 @@ def get_gst_purchase(request):
 	response_data={}
 	if (calltype == 'all_list'):
 		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(transaction_type=1).\
-			values('transaction_type','tax_type','tax_percent', 'tax_value','transaction_bill_no','date',)\
+			values('transaction_type','tax_type','tax_percent', 'tax_value','transaction_bill_no','date','is_registered')\
 			.order_by('transaction_type','date','tax_type','tax_percent'))
 		
 	# elif (calltype == 'apply_filter'):
