@@ -17,8 +17,8 @@ from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Customer, Warehouse, product_sales_rate
 from distributor_inventory.models import Inventory
-from distributor_account.models import Account, tax_transaction, account_inventory, account_year_inventory, accounting_period,\
-								journal_inventory, journal_entry_inventory
+from distributor_account.models import Account, tax_transaction, account_inventory, account_year_inventory, accounting_period, Journal,journal_entry,\
+								journal_inventory, journal_entry_inventory, account_year
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor.variable_list import small_large_limt
@@ -35,7 +35,7 @@ def new_sales_invoice(request):
 @api_view(['GET','POST'],)
 def get_product(request):
 	this_tenant=request.user.tenant
-	if request.is_ajax():
+	if request.method == "GET":
 		q = request.GET.get('term', '')
 		products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].select_related('default_unit', \
 			'cgst', 'sgst')
@@ -46,6 +46,7 @@ def get_product(request):
 			item_json['label'] = item.name
 			item_json['unit_id'] = item.default_unit.id
 			item_json['unit'] = item.default_unit.symbol
+			item_json['unit_multiplier'] = item.default_unit.multiplier
 			item_json['inventory'] = this_tenant.maintain_inventory
 			# item_json['vat_type'] = item.vat_type
 			try:
@@ -67,7 +68,7 @@ def get_product(request):
 def get_product_inventory(request):
 	this_tenant=request.user.tenant
 	response_data={}
-	if request.is_ajax():
+	if request.method == "GET":
 		product_id = request.GET.get('product_id')
 		warehouse_id = request.GET.get('warehouse_id')
 		product_quantity=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,product=product_id,\
@@ -77,6 +78,45 @@ def get_product_inventory(request):
 
 		response_data['quantity']=product_quantity
 		response_data['rate']=product_rate
+	
+	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def get_product_data(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == "GET":
+		try:
+			product_id = request.GET.get('product_id')
+			warehouse_id = request.GET.get('warehouse_id')
+			
+			product_data=Product.objects.for_tenant(this_tenant).get(id=product_id)
+			product_quantity=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,product=product_data,\
+					warehouse=warehouse_id).aggregate(Sum('quantity_available'))['quantity_available__sum']
+			product_rate=list(product_sales_rate.objects.for_tenant(this_tenant).filter(product=product_data).\
+						values('tentative_sales_rate', 'is_tax_included'))
+			
+
+			response_data['quantity']=product_quantity
+			response_data['rate']=product_rate
+			response_data['product_id']=product_data.id
+			response_data['product_name']=product_data.name
+			response_data['product_hsn']=product_data.hsn_code
+			response_data['unit_id']=product_data.default_unit.id
+			response_data['unit']=product_data.default_unit.symbol
+
+			try:
+				response_data['cgst'] = product_data.cgst.percentage
+			except:
+				response_data['cgst'] = 0
+			try:
+				response_data['sgst'] = product_data.sgst.percentage
+			except:
+				response_data['sgst'] = 0
+		except:
+			#Check if json response has any error. If so, display error.
+			response_data['error']='Product Does not exist'
 	
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
@@ -241,7 +281,7 @@ def sales_invoice_save(request):
 						is_tax=data['is_tax']
 						if (is_tax == 'true'):
 							is_tax = True
-						elif(is_tax == 'false'):
+						elif(is_tax == 'false' or is_tax == ''):
 							is_tax = False
 
 						cgst_total+=cgst_v
@@ -389,9 +429,8 @@ def sales_invoice_save(request):
 					journal=new_journal(this_tenant, date,"Sales",remarks, trn_id=new_invoice.id, trn_type=7)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
 					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
-					
 					if (cgst_total>0):
-						account_inventorycount= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
 						new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
 
 					if (sgst_total>0):
@@ -409,19 +448,7 @@ def sales_invoice_save(request):
 							raise IntegrityError
 
 					if maintain_inventory:
-						#COGS Journal Entry
-						# if (total_purchase_price<1):
-						# 	raise IntegrityError
-						# journal=new_journal(this_tenant, date,"Sales",remarks, trn_id=new_invoice.id, trn_type=7)
-						# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
-						# new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
-						# account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
-						# new_journal_entry(this_tenant, journal, total_purchase_price, account, 2, date)
-						# debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-						# credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-						# if (debit != credit):
-						# 	raise IntegrityError
-
+						
 						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
@@ -431,7 +458,7 @@ def sales_invoice_save(request):
 
 						new_journal_inv=journal_inventory()
 						new_journal_inv.date=date
-						new_journal_inv.transaction_bill_no=new_invoice.id
+						new_journal_inv.transaction_bill_id=new_invoice.id
 						new_journal_inv.trn_type=7
 						new_journal_inv.tenant=this_tenant
 						new_journal_inv.save()
@@ -439,7 +466,7 @@ def sales_invoice_save(request):
 						new_entry_inv.transaction_type=1
 						new_entry_inv.journal=new_journal_inv
 						new_entry_inv.account=inventory_acct
-						new_entry_inv.value=total_purchase_price
+						new_entry_inv.value=-total_purchase_price
 						new_entry_inv.tenant=this_tenant
 						new_entry_inv.save()
 
@@ -450,12 +477,6 @@ def sales_invoice_save(request):
 						inventory_acct_year.current_debit+=total_purchase_price
 						inventory_acct_year.save()
 
-						# new_journal_inv=journal_inventory()
-						# new_journal_inv.date=date
-						# new_journal_inv.transactionansaction_bill_id=new_invoice.id
-						# new_journal_inv.trn_type=8
-						# new_journal_inv.tenant=this_tenant
-						# new_journal_inv.save()
 						new_entry_inv=journal_entry_inventory()
 						new_entry_inv.transaction_type=1
 						new_entry_inv.journal=new_journal_inv
@@ -467,6 +488,117 @@ def sales_invoice_save(request):
 
 					response_data['pk']=new_invoice.id
 					response_data['id']=new_invoice.invoice_id
+				except:
+					transaction.rollback()
+
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+def sales_invoice_delete(request):
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		response_data = {}
+		this_tenant=request.user.tenant
+		if (calltype == 'delete'):
+			with transaction.atomic():
+				try:
+					# warehouse_id=request.data.get('warehouse')
+					invoice_pk=request.GET.get('invoice_id')
+					old_invoice=retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_pk)
+	
+					# warehouse = invoice.warehouse
+					# old_invoice=retail_invoice()
+									
+					all_line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice=old_invoice)
+					
+					#Does this tenant maintain inventory?
+					maintain_inventory=this_tenant.maintain_inventory
+					total_purchase_price=0
+					#saving the invoice_line_item and linking them with foreign key to receipt
+
+					if maintain_inventory:
+						for item in all_line_items:
+							productid=item.product
+							multiplier=item.unit_multi
+							# print(multiplier)
+							try:
+								original_tentative_sales_price=item.tentative_sales_price
+								tentative_sales_price=original_tentative_sales_price/multiplier
+							except:
+								tentative_sales_price=0
+							try:
+								original_mrp=item.mrp
+								mrp=original_mrp/multiplier
+							except:
+								mrp=0
+							product_items=json.loads(item.other_data)['detail']
+							for each_item in product_items:
+								total_purchase_price+=Decimal(each_item['quantity'])*Decimal(each_item['pur_rate'])
+								inventory=Inventory()
+								inventory.product=productid
+								inventory.warehouse=old_invoice.warehouse
+								inventory.purchase_quantity=Decimal(each_item['quantity'])
+								inventory.quantity_available=Decimal(each_item['quantity'])
+								inventory.purchase_date=each_item['date']
+								inventory.purchase_price=Decimal(each_item['pur_rate'])
+								inventory.tentative_sales_price=tentative_sales_price
+								inventory.mrp=mrp
+								inventory.tenant=this_tenant
+								inventory.save()
+
+						#Update Warehouse Valuation
+						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=old_invoice.warehouse)
+						warehouse_valuation_change.valuation+=total_purchase_price
+						warehouse_valuation_change.save()
+							
+						# delete inventory_ledger() - only if you maintain inventory
+						inventory_ledger.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=9,\
+								transaction_bill_id=old_invoice.invoice_id).delete()
+					
+					# delete tax_transaction
+					tax_transaction.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=5,\
+								transaction_bill_id=old_invoice.id).delete()
+					#delete old line items
+					all_line_items.delete()
+
+					#delete all journal entries
+					old_journal=Journal.objects.for_tenant(this_tenant).get(trn_type=7, transaction_bill_id=old_invoice.id)
+					# Update the current balance of all journal related accounts
+					journal_line_items=journal_entry.objects.for_tenant(this_tenant).filter(journal=old_journal)
+					acct_period = accounting_period.objects.for_tenant(this_tenant).get(start__lte=old_journal.date, end__gte=old_journal.date)
+					
+					for item in journal_line_items:
+						trn_type = item.transaction_type
+						account = item.account
+						account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+						if (trn_type == 1):
+							account_journal_year.current_debit=account_journal_year.current_debit-item.value
+						elif (trn_type == 2):
+							account_journal_year.current_credit=account_journal_year.current_credit-item.value
+						account_journal_year.save()
+					old_journal.delete()
+					
+					#delete all inventory journal entries
+					old_journal_inv=journal_inventory.objects.for_tenant(this_tenant).filter(trn_type=7, transaction_bill_id=old_invoice.id)
+					# Update the current balance of all inventory journal related accounts
+					journal_inv_line_items = journal_entry_inventory.objects.for_tenant(this_tenant).filter(journal__in=old_journal_inv)
+					for item in journal_inv_line_items:
+						inventory_acct = item.account
+						account_journal_year=account_year_inventory.objects.get(account_inventory=inventory_acct, accounting_period = acct_period)
+						if (trn_type == 1):
+							account_journal_year.current_debit=account_journal_year.current_debit-item.value
+						elif (trn_type == 2):
+							account_journal_year.current_credit=account_journal_year.current_credit-item.value
+						account_journal_year.save()
+					
+					old_journal_inv.delete()
+					# raise IntegrityError
+
+					old_invoice.delete()
+
+					response_data['success'] = True
 				except:
 					transaction.rollback()
 
@@ -924,4 +1056,19 @@ def invoice_purchase_wise_details(request):
 		
 		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@api_view(['GET',],)
+def sales_summary_graph(request):
+	this_tenant=request.user.tenant
+	try:
+		days = int(request.GET.get('days'))
+	except:
+		days=5
+	end=date_first.date.today()
+	start=end-date_first.timedelta(days=days)
+	sales_daily=retail_sales_day_wise(start, end, this_tenant)
+	jsondata = json.dumps(sales_daily, cls=DjangoJSONEncoder)
+	# print(jsondata)
 	return HttpResponse(jsondata)

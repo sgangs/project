@@ -204,6 +204,7 @@ $('.details').on("click", ".delete", function() {
 
 $(".details").on("keyup", ".qty", function(){
     var el=this;
+    this.title=this.value;
     get_total();
     if (maintain_inventory){
         get_qty_avl(el);
@@ -211,6 +212,7 @@ $(".details").on("keyup", ".qty", function(){
 });
 $(".details").on("keydown", ".qty", function(){
     var el=this;
+    this.title=this.value;
     get_total();
     if (maintain_inventory){
         get_qty_avl(el);
@@ -220,41 +222,53 @@ $(".details").on("keydown", ".qty", function(){
 
 $(".details").on("keyup", ".pr", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".pr", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".dv", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".dv", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".dv2", function(){
     get_total();
+    this.title=this.value;
 });
+
 $(".details").on("keydown", ".dv2", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".mrp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".mrp", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".sr", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".sr", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".freet", function(){
     var el=this;
+    this.title=this.value;
     get_total();
     if (maintain_inventory){
         get_qty_avl(el);
@@ -262,6 +276,7 @@ $(".details").on("keyup", ".freet", function(){
 });
 $(".details").on("keydown", ".freet", function(){
     var el=this;
+    this.title=this.value;
     get_total();
     if (maintain_inventory){
         get_qty_avl(el);
@@ -270,6 +285,7 @@ $(".details").on("keydown", ".freet", function(){
 
 $(".details").on("keyup", ".free", function(){
     var el=this;
+    this.title=this.value;
     if (maintain_inventory){
         get_qty_avl(el);
     }
@@ -277,6 +293,7 @@ $(".details").on("keyup", ".free", function(){
 
 $(".details").on("keydown", ".free", function(){
     var el=this;
+    this.title=this.value;
     if (maintain_inventory){
         get_qty_avl(el);
     }
@@ -284,10 +301,12 @@ $(".details").on("keydown", ".free", function(){
 
 $(".details").on("change", ".dt", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("change", ".dt2", function(){
     get_total();
+    this.title=this.value;
 });
 
 // $( ".gd" ).change(function() {
@@ -304,23 +323,33 @@ $(".details").on("change", ".dt2", function(){
 
 $(".details").on("keyup", ".cgstp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".cgstp", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".sgstp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".sgstp", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".igstp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".igstp", function(){
     get_total();
+    this.title=this.value;
+});
+
+$(".details").on("change", ".name", function(){
+    this.title=this.value;
 });
 
 $(".billdata").on("keyup", ".round", function(){
@@ -341,6 +370,7 @@ $(".details").on("change", ".unit", function(){
     }
     // get_total();
 });
+
 
 function round_manual(argument) {
     subtotal = parseFloat($('.subtotal_receipt').html());

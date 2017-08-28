@@ -63,23 +63,33 @@ def get_tax_report(request):
 	calltype=request.GET.get('calltype')
 	response_data={}
 	if (calltype == 'all_list'):
+		# start=request.GET.get('start')
+		# end=request.GET.get('end')
 		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type',\
 			'tax_percent', 'tax_value','transaction_bill_no','date','is_registered')\
 			.order_by('transaction_type','date','tax_type','tax_percent'))
 	elif (calltype == 'short_summary'):
+		start=request.GET.get('start')
+		end=request.GET.get('end')
 		#This data can also be taken from chart of accounts
 		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type=1,tax_type='CGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
+					filter(transaction_type=1,tax_type='CGST', is_registered=True, date__range=[start,end]).\
+					aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['sgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type=1,tax_type='SGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
+					filter(transaction_type=1,tax_type='SGST', is_registered=True, date__range=[start,end]).\
+					aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['igst_input']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type=1,tax_type='IGST', is_registered=True).aggregate(Sum('tax_value'))['tax_value__sum']
+					filter(transaction_type=1,tax_type='IGST', is_registered=True, date__range=[start,end]).\
+					aggregate(Sum('tax_value'))['tax_value__sum']
 		
-		response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type__in=[2,5],tax_type='CGST').\
+		response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+					filter(transaction_type__in=[2,5],tax_type='CGST', date__range=[start,end]).\
 					aggregate(Sum('tax_value'))['tax_value__sum']
-		response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type__in=[2,5],tax_type='SGST').\
+		response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+					filter(transaction_type__in=[2,5],tax_type='SGST', date__range=[start,end]).\
 					aggregate(Sum('tax_value'))['tax_value__sum']
-		response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).filter(transaction_type=2,tax_type='IGST').\
+		response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+					filter(transaction_type=2,tax_type='IGST', date__range=[start,end]).\
 					aggregate(Sum('tax_value'))['tax_value__sum']
 		
 		if not response_data['cgst_input']:
@@ -99,13 +109,15 @@ def get_tax_report(request):
 		# jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
 		# return HttpResponse(jsondata)
 	elif (calltype == 'apply_filter'):
-		tax_percent=int(request.GET.get('tax_percent'))
-		tax_type=request.GET.get('tax_type')
-		response_data=tax_transaction.objects.for_tenant(request.user.tenant).all()
-		if (tax_percent):
-			response_data=response_data.filter(tax_percent=tax_percent).all()
-		if (tax_type):
-			response_data=response_data.filter(tax_type=tax_type).all()
+		start=request.GET.get('start')
+		end=request.GET.get('end')
+		# tax_percent=int(request.GET.get('tax_percent'))
+		# tax_type=request.GET.get('tax_type')
+		response_data=tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).all()
+		# if (tax_percent):
+			# response_data=response_data.filter(tax_percent=tax_percent, date__range=[start,end]).all()
+		# if (tax_type):
+			# response_data=response_data.filter(tax_type=tax_type, date__range=[start,end]).all()
 		response_data=list(response_data.values('transaction_type','tax_type','tax_percent',\
 			'tax_value','transaction_bill_no','date',).order_by('transaction_type','date','tax_type','tax_percent'))
 

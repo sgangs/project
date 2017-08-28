@@ -3,6 +3,9 @@ $(function(){
 var total_payment=0, page_no=0, incerease = true, decrease=false, all_invoices = true,
     unpaid_invoices = false, overdue_invoices=false, filter_applied=false;
 
+$('.overdue').hide();
+$('.invoice_summary').hide();
+
 load_invoices(1)
 
 $('.all').click(function(){
@@ -51,6 +54,7 @@ function load_invoices(page_no){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $('.invoice_summary').hide();
             $("#receipt_table .data").remove();
             $('#filter').modal('hide');
             
@@ -58,7 +62,7 @@ function load_invoices(page_no){
             
             $('.all').hide();
             $('.unpaid').show();
-            $('.overdue').show();
+            // $('.overdue').show();
             $.each(jsondata['object'], function(){
                 var url='/sales/invoice/detailview/'+this.id+'/'
                 var download_url='/sales/invoice/excel/'+this.id+'/'
@@ -105,11 +109,12 @@ function load_unpaid_invoices(page_no) {
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $('.invoice_summary').hide();
             $("#receipt_table .data").remove();
             all_invoices = false; unpaid_invoices = true; overdue_invoices=false;
             $('.all').show();
             $('.unpaid').hide();
-            $('.overdue').show();
+            // $('.overdue').show();
             $.each(jsondata['object'], function(){
                 var url='/sales/invoice/detailview/'+this.id+'/'
                 var download_url='/sales/invoice/excel/'+this.id+'/'
@@ -260,7 +265,6 @@ $('.apply_filter').click(function(e){
 });
 
 
-
 function filter_data(page_no) {
     var customers=[];
     $.each($(".customer_filter option:selected"), function(){
@@ -309,6 +313,7 @@ function filter_data(page_no) {
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $('.invoice_summary').show();
             filter_applied=true;
             $("#receipt_table .data").remove();
             $('#filter').modal('hide');
@@ -330,6 +335,8 @@ function filter_data(page_no) {
                 "</tr>");
             })
             apply_navbutton(jsondata, page_no);
+            $('.amount_invoiced').html('Rs.'+jsondata['total_value'])
+            $('.amount_pending').html('Rs.'+jsondata['total_pending'])
         },
         // handle a non-successful response
         error : function() {
@@ -340,9 +347,6 @@ function filter_data(page_no) {
 }
 
 $(".add_nav").on("click", ".navbtn", function(){
-    // console.log(unpaid_invoices)
-    // console.log(all_invoices)
-    // console.log(filter_applied)
     if (filter_applied){
         filter_data($(this).val())
     }

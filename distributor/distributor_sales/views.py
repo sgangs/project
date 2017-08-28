@@ -33,7 +33,7 @@ from .excel_download import *
 @api_view(['GET','POST'],)
 def get_product(request):
 	this_tenant=request.user.tenant
-	if request.is_ajax():
+	if request.method == "GET":
 		q = request.GET.get('term', '')
 		products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].select_related('default_unit', \
 			'cgst','sgst','igst')
@@ -69,7 +69,7 @@ def get_product(request):
 @api_view(['GET'],)
 def get_product_inventory(request):
 	this_tenant=request.user.tenant
-	if request.is_ajax():
+	if request.method == "GET":
 		product_id = request.GET.get('product_id')
 		warehouse_id = request.GET.get('warehouse_id')
 		product_quantity=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
@@ -524,6 +524,7 @@ def all_invoices(request):
 		calltype = request.GET.get('calltype')
 		page_no = request.GET.get('page_no')
 		response_data={}
+		filter_data={}
 		if (calltype == 'all_invoices'):
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
 				'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')[:300]
@@ -571,16 +572,16 @@ def all_invoices(request):
 				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
 						values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
 		
-		# elif (calltype == 'apply_filter'):
-		# 	invoices=sales_invoice.objects.for_tenant(this_tenant).filter(invoiceLineItem_salesInvoice__isnull=True).\
-		# 			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
-
-		print(invoices.count())
+			filter_summary=invoices.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
+			filter_data['total_pending'] = filter_summary['pending']
+			filter_data['total_value'] = filter_summary['total_sum']
+		
 		if page_no:
 			response_data =  paginate_data(page_no, 10, list(invoices))
+			response_data.update(filter_data)
 		else:
 			response_data['object']=list(invoices)
-	# print(response_data)	
+			response_data.update(filter_data)
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -843,7 +844,7 @@ def sales_invoice_edit(request):
 								inventory.tenant=this_tenant
 								inventory.save()
 
-							#Update Warehouse Valuation
+						#Update Warehouse Valuation
 						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 						warehouse_valuation_change.valuation+=old_total_purchase_price
 						warehouse_valuation_change.save()
@@ -1123,11 +1124,8 @@ def collection_list(request):
 		page_no=request.GET.get('page_no');
 		response_data={}
 		payments=sales_payment.objects.for_tenant(request.user.tenant).order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
-		# print(payments)
 		payments_paginated=paginate_data(page_no, 10, list(payments))
-		# print(payments_paginated)
 		serializer = CollectionSerializers(payments_paginated['object'], many=True)
-		# serializer = list(payments_paginated['object'].values('payment_mode_name', 'amount_received'))
 		response_data['object']  = serializer.data
 		response_data['end'] = payments_paginated['end']
 		response_data['start'] = payments_paginated['start']
@@ -1642,57 +1640,60 @@ def sales_return_save(request):
 						else:
 							igst_paid[igst_p]=igst_v
 
-
+					is_customer_gst = True if customer_gst else False
 					for k,v in cgst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=3
-							new_tax_transaction.tax_type="CGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.return_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("CGST",3, k, v, new_invoice.id, new_invoice.return_id, date, this_tenant, is_customer_gst)
+							# new_tax_transaction=tax_transaction()
+							# new_tax_transaction.transaction_type=3
+							# new_tax_transaction.tax_type="CGST"
+							# new_tax_transaction.tax_percent=k
+							# new_tax_transaction.tax_value=v
+							# new_tax_transaction.transaction_bill_id=new_invoice.id
+							# new_tax_transaction.transaction_bill_no=new_invoice.return_id
+							# new_tax_transaction.date=date
+							# new_tax_transaction.tenant=this_tenant
+							# if customer_gst:
+								# new_tax_transaction.is_registered = True
+							# else:
+								# new_tax_transaction.is_registered = False
+							# new_tax_transaction.save()
 
 					for k,v in sgst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=3
-							new_tax_transaction.tax_type="SGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.return_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("SGST",3, k, v, new_invoice.id, new_invoice.return_id, date, this_tenant, is_customer_gst)
+							# new_tax_transaction=tax_transaction()
+							# new_tax_transaction.transaction_type=3
+							# new_tax_transaction.tax_type="SGST"
+							# new_tax_transaction.tax_percent=k
+							# new_tax_transaction.tax_value=v
+							# new_tax_transaction.transaction_bill_id=new_invoice.id
+							# new_tax_transaction.transaction_bill_no=new_invoice.return_id
+							# new_tax_transaction.date=date
+							# new_tax_transaction.tenant=this_tenant
+							# if customer_gst:
+								# new_tax_transaction.is_registered = True
+							# else:
+								# new_tax_transaction.is_registered = False
+							# new_tax_transaction.save()
 
 					for k,v in igst_paid.items():
 						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=3
-							new_tax_transaction.tax_type="IGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.return_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							if customer_gst:
-								new_tax_transaction.is_registered = True
-							else:
-								new_tax_transaction.is_registered = False
-							new_tax_transaction.save()
+							new_tax_transaction_sales("IGST",3, k, v, new_invoice.id, new_invoice.return_id, date, this_tenant, is_customer_gst)
+							# new_tax_transaction=tax_transaction()
+							# new_tax_transaction.transaction_type=3
+							# new_tax_transaction.tax_type="IGST"
+							# new_tax_transaction.tax_percent=k
+							# new_tax_transaction.tax_value=v
+							# new_tax_transaction.transaction_bill_id=new_invoice.id
+							# new_tax_transaction.transaction_bill_no=new_invoice.return_id
+							# new_tax_transaction.date=date
+							# new_tax_transaction.tenant=this_tenant
+							# if customer_gst:
+								# new_tax_transaction.is_registered = True
+							# else:
+								# new_tax_transaction.is_registered = False
+							# new_tax_transaction.save()
 
 					#One more journal entry for COGS needs to be done
 					remarks="Sales Return No: "+str(new_invoice.return_id)

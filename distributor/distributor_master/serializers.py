@@ -12,22 +12,6 @@ class CustomerSerializers (serializers.ModelSerializer):
 		model = Customer
 		fields = ('id','name','key', 'address_1','address_2','state','city','pin','phone_no','cst','tin','gst','dl_1','dl_2','details','zone')
 
-	# def update(self, instance, validated_data):
-	# 	instance.name = validated_data.get('name', instance.name)
-	# 	instance.key = validated_data.get('key', instance.key)
-	# 	instance.address_1 = validated_data.get('address_1', instance.address_1)
-	# 	instance.address_2 = validated_data.get('address_2', instance.address_2)
-	# 	instance.state = validated_data.get('state', instance.state)
-	# 	instance.city = validated_data.get('city', instance.city)
-	# 	instance.pin = validated_data.get('pin', instance.pin)
-	# 	instance.phone_no = validated_data.get('phone_no', instance.phone_no)
-	# 	instance.cst = validated_data.get('cst', instance.cst)
-	# 	instance.tin = validated_data.get('tin', instance.tin)
-	# 	instance.gst = validated_data.get('gst', instance.gst)
-	# 	instance.details = validated_data.get('details', instance.details)
-	# 	instance.zone = validated_data.get('zone', instance.zone)
-	# 	return instance
-
 class VendorSerializers (serializers.ModelSerializer):
 	class Meta:
 		model = Customer

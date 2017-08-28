@@ -10,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext
 # from school.id_definition import make_id
 # from school_genadmin.models import Batch
-from .models import Customer, Unit, Product, tax_structure, Zone
+from .models import Customer, Unit, Product, tax_structure, Zone, product_sales_rate
 from distributor.variable_list import state_list
 
 
@@ -68,9 +68,94 @@ def customer_register(excel_data, this_tenant):
     return row_no
 
 
+# def product_register(excel_data, this_tenant):
+#     taxes=tax_structure.objects.for_tenant(this_tenant).all()
+#     len(taxes)
+#     row_no=[]
+#     product_id={}
+#     objects_product = []
+#     tmp = xlrd.open_workbook(file_contents=excel_data.read())
+#     sheet = tmp.sheet_by_index(0)
+#     num_rows = sheet.nrows
+#     unit=Unit.objects.for_tenant(this_tenant).get(name='Number')
+#     for i in range(2, num_rows):
+#         row = sheet.row_values(i)
+#         if (row[0] == None or row[0] == "" or row[2] == None or row[2] == "") :
+#             row_no.append(i+1)
+#         elif (row[2] in product_id):
+#             row_no.append(i+1)
+#         else:
+#             product_id[row[2]]=i
+#             try:
+#                 Product.objects.for_tenant(this_tenant).get(sku=row[2])
+#                 row_no.append(i+1)
+#             except:
+#                 cgst = None
+#                 sgst = None
+#                 igst = None
+#                 hsn = None
+#                 if row[3]:
+#                     try:
+#                         Product.objects.for_tenant(this_tenant).get(barcode=row[3])
+#                         row_no.append(i+1)
+#                     except:
+#                         if row[1]:
+#                             try:
+#                                 hsn=str(int(row[1]))
+#                             except:
+#                                 pass
+#                         if row[4]:
+#                             try:
+#                                 cgst=taxes.get(name=row[4])
+#                             except:
+#                                 pass
+#                         if row[5]:
+#                             try:
+#                                 sgst=taxes.get(name=row[5])
+#                             except:
+#                                 pass
+#                         if row[6]:
+#                             try:
+#                                 igst=taxes.get(name=row[6])
+#                             except:
+#                                 pass
+#                         objects_product.append(Product(name=row[0],hsn_code=hsn, sku=row[2],barcode=row[3], default_unit=unit,\
+#                             cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
+#                 else:
+#                     if row[1]:
+#                             try:
+#                                 hsn=str(int(row[1]))
+#                             except:
+#                                 pass
+#                     if row[4]:
+#                         try:
+#                             cgst=taxes.get(name=row[4])
+#                         except:
+#                             pass
+#                     if row[5]:
+#                         try:
+#                             sgst=taxes.get(name=row[5])
+#                         except:
+#                             pass
+#                     if row[6]:
+#                         try:
+#                             igst=taxes.get(name=row[6])
+#                         except:
+#                             pass
+#                     objects_product.append(Product(name=row[0], hsn_code=hsn, sku=row[2], default_unit=unit,\
+#                         cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
+            
+#     with transaction.atomic():
+#         try:
+#             Product.objects.bulk_create(objects_product)
+#         except:
+#             transaction.rollback()
+#         # print(row)
+#     return row_no
+
+
 def product_register(excel_data, this_tenant):
     taxes=tax_structure.objects.for_tenant(this_tenant).all()
-    len(taxes)
     row_no=[]
     product_id={}
     objects_product = []
@@ -79,6 +164,7 @@ def product_register(excel_data, this_tenant):
     num_rows = sheet.nrows
     unit=Unit.objects.for_tenant(this_tenant).get(name='Number')
     for i in range(2, num_rows):
+        has_rate=False
         row = sheet.row_values(i)
         if (row[0] == None or row[0] == "" or row[2] == None or row[2] == "") :
             row_no.append(i+1)
@@ -87,7 +173,7 @@ def product_register(excel_data, this_tenant):
         else:
             product_id[row[2]]=i
             try:
-                Product.objects.for_tenant(this_tenant).get(sku=row[2])
+                old_product=Product.objects.for_tenant(this_tenant).get(sku=row[2])
                 row_no.append(i+1)
             except:
                 cgst = None
@@ -96,7 +182,7 @@ def product_register(excel_data, this_tenant):
                 hsn = None
                 if row[3]:
                     try:
-                        Product.objects.for_tenant(this_tenant).get(barcode=row[3])
+                        Product.objects.for_tenant(this_tenant).get(barcode=str(row[3]).rstrip('0').rstrip('.'))
                         row_no.append(i+1)
                     except:
                         if row[1]:
@@ -119,8 +205,24 @@ def product_register(excel_data, this_tenant):
                                 igst=taxes.get(name=row[6])
                             except:
                                 pass
-                        objects_product.append(Product(name=row[0],hsn_code=hsn, sku=row[2],barcode=row[3], default_unit=unit,\
-                            cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
+                        if row[7]:
+                            retail_sales_rate=row[7]
+                            has_rate = True
+                        if row[8]:
+                            is_tax=row[8]
+                            if is_tax == 'Y' or is_tax == 'y':
+                                is_tax = True
+                            else:
+                                is_tax = False
+                        else:
+                            is_tax = False
+                            
+                        new_product=Product.objects.create(name=row[0],hsn_code=hsn, sku=row[2],barcode=str(str(row[3]).rstrip('0').rstrip('.')), default_unit=unit,\
+                            cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant)
+
+                        if has_rate:
+                            new_rate=product_sales_rate.objects.create(product=new_product, tentative_sales_rate=retail_sales_rate,\
+                                is_tax_included=is_tax, tenant=this_tenant)
                 else:
                     if row[1]:
                             try:
@@ -142,8 +244,23 @@ def product_register(excel_data, this_tenant):
                             igst=taxes.get(name=row[6])
                         except:
                             pass
-                    objects_product.append(Product(name=row[0], hsn_code=hsn, sku=row[2], default_unit=unit,\
-                        cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant))
+                    if row[7]:
+                        retail_sales_rate=row[7]
+                        has_rate = True
+                    if row[8]:
+                        is_tax=row[8]
+                        if is_tax == 'Y' or is_tax == 'y':
+                            is_tax = True
+                        else:
+                            is_tax = False
+                    else:
+                        is_tax = False
+                    new_product=Product.objects.create(name=row[0],hsn_code=hsn, sku=row[2],barcode=str(row[3]).rstrip('0').rstrip('.'), default_unit=unit,\
+                        cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant)
+
+                    if has_rate:
+                        new_rate=product_sales_rate.objects.create(product=new_product, tentative_sales_rate=retail_sales_rate,\
+                            is_tax_included=is_tax, tenant=this_tenant)
             
     with transaction.atomic():
         try:

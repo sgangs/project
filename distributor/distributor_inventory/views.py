@@ -80,7 +80,7 @@ def opening_inventory(request):
 def opening_inventory_data(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
-		inventories=initial_inventory.objects.for_tenant(this_tenant).all()
+		inventories=initial_inventory.objects.for_tenant(this_tenant).all().order_by('product')
 		serializer = initialInventorySerializers(inventories, many=True)
 		return Response(serializer.data)
 	if request.method == 'POST':
@@ -459,6 +459,7 @@ def product_valuation_movement_template(request):
 
 
 @api_view(['GET','POST'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def get_product(request):
 	this_tenant=request.user.tenant
 	if request.method=='GET':
@@ -476,3 +477,89 @@ def get_product(request):
 		data = 'fail'
 	mimetype = 'application/json'
 	return HttpResponse(data, mimetype)
+
+
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def delete_inventory_view(request):
+	extension="base.html"
+	return render (request, 'inventory/inventory_delete.html',{'extension':extension})
+
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def productwise_opening_inventory(request):
+	this_tenant = request.user.tenant
+	product_id = request.GET.get('product_id')
+	inventory_list = list(initial_inventory.objects.for_tenant(this_tenant).filter(product = product_id).select_related('warehouse').\
+					values('id','warehouse__address_1','warehouse__address_2', 'quantity', 'purchase_price', 'tentative_sales_price', 'mrp'))
+
+	jsondata = json.dumps(inventory_list, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+
+@api_view(['POST'],)
+def delete_opening_inventory(request):
+	this_tenant = request.user.tenant
+	if request.method=='POST':
+		response_data = {}
+		inventory_id_list = json.loads(request.data.get('inventory_id_list'))
+		# revised_qty = request.data.get('revised_qty')
+		# Put this insode atomic transaction
+		proceed = True
+		total_purchase_price = 0
+		with transaction.atomic():
+			try:
+				for each_item in inventory_id_list:
+					# Get revised_qty, inventory_id
+					revised_qty = each_item['revised_qty']
+					inventory_id = each_item['inventory_id']
+					initial_inventory_selected=initial_inventory.objects.for_tenant(this_tenant).get(id = inventory_id)
+					if not revised_qty:
+						proceed = False
+					else:
+						if (revised_qty < 0):
+							raise IntegrityError
+						quantity_reduced = initial_inventory_selected.quantity - revised_qty 
+						product=initial_inventory_selected.product
+						purchase_price = initial_inventory_selected.purchase_price
+						warehouse = initial_inventory_selected.warehouse
+						tsp = initial_inventory_selected.tentative_sales_price
+						mrp = initial_inventory_selected.mrp
+						available_inventory = Inventory.objects.for_tenant(this_tenant).filter(product = product, \
+												quantity_available__gt=0, warehouse = warehouse, \
+												purchase_price = purchase_price, tentative_sales_price = tsp, mrp = mrp).order_by('purchase_date')
+						quantity_reduced_loop = quantity_reduced
+						for item in available_inventory:
+							if item.quantity_available > quantity_reduced_loop:
+								item.quantity_available = item.quantity_available - quantity_reduced_loop
+								total_purchase_price+=purchase_price*quantity_reduced_loop
+								quantity_reduced_loop = 0
+							else:
+								total_purchase_price+=purchase_price*item.quantity_available
+								quantity_reduced_loop-=item.quantity_available
+								item.quantity_available = 0
+							item.save()
+						if quantity_reduced_loop > 0:
+							raise IntegrityError
+						initial_inventory_selected.quantity=revised_qty
+						initial_inventory_selected.save()
+
+				warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+				warehouse_valuation_change.valuation-=total_purchase_price
+				warehouse_valuation_change.save()
+
+				inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+				opening_period=accounting_period.objects.for_tenant(this_tenant).get(is_first_year=True)
+				inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+						get(account_inventory=inventory_acct, accounting_period = opening_period)
+				inventory_acct_year.first_debit-=total_purchase_price
+				inventory_acct_year.opening_debit-=total_purchase_price
+				inventory_acct_year.current_debit-=total_purchase_price
+				inventory_acct_year.save()
+
+				response_data['result'] = True
+				jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+			except:
+				transaction.rollback()
+		return HttpResponse(jsondata)

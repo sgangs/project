@@ -108,30 +108,6 @@ function load_warehouse(){
     });
 }
 
-// load_units()
-// load_customers()
-
-// function load_customers(){
-//     $.ajax({
-//         url : "/master/customer/getdata/", 
-//         type: "GET",
-//         dataType: 'json',
-//         // handle a successful response
-//         success : function(jsondata) {
-//             $.each(jsondata, function(){
-//                 $('#customer').append($('<option>',{
-//                     'data-id': this.id,
-//                     'text': this.name + ": "+ this.key
-//                 }));
-//             });
-//             $('#customer').selectpicker('refresh')
-//         },
-//         // handle a non-successful response
-//         error : function() {
-//             swal("Oops...", "No customer data exist.", "error");
-//         }
-//     });
-// }
 
 $('.details').on("mouseenter", ".first", function() {
     $( this ).children( ".delete" ).show();

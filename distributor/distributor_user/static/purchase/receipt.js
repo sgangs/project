@@ -122,75 +122,100 @@ $('.details').on("click", ".delete", function() {
 
 $(".details").on("keyup", ".qty", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".qty", function(){
     get_total();
+    this.title=this.value;
 });
 
 
 $(".details").on("keyup", ".pr", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".pr", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".dv", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".dv", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".dv2", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".dv2", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".mrp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".mrp", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".freet", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".freet", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("change", ".dt", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("change", ".dt2", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".cgstp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".cgstp", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".sgstp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".sgstp", function(){
     get_total();
+    this.title=this.value;
 });
 
 $(".details").on("keyup", ".igstp", function(){
     get_total();
+    this.title=this.value;
 });
 $(".details").on("keydown", ".igstp", function(){
     get_total();
+    this.title=this.value;
 });
+
+$(".details").on("change", ".name", function(){
+    // console.log('here');
+    this.title=this.value;
+}); 
 
 // $( ".gd" ).change(function() {
 //     get_total();

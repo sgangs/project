@@ -26,7 +26,9 @@ function load_products(){
                     "<td>"+$.trim(this.brand)+"</td>"+
                     "<td>"+$.trim(this.group)+"</td>"+
                     "<td>"+$.trim(this.remarks)+"</td>"+
-                    "<td>"+$.trim(this.rates[0].tentative_sales_rate)+"</td>"+
+                    "<td class='rate'>"+$.trim(this.rates[0].tentative_sales_rate)+"</td>"+
+                    "<td hidden>"+$.trim(this.rates[0].id)+"</td>"+
+                    "<td hidden>"+$.trim(this.rates[0].is_tax_included)+"</td>"+
                     "<td class='add_price'>Click to add sales rate</td>"+
                     "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
                     "</tr>");
@@ -41,7 +43,9 @@ function load_products(){
                     "<td>"+$.trim(this.brand)+"</td>"+
                     "<td>"+$.trim(this.group)+"</td>"+
                     "<td>"+$.trim(this.remarks)+"</td>"+
-                    "<td></td>"+
+                    "<td class='rate'></td>"+
+                    "<td hidden></td>"+
+                    "<td hidden></td>"+
                     "<td class='add_price'>Click to add sales rate</td>"+
                     "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
                     "</tr>");   
@@ -164,6 +168,78 @@ $("#product_table").on("click", ".barcode", function(){
     $('#modal_barcode').modal('show');
 });
 
+$("#product_table").on("click", ".rate", function(){
+    var name=$(this).closest('tr').find('td:nth-child(2)').html();
+    var rate=$(this).closest('tr').find('td:nth-child(9)').html();
+    var rate_id=$(this).closest('tr').find('td:nth-child(10)').html();
+    var rate_is_tax=$(this).closest('tr').find('td:nth-child(11)').html();
+    $('.product_name_update').html(name);
+    $('.retail_rate_update').val(rate);
+    $('.retail_rate_id').html(rate_id);
+
+    $('.is_tax_update').prop('checked', rate_is_tax);
+
+    $('#retailRate').modal('show');
+});
+
+$('.update_rate').click(function(e) {
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure to update the product rate?",
+        type: "warning",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, update product rate!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){update_rate()},600)
+            // console.log("rate update called")            
+        }
+    })
+});
+
+
+function update_rate(){
+    var proceed=true;
+    new_rate=parseFloat($('.retail_rate_update').val());
+    if (isNaN(new_rate) || new_rate<0){
+        proceed = false;
+        swal("Oops...", "Retail Sales Rate must be a number greater than zero.", "error");
+    }
+    rate_id = $('.retail_rate_id').html();
+    is_tax = $('.is_tax_update').is(":checked");
+    // var is_present = $(this).find('td:nth-child(6) input').is(":checked");
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "productdata/" , 
+                type: "POST",
+                data:{new_rate: new_rate,
+                    rate_id: rate_id,
+                    is_tax: is_tax,
+                    calltype: "updaterate",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // handle a successful response
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "Product retail sales rate updated", "success");
+                        setTimeout(location.reload(true),1000);
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }    
+}
 
 
 $( ".has_attribute" ).change(function() {

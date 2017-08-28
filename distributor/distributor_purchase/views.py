@@ -422,7 +422,7 @@ def purchase_receipt_save(request):
 						inventory_acct_year.save()
 						new_journal_inv=journal_inventory()
 						new_journal_inv.date=date
-						new_journal_inv.transaction_bill_no=new_receipt.id
+						new_journal_inv.transaction_bill_id=new_receipt.id
 						new_journal_inv.trn_type=1
 						new_journal_inv.tenant=this_tenant
 						new_journal_inv.save()

@@ -19,11 +19,13 @@ from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from .serializers import *
 
 from distributor_user.models import Tenant
 from distributor_inventory.models import warehouse_valuation
 from distributor.variable_list import state_list
+
+from distributor.global_utils import paginate_data
+from .serializers import *
 from .models import *
 from .forms import *
 from .customer_support import *
@@ -46,8 +48,14 @@ def customer_view(request):
 			customer=Customer.objects.for_tenant(this_tenant).get(id=customerid)
 			serializer = CustomerSerializers(customer)
 		else:
+			page_no=1
 			customers=Customer.objects.for_tenant(this_tenant).order_by('key').all()
+			# customers_paginated=paginate_data(page_no, 2, list(customers))
+			# serializer = CustomerSerializers(customers_paginated['object'], many=True)
 			serializer = CustomerSerializers(customers, many=True)
+			# response_data['object']  = serializer.data
+			# response_data['end'] = payments_paginated['end']
+			# response_data['start'] = payments_paginated['start']
 		return Response(serializer.data)
 	elif request.method == 'POST':
 		calltype = request.data.get('calltype')
@@ -107,7 +115,6 @@ def customer_view(request):
 			dl1=request.data.get('dl1')
 			dl2=request.data.get('dl2')
 			details=request.data.get('details')
-			print(dl1)
 			# zone_id=request.data.get('zone')
 			# if (zone_id):
 				# zone_selected=Zone.objects.for_tenant(this_tenant).get(id=zone_id)
@@ -377,19 +384,18 @@ def product_view(request):
 			product=Product.objects.for_tenant(this_tenant).get(id=productid)
 			serializer = ProductDetailSerializers(product)
 		else:
-			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by('sku', 'name').\
-					select_related('default_unit','brand','group')
+			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
+					select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
 			serializer = ProductSerializers(products, many=True)
 		return Response(serializer.data)
 	elif request.method == 'POST':
 		calltype = request.data.get('calltype')
+		response_data = {}
 		if calltype == 'updateproduct':
-			response_data = {}
 			pk=request.data.get('pk')
 			name=request.data.get('name')
 			sku=request.data.get('sku')
 			barcode=request.data.get('barcode')
-			print(barcode)
 			cgst=request.data.get('cgst')
 			sgst=request.data.get('sgst')
 			igst=request.data.get('igst')
@@ -408,13 +414,14 @@ def product_view(request):
 			if barcode:
 				try:
 					is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
-					print(is_product)
 				except:
 					is_product=''
 				if is_product:
 					if (is_product.id != old_product.id):
 						raise IntegrityError
 				old_product.barcode = barcode
+			else:
+				old_product.barcode = None
 
 
 			if cgst:
@@ -423,9 +430,23 @@ def product_view(request):
 				old_product.sgst=taxes.get(id=sgst)
 			if igst:
 				old_product.igst=taxes.get(id=igst)
-			if hsn:
-				old_product.hsn_code=hsn
+			# if hsn:
+			old_product.hsn_code=hsn
 			old_product.save()
+
+		elif calltype == 'updaterate':
+			rate_id = request.data.get('rate_id')
+			new_rate = Decimal(request.data.get('new_rate'))
+			is_tax = request.data.get('is_tax')
+			if (new_rate > 0):
+				if (is_tax == 'true'):
+					is_tax=True
+				elif (is_tax == 'false'):
+					is_tax=False
+				old_rate=product_sales_rate.objects.get(id=rate_id)
+				old_rate.tentative_sales_rate=new_rate
+				old_rate.is_tax_included=is_tax
+				old_rate.save()
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
@@ -534,53 +555,6 @@ def vendor_data(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
 	zones=Zone.objects.for_tenant(this_tenant).all()
-	# if request.method == 'POST':
-	# 	calltype = request.POST.get('calltype')
-	# 	response_data = {}
-	# 	if (calltype == 'newvendor'):
-	# 		name=request.POST.get('name')
-	# 		key=request.POST.get('key')
-	# 		ismanufac=request.POST.get('ismanufac')
-	# 		address_1=request.POST.get('address_1')
-	# 		address_2=request.POST.get('address_2')
-	# 		state=request.POST.get('state')
-	# 		city=request.POST.get('city')
-	# 		pin=request.POST.get('pin')
-	# 		phone_no=request.POST.get('phone')
-	# 		cst=request.POST.get('cst')
-	# 		tin=request.POST.get('tin')
-	# 		gst=request.POST.get('gst')
-	# 		details=request.POST.get('details')
-	# 		if (ismanufac == 'true'):
-	# 			ismanufac=True
-	# 		elif (ismanufac == 'false'):
-	# 			ismanufac=False
-	# 		with transaction.atomic():
-	# 			try:
-	# 				new_vendor=Vendor()
-	# 				new_vendor.name=name
-	# 				new_vendor.key=key
-	# 				new_vendor.address_1=address_1
-	# 				new_vendor.address_2=address_2
-	# 				new_vendor.state=state
-	# 				new_vendor.city=city
-	# 				new_vendor.pin=pin
-	# 				new_vendor.phone_no=phone_no
-	# 				new_vendor.cst=cst
-	# 				new_vendor.tin=tin
-	# 				new_vendor.gst=gst
-	# 				new_vendor.details=details
-	# 				new_vendor.tenant=this_tenant
-	# 				new_vendor.save()
-	# 				if ismanufac:	
-	# 					new_manufacturer=Manufacturer()
-	# 					new_manufacturer.name=name
-	# 					new_manufacturer.tenant=this_tenant
-	# 					new_manufacturer.save()		
-	# 			except:
-	# 				transaction.rollback()
-	# 	jsondata = json.dumps(response_data)
-	# 	return HttpResponse(jsondata)
 	return render (request, 'master/vendor_list.html',{'states':state_list, 'extension':extension})
 
 
