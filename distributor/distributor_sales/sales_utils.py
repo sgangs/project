@@ -99,18 +99,6 @@ def new_inventory_ledger_sales(product, warehouse, trn_type, date, quantity, pur
 	new_inventory_ledger.tenant=this_tenant
 	new_inventory_ledger.save()
 
-def new_tax_transaction_sales(tax_type, trn_type, percent, value, invoice_pk, invoice_id,  date, this_tenant, is_registered):
-	new_tax_transaction=tax_transaction()
-	new_tax_transaction.transaction_type=trn_type
-	new_tax_transaction.tax_type=tax_type
-	new_tax_transaction.tax_percent=percent
-	new_tax_transaction.tax_value=value
-	new_tax_transaction.transaction_bill_id=invoice_pk
-	new_tax_transaction.transaction_bill_no=invoice_id
-	new_tax_transaction.date=date
-	new_tax_transaction.tenant=this_tenant
-	new_tax_transaction.is_registered = is_registered
-	new_tax_transaction.save()
 
 # def paginate_data(page_no, total_per_page, objects):
 # 	response_data={}

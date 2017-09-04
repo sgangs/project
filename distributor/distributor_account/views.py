@@ -65,9 +65,9 @@ def get_tax_report(request):
 	if (calltype == 'all_list'):
 		# start=request.GET.get('start')
 		# end=request.GET.get('end')
-		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type',\
-			'tax_percent', 'tax_value','transaction_bill_no','date','is_registered')\
-			.order_by('transaction_type','date','tax_type','tax_percent'))
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type','line_wo_tax',\
+			'tax_percent','tax_value','bill_value','date','transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+			.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
 	elif (calltype == 'short_summary'):
 		start=request.GET.get('start')
 		end=request.GET.get('end')

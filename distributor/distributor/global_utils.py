@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
+from distributor_account.models import Account, tax_transaction
 
 
 def paginate_data(page_no, total_per_page, objects):
@@ -20,3 +21,22 @@ def paginate_data(page_no, total_per_page, objects):
 	# response_data['has_previous']=paginator.has_previous()
 	# response_data['has_next']=paginator.has_next()
 	return response_data
+
+
+def new_tax_transaction_register(tax_type, trn_type, percent, tax_value, bill_value, line_wo_tax, \
+					invoice_pk, invoice_id,  date, this_tenant, is_registered, customer_gst=None, customer_state = None):
+	new_tax_transaction=tax_transaction()
+	new_tax_transaction.transaction_type=trn_type
+	new_tax_transaction.tax_type=tax_type
+	new_tax_transaction.tax_percent=percent
+	new_tax_transaction.tax_value=tax_value
+	new_tax_transaction.bill_value=bill_value
+	new_tax_transaction.line_wo_tax=line_wo_tax
+	new_tax_transaction.transaction_bill_id=invoice_pk
+	new_tax_transaction.transaction_bill_no=invoice_id
+	new_tax_transaction.date=date
+	new_tax_transaction.tenant=this_tenant
+	new_tax_transaction.is_registered = is_registered
+	new_tax_transaction.customer_gst=customer_gst
+	new_tax_transaction.customer_state=customer_state
+	new_tax_transaction.save()

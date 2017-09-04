@@ -177,12 +177,12 @@ $(".details").on("keydown", ".freet", function(){
 
 $(".details").on("change", ".dt", function(){
     get_total();
-    this.title=this.value;
+    // this.title=this.value;
 });
 
 $(".details").on("change", ".dt2", function(){
     get_total();
-    this.title=this.value;
+    // this.title=this.value;
 });
 
 $(".details").on("keyup", ".cgstp", function(){

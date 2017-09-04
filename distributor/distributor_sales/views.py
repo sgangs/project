@@ -23,7 +23,7 @@ from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor.variable_list import small_large_limt
 
-from distributor.global_utils import paginate_data
+from distributor.global_utils import paginate_data, new_tax_transaction_register
 from .sales_utils import *
 from .models import *
 from .serializers import *
@@ -102,7 +102,7 @@ def sales_invoice_save(request):
 					final_save = False
 					if (is_final == 'true' or is_final == True):
 						final_save = True
-					# final_save = True
+					is_igst = False
 					
 					# grand_discount_type=request.POST.get('grand_discount_type')
 					# try:
@@ -139,6 +139,7 @@ def sales_invoice_save(request):
 					customer_state=customer.state
 					customer_city=customer.city
 					customer_pin=customer.pin
+					customer_gst=customer.gst
 					
 					ware_address=warehouse.address_1+", "+warehouse.address_2
 					ware_state=warehouse.state
@@ -156,7 +157,7 @@ def sales_invoice_save(request):
 					new_invoice.customer_state=customer_state
 					new_invoice.customer_city=customer_city
 					new_invoice.customer_pin=customer_pin
-					new_invoice.customer_gst=customer.gst
+					new_invoice.customer_gst=customer_gst
 					new_invoice.dl_1=customer.dl_1
 					new_invoice.dl_2=customer.dl_2
 
@@ -225,7 +226,6 @@ def sales_invoice_save(request):
 							serial_no=data['serial_no']
 						except:
 							serial_no=''
-
 						discount_type=data['disc_type']
 						discount_value=Decimal(data['disc'])
 						discount_type_2=data['disc_type_2']
@@ -363,35 +363,58 @@ def sales_invoice_save(request):
 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 							warehouse_valuation_change.valuation-=total_purchase_price
 							warehouse_valuation_change.save()
+						if (is_igst):
+							if (igst_p in igst_paid):
+								igst_paid[igst_p][0]+=igst_v
+								igst_paid[igst_p][1]=total
+								igst_paid[igst_p][2]+=line_taxable_total
+							else:
+								igst_paid[igst_p]=[igst_v, total, line_taxable_total]
+						else:
+							if (cgst_p in cgst_paid):
+								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][1]=total
+								cgst_paid[cgst_p][2]+=line_taxable_total
+							else:
+								cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
+							if (sgst_p in sgst_paid):
+								sgst_paid[sgst_p][0]+=sgst_v
+								sgst_paid[sgst_p][1]=total
+								sgst_paid[sgst_p][2]+=line_taxable_total
+							else:
+								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
 
-						if (cgst_p in cgst_paid):
-							cgst_paid[cgst_p]+=cgst_v
-						else:
-							cgst_paid[cgst_p]=cgst_v
-						if (sgst_p in sgst_paid):
-							sgst_paid[sgst_p]+=sgst_v
-						else:
-							sgst_paid[sgst_p]=sgst_v
-						if (igst_p in igst_paid):
-							igst_paid[igst_p]+=igst_v
-						else:
-							igst_paid[igst_p]=igst_v
 
 					#create tax transactions.
 					#tax_transaction(cgst_paid, sgst_paid, igst_paid, 2, new_invoice.id, new_invoice.invoice_id, date, this_tenant, customer_gst)
 					is_customer_gst = True if customer_gst else False
-					for k,v in cgst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("CGST",2, k, v, new_invoice.id, new_invoice.invoice_id, date, this_tenant, is_customer_gst)
+					if (is_igst):
+						for k,v in igst_paid.items():
+							try:
+								if v[2]>0:
+									new_tax_transaction_register("IGST",2, k, v[0],v[1],v[2], new_invoice.id,\
+										new_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
+							except:
+								pass
+					else:
+						for k,v in cgst_paid.items():
+							print(k)
+							print(v)
+							try:
+								if v[2]>0:
+									new_tax_transaction_register("CGST",2, k, v[0],v[1],v[2], new_invoice.id, \
+										new_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
+							except:
+								pass
 
-					for k,v in sgst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("SGST",2, k, v, new_invoice.id, new_invoice.invoice_id, date, this_tenant, is_customer_gst)
+						for k,v in sgst_paid.items():
+							try:
+								if v[2]>0:
+									new_tax_transaction_register("SGST",2, k, v[0],v[1],v[2], new_invoice.id,\
+										new_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
+							except:
+								pass
 
-					for k,v in igst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("IGST",2, k, v, new_invoice.id, new_invoice.invoice_id, date, this_tenant, is_customer_gst)
-							
 							# new_tax_transaction=tax_transaction()
 							# new_tax_transaction.transaction_type=2
 							# new_tax_transaction.tax_type="IGST"
@@ -764,6 +787,7 @@ def sales_invoice_edit(request):
 			with transaction.atomic():
 				try:
 					final_save = False
+					is_igst = False
 					invoice_id = request.data.get('invoiceid')
 					# date=request.data.get('date')
 
@@ -802,6 +826,7 @@ def sales_invoice_edit(request):
 					igst_total=0
 
 					customer_gst=old_invoice.customer.gst
+					customer_state=old_invoice.customer.state
 
 					#Does this tenant maintain inventory?
 					maintain_inventory=this_tenant.maintain_inventory
@@ -1009,31 +1034,45 @@ def sales_invoice_edit(request):
 							warehouse_valuation_change.valuation-=total_purchase_price
 							warehouse_valuation_change.save()
 
-						if (cgst_p in cgst_paid):
-							cgst_paid[cgst_p]+=cgst_v
+						if (is_igst):
+							if (igst_p in igst_paid):
+								[igst_p][0]+=igst_v
+								igst_paid[igst_p][1]=total
+								igst_paid[igst_p][2]+=line_taxable_total
+							else:
+								igst_paid[igst_p]=[igst_v, total, line_taxable_total]
 						else:
-							cgst_paid[cgst_p]=cgst_v
-						if (sgst_p in sgst_paid):
-							sgst_paid[sgst_p]+=sgst_v
-						else:
-							sgst_paid[sgst_p]=sgst_v
-						if (igst_p in igst_paid):
-							igst_paid[igst_p]+=igst_v
-						else:
-							igst_paid[igst_p]=igst_v
+							if (cgst_p in cgst_paid):
+								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][1]=total
+								cgst_paid[cgst_p][2]+=line_taxable_total
+							else:
+								cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
+
+							if (sgst_p in sgst_paid):
+								[sgst_p][0]+=sgst_v
+								sgst_paid[sgst_p][1]=total
+								cgst_paid[cgst_p][2]+=line_taxable_total
+							else:
+								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
+						
 
 					is_customer_gst = True if customer_gst else False
-					for k,v in cgst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("CGST",2, k, v, old_invoice.id, old_invoice.invoice_id, date, this_tenant, is_customer_gst)
+					if (is_igst):
+						for k,v in igst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("IGST",2, k, v[0],v[1], v[2], old_invoice.id,\
+									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
+					else:
+						for k,v in cgst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("CGST",2, k, v[0],v[1], v[2], old_invoice.id,\
+									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
-					for k,v in sgst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("SGST",2, k, v, old_invoice.id, old_invoice.invoice_id, date, this_tenant, is_customer_gst)
-
-					for k,v in igst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("IGST",2, k, v, old_invoice.id, old_invoice.invoice_id, date, this_tenant, is_customer_gst)
+						for k,v in sgst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("SGST",2, k, v[0],v[1], v[2], old_invoice.id,\
+									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
 					#One more journal entry for COGS needs to be done
 					if (final_save):
@@ -1407,6 +1446,7 @@ def finalize_open_invoices(request):
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
+#Check before allowing it
 @api_view(['POST'],)
 def sales_return_save(request):
 	if request.method == 'POST':
@@ -1416,6 +1456,8 @@ def sales_return_save(request):
 		if (calltype == 'save'):
 			with transaction.atomic():
 				try:
+					is_igst = False
+
 					invoice_id = request.data.get('invoiceid')
 					date=request.data.get('date')
 					
@@ -1431,6 +1473,9 @@ def sales_return_save(request):
 					bill_data = json.loads(request.data.get('bill_details'))
 
 					invoice = sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
+
+					customer_gst = invoice.customer.gst
+					customer_state = invoice.customer.state
 					
 					new_invoice=sales_return()
 					new_invoice.tenant=this_tenant
@@ -1441,10 +1486,10 @@ def sales_return_save(request):
 					new_invoice.customer=invoice.customer
 					new_invoice.customer_name=invoice.customer_name
 					new_invoice.customer_address=invoice.customer_address
-					new_invoice.customer_state=invoice.customer_state
+					new_invoice.customer_state=customer_state
 					new_invoice.customer_city=invoice.customer_city
 					new_invoice.customer_pin=invoice.customer_pin
-					new_invoice.customer_gst=invoice.customer.gst
+					new_invoice.customer_gst=customer_gst
 
 					new_invoice.warehouse=invoice.warehouse
 					new_invoice.warehouse_address=invoice.warehouse_address
@@ -1585,7 +1630,6 @@ def sales_return_save(request):
 						line_item.quantity_returned+=original_quantity
 						line_item.save()
 
-
 						LineItem = return_line_item()
 						LineItem.sales_return = new_invoice
 						LineItem.product= product
@@ -1627,73 +1671,59 @@ def sales_return_save(request):
 							warehouse_valuation_change.valuation+=total_purchase_price
 							warehouse_valuation_change.save()
 
-						if (cgst_p in cgst_paid):
-							cgst_paid[cgst_p]+=cgst_v
+						if (is_igst):
+							if (igst_p in igst_paid):
+								[igst_p][0]+=igst_v
+								igst_paid[igst_p][1]=total
+								igst_paid[igst_p][2]+=line_taxable_total
+							else:
+								igst_paid[igst_p]=[igst_v, total, line_taxable_total]
 						else:
-							cgst_paid[cgst_p]=cgst_v
-						if (sgst_p in sgst_paid):
-							sgst_paid[sgst_p]+=sgst_v
-						else:
-							sgst_paid[sgst_p]=sgst_v
-						if (igst_p in igst_paid):
-							igst_paid[igst_p]+=igst_v
-						else:
-							igst_paid[igst_p]=igst_v
+							if (cgst_p in cgst_paid):
+								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][1]=total
+								cgst_paid[cgst_p][2]+=line_taxable_total
+							else:
+								cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
+
+							if (sgst_p in sgst_paid):
+								[sgst_p][0]+=sgst_v
+								sgst_paid[sgst_p][1]=total
+								sgst_paid[sgst_p][2]+=line_taxable_total
+							else:
+								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
 
 					is_customer_gst = True if customer_gst else False
-					for k,v in cgst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("CGST",3, k, v, new_invoice.id, new_invoice.return_id, date, this_tenant, is_customer_gst)
-							# new_tax_transaction=tax_transaction()
-							# new_tax_transaction.transaction_type=3
-							# new_tax_transaction.tax_type="CGST"
-							# new_tax_transaction.tax_percent=k
-							# new_tax_transaction.tax_value=v
-							# new_tax_transaction.transaction_bill_id=new_invoice.id
-							# new_tax_transaction.transaction_bill_no=new_invoice.return_id
-							# new_tax_transaction.date=date
-							# new_tax_transaction.tenant=this_tenant
-							# if customer_gst:
-								# new_tax_transaction.is_registered = True
-							# else:
-								# new_tax_transaction.is_registered = False
-							# new_tax_transaction.save()
 
-					for k,v in sgst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("SGST",3, k, v, new_invoice.id, new_invoice.return_id, date, this_tenant, is_customer_gst)
-							# new_tax_transaction=tax_transaction()
-							# new_tax_transaction.transaction_type=3
-							# new_tax_transaction.tax_type="SGST"
-							# new_tax_transaction.tax_percent=k
-							# new_tax_transaction.tax_value=v
-							# new_tax_transaction.transaction_bill_id=new_invoice.id
-							# new_tax_transaction.transaction_bill_no=new_invoice.return_id
-							# new_tax_transaction.date=date
-							# new_tax_transaction.tenant=this_tenant
-							# if customer_gst:
-								# new_tax_transaction.is_registered = True
-							# else:
-								# new_tax_transaction.is_registered = False
-							# new_tax_transaction.save()
+					if (is_igst):
+						for k,v in igst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("IGST",3, k, v[0], v[1], v[2],new_invoice.id,\
+									new_invoice.return_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
+					else:
+						for k,v in cgst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("CGST",3, k, v[0], v[1], v[2], new_invoice.id, \
+									new_invoice.return_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
+								# new_tax_transaction=tax_transaction()
+								# new_tax_transaction.transaction_type=3
+								# new_tax_transaction.tax_type="CGST"
+								# new_tax_transaction.tax_percent=k
+								# new_tax_transaction.tax_value=v
+								# new_tax_transaction.transaction_bill_id=new_invoice.id
+								# new_tax_transaction.transaction_bill_no=new_invoice.return_id
+								# new_tax_transaction.date=date
+								# new_tax_transaction.tenant=this_tenant
+								# if customer_gst:
+									# new_tax_transaction.is_registered = True
+								# else:
+									# new_tax_transaction.is_registered = False
+								# new_tax_transaction.save()
 
-					for k,v in igst_paid.items():
-						if v>0:
-							new_tax_transaction_sales("IGST",3, k, v, new_invoice.id, new_invoice.return_id, date, this_tenant, is_customer_gst)
-							# new_tax_transaction=tax_transaction()
-							# new_tax_transaction.transaction_type=3
-							# new_tax_transaction.tax_type="IGST"
-							# new_tax_transaction.tax_percent=k
-							# new_tax_transaction.tax_value=v
-							# new_tax_transaction.transaction_bill_id=new_invoice.id
-							# new_tax_transaction.transaction_bill_no=new_invoice.return_id
-							# new_tax_transaction.date=date
-							# new_tax_transaction.tenant=this_tenant
-							# if customer_gst:
-								# new_tax_transaction.is_registered = True
-							# else:
-								# new_tax_transaction.is_registered = False
-							# new_tax_transaction.save()
+						for k,v in sgst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("SGST",3, k, v[0], v[1], v[2],new_invoice.id,\
+									new_invoice.return_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
 					#One more journal entry for COGS needs to be done
 					remarks="Sales Return No: "+str(new_invoice.return_id)

@@ -301,12 +301,12 @@ $(".details").on("keydown", ".free", function(){
 
 $(".details").on("change", ".dt", function(){
     get_total();
-    this.title=this.value;
+    // this.title=this.value;
 });
 
-$(".details").on("change", ".dt2", function(){
+$(".details").on("change", ".discount_type2", function(){
     get_total();
-    this.title=this.value;
+    // this.title=this.value;
 });
 
 // $( ".gd" ).change(function() {

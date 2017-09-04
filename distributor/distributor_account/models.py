@@ -9,6 +9,7 @@ from datetime import datetime
 from distributor_user.models import Tenant
 from distributor.variable_list import account_type_general
 from distributor_master.models import Product
+from distributor.variable_list import state_list
 
 
 class TenantManager(models.Manager):
@@ -334,8 +335,13 @@ class tax_transaction(models.Model):
 	tax_type=models.CharField(db_index=True, max_length=5) #CGST/SGST/IGST
 	tax_percent=models.DecimalField(max_digits=5, db_index=True, decimal_places=2, default=0)
 	tax_value=models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	line_wo_tax=models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	bill_value=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	customer_gst=models.CharField(max_length=20, blank=True, null=True)
+	customer_state=models.CharField(max_length=4,choices=state_list, blank=True, null=True)
+	# customer_name=models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
-	transaction_bill_no=models.BigIntegerField(blank=True, null=True)
+	transaction_bill_no=models.CharField(db_index=True, max_length=16,blank=True, null=True)
 	date=models.DateField(db_index=True)
 	# is_conciled=models.BooleanField(default=False)
 	is_registered=models.BooleanField(default=True)

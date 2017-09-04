@@ -408,6 +408,7 @@ def sales_invoice_save(request):
 							new_tax_transaction.transaction_bill_id=new_invoice.id
 							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
 							new_tax_transaction.date=date
+							new_tax_transaction.is_registered=False
 							new_tax_transaction.tenant=this_tenant
 							new_tax_transaction.save()
 
@@ -421,6 +422,7 @@ def sales_invoice_save(request):
 							new_tax_transaction.transaction_bill_id=new_invoice.id
 							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
 							new_tax_transaction.date=date
+							new_tax_transaction.is_registered=False
 							new_tax_transaction.tenant=this_tenant
 							new_tax_transaction.save()
 
@@ -1070,5 +1072,4 @@ def sales_summary_graph(request):
 	start=end-date_first.timedelta(days=days)
 	sales_daily=retail_sales_day_wise(start, end, this_tenant)
 	jsondata = json.dumps(sales_daily, cls=DjangoJSONEncoder)
-	# print(jsondata)
 	return HttpResponse(jsondata)
