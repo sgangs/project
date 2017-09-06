@@ -398,8 +398,6 @@ def sales_invoice_save(request):
 								pass
 					else:
 						for k,v in cgst_paid.items():
-							print(k)
-							print(v)
 							try:
 								if v[2]>0:
 									new_tax_transaction_register("CGST",2, k, v[0],v[1],v[2], new_invoice.id, \

@@ -296,6 +296,8 @@ def sales_invoice_save(request):
 						actual_sales_price=Decimal(original_actual_sales_price/multiplier)
 						
 						original_quantity=int(data['quantity'])
+						this_taxable_total=Decimal(data['taxable_total'])
+						print(this_taxable_total)
 						quantity=original_quantity*multiplier
 						if maintain_inventory:
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
@@ -499,113 +501,113 @@ def sales_invoice_save(request):
 
 @api_view(['GET'],)
 def sales_invoice_delete(request):
-	if request.method == 'GET':
-		calltype = request.GET.get('calltype')
-		response_data = {}
-		this_tenant=request.user.tenant
-		if (calltype == 'delete'):
-			with transaction.atomic():
-				try:
-					# warehouse_id=request.data.get('warehouse')
-					invoice_pk=request.GET.get('invoice_id')
-					old_invoice=retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_pk)
-	
-					# warehouse = invoice.warehouse
-					# old_invoice=retail_invoice()
-									
-					all_line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice=old_invoice)
-					
-					#Does this tenant maintain inventory?
-					maintain_inventory=this_tenant.maintain_inventory
-					total_purchase_price=0
-					#saving the invoice_line_item and linking them with foreign key to receipt
+		if request.method == 'GET':
+			calltype = request.GET.get('calltype')
+			response_data = {}
+			this_tenant=request.user.tenant
+			if (calltype == 'delete'):
+				with transaction.atomic():
+					try:
+						# warehouse_id=request.data.get('warehouse')
+						invoice_pk=request.GET.get('invoice_id')
+						old_invoice=retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_pk)
+		
+						# warehouse = invoice.warehouse
+						# old_invoice=retail_invoice()
+										
+						all_line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice=old_invoice)
+						
+						#Does this tenant maintain inventory?
+						maintain_inventory=this_tenant.maintain_inventory
+						total_purchase_price=0
+						#saving the invoice_line_item and linking them with foreign key to receipt
 
-					if maintain_inventory:
-						for item in all_line_items:
-							productid=item.product
-							multiplier=item.unit_multi
-							# print(multiplier)
-							try:
-								original_tentative_sales_price=item.tentative_sales_price
-								tentative_sales_price=original_tentative_sales_price/multiplier
-							except:
-								tentative_sales_price=0
-							try:
-								original_mrp=item.mrp
-								mrp=original_mrp/multiplier
-							except:
-								mrp=0
-							product_items=json.loads(item.other_data)['detail']
-							for each_item in product_items:
-								total_purchase_price+=Decimal(each_item['quantity'])*Decimal(each_item['pur_rate'])
-								inventory=Inventory()
-								inventory.product=productid
-								inventory.warehouse=old_invoice.warehouse
-								inventory.purchase_quantity=Decimal(each_item['quantity'])
-								inventory.quantity_available=Decimal(each_item['quantity'])
-								inventory.purchase_date=each_item['date']
-								inventory.purchase_price=Decimal(each_item['pur_rate'])
-								inventory.tentative_sales_price=tentative_sales_price
-								inventory.mrp=mrp
-								inventory.tenant=this_tenant
-								inventory.save()
+						if maintain_inventory:
+							for item in all_line_items:
+								productid=item.product
+								multiplier=item.unit_multi
+								# print(multiplier)
+								try:
+									original_tentative_sales_price=item.tentative_sales_price
+									tentative_sales_price=original_tentative_sales_price/multiplier
+								except:
+									tentative_sales_price=0
+								try:
+									original_mrp=item.mrp
+									mrp=original_mrp/multiplier
+								except:
+									mrp=0
+								product_items=json.loads(item.other_data)['detail']
+								for each_item in product_items:
+									total_purchase_price+=Decimal(each_item['quantity'])*Decimal(each_item['pur_rate'])
+									inventory=Inventory()
+									inventory.product=productid
+									inventory.warehouse=old_invoice.warehouse
+									inventory.purchase_quantity=Decimal(each_item['quantity'])
+									inventory.quantity_available=Decimal(each_item['quantity'])
+									inventory.purchase_date=each_item['date']
+									inventory.purchase_price=Decimal(each_item['pur_rate'])
+									inventory.tentative_sales_price=tentative_sales_price
+									inventory.mrp=mrp
+									inventory.tenant=this_tenant
+									inventory.save()
 
-						#Update Warehouse Valuation
-						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=old_invoice.warehouse)
-						warehouse_valuation_change.valuation+=total_purchase_price
-						warehouse_valuation_change.save()
-							
-						# delete inventory_ledger() - only if you maintain inventory
-						inventory_ledger.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=9,\
-								transaction_bill_id=old_invoice.invoice_id).delete()
-					
-					# delete tax_transaction
-					tax_transaction.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=5,\
-								transaction_bill_id=old_invoice.id).delete()
-					#delete old line items
-					all_line_items.delete()
+							#Update Warehouse Valuation
+							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=old_invoice.warehouse)
+							warehouse_valuation_change.valuation+=total_purchase_price
+							warehouse_valuation_change.save()
+								
+							# delete inventory_ledger() - only if you maintain inventory
+							inventory_ledger.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=9,\
+									transaction_bill_id=old_invoice.invoice_id).delete()
+						
+						# delete tax_transaction
+						tax_transaction.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=5,\
+									transaction_bill_id=old_invoice.id).delete()
+						#delete old line items
+						all_line_items.delete()
 
-					#delete all journal entries
-					old_journal=Journal.objects.for_tenant(this_tenant).get(trn_type=7, transaction_bill_id=old_invoice.id)
-					# Update the current balance of all journal related accounts
-					journal_line_items=journal_entry.objects.for_tenant(this_tenant).filter(journal=old_journal)
-					acct_period = accounting_period.objects.for_tenant(this_tenant).get(start__lte=old_journal.date, end__gte=old_journal.date)
-					
-					for item in journal_line_items:
-						trn_type = item.transaction_type
-						account = item.account
-						account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
-						if (trn_type == 1):
-							account_journal_year.current_debit=account_journal_year.current_debit-item.value
-						elif (trn_type == 2):
-							account_journal_year.current_credit=account_journal_year.current_credit-item.value
-						account_journal_year.save()
-					old_journal.delete()
-					
-					#delete all inventory journal entries
-					old_journal_inv=journal_inventory.objects.for_tenant(this_tenant).filter(trn_type=7, transaction_bill_id=old_invoice.id)
-					# Update the current balance of all inventory journal related accounts
-					journal_inv_line_items = journal_entry_inventory.objects.for_tenant(this_tenant).filter(journal__in=old_journal_inv)
-					for item in journal_inv_line_items:
-						inventory_acct = item.account
-						account_journal_year=account_year_inventory.objects.get(account_inventory=inventory_acct, accounting_period = acct_period)
-						if (trn_type == 1):
-							account_journal_year.current_debit=account_journal_year.current_debit-item.value
-						elif (trn_type == 2):
-							account_journal_year.current_credit=account_journal_year.current_credit-item.value
-						account_journal_year.save()
-					
-					old_journal_inv.delete()
-					# raise IntegrityError
+						#delete all journal entries
+						old_journal=Journal.objects.for_tenant(this_tenant).get(trn_type=7, transaction_bill_id=old_invoice.id)
+						# Update the current balance of all journal related accounts
+						journal_line_items=journal_entry.objects.for_tenant(this_tenant).filter(journal=old_journal)
+						acct_period = accounting_period.objects.for_tenant(this_tenant).get(start__lte=old_journal.date, end__gte=old_journal.date)
+						
+						for item in journal_line_items:
+							trn_type = item.transaction_type
+							account = item.account
+							account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+							if (trn_type == 1):
+								account_journal_year.current_debit=account_journal_year.current_debit-item.value
+							elif (trn_type == 2):
+								account_journal_year.current_credit=account_journal_year.current_credit-item.value
+							account_journal_year.save()
+						old_journal.delete()
+						
+						#delete all inventory journal entries
+						old_journal_inv=journal_inventory.objects.for_tenant(this_tenant).filter(trn_type=7, transaction_bill_id=old_invoice.id)
+						# Update the current balance of all inventory journal related accounts
+						journal_inv_line_items = journal_entry_inventory.objects.for_tenant(this_tenant).filter(journal__in=old_journal_inv)
+						for item in journal_inv_line_items:
+							inventory_acct = item.account
+							account_journal_year=account_year_inventory.objects.get(account_inventory=inventory_acct, accounting_period = acct_period)
+							if (trn_type == 1):
+								account_journal_year.current_debit=account_journal_year.current_debit-item.value
+							elif (trn_type == 2):
+								account_journal_year.current_credit=account_journal_year.current_credit-item.value
+							account_journal_year.save()
+						
+						old_journal_inv.delete()
+						# raise IntegrityError
 
-					old_invoice.delete()
+						old_invoice.delete()
 
-					response_data['success'] = True
-				except:
-					transaction.rollback()
+						response_data['success'] = True
+					except:
+						transaction.rollback()
 
-		jsondata = json.dumps(response_data)
-		return HttpResponse(jsondata)
+			jsondata = json.dumps(response_data)
+			return HttpResponse(jsondata)
 
 
 @api_view(['GET', 'POST'],)

@@ -14,7 +14,6 @@ $('.apply_reset').click(function(){
 });
 
 function apply_navbutton(jsondata, page_no){
-    console.log(jsondata);
     $('.navbtn').remove()
     for (i =jsondata['start']+1; i<=jsondata['end']; i++){
         if (i==page_no){
@@ -48,10 +47,12 @@ function load_receipts(page_no){
             $.each(jsondata['object'], function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
                 var download_url='/purchase/receipt/excel/'+this.id+'/'
+                var this_id=this.id
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
+                "<td hidden='true'>"+this_id+"</td>"+
                 "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
                 "<td>"+this.supplier_invoice+"</td>"+
                 "<td>"+date+"</td>"+
@@ -61,6 +62,7 @@ function load_receipts(page_no){
                 "<td>"+this.amount_paid+"</td>"+
                 "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
                         "</i> Download Excel Format</button></a></td>"+
+                "<td class='delete' style='text-decoration: underline; cursor: pointer'>Delete Invoice</td>"+
                 "</tr>");
             })
 
@@ -95,10 +97,12 @@ function load_unpaid_receipts(page_no) {
             $.each(jsondata['object'], function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
                 var download_url='/purchase/receipt/excel/'+this.id+'/'
+                var this_id=this.id
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
+                "<td hidden='true'>"+this_id+"</td>"+
                 "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
                 "<td>"+this.supplier_invoice+"</td>"+
                 "<td>"+date+"</td>"+
@@ -108,6 +112,7 @@ function load_unpaid_receipts(page_no) {
                 "<td>"+this.amount_paid+"</td>"+
                 "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
                         "</i> Download Excel Format</button></a></td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>Delete Invoice</td>"+
                 "</tr>");
             })
 
@@ -200,10 +205,12 @@ function filter_data(page_no) {
             $.each(jsondata['object'], function(){
                 var url='/purchase/receipt/detailview/'+this.id+'/'
                 var download_url='/purchase/receipt/excel/'+this.id+'/'
+                var this_id=this.id
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
+                "<td hidden='true'>"+this_id+"</td>"+
                 "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
                 "<td>"+this.supplier_invoice+"</td>"+
                 "<td>"+date+"</td>"+
@@ -213,6 +220,7 @@ function filter_data(page_no) {
                 "<td>"+this.amount_paid+"</td>"+
                 "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
                         "</i> Download Excel Format</button></a></td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>Delete Invoice</td>"+
                 "</tr>");
             })
 
@@ -244,9 +252,59 @@ $(".add_nav").on("click", ".navbtn", function(){
 $("#receipt_table").on("click", ".link", function(){
     // console.log('here');
     get_url=$(this).closest('tr').find('td:nth-child(1)').html();
-    console.log(get_url)
     location.href = get_url;
 });
+
+
+$("#receipt_table").on("click", ".delete", function(){
+    // console.log('here');
+    get_id=$(this).closest('tr').find('td:nth-child(2)').html();
+    paid=$(this).closest('tr').find('td:nth-child(9)').html();
+    if (paid == 0.00){
+        swal({
+            title: "Are you sure?",
+            text: "Are you sure you want to delete the invoice?",
+            type: "warning",
+            showCancelButton: true,
+          // confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete invoice!",
+            closeOnConfirm: true,
+            closeOnCancel: true,
+            html: false
+        }, function(isConfirm){
+            if (isConfirm){
+                setTimeout(function(){delete_invoice(get_id)},600)            
+            }
+        })
+    }
+    else{
+        swal("Err...", "Purchase invoice against which payment has been made cannot be deleted", "warning");
+    }
+    console.log(paid);
+    
+});
+
+function delete_invoice(get_id){
+    console.log(get_id);
+    $.ajax({
+        url : "/purchase/receipt/delete/", 
+        type: "POST",
+        data:{calltype: "delete",
+            receipt_pk: get_id,
+            csrfmiddlewaretoken: csrf_token},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            swal("Hooray", "Purchase invoice deleted.", "success");
+            setTimeout(location.reload(true),1000);
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "There were some error. Please try again later.", "error");
+        }
+    });
+}
+
 
 load_metadata()
 
@@ -317,15 +375,19 @@ $('.vendor').change(function() {
                 url : "listall/", 
                 type: "GET",
                 data:{ vendorid: vendorid,
+                    page_no: 1,
                     calltype:"vendor_pending"},
                 dataType: 'json',               
                         // handle a successful response
                         // +'/purchase/receipt/detailview/'+this.id+
                 success : function(jsondata) {
+                    console.log(jsondata);
                     $("#payment_table .payment_data").remove();
                     $('.detaildiv').attr('hidden',false);
                     $('.register').attr('disabled',false);
-                    $.each(jsondata, function(){
+                    $.each(jsondata['object'], function(){
+                        console.log(this);
+                        console.log("here");
                         pending=parseFloat(this.total) - parseFloat(this.amount_paid)
                         $('#payment_table').append("<tr class='payment_data' align='center'>"+
                         "<td hidden='true'>"+this.id+"</td>"+

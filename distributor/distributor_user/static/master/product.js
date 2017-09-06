@@ -16,6 +16,7 @@ function load_products(){
         success : function(jsondata) {
             $.each(jsondata, function(){
                 var url='/inventory/barcode/'+this.id+'/'
+                // console.log(url)
                 if ($.trim(this.rates).length>0){
                     $('#product_table').append("<tr class='data' align='center'>"+
                     "<td hidden='true'>"+this.id+"</td>"+
@@ -159,13 +160,14 @@ function load_attribute(){
 
 
 $("#product_table").on("click", ".barcode", function(){
-    var newurl=$(this).closest('tr').find('td:nth-child(11) a').attr('href');
+    var newurl=$(this).closest('tr').find('td:nth-child(13) a').attr('href');
     $('a.barcodetag').attr('href', newurl);
     productid=$(this).closest('tr').find('td:nth-child(1)').html();
     productname=$(this).closest('tr').find('td:nth-child(2)').html();
     $('.id_barcode').val(productid)
     $('.name_barcode').val(productname)
     $('#modal_barcode').modal('show');
+    // console.log(newurl);
 });
 
 $("#product_table").on("click", ".rate", function(){

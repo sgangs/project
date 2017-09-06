@@ -257,7 +257,7 @@ $('.finalizebtn').click(function(){
         html: true,
     }, function(isConfirm){
         if (isConfirm){
-            setTimeout(function(){reconfirm("Finalize")},600)            
+            setTimeout(function(){reconfirm("Finalize")},600)         
         }
     })    
 });
@@ -345,6 +345,7 @@ function post_data(calltype){
             // handle a successful response
             success : function(jsondata) {
                 swal("Hooray...", "Invoice status updated and saved.", "success");
+                setTimeout(location.reload(true),1000);
             },
             // handle a non-successful response
             error : function() {
