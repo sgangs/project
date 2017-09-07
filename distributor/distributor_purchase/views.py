@@ -628,6 +628,7 @@ def debit_note_return_view(request):
 def delete_purchase(request):
 	this_tenant = request.user.tenant
 	response_data = {}
+	#Write unit test to check round off issue.
 	#delete only if amount paid  = 0
 	#search & delete available inventory. If not avialable raise error.
 	if request.method == 'POST':
@@ -649,11 +650,14 @@ def delete_purchase(request):
 								productid=each_item.product
 								multiplier=each_item.unit_multi
 								
-								original_purchase_price=each_item.purchase_price
-								purchase_price=original_purchase_price/multiplier
+								print(multiplier)
 								
+								original_purchase_price=each_item.purchase_price
+								purchase_price=round(original_purchase_price/multiplier,2)
+								print(purchase_price)
+
 								original_quantity=each_item.quantity
-								quantity=original_quantity*multiplier
+								quantity=round(original_quantity*multiplier,2)
 								
 								discount_type = each_item.discount_type
 								discount_value = each_item.discount_value
@@ -663,7 +667,7 @@ def delete_purchase(request):
 
 								try:
 									original_tentative_sales_price=each_item.tentative_sales_price
-									tentative_sales_price=original_tentative_sales_price/multiplier
+									tentative_sales_price=round(original_tentative_sales_price/multiplier,2)
 								except:
 									tentative_sales_price=0
 								
@@ -680,9 +684,11 @@ def delete_purchase(request):
 									elif(discount_type_2 == 2):
 										purchase_price=(purchase_price-discount_value_2/quantity)
 
+								purchase_price = round(purchase_price,2)
+
 								try:
 									original_mrp=each_item.mrp
-									mrp=original_mrp/multiplier
+									mrp=round(original_mrp/multiplier,2)
 								except:
 									mrp=0
 								
