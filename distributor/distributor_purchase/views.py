@@ -316,11 +316,13 @@ def purchase_receipt_save(request):
 								inventory.mrp=mrp
 								inventory.tenant=this_tenant
 								inventory.save()
-							create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
-								purchase_price, mrp,new_receipt.receipt_id, this_tenant)
-							if total_free>0:
+								#For free item
 								create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
 								0, mrp,new_receipt.receipt_id, this_tenant)
+
+
+							create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
+								purchase_price, mrp,new_receipt.receipt_id, this_tenant)								
 							
 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 							warehouse_valuation_change.valuation+=quantity*purchase_price
@@ -638,36 +640,55 @@ def delete_purchase(request):
 					maintain_inventory = this_tenant.maintain_inventory
 					warehouse = old_receipt.warehouse
 					amount_paid = old_receipt.amount_paid
+					purchase_date = old_receipt.date
 					total_purchase_price = 0
 					if (amount_paid == 0):
 						all_line_items=receipt_line_item.objects.for_tenant(this_tenant).filter(purchase_receipt=old_receipt)
 						if maintain_inventory:
-							for item in all_line_items:
-								productid=item.product
-								multiplier=item.unit_multi
+							for each_item in all_line_items:
+								productid=each_item.product
+								multiplier=each_item.unit_multi
 								
-								original_purchase_price=item.purchase_price
+								original_purchase_price=each_item.purchase_price
 								purchase_price=original_purchase_price/multiplier
 								
-								original_quantity=item.quantity
+								original_quantity=each_item.quantity
 								quantity=original_quantity*multiplier
 								
+								discount_type = each_item.discount_type
+								discount_value = each_item.discount_value
+								discount_type_2 = each_item.discount2_type
+								discount_value_2 = each_item.discount2_value
+								total_free = each_item.free_with_tax
 
 								try:
-									original_tentative_sales_price=item.tentative_sales_price
+									original_tentative_sales_price=each_item.tentative_sales_price
 									tentative_sales_price=original_tentative_sales_price/multiplier
 								except:
 									tentative_sales_price=0
 								
+								
+								if discount_value:									
+									if (discount_type == 1):
+										purchase_price=(purchase_price)-(discount_value*purchase_price/100)
+									elif(discount_type == 2):
+										purchase_price=(purchase_price-discount_value/quantity)
+								
+								if discount_value_2:
+									if (discount_type_2 == 1):
+										purchase_price=(purchase_price)-(discount_value_2*purchase_price/100)
+									elif(discount_type_2 == 2):
+										purchase_price=(purchase_price-discount_value_2/quantity)
+
 								try:
-									original_mrp=item.mrp
+									original_mrp=each_item.mrp
 									mrp=original_mrp/multiplier
 								except:
 									mrp=0
 								
 								total_purchase_price+=quantity*purchase_price
 								
-								product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
+								product_list=Inventory.objects.for_tenant(this_tenant).filter(purchase_date = purchase_date, quantity_available__gt=0,\
 												product=productid, warehouse=warehouse, purchase_price=purchase_price,\
 												tentative_sales_price=tentative_sales_price, mrp=mrp).order_by('purchase_date')
 								quantity_updated=quantity
@@ -689,6 +710,31 @@ def delete_purchase(request):
 										quantity_updated=0								
 								if (quantity_updated>0):
 									raise IntegrityError
+								
+								if (total_free >0):
+									product_list=Inventory.objects.for_tenant(this_tenant).filter(purchase_date = purchase_date, \
+												quantity_available__gt=0,product=productid, warehouse=warehouse, purchase_price=0,\
+												tentative_sales_price=tentative_sales_price, mrp=mrp).order_by('purchase_date')
+									quantity_updated=total_free
+									for item in product_list:
+										if (quantity_updated==0):
+											break
+										original_available=item.quantity_available
+										if (quantity_updated>=original_available):
+											item.quantity_available=0
+											# products_cost+=item.purchase_price*original_available
+											
+											quantity_updated-=original_available
+											item.delete()
+													
+										else:
+											item.quantity_available-=quantity_updated
+											# products_cost+=item.purchase_price*quantity_updated
+											item.save()
+											quantity_updated=0								
+									if (quantity_updated>0):
+										raise IntegrityError
+
 
 							#Update Warehouse Valuation
 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
@@ -727,7 +773,8 @@ def delete_purchase(request):
 							journal_inv_line_items = journal_entry_inventory.objects.for_tenant(this_tenant).filter(journal__in=old_journal_inv)
 							for item in journal_inv_line_items:
 								inventory_acct = item.account
-								inventory_acct_year=account_year_inventory.objects.get(account_inventory=inventory_acct, accounting_period = acct_period)
+								inventory_acct_year=account_year_inventory.objects.get(account_inventory=inventory_acct,\
+										accounting_period = acct_period)
 								if (trn_type == 1):
 									inventory_acct_year.current_debit=inventory_acct_year.current_debit-item.value
 								elif (trn_type == 2):
@@ -746,8 +793,9 @@ def delete_purchase(request):
 				except:
 					transaction.rollback()
 		
-		jsondata = json.dumps(response_data)
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
+
 
 @login_required
 @api_view(['GET','POST'],)
