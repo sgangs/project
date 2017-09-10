@@ -1,0 +1,88 @@
+{% extends extension %}
+
+{%block title%}
+
+<title>Distributor Sales HSN Report</title>
+
+<link href="https://fonts.googleapis.com/css?family=Crimson+Text:400,700" rel="stylesheet">
+
+{% endblock %} 
+
+{% block content%}
+	
+
+
+<div>
+	<h3>Distributor Sales HSN Report</h3>
+</div>
+<br>
+<br>
+
+<div class="row">
+	<div class="form-group col-xs-4">
+		<label class="control-label">Select Date Range</label>				 
+		<input type="text" class="form-control date_range">
+	</div>
+	<div class="form-group col-xs-2 col-xs-offset-2" >
+		<label>Click to get data</label>
+		<p><button type="submit" class="btn btn-primary btn-sm get_data"><i class="fa fa-refresh"></i> Get HSN Report</button></p>
+	</div>	
+</div>
+
+<div class="table-responsive">
+    	<table class="table table-striped table-bordered table-hover" id="report_table">
+      	<thead class="thead-inverse header-background">
+        	<tr>
+	            <th class="text-center">HSN Number</th>
+	            <th class="text-center">Total Quantity Sold</th>
+	            <th class="text-center">Total Sales Value</th>
+	            <th class="text-center">Taxable Value</th>
+	            <th class="text-center">IGST Value</th>
+	            <th class="text-center">CGST Value</th>
+	            <th class="text-center">SGST Value</th>
+	            <!-- <th class="text-center">Tax Amount</th> -->
+	        </tr>
+		</thead>
+        <tbody>
+        </tbody>
+  	</table> 
+</div>
+
+<div class="prev_next">
+<ul class='add_nav'>
+    <span class="clear_both"></span>
+</ul>
+</div>
+
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+
+<!-- Bootstrap Daterangepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.js"></script>
+
+
+{% load static from staticfiles %}
+
+<script src="{% static 'sales/hsn_report.js' %}"></script>
+
+<script>
+	csrf_token='{{csrf_token}}';
+	$('.date').datepicker({
+	    autoclose: true,
+	    // endDate: '0d',
+	     todayHighlight: true,
+	    format: 'dd/mm/yyyy',    
+	});
+	$(".date").datepicker("setDate", new Date());
+</script>
+
+{% endblock %}
+
+
+

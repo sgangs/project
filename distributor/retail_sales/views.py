@@ -23,6 +23,7 @@ from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor.variable_list import small_large_limt
 
+from distributor.global_utils import paginate_data, new_tax_transaction_register
 from .sales_utils import *
 from .models import *
 
@@ -31,6 +32,12 @@ from .models import *
 def new_sales_invoice(request):
 	return render(request,'retail_sales/invoice.html', {'extension': 'base.html'})
 
+@api_view(['GET',],)
+def get_payment_mode(request):
+	payment_modes=list(payment_mode.objects.for_tenant(request.user.tenant).exclude(name__in=["Vendor Debit", "Customer Credit"]).\
+				values('id','name', 'default').order_by('default'))
+	jsondata = json.dumps(payment_modes,  cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
 
 @api_view(['GET','POST'],)
 def get_product(request):
@@ -270,7 +277,7 @@ def sales_invoice_save(request):
 							serial_no=''
 
 						discount_amount=data['discount_amount']
-						# line_taxable_total=Decimal(data['taxable_total'])
+						line_taxable_total=Decimal(data['taxable_total'])
 						line_total=Decimal(data['line_total'])
 
 						cgst_p=Decimal(data['cgst_p'])
@@ -366,7 +373,8 @@ def sales_invoice_save(request):
 						if maintain_inventory:
 							LineItem.other_data=price_list_json
 						LineItem.discount_amount=discount_amount
-						LineItem.line_before_tax=line_total - cgst_v - sgst_v
+						# LineItem.line_before_tax=line_total - cgst_v - sgst_v
+						LineItem.line_before_tax=line_taxable_total
 						LineItem.line_total=line_total
 						LineItem.tenant=this_tenant
 						LineItem.save()
@@ -390,43 +398,70 @@ def sales_invoice_save(request):
 							warehouse_valuation_change.valuation-=total_purchase_price
 							warehouse_valuation_change.save()
 
-						if (cgst_p in sgst_paid):
-							cgst_paid[cgst_p]+=cgst_v
+						# if (cgst_p in sgst_paid):
+						# 	cgst_paid[cgst_p]+=cgst_v
+						# else:
+						# 	cgst_paid[cgst_p]=cgst_v
+						# if (sgst_p in sgst_paid):
+						# 	sgst_paid[sgst_p]+=sgst_v
+						# else:
+						# 	sgst_paid[sgst_p]=sgst_v
+
+						if (cgst_p in cgst_paid):
+							[cgst_p][0]+=cgst_v
+							cgst_paid[cgst_p][1]=total
+							cgst_paid[cgst_p][2]+=line_taxable_total
 						else:
-							cgst_paid[cgst_p]=cgst_v
+							cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
 						if (sgst_p in sgst_paid):
-							sgst_paid[sgst_p]+=sgst_v
+							sgst_paid[sgst_p][0]+=sgst_v
+							sgst_paid[sgst_p][1]=total
+							sgst_paid[sgst_p][2]+=line_taxable_total
 						else:
-							sgst_paid[sgst_p]=sgst_v
+							sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
 						
 
 					for k,v in cgst_paid.items():
-						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=5
-							new_tax_transaction.tax_type="CGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.is_registered=False
-							new_tax_transaction.tenant=this_tenant
-							new_tax_transaction.save()
+						# if v>0:
+						# 	new_tax_transaction=tax_transaction()
+						# 	new_tax_transaction.transaction_type=5
+						# 	new_tax_transaction.tax_type="CGST"
+						# 	new_tax_transaction.tax_percent=k
+						# 	new_tax_transaction.tax_value=v
+						# 	new_tax_transaction.transaction_bill_id=new_invoice.id
+						# 	new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+						# 	new_tax_transaction.date=date
+						# 	new_tax_transaction.is_registered=False
+						# 	new_tax_transaction.tenant=this_tenant
+						# 	new_tax_transaction.save()
+
+						try:
+							if v[2]>0:
+								new_tax_transaction_register("CGST",5, k, v[0],v[1],v[2], new_invoice.id, \
+									new_invoice.invoice_id, date, this_tenant, False, customer_gst=None, customer_state=ware_state)
+						except:
+							pass
 
 					for k,v in sgst_paid.items():
-						if v>0:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=5
-							new_tax_transaction.tax_type="SGST"
-							new_tax_transaction.tax_percent=k
-							new_tax_transaction.tax_value=v
-							new_tax_transaction.transaction_bill_id=new_invoice.id
-							new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-							new_tax_transaction.date=date
-							new_tax_transaction.is_registered=False
-							new_tax_transaction.tenant=this_tenant
-							new_tax_transaction.save()
+						# if v>0:
+						# 	new_tax_transaction=tax_transaction()
+						# 	new_tax_transaction.transaction_type=5
+						# 	new_tax_transaction.tax_type="SGST"
+						# 	new_tax_transaction.tax_percent=k
+						# 	new_tax_transaction.tax_value=v
+						# 	new_tax_transaction.transaction_bill_id=new_invoice.id
+						# 	new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
+						# 	new_tax_transaction.date=date
+						# 	new_tax_transaction.is_registered=False
+						# 	new_tax_transaction.tenant=this_tenant
+						# 	new_tax_transaction.save()
+
+						try:
+							if v[2]>0:
+								new_tax_transaction_register("SGST",5, k, v[0],v[1],v[2], new_invoice.id,\
+									new_invoice.invoice_id, date, this_tenant, False, customer_gst=None, customer_state=ware_state)
+						except:
+							pass
 
 					#One more journal entry for COGS needs to be done
 					remarks="Retail Invoice No: "+str(new_invoice.invoice_id)

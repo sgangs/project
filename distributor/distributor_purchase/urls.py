@@ -29,5 +29,7 @@ urlpatterns = [
     
     url(r'^purchase_graph/$', views.purchase_crossfilter, name='purchase_crossfilter'),
     url(r'^purchase_graph/data/$', views.receipts_crossfilter, name='receipts_crossfilter'),
+
+    url(r'^hsnreport/$', views.get_hsn_report, name='get_hsn_report'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

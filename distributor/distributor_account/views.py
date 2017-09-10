@@ -113,13 +113,15 @@ def get_tax_report(request):
 		end=request.GET.get('end')
 		# tax_percent=int(request.GET.get('tax_percent'))
 		# tax_type=request.GET.get('tax_type')
-		response_data=tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).all()
+		# response_data=tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).all()
 		# if (tax_percent):
 			# response_data=response_data.filter(tax_percent=tax_percent, date__range=[start,end]).all()
 		# if (tax_type):
 			# response_data=response_data.filter(tax_type=tax_type, date__range=[start,end]).all()
-		response_data=list(response_data.values('transaction_type','tax_type',\
-			'tax_percent', 'tax_value','transaction_bill_no','date','is_registered').order_by('transaction_type','date','tax_type','tax_percent'))
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end])\
+			.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+			'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+			.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

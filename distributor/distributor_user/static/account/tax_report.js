@@ -64,11 +64,13 @@ function load_list(){
         success : function(jsondata) {
             $(".tax_details .data").remove();
             $.each(jsondata, function(){
+                date=this.date.split("-").reverse().join("-")
+                
                 $('.tax_details').append("<tr class='data' align='center'>"+
                 "<td hidden='true'></td>"+
                 "<td>"+transactions[parseInt(this.transaction_type) - 1]+"</td>"+
                 "<td>"+this.transaction_bill_no+"</td>"+
-                "<td>"+this.date+"</td>"+
+                "<td>"+date+"</td>"+
                 "<td>"+this.bill_value+"</td>"+
                 "<td>"+this.customer_state+"</td>"+
                 "<td>"+this.tax_type+"</td>"+
@@ -154,18 +156,25 @@ function filter_data() {
             console.log(jsondata);
 
             $.each(jsondata, function(){
+                date=this.date.split("-").reverse().join("-")
+                
                 $('.tax_details').append("<tr class='data' align='center'>"+
                 "<td hidden='true'></td>"+
-                "<td>"+this.transaction_bill_no+"</td>"+
                 "<td>"+transactions[parseInt(this.transaction_type) - 1]+"</td>"+
+                "<td>"+this.transaction_bill_no+"</td>"+
+                "<td>"+date+"</td>"+
+                "<td>"+this.bill_value+"</td>"+
+                "<td>"+this.customer_state+"</td>"+
                 "<td>"+this.tax_type+"</td>"+
                 "<td>"+this.tax_percent+ "%</td>"+
+                "<td>"+this.line_wo_tax+"</td>"+
                 "<td>"+this.tax_value+"</td>"+
                 "<td>"+this.is_registered+"</td>"+
-                
+                "<td>"+$.trim(this.customer_gst)+"</td>"+
                 // "<td>"+this.total+"</td>"+
                 // "<td>"+this.amount_paid+"</td>"+
                 "</tr>");
+
             })
         },
         // handle a non-successful response

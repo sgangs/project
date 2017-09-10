@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import json
@@ -717,6 +717,7 @@ def payment_register(request):
 	this_tenant=request.user.tenant
 	if request.method == 'POST':
 		response_data=[]
+		total_amount_collected= 0
 		customerid = request.data.get('customerid')
 		modeid = request.data.get('modeid')
 		date = request.data.get('date')
@@ -725,6 +726,7 @@ def payment_register(request):
 		invoiceids=""
 		cheque_rtgs_all=""
 		payment_pk={}
+		cheque_rtgs_checker = []
 		total_amount_received=0
 		with transaction.atomic():
 			try:
@@ -752,9 +754,13 @@ def payment_register(request):
 					# new_purchase_payment.remarks=remarks
 					new_sales_payment.tenant=this_tenant
 					new_sales_payment.save()
+					total_amount_collected+= amount_received
 					invoiceids+= str(invoice.invoice_id)+", "
-					cheque_rtgs_all+= cheque_rtgs_number+", "
+					if not cheque_rtgs_number in cheque_rtgs_checker:
+						cheque_rtgs_checker.append(cheque_rtgs_number)
+						cheque_rtgs_all+= cheque_rtgs_number+", "
 					payment_pk[str(invoice.invoice_id)]=new_sales_payment.id
+				
 				payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
 				if len(cheque_rtgs_all)>0:
 					invoiceids+= "Cheque No:  "+cheque_rtgs_all
@@ -762,8 +768,8 @@ def payment_register(request):
 				journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
 					,trn_id=new_sales_payment.id, trn_type=5, other_data=payment_json)
 				account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
-				new_journal_entry(this_tenant, journal, amount_received, account, 2, date)
-				new_journal_entry(this_tenant, journal, amount_received, mode.payment_account, 1, date)
+				new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date)
+				new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
 
 			except:
 				transaction.rollback()
@@ -1871,4 +1877,59 @@ def sales_report_data(request):
 	return HttpResponse(jsondata)
 
 
+@login_required
+def customer_wise_sales(request):
+	return render(request,'sales/customer_wise_sales.html', {'extension': 'base.html'})
+
+
+@login_required
+def customer_wise_sales_data(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		# customerid = request.GET.get('customerid')
+		customerid=14
+		# start=request.GET.get('start')
+		# end=request.GET.get('end')
+		# page_no=1
+		end=date_first.date.today()
+		start=end-date_first.timedelta(days=120)
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], customer=customerid)
+
+		all_items=invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice__in = invoices).select_related('product').\
+							values('product', 'product_name').annotate(taxable_value=Sum('line_tax'), total_amount=Sum('line_total'), \
+								quantities=Sum(F('quantity') * F('unit_multi'))).order_by('product')
+		
+	response_data={}
+	# if page_no:
+		# response_data =  paginate_data(page_no, 10, list(all_items))
+	# else:
+	response_data['object']=list(all_items)
+		
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
 	
+@login_required
+def hsn_report(request):
+	extension="base.html"
+	return render (request, 'sales/hsn_report.html',{'extension':extension})
+
+@api_view(['GET'],)
+def get_hsn_report(request):
+	this_tenant=request.user.tenant
+	calltype=request.GET.get('calltype')
+	response_data={}
+	if (calltype == 'apply_filter'):
+		start=request.GET.get('start')
+		end=request.GET.get('end')
+		invoices=sales_invoice.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).all()
+		all_items=invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice__in = invoices).values('product_hsn').\
+					annotate(taxable_value=Sum('line_tax'), total_amount=Sum('line_total'),cgst_amount=Sum('cgst_value'), \
+					igst_amount=Sum('igst_value'), quantities=Sum(F('quantity') * F('unit_multi')) - Sum(F('quantity_returned') * F('unit_multi'))).\
+					order_by('product_hsn')
+	
+	response_data['object']=list(all_items)
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

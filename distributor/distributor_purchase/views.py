@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -499,8 +499,7 @@ def all_receipts(request):
 			vendor=Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
 			# print(vendor)
 			receipts=purchase_receipt.objects.for_tenant(this_tenant).filter(vendor=vendor, final_payment_date__isnull=True).\
-				values('id','receipt_id', 'supplier_invoice', \
-				'date','vendor_name','total', 'amount_paid', 'payable_by')
+				values('id','receipt_id', 'supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by')
 		# response_data = list(receipts)
 
 		# page_no = 1
@@ -573,12 +572,17 @@ def payment_register(request):
 		date = request.data.get('date')
 		payment_details = json.loads(request.data.get('payment_details'))
 		mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
-		for item in payment_details:
-			purchase_receipt_id=item['receipt_pk']
-			amount_paid=Decimal(item['amount'])
-			# cheque_rtgs_number=item['cheque_rtgs_number']
-			with transaction.atomic():
-				try:
+		total_payment=0
+		invoiceids=""
+		cheque_rtgs_all=""
+		payment_pk={}
+		cheque_rtgs_checker = []
+		with transaction.atomic():
+			try:
+				for item in payment_details:
+					purchase_receipt_id=item['receipt_pk']
+					amount_paid=Decimal(item['amount'])
+					cheque_rtgs_number=item['cheque_rtgs_number']
 					receipt=purchase_receipt.objects.for_tenant(this_tenant).get(id=purchase_receipt_id)
 					receipt.amount_paid+=amount_paid
 					if (round(receipt.total - receipt.amount_paid) == 0):
@@ -590,20 +594,34 @@ def payment_register(request):
 					new_purchase_payment.payment_mode_name=mode.name
 					new_purchase_payment.purchase_receipt=receipt
 					new_purchase_payment.amount_paid=amount_paid
-					# new_purchase_payment.cheque_rtgs_number=cheque_rtgs_number
+					new_purchase_payment.cheque_rtgs_number=cheque_rtgs_number
 					new_purchase_payment.paid_on=date
 					# new_purchase_payment.remarks=remarks
 					new_purchase_payment.tenant=this_tenant
 					new_purchase_payment.save()
 
-					journal=new_journal(this_tenant,date,group_name="Purchase",\
-						remarks='Payment Against: '+str(receipt.receipt_id), trn_id=new_purchase_payment.id, trn_type=2)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					new_journal_entry(this_tenant, journal, amount_paid, account, 1, date)
-					new_journal_entry(this_tenant, journal, amount_paid, mode.payment_account, 2, date)
+					total_payment+= amount_paid
+					invoiceids+= str(receipt.supplier_invoice)+", "
+					
+					if not cheque_rtgs_number in cheque_rtgs_checker:
+						cheque_rtgs_checker.append(cheque_rtgs_number)
+						cheque_rtgs_all+= str(cheque_rtgs_number)+", "
+					payment_pk[str(receipt.supplier_invoice)]=new_purchase_payment.id
+
+
+				payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+
+				if len(cheque_rtgs_all)>0:
+					invoiceids+= "Cheque No:  "+cheque_rtgs_all
+
+				journal=new_journal(this_tenant,date,group_name="Purchase",\
+					remarks='Payment Against: '+invoiceids, trn_id=new_purchase_payment.id, trn_type=2, other_data=payment_json)
+				account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+				new_journal_entry(this_tenant, journal, total_payment, account, 1, date)
+				new_journal_entry(this_tenant, journal, total_payment, mode.payment_account, 2, date)
 				
-				except:
-					transaction.rollback()
+			except:
+				transaction.rollback()
 
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
@@ -1036,4 +1054,43 @@ def receipts_crossfilter(request):
 
 		jsondata = json.dumps(line_items, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
+
+
+@login_required
+def hsn_report(request):
+	extension="base.html"
+	return render (request, 'account/tax_report.html',{'extension':extension})
+
+@api_view(['GET'],)
+def get_hsn_report(request):
+	this_tenant=request.user.tenant
+	calltype=request.GET.get('calltype')
+	calltype = 'all_list'
+	response_data={}
+	if (calltype == 'all_list'):
+		all_items=receipt_line_item.objects.for_tenant(this_tenant).values('product_hsn').\
+							annotate(taxable_value=Sum('line_tax'), total_amount=Sum('line_total'), \
+							quantities=Sum(F('quantity') * F('unit_multi')) - Sum(F('quantity_returned') * F('unit_multi'))).order_by('product_hsn')
+	
+	# elif (calltype == 'apply_filter'):
+	# 	start=request.GET.get('start')
+	# 	end=request.GET.get('end')
+	# 	# tax_percent=int(request.GET.get('tax_percent'))
+	# 	# tax_type=request.GET.get('tax_type')
+	# 	all_items=tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).all()
+	# 	# if (tax_percent):
+	# 		# response_data=response_data.filter(tax_percent=tax_percent, date__range=[start,end]).all()
+	# 	# if (tax_type):
+	# 		# response_data=response_data.filter(tax_type=tax_type, date__range=[start,end]).all()
+	# 	all_items=list(response_data.values('transaction_type','tax_type',\
+	# 		'tax_percent', 'tax_value','transaction_bill_no','date','is_registered').order_by('transaction_type','date','tax_type','tax_percent'))
+
+	response_data={}
+	# if page_no:
+		# response_data =  paginate_data(page_no, 10, list(all_items))
+	# else:
+	response_data['object']=list(all_items)
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
 		

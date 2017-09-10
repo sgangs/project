@@ -22,6 +22,8 @@ urlpatterns = [
     
     url(r'^invoice/delete/$', views.sales_invoice_delete, name='sales_invoice_delete'),
 
+    url(r'^paymentmode/$', views.get_payment_mode, name='get_payment_mode'),
+
     url(r'^invoice/salesreturn$', views.sales_return_view, name='sales_return_view'),
     url(r'^invoice/salesreturn/data/$', views.get_return_data, name='get_return_data'),
     url(r'^invoice/salesreturn/save/$', views.sales_return_save, name='sales_return_save'),

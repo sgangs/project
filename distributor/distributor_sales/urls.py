@@ -40,5 +40,11 @@ urlpatterns = [
     
     url(r'^salesreport/$', views.sales_report, name='sales_report'),
     url(r'^salesreport/data/$', views.sales_report_data, name='sales_report_data'),
+    
+    url(r'^salesreport/customerwise/$', views.customer_wise_sales, name='customer_wise_sales'),
+    url(r'^salesreport/customerwise/data/$', views.customer_wise_sales_data, name='customer_wise_sales_data'),
+
+    url(r'^hsnreport/$', views.hsn_report, name='hsn_report'),
+    url(r'^hsnreport/data/$', views.get_hsn_report, name='get_hsn_report'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
 ]

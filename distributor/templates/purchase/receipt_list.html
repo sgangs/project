@@ -112,13 +112,14 @@
 				      	<thead class="thead-inverse header-background">
 				        	<tr>
 					            <th class="text-center" hidden></th>
-					            <th class="text-center">Receipt No.</th>
-					            <th class="text-center">Vendor Invoice No</th>
-					            <th class="text-center">Receipt Value</th>
-					            <th class="text-center">Amount Already Paid</th>
-					            <th class="text-center">Amount Pending</th>
-					            <th class="text-center">Is paymnent made agains this receipt?</th>
+					            <th class="text-center">Receipt No</th>
+					            <th class="text-center">Receipt Date</th>
+					            <th class="text-center">Value</th>
+					            <th class="text-center" hidden>Amount Already Paid</th>
+					            <th class="text-center">Pending</th>
+					            <th class="text-center">Select Receipt</th>
 					            <th class="text-center">Amount Currently Paid</th>
+					            <th class="text-center">Cheque/NEFT/RTS No</th>
 							</tr>
 						</thead>
 					</table>
@@ -141,6 +142,10 @@
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
+		    	<div class="form-group datediv">
+					<label for="classname" class="control-label">Filter By Date Range</label>
+					<input type="text" class="form-control date_range">
+				</div>
 		    	<div class="form-group vendordiv">
 					<label for="classname" class="control-label">Select Vendor</label>
 					<select class="form-control selectpicker vendor_filter" id="vendor_filter" multiple data-live-search="true">
@@ -149,11 +154,7 @@
 				<div class="form-group invoicediv">
 					<label for="classname" class="control-label">Filter by Vendor Invoice No</label>
 					<input type="text" class="form-control invoice_no">
-				</div>
-				<div class="form-group datediv">
-					<label for="classname" class="control-label">Filter By Date Range</label>
-					<input type="text" class="form-control date_range">
-				</div>
+				</div>				
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
@@ -206,6 +207,21 @@ $('.date_payment').datepicker({
 $(".date_payment").datepicker("setDate", new Date());
 
 </script>
+
+<style type="text/css">
+	.modal-dialog {
+	width: 80%;
+	height: 80%;
+	margin: auto;
+	padding: 5%;
+}
+
+.modal-content {
+	height: auto;
+	min-height: 80%;
+	border-radius: 0;
+}
+</style>
 
 {% endblock %}
 

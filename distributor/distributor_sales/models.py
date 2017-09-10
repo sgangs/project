@@ -21,7 +21,7 @@ class sales_invoice(models.Model):
 	date=models.DateField(default=dt.date.today)
 	customer=models.ForeignKey(Customer,blank=True, null=True,\
 						related_name='salesInvoice_sales_master_customer', on_delete=models.SET_NULL)
-	customer_name=models.CharField(db_index=True, max_length=200)
+	customer_name=models.CharField(max_length=200)
 	customer_address=models.TextField(blank=True, null=True)
 	customer_state=models.CharField(max_length=4,blank=True, null=True)
 	customer_city=models.CharField(max_length=50, blank=True, null=True)
@@ -100,7 +100,7 @@ class invoice_line_item(models.Model):
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
-	product_hsn=models.CharField(max_length=20, blank=True, null=True)
+	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	vat_type=models.CharField(max_length =15)
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
@@ -173,7 +173,7 @@ class sales_return(models.Model):
 	date=models.DateField(default=dt.date.today)
 	customer=models.ForeignKey(Customer,blank=True, null=True,\
 						related_name='salesReturn_sales_master_customer', on_delete=models.SET_NULL)
-	customer_name=models.CharField(db_index=True, max_length=200)
+	customer_name=models.CharField(max_length=200)
 	customer_address=models.TextField(blank=True, null=True)
 	customer_state=models.CharField(max_length=4,blank=True, null=True)
 	customer_city=models.CharField(max_length=50, blank=True, null=True)
@@ -240,7 +240,7 @@ class return_line_item(models.Model):
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
-	product_hsn=models.CharField(max_length=20, blank=True, null=True)
+	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	vat_type=models.CharField(max_length =15)
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 

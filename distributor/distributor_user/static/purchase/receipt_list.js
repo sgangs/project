@@ -386,18 +386,19 @@ $('.vendor').change(function() {
                     $('.detaildiv').attr('hidden',false);
                     $('.register').attr('disabled',false);
                     $.each(jsondata['object'], function(){
-                        console.log(this);
-                        console.log("here");
+                        date=this.date
+                        date=date.split("-").reverse().join("-")
                         pending=parseFloat(this.total) - parseFloat(this.amount_paid)
                         $('#payment_table').append("<tr class='payment_data' align='center'>"+
                         "<td hidden='true'>"+this.id+"</td>"+
-                        "<td>"+this.receipt_id+"</td>"+
                         "<td>"+this.supplier_invoice+"</td>"+
+                        "<td>"+date+"</td>"+
                         "<td>"+this.total+"</td>"+
-                        "<td>"+this.amount_paid+"</td>"+
-                        "<td>"+pending+"</td>"+
+                        "<td hidden='true'>"+this.amount_paid+"</td>"+
+                        "<td>"+pending.toFixed(2)+"</td>"+
                         "<td><input type='checkbox'></td>"+
                         "<td><input type = 'number' class='form-control'></td>"+
+                        "<td><input type = 'text' class='form-control'></td>"+
                         "</tr>");
                     });
                 },
@@ -479,6 +480,7 @@ function new_data(){
         if (is_paid){
             bill_count+=1;
             var amount = parseFloat($(this).find('td:nth-child(8) input').val());
+            var cheque_rtgs_number = parseFloat($(this).find('td:nth-child(9) input').val());
             total_payment+=amount
             if (isNaN(amount) || amount<=0){
                 proceed=false;
@@ -508,6 +510,7 @@ function new_data(){
                 var item = {
                     receipt_pk : receipt_pk,
                     amount: amount,
+                    cheque_rtgs_number: cheque_rtgs_number,
                 };
                 items.push(item);
             }

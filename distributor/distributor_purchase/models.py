@@ -22,7 +22,7 @@ class purchase_receipt(models.Model):
 
 	vendor=models.ForeignKey(Vendor,blank=True, null=True, 
 						related_name='purchaseReceipt_purchase_master_vendor', on_delete=models.SET_NULL)
-	vendor_name=models.CharField(db_index=True, max_length=200)
+	vendor_name=models.CharField(max_length=200)
 	vendor_address=models.TextField(blank=True, null=True)
 	vendor_state=models.CharField(max_length=4,blank=True, null=True)
 	vendor_city=models.CharField(max_length=50, blank=True, null=True)
@@ -98,7 +98,7 @@ class receipt_line_item(models.Model):
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
-	product_hsn=models.CharField(max_length=20, blank=True, null=True)
+	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	vat_type=models.CharField(max_length =15, blank=True, null=True)
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
@@ -169,7 +169,7 @@ class debit_note(models.Model):
 
 	vendor=models.ForeignKey(Vendor,blank=True, null=True, 
 						related_name='debitNote_purchase_master_vendor', on_delete=models.SET_NULL)
-	vendor_name=models.CharField(db_index=True, max_length=200)
+	vendor_name=models.CharField(max_length=200)
 	vendor_address=models.TextField(blank=True, null=True)
 	vendor_state=models.CharField(max_length=4,blank=True, null=True)
 	vendor_city=models.CharField(max_length=50, blank=True, null=True)
