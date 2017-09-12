@@ -668,12 +668,9 @@ def delete_purchase(request):
 								productid=each_item.product
 								multiplier=each_item.unit_multi
 								
-								print(multiplier)
-								
 								original_purchase_price=each_item.purchase_price
 								purchase_price=round(original_purchase_price/multiplier,2)
-								print(purchase_price)
-
+								
 								original_quantity=each_item.quantity
 								quantity=round(original_quantity*multiplier,2)
 								
@@ -702,7 +699,10 @@ def delete_purchase(request):
 									elif(discount_type_2 == 2):
 										purchase_price=(purchase_price-discount_value_2/quantity)
 
+								purchase_price_min=purchase_price-Decimal(0.01)
+								purchase_price_max=purchase_price+Decimal(0.01)
 								purchase_price = round(purchase_price,2)
+								
 
 								try:
 									original_mrp=each_item.mrp
@@ -710,10 +710,10 @@ def delete_purchase(request):
 								except:
 									mrp=0
 								
-								total_purchase_price+=quantity*purchase_price
+								# total_purchase_price+=quantity*purchase_price
 								
 								product_list=Inventory.objects.for_tenant(this_tenant).filter(purchase_date = purchase_date, quantity_available__gt=0,\
-												product=productid, warehouse=warehouse, purchase_price=purchase_price,\
+												product=productid, warehouse=warehouse, purchase_price__range=[purchase_price_min,purchase_price_max],\
 												tentative_sales_price=tentative_sales_price, mrp=mrp).order_by('purchase_date')
 								quantity_updated=quantity
 								for item in product_list:
@@ -723,12 +723,14 @@ def delete_purchase(request):
 									if (quantity_updated>=original_available):
 										item.quantity_available=0
 										# products_cost+=item.purchase_price*original_available
+										total_purchase_price+=original_available*item.purchase_price
 										
 										quantity_updated-=original_available
 										item.delete()
 												
 									else:
 										item.quantity_available-=quantity_updated
+										total_purchase_price+=quantity_updated*item.purchase_price
 										# products_cost+=item.purchase_price*quantity_updated
 										item.save()
 										quantity_updated=0								
