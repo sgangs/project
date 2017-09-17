@@ -116,8 +116,12 @@ def purchase_receipt_save(request):
 		calltype = request.data.get('calltype')
 		response_data = {}
 		this_tenant=request.user.tenant
+		from_purchase_order = False
 		#saving the receipt
 		if (calltype == 'save'):
+			calledfrom = request.data.get('calledfrom')
+			if (calledfrom == 'purchaseorder'):
+				from_purchase_order = True
 			with transaction.atomic():
 				try:
 					supplier_invoice=request.data.get('supplier_invoice')
@@ -139,18 +143,28 @@ def purchase_receipt_save(request):
 					total=Decimal(request.data.get('total'))
 					sum_total = subtotal+cgsttotal+sgsttotal
 					
+					date=request.data.get('date')
 					# if (abs(sum_total - total) <0.90 ):
 					# 	total = sum_total
 					duedate=request.data.get('duedate')
 
 					bill_data = json.loads(request.data.get('bill_details'))
 
-					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
-					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
+					order_id=None
+
+					if (from_purchase_order):
+						order_pk = request.data.get('order_pk')
+						order = purchase_order.objects.for_tenant(this_tenant).get(id=order_pk)
+						vendor = order.vendor
+						warehouse = order.warehouse
+						order_id = order.id
+					else:
+						vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
+						warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 
 					
 					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate,\
-							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, 0)
+							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, 0, from_purchase_order, order_id)
 					
 					vat_paid={}
 					cgst_paid={}
@@ -162,12 +176,18 @@ def purchase_receipt_save(request):
 
 					vendor_gst=vendor.gst
 					vendor_state=vendor.state
+					total_purchase_price = 0
 
-			#saving the receipt_line_item and linking them with foreign key to receipt
+				#saving the receipt_line_item and linking them with foreign key to receipt
 					for data in bill_data:
 						productid=data['product_id']
-						unitid=data['unit_id']
-
+						if (from_purchase_order):
+							order_line_item_id=data['order_line_item_id']
+							order_line_item_data = order_line_item.objects.for_tenant(this_tenant).get(id = order_line_item_id)
+							unitid=order_line_item_data.unit_id
+						else:
+							unitid=data['unit_id']
+						
 						try:
 							batch=data['batch']
 							manufacturing_date=data['manufacturing_date']
@@ -199,7 +219,14 @@ def purchase_receipt_save(request):
 
 						line_taxable_total=Decimal(data['taxable_total'])
 						line_total=Decimal(data['line_total'])
-						product=Product.objects.for_tenant(request.user.tenant).get(id=productid)
+						
+						if (from_purchase_order):
+							product = order_line_item_data.product
+							order_multiplier = order_line_item_data.unit_multi
+							order_qty_avialable = (order_line_item_data.quantity - order_line_item_data.quantity_delivered) * order_multiplier
+						else:
+							product=Product.objects.for_tenant(request.user.tenant).get(id=productid)
+						
 						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
 						multiplier=unit.multiplier
 						
@@ -223,10 +250,21 @@ def purchase_receipt_save(request):
 						# original_quantity=Decimal(data['quantity']) + Decimal(0.000)
 						original_quantity=Decimal(data['quantity'])
 						quantity=original_quantity*multiplier
+						if (from_purchase_order):
+							if ((quantity) > (order_qty_avialable)):
+								raise IntegrityError (('Receipt quantity of product : '+product.name+' more than avialble order quantity.'))
+						
 						free_with_tax=original_free_with_tax*multiplier
 						free_without_tax=0
 						total_free=free_without_tax+free_with_tax
 						
+
+						if (from_purchase_order):
+							order_line_item_data.quantity_delivered+=original_quantity
+							if (order_line_item_data.quantity_delivered > order_line_item_data.quantity):
+								raise IntegrityError (('Receipt quantity of product : '+product.name+' more than avialble order quantity.'))
+							order_line_item_data.save()
+
 						LineItem = receipt_line_item()
 						LineItem.purchase_receipt = new_receipt
 						LineItem.product= product
@@ -240,7 +278,6 @@ def purchase_receipt_save(request):
 						LineItem.sgst_value=sgst_v
 						LineItem.igst_percent=igst_p
 						LineItem.igst_value=igst_v
-						
 						LineItem.unit=unit.symbol
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
@@ -320,13 +357,26 @@ def purchase_receipt_save(request):
 								create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
 								0, mrp,new_receipt.receipt_id, this_tenant)
 
-
+							#For not-free items
 							create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
 								purchase_price, mrp,new_receipt.receipt_id, this_tenant)								
 							
-							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-							warehouse_valuation_change.valuation+=quantity*purchase_price
-							warehouse_valuation_change.save()
+							total_purchase_price+=quantity*purchase_price
+							# warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+							# warehouse_valuation_change.valuation+=quantity*purchase_price
+							# warehouse_valuation_change.save()
+
+						if (from_purchase_order):
+							#Close Order if quantity is zero for every line item
+							order_all_line_items=order_line_item.objects.filter(purchase_order = order)
+							will_close = True
+							for each_row in order_all_line_items:
+								qty_avl = each_row.quantity - each_row.quantity_delivered
+								if (qty_avl > 0):
+									will_close = False
+							if (will_close):
+								order.is_closed = True
+								order.save()
 
 						if (is_igst):
 							if (igst_p in igst_paid):
@@ -366,7 +416,7 @@ def purchase_receipt_save(request):
 							if v[2]>0:
 								new_tax_transaction_register("SGST",1, k, v[0],v[1],v[2], new_receipt.id,\
 											new_receipt.supplier_invoice, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
-					
+
 					# if this_tenant.maintain_inventory:
 						#Journal Entry for tenants with inventory
 					remarks="Purchase Receipt No: "+str(new_receipt.supplier_invoice)
@@ -394,6 +444,12 @@ def purchase_receipt_save(request):
 					if (debit != credit):
 						raise IntegrityError
 					if this_tenant.maintain_inventory:
+
+						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+						warehouse_valuation_change.valuation+=total_purchase_price
+						warehouse_valuation_change.save()
+
+
 						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
@@ -466,6 +522,7 @@ def all_receipts(request):
 			invoice_no=request.GET.get('invoice_no')
 			receipts=[]
 			sent_with=request.GET.get('sent_with')
+			order_no=request.GET.get('order_no')
 			if (len(vendors)>0):
 				vendors_list=[]
 				for item in vendors:
@@ -491,6 +548,9 @@ def all_receipts(request):
 						.order_by('-date', 'receipt_id')
 			if (start and end):
 				receipts=receipts.filter(date__range=[start,end])
+			if (order_no):
+				order=purchase_order.objects.for_tenant(this_tenant).get(order_id=order_no)
+				receipts=receipts.filter(order_id=order.id)
 			if invoice_no:
 				receipts=receipts.filter(supplier_invoice__icontains=invoice_no)
 
@@ -652,10 +712,13 @@ def delete_purchase(request):
 	if request.method == 'POST':
 		calltype = request.data.get('calltype')
 		if (calltype == 'delete'):
-			with transaction.atomic():
-				try:
+			try:
+				with transaction.atomic():
 					receipt_pk = request.data.get('receipt_pk')
 					old_receipt = purchase_receipt.objects.for_tenant(this_tenant).get(id=receipt_pk)
+					order_id = old_receipt.order_id
+					if (order_id):
+						raise IntegrityError(('Purchase receipt from Purchase Order cannot be deleted'))
 					maintain_inventory = this_tenant.maintain_inventory
 					warehouse = old_receipt.warehouse
 					amount_paid = old_receipt.amount_paid
@@ -816,8 +879,10 @@ def delete_purchase(request):
 					else:
 						#display error that amount is already paid against this invoice & it cant be edited
 						pass
-				except:
-					transaction.rollback()
+			except Exception as err:
+				print(err)
+				response_data  = err.args 
+				transaction.rollback()
 		
 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
@@ -1096,3 +1161,249 @@ def get_hsn_report(request):
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 		
+
+@login_required
+@api_view(['GET'],)
+def purchase_order_new(request):
+	return render(request,'purchase/purchase_order.html', {'extension': 'base.html'})
+
+
+@api_view(['GET','POST'],)
+def purchase_order_save(request):
+	# Change the models where data is getting saved
+	if request.method == 'POST':
+		calltype = request.data.get('calltype')
+		response_data = {}
+		this_tenant=request.user.tenant
+		#saving the receipt
+		if (calltype == 'save'):
+			try:
+				with transaction.atomic():
+					supplier_order=request.data.get('supplier_order')
+					vendor_id = request.data.get('vendor')
+					warehouse_id=request.data.get('warehouse')
+					date=request.data.get('date')
+					
+					is_igst = False
+					
+					subtotal=Decimal(request.data.get('subtotal'))
+					cgsttotal=Decimal(request.data.get('cgsttotal'))
+					sgsttotal=Decimal(request.data.get('sgsttotal'))
+					igsttotal=Decimal(request.data.get('igsttotal'))
+					round_value=Decimal(request.data.get('round_value'))
+					total=Decimal(request.data.get('total'))
+					sum_total = subtotal+cgsttotal+sgsttotal
+					
+					deliverydate=request.data.get('deliverydate')
+
+					bill_data = json.loads(request.data.get('bill_details'))
+
+					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
+					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
+
+					
+					new_order=new_purchase_order(this_tenant, supplier_order, vendor, warehouse, date, deliverydate,\
+							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total)
+					
+					cgst_paid={}
+					sgst_paid={}
+					igst_paid={}
+					cgst_total=0
+					sgst_total=0
+					igst_total=0
+
+					vendor_gst=vendor.gst
+					vendor_state=vendor.state
+
+			#saving the receipt_line_item and linking them with foreign key to receipt
+					for data in bill_data:
+						productid=data['product_id']
+						unitid=data['unit_id']
+
+						discount_type=data['disc_type']
+						discount_value=Decimal(data['disc'])
+						discount_type_2=data['disc_type_2']
+						discount_value_2=Decimal(data['disc_2'])
+
+						cgst_p=Decimal(data['cgst_p'])
+						cgst_v=Decimal(data['cgst_v'])
+						sgst_p=Decimal(data['sgst_p'])
+						sgst_v=Decimal(data['sgst_v'])
+						igst_p=Decimal(data['igst_p'])
+						igst_v=Decimal(data['igst_v'])
+
+						cgst_total+=cgst_v
+						sgst_total+=sgst_v
+						igst_total+=igst_v
+
+						line_taxable_total=Decimal(data['taxable_total'])
+						line_total=Decimal(data['line_total'])
+						product=Product.objects.for_tenant(request.user.tenant).get(id=productid)
+						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
+						multiplier=unit.multiplier
+						
+						original_purchase_price=Decimal(data['purchase'])
+						
+						original_free_with_tax=Decimal(data['free_tax'])
+
+						purchase_price=Decimal(original_purchase_price/multiplier)
+						
+						# original_quantity=Decimal(data['quantity']) + Decimal(0.000)
+						original_quantity=Decimal(data['quantity'])
+						
+						quantity=original_quantity*multiplier
+						
+						if (quantity == 0):
+							raise IntegrityError (('Quantity of item: '+product.name+' cannot be zero.'))
+
+						free_with_tax=original_free_with_tax*multiplier
+						free_without_tax=0
+						total_free=free_without_tax+free_with_tax
+						
+						LineItem = order_line_item()
+						LineItem.purchase_order = new_order
+						LineItem.product= product
+						LineItem.product_name= product.name
+						LineItem.product_sku=product.sku
+						LineItem.product_hsn=product.hsn_code
+						LineItem.date = date
+						LineItem.cgst_percent=cgst_p
+						LineItem.cgst_value=cgst_v
+						LineItem.sgst_percent=sgst_p
+						LineItem.sgst_value=sgst_v
+						LineItem.igst_percent=igst_p
+						LineItem.igst_value=igst_v
+						
+						LineItem.unit=unit.symbol
+						LineItem.unit_multi=unit.multiplier
+						LineItem.quantity=original_quantity
+						LineItem.free_with_tax=original_free_with_tax
+						LineItem.purchase_price=original_purchase_price
+						LineItem.discount_type=discount_type
+						LineItem.discount_value=discount_value
+						LineItem.discount2_type=discount_type_2
+						LineItem.discount2_value=discount_value_2
+						LineItem.line_tax=line_taxable_total
+						LineItem.line_total=line_total
+						LineItem.tenant=this_tenant
+						LineItem.save()
+
+					response_data['order_id']=new_order.id
+			
+			except Exception as err:
+				print(err)
+				response_data  = err.args 
+				transaction.rollback()
+
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+
+@login_required
+def order_list_view(request):
+	return render(request,'purchase/order_list.html', {'extension': 'base.html'})
+
+
+@api_view(['GET','POST'],)
+def all_orders(request):
+	this_tenant=request.user.tenant
+	page_no = request.GET.get('page_no')
+	calltype = request.GET.get('calltype')
+	if request.method == 'GET':
+		if (calltype == 'all_receipt'):
+			orders=purchase_order.objects.for_tenant(this_tenant).all().values('id','order_id', 'supplier_order', \
+				'date','vendor_name','total', 'delivery_by','is_closed').order_by('-date', 'order_id')
+		elif (calltype == 'apply_filter'):
+			vendors=json.loads(request.GET.get('vendors'))
+			start=request.GET.get('start')
+			order_type=request.GET.get('order_type')
+			print(order_type)
+			if (order_type == 'all'):
+				is_closed= [True, False]
+			elif (order_type == 'open'):
+				is_closed= [False]
+			elif (order_type == 'closed'):
+				is_closed= [True]
+			end=request.GET.get('end')
+			order_id=request.GET.get('order_id')
+			filter_type=request.GET.get('filter_type')
+			orders=[]
+			if (len(vendors)>0):
+				vendors_list=[]
+				for item in vendors:
+					vendors_list.append(item['vendorid'])
+				orders=purchase_order.objects.for_tenant(this_tenant).filter(vendor__in=vendors_list, is_closed__in = is_closed).\
+					values('id','order_id', 'supplier_order', 'date','vendor_name','total', 'delivery_by','is_closed').order_by('-date', 'order_id')
+			else:
+				orders=purchase_order.objects.for_tenant(this_tenant).filter(is_closed__in = is_closed).\
+					values('id','order_id', 'supplier_order', 'date','vendor_name','total', 'delivery_by','is_closed').order_by('-date', 'order_id')
+			
+			if (start and end):
+				orders=orders.filter(date__range=[start,end])
+			if order_id:
+				orders=orders.filter(order_id__icontains=order_id)
+
+		
+		response_data={}
+		
+		if page_no:
+			response_data =  paginate_data(page_no, 10, list(orders))
+		else:
+			response_data['object']=list(orders)
+		
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@login_required
+def order_detail_view(request, pk):
+	return render(request,'purchase/purchase_order_detail.html', {'extension': 'base.html', 'pk':pk})
+
+
+@api_view(['GET'],)
+def order_details(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		order_pk=request.GET.get('order_pk')
+		receipt=purchase_order.objects.for_tenant(this_tenant).values('id','order_id','supplier_order',\
+		'date','vendor_name','vendor_address','vendor_city','vendor_pin','vendor_gst','warehouse_address','warehouse_city',\
+		'warehouse_pin','delivery_by','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff','total', 'is_closed').get(id=order_pk)
+
+		receipt['tenant_name']=this_tenant.name
+		receipt['tenant_gst']=this_tenant.gst
+		receipt['tenant_address']=this_tenant.address_1+","+this_tenant.address_2
+		
+		line_items=list(order_line_item.objects.filter(purchase_order=receipt['id']).values('id','product_id', 'product_name','product_hsn',\
+			'unit','unit_multi','quantity', 'quantity_delivered','free_with_tax','purchase_price','discount_type',\
+			'discount_value','discount2_type','discount2_value','cgst_percent','sgst_percent','igst_percent',\
+			'cgst_value','sgst_value','igst_value','line_tax','line_total'))
+		receipt['line_items']=line_items
+		
+		jsondata = json.dumps(receipt, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+
+
+@login_required
+def receipt_order(request, pk):
+	return render(request,'purchase/purchase_receipt_order.html', {'extension': 'base.html', 'pk':pk})
+
+
+@api_view(['POST'],)
+def order_delete(request):
+	this_tenant=request.user.tenant
+	response_data = 'Data format does not match.'
+	if request.method == 'POST':
+		calltype = request.data.get('calltype')
+		if (calltype == 'delete'):
+			order_pk = request.data.get('order_pk')
+			order=purchase_order.objects.for_tenant(this_tenant).get(id=order_pk)
+			if (order.is_closed):
+				response_data = "Order is already closed. This cannot be deleted."
+			else:
+				if purchase_receipt.objects.for_tenant(this_tenant).filter(order_id=order_pk).exists():
+					response_data = "Purchase already made from this order. It cannot be deleted."
+				else:
+					# order.delete()
+					response_data = "Success"				
+		
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)

@@ -5,7 +5,7 @@
 
 {%block title%}
 
-<title>Purchase Invoice</title>
+<title>Purchase Order</title>
 
 
 {% endblock %} 
@@ -13,20 +13,20 @@
 {% block content%}
 
 <div class="row col-md-12 hidden-print">
-    <a href="{% url 'purchase:purchase_receipt_new' %}"><button type="button" class="btn btn-primary btn-sm" id="not_print">New Purchase Invoice</button></a>
+    <a href="{% url 'purchase:purchase_order_new' %}"><button type="button" class="btn btn-primary btn-sm" id="not_print">New Purchase Order</button></a>
 </div>
 
 <div id='print' class="print">
 <div class="row">
         <div class="col-md-12">
         	<div class="col-xs-6 receipt-title">
-    			<h4 class='receiptid'>System ID: </h4>
+    			<h4 class='receiptid'>Order No.: </h4>
     		</div>
     		<div class="col-xs-6 text-right">
-    			<h4 class='invoiceid'>Vendor Invoice: </h4>
+    			<h4 class='invoiceid'>Vendor Order/Note: </h4>
     		</div>
     		<div class="col-xs-12 text-center">
-    			<h4 class='date'>Tax Invoice Date: </h4>
+    			<h4 class='date'>Order Date: </h4>
     		<hr>	
     		</div>
     		<div class="row">
@@ -74,22 +74,15 @@
             <th class="text-center">HSN Code</th>
             <th class="text-center">Qty</th>
             <!-- <th class="text-center hidden-print"><h5>Free w/o tax</h5></th> -->
-            <th class="text-center">Free</th>
+            <th class="text-center">Delivered</th>
             <th class="text-center">Unit</th>
             <!-- <th class="text-center visible-print-block"><h5>Free</h5></th> -->
             <th class="text-center">Purchase Rate</th>
-            <th class="text-center">Tentative Sales Price</th>
-            <th class="text-center">MRP</th>
             <th class="text-center hidden-print">Disc. Type-1</th>
             <th class="text-center">Disc. Value-1</th>
-            <!-- <th class="text-center hidden-print"><h5>Disc. Value-1</h5></th>
-            <th class="text-center visible-print-block"><h5>Disc. Amt.-1</h5></th> -->
             <th class="text-center hidden-print">Disc. Type-2</th>
             <th class="text-center">Disc. Value-2</th>
-            <!-- <th class="text-center hidden-print"><h5>Disc. Value-2</h5></th>
-            <th class="text-center visible-print-block"><h5>Disc. Amt.-2</h5></th> -->
             <th class="text-center">Taxable Total</th>
-            <!-- <th class="text-center"><h5>VAT %</h5></th> -->
             <th class="text-center is_not_igst">CGST%</th>
             <th class="text-center is_not_igst">CGST Amt</th>
             <th class="text-center is_not_igst">SGST%</th>
@@ -107,28 +100,11 @@
 <br>
 
 
-<!-- <div class="row text-right">
-	<div class="col-xs-6 col">
-		<table class="table metadata boderless">
-			<tr>
-				<td>Grand Discount (On subtotal)</td>
-				<td colspan="1"><select class="form-control select gdt">
-					<option data-id=0>No Disc.</option>
-					<option data-id=1>Percent(%)</option>
-					<option data-id=2>Value</option>
-					</select>
-				</td>
-				<td>Discount Value</td>
-				<td><input class="form-control gd"></td>
-			</tr>
-		</table>
-	</div>
-</div> -->
 <div class="row text-right">
 	<div class="col-xs-6">
 		<table class="table metadata boderless">
 			<tr class='text-left'>
-				<td colspan="1" class='text-left'>Payment Due date</td>
+				<td colspan="1" class='text-left'>Delivery Date</td>
 				<td colspan="1" class='text-left'></td>
 				<td colspan="1" class=" text-left duedate"></td>
 
@@ -147,12 +123,7 @@
 				<td>Rs.</td>
 		        <td class='grand_discount'>0.00</td>
 			</tr> -->
-			<tr hidden>
-				<td>Tax Total</td>
-				<td>Rs.</td>
-		        <td class='taxtotal_receipt'></td>
-			</tr>
-            <tr>
+			<tr>
                 <td>CGST Total</td>
                 <td>Rs.</td>
                 <td class='cgsttotal_receipt'></td>
@@ -168,7 +139,7 @@
                 <td class='round'></td>
             </tr>
 			<tr>
-				<td>Total Payable</td>
+				<td>Order Total</td>
 				<td>Rs.</td>
 		        <td class='total_receipt'></td>
 			</tr>
@@ -201,7 +172,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'purchase/receiptdetail.js' %}"></script>
+<script src="{% static 'purchase/orderdetail.js' %}"></script>
 
 <style type="text/css">
 	.boderless td, .boderless th{

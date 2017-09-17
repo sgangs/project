@@ -17,6 +17,7 @@ class TenantManager(models.Manager):
 class purchase_receipt(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	receipt_id = models.PositiveIntegerField(db_index=True)
+	order_id = models.PositiveIntegerField(db_index=True, blank=True, null=True)
 	supplier_invoice = models.CharField(db_index=True, max_length=16,blank=True, null=True)
 	date=models.DateField(default=dt.date.today)
 
@@ -67,14 +68,15 @@ class purchase_receipt(models.Model):
 			tenant=self.tenant.key
 			today=dt.date.today()
 			today_string=today.strftime('%y%m%d')
-			next_receipt_number='001'
+			next_receipt_number='1'
 			last_receipt=type(self).objects.filter(tenant=self.tenant).\
 						filter(receipt_id__contains=today_string).order_by('receipt_id').last()
 			if last_receipt:
 				last_receipt_id=str(last_receipt.receipt_id)
 				last_receipt_number=int(last_receipt_id[6:])
-				next_receipt_number='{0:03d}'.format(last_receipt_number + 1)
-			self.receipt_id=int(today_string + next_receipt_number)
+				# print(last_receipt_number)
+				next_receipt_number=last_receipt_number + 1
+			self.receipt_id=int( today_string + '00' + str(next_receipt_number))
 			
 		super(purchase_receipt, self).save(*args, **kwargs)
 
@@ -262,3 +264,120 @@ class debit_note_line_item(models.Model):
 # 	value=models.DecimalField(max_digits=10, decimal_places=2)
 # 	vat_percent=models.DecimalField(max_digits=4, decimal_places=2)
 # 	debitnote_no=models.ForeignKey(debitNote, related_name='debitNoteLineDetails_debitNote')
+
+
+class purchase_order(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	order_id = models.PositiveIntegerField(db_index=True)
+	supplier_order = models.CharField(db_index=True, max_length=16,blank=True, null=True)
+	date=models.DateField(default=dt.date.today)
+
+	vendor=models.ForeignKey(Vendor,blank=True, null=True, 
+						related_name='purchaseOrder_purchase_master_vendor', on_delete=models.SET_NULL)
+	vendor_name=models.CharField(max_length=200)
+	vendor_address=models.TextField(blank=True, null=True)
+	vendor_state=models.CharField(max_length=4,blank=True, null=True)
+	vendor_city=models.CharField(max_length=50, blank=True, null=True)
+	vendor_pin=models.CharField(max_length=8, blank=True, null=True)
+	vendor_gst=models.CharField(max_length=20, blank=True, null=True)
+	# dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
+	# dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
+	
+	warehouse=models.ForeignKey(Warehouse,blank=True, null=True, \
+						related_name='purchaseOrder_purchase_master_warehouse', on_delete=models.SET_NULL)
+	warehouse_address=models.TextField()
+	warehouse_state=models.CharField(max_length=4)
+	warehouse_city=models.CharField(max_length=50)
+	warehouse_pin=models.CharField(max_length=8)
+	
+	#GST Type  means B2B registered, 2 means B2B unregistered.
+	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
+	taxtotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	roundoff=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	total=models.DecimalField(max_digits=12, decimal_places=2)
+	# itemwise_discount_total=models.DecimalField(max_digits=12, decimal_places=2)
+	delivery_by=models.DateField(blank=True, null=True)
+	is_closed=models.BooleanField(default=False)
+	# purchase_order=models.ForeignKey(purchase_order, blank=True, null=True related_name='purchaseReceipt_purchaseOrder')
+	tenant=models.ForeignKey(Tenant,related_name='purchaseOrder_purchase_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+#	def get_absolute_url(self):
+#		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
+
+	def save(self, *args, **kwargs):
+		if not self.id:
+				tenant=self.tenant.key
+				today=dt.date.today()
+				today_string=today.strftime('%y%m%d')
+				next_order_number='1'
+				last_order=type(self).objects.filter(tenant=self.tenant).\
+							filter(order_id__contains=today_string).order_by('order_id').last()
+				if last_order:
+					last_order_id=str(last_order.order_id)
+					last_order_number=int(last_order_id[6:])
+					# print(last_receipt_number)
+					next_order_number=last_order_number + 1
+				self.order_id=int( today_string + '00' + str(next_order_number))
+			
+		super(purchase_order, self).save(*args, **kwargs)
+			
+	# class Meta:
+	# 	ordering = ('date',)
+
+	def __str__(self):
+		# return  '%s %s %s' % (self.receipt_id, self.vendor, self.date)
+		return  '%s %s' % (self.order_id, self.date)
+
+	# def get_absolute_url(self):
+		# return reverse('purchase:invoice_detail', kwargs={'detail':self.slug})
+
+
+#This model is for line items of a purchase invoice
+class order_line_item(models.Model):
+	purchase_order=models.ForeignKey(purchase_order, related_name='orderLineItem_purchaseOrder',)
+	product=models.ForeignKey(Product,blank=True, null=True, related_name='orderLineItem_purchase_master_product',\
+						on_delete=models.SET_NULL)
+	date=models.DateField(default=dt.date.today)
+	# product_pk=models.BigIntegerField(blank=True, null=True)
+	product_name=models.CharField(max_length =200)
+	product_sku=models.CharField(max_length =50)
+	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
+	
+	unit=models.CharField(max_length=20)
+	unit_id=models.BigIntegerField()
+	unit_multi=models.DecimalField(max_digits=8, decimal_places=2, default=1)
+
+	quantity=models.DecimalField(max_digits=10, decimal_places=3)
+	quantity_delivered=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	# free_without_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	free_with_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+
+	purchase_price=models.DecimalField(max_digits=12, decimal_places=2)
+	# tentative_sales_price=models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+	# mrp=models.DecimalField('MRP', max_digits=12, decimal_places=2, blank=True, null=True)
+	
+	discount_type=models.PositiveSmallIntegerField(default=0)
+	discount_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+	discount2_type=models.PositiveSmallIntegerField(default=0)
+	discount2_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+	cgst_percent=models.DecimalField(max_digits=4, decimal_places=2, default=0)
+	sgst_percent=models.DecimalField(max_digits=4, decimal_places=2, default=0)
+	igst_percent=models.DecimalField(max_digits=4, decimal_places=2, default=0)
+
+	cgst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+	sgst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+	igst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+	line_tax=models.DecimalField(max_digits=12, decimal_places=2)
+	line_total=models.DecimalField(max_digits=12, decimal_places=2)
+	
+	tenant=models.ForeignKey(Tenant,related_name='orderLineItem_purchase_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)

@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from distributor_master.models import Unit, Product, Customer, Warehouse, product_sales_rate
 from distributor_inventory.models import Inventory
 from distributor_account.models import Account, tax_transaction, account_inventory, account_year_inventory, accounting_period, Journal,journal_entry,\
-								journal_inventory, journal_entry_inventory, account_year
+								journal_inventory, journal_entry_inventory, account_year, payment_mode
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor.variable_list import small_large_limt
@@ -35,7 +35,7 @@ def new_sales_invoice(request):
 @api_view(['GET',],)
 def get_payment_mode(request):
 	payment_modes=list(payment_mode.objects.for_tenant(request.user.tenant).exclude(name__in=["Vendor Debit", "Customer Credit"]).\
-				values('id','name', 'default').order_by('default'))
+				values('id','name', 'default').order_by('-default'))
 	jsondata = json.dumps(payment_modes,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -192,6 +192,12 @@ def sales_invoice_save(request):
 					customer_dob = request.data.get('customer_dob')
 					
 					warehouse_id=request.data.get('warehouse')
+					paymentmode_id=request.data.get('paymentmode')
+
+					if (paymentmode_id):
+						payment_mode_selected=payment_mode.objects.for_tenant(this_tenant).get(id=paymentmode_id)
+					else:
+						payment_mode_selected=payment_mode.objects.for_tenant(this_tenant).get(default=True)
 					
 					subtotal=Decimal(request.data.get('subtotal'))
 					cgsttotal=Decimal(request.data.get('cgsttotal'))
@@ -226,6 +232,8 @@ def sales_invoice_save(request):
 					new_invoice.warehouse_state=ware_state
 					new_invoice.warehouse_city=ware_city
 					new_invoice.warehouse_pin=ware_pin
+					new_invoice.payment_mode_id=payment_mode_selected.id
+					new_invoice.payment_mode_name=payment_mode_selected.name
 					
 					new_invoice.subtotal=subtotal
 					new_invoice.cgsttotal=cgsttotal
@@ -304,7 +312,7 @@ def sales_invoice_save(request):
 						
 						original_quantity=int(data['quantity'])
 						this_taxable_total=Decimal(data['taxable_total'])
-						print(this_taxable_total)
+						# print(this_taxable_total)
 						quantity=original_quantity*multiplier
 						if maintain_inventory:
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
@@ -476,7 +484,8 @@ def sales_invoice_save(request):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
 						new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
 
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Cash")
+					# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cash")
+					account = payment_mode_selected.payment_account
 					new_journal_entry(this_tenant, journal, total, account, 1, date)
 					
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))

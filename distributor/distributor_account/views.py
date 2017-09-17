@@ -71,26 +71,63 @@ def get_tax_report(request):
 	elif (calltype == 'short_summary'):
 		start=request.GET.get('start')
 		end=request.GET.get('end')
+		report_type=request.GET.get('report_type')
+
 		#This data can also be taken from chart of accounts
 		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type=1,tax_type='CGST', is_registered=True, date__range=[start,end]).\
-					aggregate(Sum('tax_value'))['tax_value__sum']
+				filter(transaction_type=1,tax_type='CGST', is_registered=True, date__range=[start,end]).\
+				aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['sgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type=1,tax_type='SGST', is_registered=True, date__range=[start,end]).\
-					aggregate(Sum('tax_value'))['tax_value__sum']
+				filter(transaction_type=1,tax_type='SGST', is_registered=True, date__range=[start,end]).\
+				aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['igst_input']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type=1,tax_type='IGST', is_registered=True, date__range=[start,end]).\
-					aggregate(Sum('tax_value'))['tax_value__sum']
-		
-		response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type__in=[2,5],tax_type='CGST', date__range=[start,end]).\
-					aggregate(Sum('tax_value'))['tax_value__sum']
-		response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type__in=[2,5],tax_type='SGST', date__range=[start,end]).\
-					aggregate(Sum('tax_value'))['tax_value__sum']
-		response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-					filter(transaction_type=2,tax_type='IGST', date__range=[start,end]).\
-					aggregate(Sum('tax_value'))['tax_value__sum']
+				filter(transaction_type=1,tax_type='IGST', is_registered=True, date__range=[start,end]).\
+				aggregate(Sum('tax_value'))['tax_value__sum']
+
+		if (report_type == 'b2b'):
+			response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type=2,tax_type='CGST', date__range=[start,end]).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type=2,tax_type='SGST', date__range=[start,end]).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type=2,tax_type='IGST', date__range=[start,end]).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+
+		elif (report_type == 'b2cl'):
+			response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type__in=[2,5],tax_type='CGST', date__range=[start,end], is_registered=False, line_wo_tax__gte = 250000).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type__in=[2,5],tax_type='SGST', date__range=[start,end], is_registered=False, line_wo_tax__gte = 250000).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type=2,tax_type='IGST', date__range=[start,end], is_registered=False, line_wo_tax__gte = 250000).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+
+		elif (report_type == 'b2cs'):
+			response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type__in=[2,5],tax_type='CGST', date__range=[start,end], is_registered=False, line_wo_tax__lt = 250000).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type__in=[2,5],tax_type='SGST', date__range=[start,end], is_registered=False, line_wo_tax__lt = 250000).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type=2,tax_type='IGST', date__range=[start,end], is_registered=False, line_wo_tax__lt = 250000).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+
+		else:
+			#This data can also be taken from chart of accounts
+			response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type__in=[2,5],tax_type='CGST', is_registered=True, date__range=[start,end]).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type__in=[2,5],tax_type='SGST', is_registered=True, date__range=[start,end]).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
+			response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
+						filter(transaction_type__in=[2,5],tax_type='IGST', is_registered=True, date__range=[start,end]).\
+						aggregate(Sum('tax_value'))['tax_value__sum']
 		
 		if not response_data['cgst_input']:
 			response_data['cgst_input']=0
@@ -111,17 +148,32 @@ def get_tax_report(request):
 	elif (calltype == 'apply_filter'):
 		start=request.GET.get('start')
 		end=request.GET.get('end')
-		# tax_percent=int(request.GET.get('tax_percent'))
-		# tax_type=request.GET.get('tax_type')
-		# response_data=tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).all()
-		# if (tax_percent):
-			# response_data=response_data.filter(tax_percent=tax_percent, date__range=[start,end]).all()
-		# if (tax_type):
-			# response_data=response_data.filter(tax_type=tax_type, date__range=[start,end]).all()
-		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end])\
-			.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
-			'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
-			.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+		report_type=request.GET.get('report_type')
+		if (report_type == 'b2b'):
+			response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end],\
+				is_registered=True, transaction_type__in=[2,5])\
+				.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+				'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+				.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+		elif (report_type == 'b2cl'):
+			response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end],\
+				is_registered=False, line_wo_tax__gte = 250000, transaction_type__in=[2,5])\
+				.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+				'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+				.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+
+		elif (report_type == 'b2cs'):
+			response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end],\
+				is_registered=False, line_wo_tax__lt = 250000, transaction_type__in=[2,5])\
+				.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+				'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+				.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+
+		else:
+			response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end],)\
+				.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+				'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+				.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

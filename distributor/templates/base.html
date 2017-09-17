@@ -12,8 +12,18 @@
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
-		<!-- Optional theme -->
+		<!-- Optional theme - This will be gradually obsolete -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Optional theme: Bootstrap Paper - This can be used after updating html files accordingly -->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/Paperer/bootstrap.min.css" crossorigin="anonymous"> -->
+
+    <!-- Optional theme: Bootstrap Lumen - This can be used after updating html files accordingly-->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/lumen/bootstrap.min.css" crossorigin="anonymous"> -->
+
+    <!-- Optional theme: Bootstrap Yeti - This can be used after updating html files accordingly-->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css" crossorigin="anonymous"> -->
+
 
 		{% block jquery %}
 		<!--jquery-->
@@ -160,9 +170,10 @@
       <ul class="PurchaseNav">
         <li><a href="#"><span><i class="fa fa-shopping-bag"></i></span> Purchase</a>
           <ul>
-            <li><a href="#">Create Purchase Order</a></li>
+            <li><a href="{% url 'purchase:purchase_order_new' %}">Create Purchase Order</a></li>
+            <li><a href="{% url 'purchase:order_list_view' %}">Order List</a></li>
             <li><a href="{% url 'purchase:purchase_receipt_new' %}">Cretae Purchase Receipt</a></li>
-            <li><a href="{% url 'purchase:receipt_list' %}">Purchase Report</a></li>
+            <li><a href="{% url 'purchase:receipt_list' %}">Receipt List</a></li>
             <li><a href="{% url 'purchase:payment_list_view' %}">Payment Report</a></li>
             <li><a href="#">Purchase Return</a></li>
             <li><a href="#">Purchase Return Report</a></li>
@@ -179,11 +190,18 @@
             <li><a href="{% url 'sales:invoice_list' %}">Sales Invoice List</a></li>
             <li><a href="{% url 'sales:open_invoices' %}">Open Invoice List</a></li>
             <li><a href="{% url 'sales:sales_report' %}">Sales Report</a></li>
-            <li><a href="{% url 'sales:customer_wise_sales' %}">Customer-wise Sales</a></li>
+            <li><a href="#">Customer Report</a>
+                <div>
+                  <ul>
+                    <li><a href="{% url 'sales:customer_wise_sales' %}">Customer-wise Sales</a></li>
+                    <li><a href="{% url 'sales:customer_wise_summary' %}">Customer-wise Summary</a></li>
+                  </ul>
+                </div>
+              </li>
             <li><a href="{% url 'sales:hsn_report' %}">HSN Report</a></li>
-            <li><a href="{% url 'sales:collection_list_view' %}">Collection Report</a></li>
+            <li><a href="{% url 'sales:collection_list_view' %}">Collection List</a></li>
             <li><a href="{% url 'sales:sales_return_view' %}">Sales Return</a></li>
-            <li><a href="{% url 'sales:return_list_view' %}">Sales Return Report</a></li>
+            <li><a href="{% url 'sales:return_list_view' %}">Sales Return List</a></li>
           </ul>
         </li>
       </ul>

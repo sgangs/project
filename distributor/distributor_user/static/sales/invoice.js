@@ -808,8 +808,7 @@ function new_data(is_final){
     cgsttotal = round_off(cgsttotal);
     sgsttotal = round_off(sgsttotal);
     igsttotal = round_off(igsttotal); 
-    console.log(round_value);  
-
+    
     if (proceed){
         (function() {
             $.ajax({
@@ -836,10 +835,12 @@ function new_data(is_final){
                 // contentType: "application/json",
                         // handle a successful response
                 success : function(jsondata) {
-                    var show_success=true
-                    if (show_success){
+                    if (typeof(jsondata["invoice_id"]) == "undefined"){
+                        swal("Oops...", "Recheck your inputs. "+jsondata, "error");        
+                    }
+                    else{
                         swal("Hooray", "New sale invoice generated", "success");
-                        var url='/sales/invoice/detailview/'+jsondata+'/'
+                        var url='/sales/invoice/detailview/'+jsondata['invoice_id']+'/'
                         location.href = url;
                         // setTimeout(location.reload(true),1000);
                     }

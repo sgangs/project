@@ -23,9 +23,9 @@ class retail_invoice(models.Model):
 	date=models.DateField(default=datetime.now)
 	customer=models.ForeignKey(retail_customer,blank=True, null=True,\
 						related_name='retailInvoice_retailsales_master_retailCustomer', on_delete=models.SET_NULL)
-	customer_name=models.CharField(db_index=True, max_length=200, blank=True, null=True,)
+	customer_name=models.CharField(max_length=200, blank=True, null=True,)
 	customer_address=models.CharField(max_length=200, blank=True, null=True)
-	customer_phone_no=PhoneNumberField(db_index=True, blank=True, null=True,)
+	customer_phone_no=PhoneNumberField(blank=True, null=True,)
 	customer_email=models.EmailField(blank=True, null=True)
 	customer_gender=models.CharField(max_length=1,blank=True, null=True,)
 	customer_dob=models.DateField(blank=True, null=True)
@@ -36,6 +36,9 @@ class retail_invoice(models.Model):
 	warehouse_state=models.CharField(max_length=4)
 	warehouse_city=models.CharField(max_length=50)
 	warehouse_pin=models.CharField(max_length=8)
+
+	payment_mode_id=models.BigIntegerField(db_index=True, null=True, blank=True)
+	payment_mode_name=models.CharField(max_length=20, null=True, blank=True)
 	
 	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
 	# taxtotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -88,7 +91,7 @@ class invoice_line_item(models.Model):
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
-	product_hsn=models.CharField(max_length=20, blank=True, null=True)
+	product_hsn=models.CharField(db_index=True, max_length=20, blank=True, null=True)
 	
 	# vat_type=models.CharField(max_length =15)
 	# tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -157,9 +160,9 @@ class sales_return(models.Model):
 	date=models.DateField(default=dt.date.today)
 	customer=models.ForeignKey(retail_customer,blank=True, null=True,\
 						related_name='retailSalesReturn_retailsales_master_retailCustomer', on_delete=models.SET_NULL)
-	customer_name=models.CharField(db_index=True, max_length=200, blank=True, null=True,)
+	customer_name=models.CharField(max_length=200, blank=True, null=True,)
 	customer_address=models.CharField(max_length=200, blank=True, null=True)
-	customer_phone_no=PhoneNumberField(db_index=True, blank=True, null=True,)
+	customer_phone_no=PhoneNumberField(blank=True, null=True,)
 	customer_email=models.EmailField(blank=True, null=True)
 	customer_gender=models.CharField(max_length=1,blank=True, null=True,)
 	customer_dob=models.DateField(blank=True, null=True)

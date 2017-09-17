@@ -25,7 +25,7 @@ class accounting_period(models.Model):
 	current_period=models.BooleanField('Current Accounting Period?')
 	finalized=models.BooleanField(default=False)
 	is_first_year=models.BooleanField(default=False)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountingPeriod_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='accountingPeriod_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)	
 	
@@ -41,7 +41,7 @@ class accounting_period(models.Model):
 class ledger_group(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True, max_length=20)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='ledgergroup_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='ledgergroup_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -55,8 +55,8 @@ class ledger_group(models.Model):
 #This is a ledger group. here will be a general ledger. User can add ledger groups thereafter.
 class accounting_group(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	name=models.CharField(db_index=True, max_length=20)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountingGroup_account_user_tenant')
+	name=models.CharField(max_length=20)
+	tenant=models.ForeignKey(Tenant, related_name='accountingGroup_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -71,8 +71,8 @@ class accounting_group(models.Model):
 #This is a list of ledgers
 class Account(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	ledger_group=models.ForeignKey(ledger_group, db_index=True, related_name='account_ledgerGroup', blank=True, null=True)
-	accounting_group=models.ForeignKey(accounting_group, db_index=True, related_name='account_accountingGroup', blank=True, null=True)
+	ledger_group=models.ForeignKey(ledger_group, related_name='account_ledgerGroup', blank=True, null=True)
+	accounting_group=models.ForeignKey(accounting_group, related_name='account_accountingGroup', blank=True, null=True)
 	name=models.CharField(db_index=True, max_length =60)
 	remarks=models.TextField(blank=True, null=True)
 	account_type=models.CharField('Account type', max_length=30,choices=account_type_general)
@@ -81,7 +81,7 @@ class Account(models.Model):
 	# slug=models.SlugField(max_length=40)
 	key=models.CharField(db_index=True, max_length=15)
 	is_contra=models.BooleanField(default=False)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='account_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='account_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 	
@@ -107,8 +107,8 @@ class account_year(models.Model):
 	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)	
 	closing_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	closing_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='accountYear_accountingPeriod')
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountYear_account_user_tenant')
+	accounting_period=models.ForeignKey(accounting_period, related_name='accountYear_accountingPeriod')
+	tenant=models.ForeignKey(Tenant, related_name='accountYear_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -119,8 +119,8 @@ class account_year(models.Model):
 class account_inventory(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True, max_length =60)
-	key=models.CharField(db_index=True, max_length=15)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountInventory_account_user_tenant')
+	key=models.CharField(max_length=15)
+	tenant=models.ForeignKey(Tenant, related_name='accountInventory_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 	
@@ -134,7 +134,7 @@ class account_inventory(models.Model):
 
 class account_year_inventory(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	account_inventory=models.ForeignKey(account_inventory,db_index=True, related_name='accountYearInventory_accountInventory')
+	account_inventory=models.ForeignKey(account_inventory, related_name='accountYearInventory_accountInventory')
 	opening_debit=models.DecimalField("Opening Debit Balance", max_digits=12, decimal_places=2, default=0)
 	opening_credit=models.DecimalField("Opening Credit Balance", max_digits=12, decimal_places=2, default=0)
 	first_debit=models.DecimalField("Debit Balance as on date of registration", max_digits=12, decimal_places=2,\
@@ -145,9 +145,9 @@ class account_year_inventory(models.Model):
 	current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)	
 	closing_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	closing_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='accountYearInventory_accountingPeriod')
+	accounting_period=models.ForeignKey(accounting_period, related_name='accountYearInventory_accountingPeriod')
 	is_first_year=models.BooleanField(default=True)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='accountYearInventory_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='accountYearInventory_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -160,7 +160,7 @@ class journal_group(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True, max_length=20)
 	# slug=models.SlugField(max_length=32)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalGroup_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='journalGroup_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -213,11 +213,11 @@ class journal_entry(models.Model):
 	transaction_type=((1,'Debit'),
 		(2,'Credit'),)
 	activity_type=models.PositiveSmallIntegerField('Activity Type', blank=True, null=True) #For cash flow
-	journal=models.ForeignKey(Journal,db_index=True, related_name='journalEntry_journal')
+	journal=models.ForeignKey(Journal, related_name='journalEntry_journal')
 	account=models.ForeignKey(Account,related_name='journalEntry_account')
 	transaction_type=models.PositiveSmallIntegerField('Transaction type', choices=transaction_type)
 	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalEntry_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='journalEntry_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 	
@@ -247,7 +247,7 @@ class journal_inventory(models.Model):
 	date=models.DateField(default=datetime.now)
 	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
 	trn_type=models.PositiveSmallIntegerField(db_index=True,blank=True, null=True)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalInventory_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='journalInventory_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -266,11 +266,11 @@ class journal_entry_inventory(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	transaction_type=((1,'Debit'),
 		(2,'Credit'),)
-	journal=models.ForeignKey(journal_inventory,db_index=True, related_name='journalEntryInventory_journalInventory')
+	journal=models.ForeignKey(journal_inventory, related_name='journalEntryInventory_journalInventory')
 	account=models.ForeignKey(account_inventory,related_name='journalEntryInventory_accountInventory')
 	transaction_type=models.PositiveSmallIntegerField('Transaction type', choices=transaction_type)
 	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='journalEntryInventory_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='journalEntryInventory_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 	
@@ -292,7 +292,7 @@ class payment_mode(models.Model):
 	name = models.CharField('Payment Mode Name', db_index=True, max_length=20)
 	payment_account=models.ForeignKey(Account,related_name='paymentMode_account')
 	default=models.BooleanField('Default Payment Mode ?', default=False)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='paymentMode_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='paymentMode_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -310,8 +310,8 @@ inventory_type_choices=(('O','Opening'),
 class inventory_value(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	inventory_type=models.CharField('Inventory type', max_length=1,choices=inventory_type_choices)
-	accounting_period=models.ForeignKey(accounting_period,db_index=True, related_name='inventoryValue_accountingPeriod')
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='inventoryValue_account_user_tenant')
+	accounting_period=models.ForeignKey(accounting_period, related_name='inventoryValue_accountingPeriod')
+	tenant=models.ForeignKey(Tenant, related_name='inventoryValue_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -345,7 +345,7 @@ class tax_transaction(models.Model):
 	date=models.DateField(db_index=True)
 	# is_conciled=models.BooleanField(default=False)
 	is_registered=models.BooleanField(default=True)
-	tenant=models.ForeignKey(Tenant,db_index=True, related_name='taxTransaction_account_user_tenant')
+	tenant=models.ForeignKey(Tenant, related_name='taxTransaction_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 

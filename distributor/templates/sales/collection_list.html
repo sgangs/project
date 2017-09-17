@@ -99,6 +99,10 @@
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
+		    	<div class="form-group datediv">
+					<label for="classname" class="control-label">Filter By Payment Date Range</label>
+					<input type="text" class="form-control date_range">
+				</div>
 		    	<div class="form-group vendordiv">
 					<label for="classname" class="control-label">Select Customer</label>
 					<select class="form-control selectpicker customer_filter" id="customer_filter" multiple data-live-search="true">
@@ -107,24 +111,25 @@
 				</div>
 				<div class="form-group invoicediv">
 					<label for="classname" class="control-label">Filter by Sales Invoice No</label>
-					<input type="text" class="form-control invoice_id">
+					<input type="text" class="form-control invoice_no">
 				</div>
-				<div class="form-group datediv">
-					<label for="classname" class="control-label">Filter By Date Range</label>
-					<input type="text" class="form-control date_range">
+				<div class="form-group chequediv">
+					<label for="classname" class="control-label">Filter by Cheque/RTGS/NEFT No</label>
+					<input type="text" class="form-control cheque_rtgs">
 				</div>
-				<div class="form-group vendordiv">
+				<!-- <div class="form-group vendordiv">
 					<label for="classname" class="control-label">Filter by Invoice Type</label>
 					<select class="form-control selectpicker customer_filter" id="type_filter">
 						<option disabled selected hidden style='display: none' value>Select Invoice Type</option>
 						<option data-id="1">B2B Registered</option>
 						<option data-id="2">B2B Unregistered</option>
 					</select>
-				</div>
+				</div> -->
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
-		    	<button type="button" class="btn btn-primary apply">Apply Filters</button>
+		    	<button type="button" class="btn btn-primary apply_filter">Apply Filter</button>
+		    	<button type="button" class="btn btn-primary apply_reset">Reset</button>
 		    </div>
 	    </div>
 	</div>

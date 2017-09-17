@@ -330,3 +330,20 @@ def payment_landing(request):
     return render(request,'landing.html', {'sales_daily':json.dumps(sales_daily, cls=DjangoJSONEncoder),\
             'invoice_value':json.dumps(invoice_value, cls=DjangoJSONEncoder), \
             'payment_value':json.dumps(payment_value, cls=DjangoJSONEncoder), 'current_account':current_year})
+
+
+#400 error
+def bad_request(request):
+    return render (request, 'error/400.html')
+
+#403 error
+def permission_denied(request):
+    return render (request, 'error/403.html')
+
+#404 error
+def page_not_found(request):
+    return render (request, 'error/404.html')
+
+#500 error
+def server_error(request):
+    return render (request, 'error/500.html')

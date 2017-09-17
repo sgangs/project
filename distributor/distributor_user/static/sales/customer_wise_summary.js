@@ -48,29 +48,6 @@ $('.date_range').daterangepicker({
 };
 
 
-load_customer()
-
-function load_customer(){
-    $.ajax({
-        url : "/master/customer/getdata/", 
-        type: "GET",
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            $.each(jsondata, function(){
-                $('#customer').append($('<option>',{
-                    'data-id': this.id,
-                    'text': this.name + ": "+ this.key
-                }));
-            });
-            $('#customer').selectpicker('refresh');
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "No customer data exist.", "error");
-        }
-    });
-}
 
 $('.get_data').click(function(e){
     get_data(1);
@@ -93,7 +70,6 @@ function get_data(page_no) {
         type: "GET",
         data:{ start: startdate,
             end: enddate,
-            customerid: customerid,
             page_no: page_no,
             // calltype:"apply_filter",
             csrfmiddlewaretoken: csrf_token},
@@ -101,28 +77,33 @@ function get_data(page_no) {
         // handle a successful response
         success : function(jsondata) {
             $("#report_table .data").remove();
-            var total_qty=0;
-            var total_taxable=0;
-            var total_amt=0;
+            var total_sales=0;
+            var total_paid=0;
+            var total_due=0;
+            var sl_no=0;
             $.each(jsondata['object'], function(){
-                total_qty+=parseFloat(this.quantities);
-                total_taxable+=parseFloat(this.taxable_value);
-                total_amt+=parseFloat(this.total_amount);
+                sl_no+=1;
+                total_sales+=parseFloat(this.total_sales);
+                total_paid+=parseFloat(this.total_paid);
+                this_due = parseFloat(this.total_sales) - parseFloat(this.total_paid);
+                total_due+=this_due
                 $('#report_table').append("<tr class='data' align='center'>"+
-                "<td>"+this.product_name+"</td>"+
-                "<td>"+parseFloat(this.quantities)+"</td>"+
-                "<td>"+this.taxable_value+"</td>"+
+                "<td>"+sl_no+"</td>"+
+                "<td>"+this.customer_name+"</td>"+
+                "<td>"+parseFloat(this.total_sales)+"</td>"+
+                "<td>"+parseFloat(this.total_paid)+"</td>"+
+                "<td>"+this_due+"</td>"+
                 // "<td></td>"+
-                "<td>"+this.total_amount+"</td>"+
                 "</tr>");                
             })
 
             $('#report_table').append("<tr class='data' align='center'>"+
                 "<td><b>Total</b></td>"+
-                "<td><b>"+parseFloat(total_qty)+"</b></td>"+
-                "<td><b>"+total_taxable.toFixed(2)+"</b></td>"+
+                "<td></td>"+
+                "<td><b>Rs."+total_sales.toFixed(2)+"</b></td>"+
+                "<td><b>Rs."+total_paid.toFixed(2)+"</b></td>"+
                 // "<td></td>"+
-                "<td><b>"+total_amt.toFixed(2)+"</b></td>"+
+                "<td><b>Rs."+total_due.toFixed(2)+"</b></td>"+
                 "</tr>");
             // apply_navbutton(jsondata, page_no);
         },

@@ -1,4 +1,5 @@
 from django.conf.urls import include,url
+from django.conf.urls import (handler400, handler403, handler404, handler500)
 from django.contrib import admin
 from django.contrib.auth.views import login, logout, password_reset, password_reset_done, password_reset_confirm,\
         password_reset_complete, password_change, password_change_done
@@ -54,3 +55,9 @@ urlpatterns = [
 
     # url(r'^payment/', include('payumoney.urls',namespace='payumoney', app_name='payumoney')),
 ]
+
+#Error Handlers
+handler400 = 'distributor.views.bad_request'
+handler403 = 'distributor.views.permission_denied'
+handler404 = 'distributor.views.page_not_found'
+handler500 = 'distributor.views.server_error'

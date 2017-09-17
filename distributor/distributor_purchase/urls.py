@@ -5,8 +5,11 @@ from . import views
 urlpatterns = [
     # url(r'^zone/getdata/$', views.zone_view, name='zone_view'),
     url(r'^receipt/$', views.purchase_receipt_new, name='purchase_receipt_new'),
+
+    url(r'^receipt-order/(?P<pk>[-\S]+)/$', views.receipt_order, name='receipt_order'),
+
     url(r'^receipt/save/$', views.purchase_receipt_save, name='purchase_receipt_save'),
-    url(r'^receipt/detailview/(?P<pk>[-\S]+)/$$', views.receipts_detail_view, name='receipts_detail_view'),
+    url(r'^receipt/detailview/(?P<pk>[-\S]+)/$', views.receipts_detail_view, name='receipts_detail_view'),
     url(r'^receipt/api/getproduct$', views.get_product, name='get_product'),
     url(r'^receipt/detail/(?P<pk>[-\S]+)/$', views.receipts_details, name='receipts_details'),
     url(r'^receipt/excel/(?P<pk>[-\S]+)/$$', views.excel_receipt, name='excel_receipt'),
@@ -32,4 +35,13 @@ urlpatterns = [
 
     url(r'^hsnreport/$', views.get_hsn_report, name='get_hsn_report'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
+
+    url(r'^order/$', views.purchase_order_new, name='purchase_order_new'),
+    url(r'^order/save/$', views.purchase_order_save, name='purchase_order_save'),
+    url(r'^order/list/$', views.order_list_view, name='order_list_view'),
+    url(r'^order/list/data/$', views.all_orders, name='all_orders'),
+    url(r'^order/detailview/(?P<pk>[-\S]+)/$', views.order_detail_view, name='order_detail_view'),
+    url(r'^order/detail/$', views.order_details, name='order_details'),
+    url(r'^order/delete/$', views.order_delete, name='order_delete'),
+
 ]

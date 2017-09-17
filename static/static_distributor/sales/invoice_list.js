@@ -268,7 +268,6 @@ $('.apply_filter').click(function(e){
 function filter_data(page_no) {
     var customers=[];
     $.each($(".customer_filter option:selected"), function(){
-        customerid=$(this).data('id');
         // if (customerid == 'undefined' || typeof(customerid) == undefined){
         if ($.trim(customerid).length>0){
             console.log("Here with id: "+customerid+" & type: "+typeof(customerid));

@@ -2,7 +2,7 @@
 
 {%block title%}
 
-<title>Purchase Receipts</title>
+<title>Purchase Orders</title>
 
 <link href="https://fonts.googleapis.com/css?family=Crimson+Text:400,700" rel="stylesheet">
 
@@ -11,7 +11,7 @@
 {% block content%}
 	
 
-<div class="row">
+<!-- <div class="row">
 	<div class="col-xs-4">
     	<div class="panel panel-info">
         	<div class="panel-heading">
@@ -43,21 +43,17 @@
 			</div>
 		</div>
 	</div>
-</div> 
+</div>  -->
 
 
 
 <div>
-	<button type="submit" class="btn btn-primary btn-sm all"><i class="fa fa-star"></i> View All Receipts</button>
+	<!-- <button type="submit" class="btn btn-primary btn-sm all"><i class="fa fa-star"></i> View All Receipts</button>
 	<button type="submit" class="btn btn-primary btn-sm unpaid"><i class="fa fa-star"></i> View Unpaid Receipts</button>
-	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa--exclamation-circle"></i> View Overdue Receipts</button>
+	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa-exclamation-circle"></i> View Overdue Receipts</button> -->
 	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
 </div>
 <br>
-<p>
-	<button type="submit" class="btn btn-primary btn-sm purpay"><i class="fa fa-rupee"></i> Purchase Payment</button>
-</p>
-<div></div>
 <br>
 
 
@@ -66,71 +62,21 @@
       	<thead class="thead-inverse header-background">
         	<tr>
 	            <th class="text-center" hidden></th>
-	            <th class="text-center">Receipt No.</th>
-	            <th class="text-center">Vendor Invoice No</th>
-	            <th class="text-center">Receipt Date</th>
-	            <th class="text-center">Due Date</th>
+	            <th class="text-center">Order No.</th>
+	            <th class="text-center">Vendor Order/Note No</th>
+	            <th class="text-center">Order Date</th>
+	            <th class="text-center">Delivery Date</th>
 	            <th class="text-center">Vendor</th>
-	            <th class="text-center">Total Receipt Amount</th>
-	            <th class="text-center">Total Amount Paid</th>
-	            <th class="text-center">Download Excel</th>
-	            <th class="text-center">Delete Invoice</th>
+	            <th class="text-center">Total Order Amount</th>
+	            <!-- <th class="text-center">Download Excel</th> -->
+	            <th class="text-center">Is Order Closed</th>
+	            <th class="text-center">Convert To Receipt</th>
+	            <th class="text-center">Click To Delete</th>
 			</tr>
 		</thead>
         <tbody>        	
         </tbody>
   	</table> 
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="payment" tabindex="-1" role="dialog" aria-labelledby="paymentLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document">
-	    <div class="modal-content">
-		    <div class="modal-header">
-		    	<h4 class="modal-title" id="myModalLabel">Purchase Receipt Payment</h4>
-		    </div>
-	    <div class="modal-body">
-		    <form action="" method="post">
-		    	<div class="form-group vendordiv">
-					<label for="classname" class="control-label">Select Vendor</label>
-					<select class="form-control selectpicker vendor" id="vendor" data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Vendor</option>				
-					</select>
-				</div>
-				<div class="form-group modediv">
-					<label for="classname" class="control-label">Select Payment Mode</label>
-					<select class="form-control selectpicker mode" id="mode" data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Payment Mode</option>				
-					</select>
-				</div>
-				<div class="form-group modediv">
-					<label for="classname" class="control-label">Payment Date</label>
-					<input class="form-control date_payment">
-				</div>
-				<div class="form-group detaildiv" hidden>
-					<table class="table table-striped table-bordered table-hover" id="payment_table">
-				      	<thead class="thead-inverse header-background">
-				        	<tr>
-					            <th class="text-center" hidden></th>
-					            <th class="text-center">Receipt No</th>
-					            <th class="text-center">Receipt Date</th>
-					            <th class="text-center">Value</th>
-					            <th class="text-center" hidden>Amount Already Paid</th>
-					            <th class="text-center">Pending</th>
-					            <th class="text-center">Select Receipt</th>
-					            <th class="text-center">Amount Currently Paid</th>
-					            <th class="text-center">Cheque/NEFT/RTS No</th>
-							</tr>
-						</thead>
-					</table>
-				</div>				
-			</form>    
-	   	</div>
-		    <div class="modal-footer">
-		    	<button type="button" class="btn btn-primary register" disabled>Register Payment</button>
-		    </div>
-	    </div>
-	</div>
 </div>
 
 <!-- Modal -->
@@ -152,12 +98,17 @@
 					</select>
 				</div>
 				<div class="form-group invoicediv">
-					<label for="classname" class="control-label">Filter by Vendor Invoice No</label>
-					<input type="text" class="form-control invoice_no">
-				</div>
-				<div class="form-group orderdiv">
-					<label for="classname" class="control-label">Filter by Purchase Order No</label>
+					<label for="classname" class="control-label">Search by Order No</label>
 					<input type="text" class="form-control order_no">
+				</div>
+				<div class="form-group ordertype">
+					<label for="classname" class="control-label">Filter By Order Type</label>
+					<select class="form-control selectpicker order_type" id='order_type' data-live-search="true">
+						<!-- <option disabled selected hidden style='display: none' value>Select Ledger Group of this account</option> -->
+							<option data-id='all'>All Orders</option>
+		            		<option data-id='open'>Open Orders</option>
+		            		<option data-id='closed'>Closed Orders</option>
+					</select>
 				</div>				
 			</form>    
 	   	</div>
@@ -191,7 +142,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'purchase/receipt_list.js' %}"></script>
+<script src="{% static 'purchase/order_list.js' %}"></script>
 
 <script>
 csrf_token='{{csrf_token}}';

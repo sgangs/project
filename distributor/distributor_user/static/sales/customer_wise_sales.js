@@ -107,7 +107,7 @@ function get_data(page_no) {
             $.each(jsondata['object'], function(){
                 total_qty+=parseFloat(this.quantities);
                 total_taxable+=parseFloat(this.taxable_value);
-                total_amt=parseFloat(this.total_amount);
+                total_amt+=parseFloat(this.total_amount);
                 $('#report_table').append("<tr class='data' align='center'>"+
                 "<td>"+this.product_name+"</td>"+
                 "<td>"+parseFloat(this.quantities)+"</td>"+

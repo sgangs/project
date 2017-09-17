@@ -15,6 +15,7 @@ $('.apply_reset').click(function(){
     // $('.product_name').val('');
     // $('.product_id').val('');
     // $('.invoice_no').val('');
+    $('.report_text').html('Current Report: General Report')
     date_update();
     dateChanged=false;
     load_list();
@@ -91,9 +92,9 @@ function load_list(){
     });
 }
 
-load_summary()
+load_summary(report_type='general')
 
-function load_summary(){
+function load_summary(report_type){
     if (!dateChanged){
         startdate = startdate.split("-").reverse().join("-")
         enddate = enddate.split("-").reverse().join("-")
@@ -103,6 +104,7 @@ function load_summary(){
         url : "getdata/", 
         type: "GET",
         data:{ calltype:"short_summary",
+            report_type: report_type,
             start: startdate,
             end: enddate,},
         dataType: 'json',
@@ -122,13 +124,33 @@ function load_summary(){
         }
     });
 }
+
 $('.apply_filter').click(function(e) {
-    filter_data();
-    load_summary();
+    filter_data(report_type='general');
+    load_summary(report_type='general');
+    $('.report_text').html('Current Report: General Report')
 })
 
+$('.b2b_report').click(function(e) {
+    filter_data(report_type='b2b');
+    load_summary(report_type='b2b');
+    console.log(('.report_text'));
+    $('.report_text').html('Current Report: B2B Report')
+})
 
-function filter_data() {
+$('.b2cl_report').click(function(e) {
+    filter_data(report_type='b2cl');
+    load_summary(report_type='b2cl');
+    $('.report_text').html('Current Report: B2CL Report')
+})
+
+$('.b2cs_report').click(function(e) {
+    filter_data(report_type='b2cs');
+    load_summary(report_type='b2cs');
+    $('.report_text').html('Current Report: B2CS Report')
+})
+
+function filter_data(report_type) {
     tax_type=$('#type_filter').find(':selected').data('id');
     tax_percent=$('#percent_filter').find(':selected').data('id');    
 
@@ -142,6 +164,7 @@ function filter_data() {
         url : "getdata/", 
         type: "GET",
         data:{ calltype:"apply_filter",
+            report_type: report_type,
             // tax_percent: tax_percent,
             // tax_type: tax_type,
             start: startdate,

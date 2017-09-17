@@ -178,6 +178,9 @@ function filter_data(page_no) {
         sent_with='overdue_receipts'
     }
     invoice_no=$('.invoice_no').val()
+
+    order_no=$('.order_no').val()
+
     if (!dateChanged){
         startdate = startdate.split("-").reverse().join("-")
         enddate = enddate.split("-").reverse().join("-")
@@ -193,6 +196,7 @@ function filter_data(page_no) {
             start: startdate,
             end: enddate,
             invoice_no: invoice_no,
+            order_no: order_no,
             page_no: page_no,
             vendors: JSON.stringify(vendors),
             csrfmiddlewaretoken: csrf_token},
@@ -295,8 +299,13 @@ function delete_invoice(get_id){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            swal("Hooray", "Purchase invoice deleted.", "success");
-            setTimeout(location.reload(true),1000);
+            if (jsondata.length > 0){
+                swal("Err...", jsondata, "error");    
+            }
+            else{
+                swal("Hooray", "Purchase invoice deleted.", "success");
+            }
+            // setTimeout(location.reload(true),1000);
         },
         // handle a non-successful response
         error : function() {

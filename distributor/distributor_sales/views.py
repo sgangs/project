@@ -91,8 +91,9 @@ def sales_invoice_save(request):
 		response_data = {}
 		this_tenant=request.user.tenant
 		if (calltype == 'save'):
-			with transaction.atomic():
-				try:
+			try:
+				with transaction.atomic():
+				
 					customer_id = request.data.get('customer')
 					warehouse_id=request.data.get('warehouse')
 					date=request.data.get('date')
@@ -298,9 +299,11 @@ def sales_invoice_save(request):
 									price_list[i]={'date':item.purchase_date, 'quantity':quantity_updated,\
 													'pur_rate':item.purchase_price}
 									total_purchase_price+=quantity_updated*item.purchase_price
-									quantity_updated=0								
+									quantity_updated=0
+							
 							if (quantity_updated>0):
-								raise IntegrityError
+								raise IntegrityError('Stock/Inventory not available for: '+product.name )
+							
 							price_list_dict['detail']=price_list_list
 							price_list_json = json.dumps(price_list_dict,  cls=DjangoJSONEncoder)
 
@@ -457,9 +460,10 @@ def sales_invoice_save(request):
 						
 						debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 						credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-
+						
 						if (debit != credit):
-							raise IntegrityError
+							raise IntegrityError('Debit not equal to credit')
+							# raise ValueError
 
 
 						if maintain_inventory:
@@ -503,12 +507,6 @@ def sales_invoice_save(request):
 							inventory_acct_year.current_debit+=total_purchase_price
 							inventory_acct_year.save()
 
-							# new_journal_inv=journal_inventory()
-							# new_journal_inv.date=date
-							# new_journal_inv.transaction_bill_id=new_invoice.id
-							# new_journal_inv.trn_type=4
-							# new_journal_inv.tenant=this_tenant
-							# new_journal_inv.save()
 							new_entry_inv=journal_entry_inventory()
 							new_entry_inv.transaction_type=1
 							new_entry_inv.journal=new_journal_inv
@@ -517,9 +515,11 @@ def sales_invoice_save(request):
 							new_entry_inv.tenant=this_tenant
 							new_entry_inv.save()
 
-					response_data=new_invoice.id
-				except:
-					transaction.rollback()
+					response_data['invoice_id']=new_invoice.id
+
+			except Exception as err:
+				response_data  = err.args 
+				transaction.rollback()
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
@@ -1164,14 +1164,55 @@ def sales_invoice_edit(request):
 @api_view(['GET'],)
 def collection_list(request):
 	if request.method == 'GET':
-		page_no=request.GET.get('page_no');
+		this_tenant = request.user.tenant
+		page_no=request.GET.get('page_no')
+		calltype=request.GET.get('calltype')
 		response_data={}
-		payments=sales_payment.objects.for_tenant(request.user.tenant).order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
-		payments_paginated=paginate_data(page_no, 10, list(payments))
-		serializer = CollectionSerializers(payments_paginated['object'], many=True)
-		response_data['object']  = serializer.data
-		response_data['end'] = payments_paginated['end']
-		response_data['start'] = payments_paginated['start']
+		if (calltype == 'apply_filter'):
+			customers=json.loads(request.GET.get('customers'))
+			start=request.GET.get('start')
+			end=request.GET.get('end')
+			invoice_no=request.GET.get('invoice_no')
+			# productid=request.GET.get('productid')
+			cheque_rtgs=request.GET.get('cheque_rtgs')
+			# invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
+			# 			select_related('invoiceLineItem_salesInvoice').\
+			# 			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+
+			payments = sales_payment.objects.for_tenant(this_tenant).filter(paid_on__range=[start,end]).\
+						order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
+			if (len(customers)>0):
+				customers_list=[]
+				for item in customers:
+					customers_list.append(item['customerid'])
+					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end],customer__in=customers_list)
+				payments=payments.filter(sales_invoice__in=invoices).all()
+				
+			if invoice_no:
+				invoices=sales_invoice.objects.for_tenant(this_tenant).filter(invoice_id__icontains=invoice_no)
+				payments=payments.filter(sales_invoice__in=invoices)
+
+			if cheque_rtgs:
+				payments=payments.filter(cheque_rtgs_number=cheque_rtgs)
+				print(payments)
+			
+			# if productid:
+			# 	product=Product.objects.for_tenant(this_tenant).get(id=productid)
+			# 	invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
+			# 			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+		
+		else:
+			response_data={}
+			payments=sales_payment.objects.for_tenant(this_tenant).order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
+		
+		if (page_no):
+			payments_paginated=paginate_data(page_no, 10, list(payments))
+			serializer = CollectionSerializers(payments_paginated['object'], many=True)
+			response_data['object']  = serializer.data
+			response_data['end'] = payments_paginated['end']
+			response_data['start'] = payments_paginated['start']
+		else:
+			response_data['object'] = payments
 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
@@ -1886,13 +1927,12 @@ def customer_wise_sales(request):
 def customer_wise_sales_data(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
-		# customerid = request.GET.get('customerid')
-		customerid=14
-		# start=request.GET.get('start')
-		# end=request.GET.get('end')
+		customerid = request.GET.get('customerid')
+		start=request.GET.get('start')
+		end=request.GET.get('end')
 		# page_no=1
-		end=date_first.date.today()
-		start=end-date_first.timedelta(days=120)
+		# end=date_first.date.today()
+		# start=end-date_first.timedelta(days=120)
 		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], customer=customerid)
 
 		all_items=invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice__in = invoices).select_related('product').\
@@ -1923,13 +1963,35 @@ def get_hsn_report(request):
 	if (calltype == 'apply_filter'):
 		start=request.GET.get('start')
 		end=request.GET.get('end')
-		invoices=sales_invoice.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).all()
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all()
 		all_items=invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice__in = invoices).values('product_hsn').\
 					annotate(taxable_value=Sum('line_tax'), total_amount=Sum('line_total'),cgst_amount=Sum('cgst_value'), \
 					igst_amount=Sum('igst_value'), quantities=Sum(F('quantity') * F('unit_multi')) - Sum(F('quantity_returned') * F('unit_multi'))).\
 					order_by('product_hsn')
 	
 	response_data['object']=list(all_items)
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@login_required
+def customer_wise_summary(request):
+	extension="base.html"
+	return render (request, 'sales/customer_wise_summary.html',{'extension':extension})
+
+@api_view(['GET'],)
+def get_customer_wise_summary(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		start=request.GET.get('start')
+		end=request.GET.get('end')
+
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).values('customer', 'customer_name').\
+				annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid') )
+	
+	response_data['object']=list(invoices)
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

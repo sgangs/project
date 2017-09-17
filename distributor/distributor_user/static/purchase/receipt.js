@@ -315,7 +315,6 @@ function get_total(){
             this_total=(this_total - discount_val_2);
         }
 
-        console.log(pur_disc_rate);
         cgst_total=round_off((pur_disc_rate*cgst_percent)/100);
         sgst_total=round_off((pur_disc_rate*sgst_percent)/100);
         igst_total=round_off((pur_disc_rate*igst_percent)/100);
@@ -450,11 +449,20 @@ function new_data(){
     var cgsttotal=0, sgsttotal=0, igsttotal=0;
     round_value=round_off(parseFloat($('.round').val()));
     total=round_off(parseFloat($('.total_receipt').html()));
+
+    order_pk=$('.order_pk').html()
+
+    if (calledfrom != 'purchaseorder'){
     
-    if (vendorid == '' || typeof(vendorid) =='undefined' || warehouseid == '' || typeof(warehouseid) == 'undefined' ||
-        $.trim(invoice_no) == '' || typeof(invoice_no) =='undefined' || $.trim(date) == '' || typeof(date) =='undefined'){
-        proceed = false;
+        if (vendorid == '' || typeof(vendorid) =='undefined' || warehouseid == '' || typeof(warehouseid) == 'undefined' ||
+            $.trim(invoice_no) == '' || typeof(invoice_no) =='undefined' || $.trim(date) == '' || typeof(date) =='undefined'){
+            proceed = false;
+            console.log('here');
+        }
+
     }
+
+
     $(".details tr.data").each(function() {
         var product_id = $(this).find('td:nth-child(1) input').val();
         if (product_id == '' || product_id =='undefined'){
@@ -466,6 +474,7 @@ function new_data(){
         var quantity = $(this).find('td:nth-child(4) input').val();
         if (quantity == '' || quantity =='undefined'){
             proceed=false;
+            console.log('here');
             swal("Oops...", "Please enter a quantity ", "error");
             $(this).closest('tr').addClass("has-error");
         }
@@ -481,11 +490,17 @@ function new_data(){
             free_tax=0;
         }
         
-        var unit_id = $(this).find('td:nth-child(7) :selected').data('id');
-        if (unit_id == '' || unit_id =='undefined'){
-            proceed=false;
-            swal("Oops...", "Please enter the purchase unit ", "error");
-            $(this).closest('tr').addClass("has-error");
+        if (calledfrom == 'purchaseorder'){
+            var unit_id = parseInt($(this).find('td:nth-child(6) input').val());
+        }
+        else{
+            var unit_id = $(this).find('td:nth-child(7) :selected').data('id');
+            if (unit_id == '' || unit_id =='undefined'){
+                proceed=false;
+                console.log('here')
+                swal("Oops...", "Please enter the purchase unit ", "error");
+                $(this).closest('tr').addClass("has-error");
+            }
         }
 
         var purchase = $(this).find('td:nth-child(8) input').val();
@@ -497,13 +512,21 @@ function new_data(){
 
         var sales = $(this).find('td:nth-child(9) input').val();
         if (sales == '' || sales =='undefined'){
-            sales = ''
+            sales = 0
             // proceed=false;
             // swal("Oops...", "Please enter a tentative sales rate ", "error");
             // $(this).closest('tr').addClass("has-error");
         }
         
         var mrp = $(this).find('td:nth-child(10) input').val();
+
+        if (mrp == '' || sales =='undefined'){
+            mrp = 0
+            // proceed=false;
+            // swal("Oops...", "Please enter a tentative sales rate ", "error");
+            // $(this).closest('tr').addClass("has-error");
+        }
+
         
         var disc_type = $(this).find('td:nth-child(11) :selected').data('id');
         var disc = parseFloat($(this).find('td:nth-child(12) input').val());
@@ -545,7 +568,8 @@ function new_data(){
 
         var taxable_total = $(this).find('td:nth-child(15)').html();
         var line_total = $(this).find('td:nth-child(22)').html();
-        
+        var order_line_item_id = $(this).find('td:nth-child(24)').html();
+
         var item = {
             product_id : product_id,
             quantity: quantity,
@@ -567,27 +591,30 @@ function new_data(){
             igst_v: igst_v,
             taxable_total:taxable_total,
             line_total: line_total,
+            order_line_item_id : order_line_item_id
         };
         items.push(item);
     });
     cgsttotal = round_off(cgsttotal);
     sgsttotal = round_off(sgsttotal);
     igsttotal = round_off(igsttotal);
-    console.log(round_value);
+    console.log(items)
     
     if (proceed){
         (function() {
             $.ajax({
-                url : "save/" , 
+                url : "/purchase/receipt/save/" , 
                 type: "POST",
                 data:{supplier_invoice: invoice_no,
                     vendor:vendorid,
                     warehouse:warehouseid,
                     date:date.split("/").reverse().join("-"),
+                    order_pk: order_pk,
                     // grand_discount_type: grand_discount_type,
                     // grand_discount_value: grand_discount_value,
                     subtotal: subtotal,
-                    // taxtotal: taxtotal,
+                    // taxtotal: taxtotal
+                    calledfrom : calledfrom,
                     cgsttotal: cgsttotal,
                     sgsttotal: sgsttotal,
                     igsttotal: igsttotal,
