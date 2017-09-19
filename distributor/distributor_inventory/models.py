@@ -137,8 +137,20 @@ class inventory_transfer (models.Model):
 	id=models.BigAutoField(primary_key=True)
 	transfer_id = models.PositiveIntegerField(db_index=True)
 	# product=models.ForeignKey(Product, related_name='inventoryTransfer_inventory_master_product')
-	from_warehouse=models.ForeignKey(Warehouse, related_name='inventoryTransferFrom_inventory_master_warehouse')
-	to_warehouse=models.ForeignKey(Warehouse, related_name='inventoryTransferTo_inventory_master_warehouse')
+	
+	from_warehouse=models.ForeignKey(Warehouse, blank=True, null=True, related_name='inventoryTransferFrom_inventory_master_warehouse')
+	from_warehouse_address=models.TextField(blank=True, null=True)
+	from_warehouse_state=models.CharField(max_length=4,blank=True, null=True)
+	from_warehouse_city=models.CharField(max_length=50, blank=True, null=True)
+	from_warehouse_pin=models.CharField(max_length=8, blank=True, null=True)
+
+
+	to_warehouse=models.ForeignKey(Warehouse, blank=True, null=True, related_name='inventoryTransferTo_inventory_master_warehouse')
+	to_warehouse_address=models.TextField(blank=True, null=True)
+	to_warehouse_state=models.CharField(max_length=4,blank=True, null=True)
+	to_warehouse_city=models.CharField(max_length=50, blank=True, null=True)
+	to_warehouse_pin=models.CharField(max_length=8, blank=True, null=True)
+
 	initiated_on=models.DateField(db_index=True, blank=True, null=True)
 	received_on=models.DateField(db_index=True, blank=True, null=True)
 	total_value=models.DecimalField(db_index=True, max_digits=10, decimal_places=2, blank=True, null=True)
@@ -174,7 +186,11 @@ class inventory_transfer_items (models.Model):
 	id=models.BigAutoField(primary_key=True)
 	inventory_id=models.BigIntegerField()
 	transfer=models.ForeignKey(inventory_transfer,related_name='inventoryTransferItems_inventoryTransfer')
-	product=models.ForeignKey(Product, related_name='inventoryTransferItem_inventory_master_product')
+	
+	product=models.ForeignKey(Product, blank=True, null=True, related_name='inventoryTransferItem_inventory_master_product')
+	product_name=models.CharField(max_length =200, blank=True, null=True,)
+	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
+
 	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	unit=models.ForeignKey(Unit, related_name='inventoryTransferItem_inventory_master_unit')
 	purchase_date=models.DateField(blank=True, null=True)

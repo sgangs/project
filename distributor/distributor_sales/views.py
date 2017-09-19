@@ -375,7 +375,7 @@ def sales_invoice_save(request):
 								igst_paid[igst_p]=[igst_v, total, line_taxable_total]
 						else:
 							if (cgst_p in cgst_paid):
-								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][0]+=cgst_v
 								cgst_paid[cgst_p][1]=total
 								cgst_paid[cgst_p][2]+=line_taxable_total
 							else:
@@ -1040,21 +1040,21 @@ def sales_invoice_edit(request):
 
 						if (is_igst):
 							if (igst_p in igst_paid):
-								[igst_p][0]+=igst_v
+								igst_paid[igst_p][0]+=igst_v
 								igst_paid[igst_p][1]=total
 								igst_paid[igst_p][2]+=line_taxable_total
 							else:
 								igst_paid[igst_p]=[igst_v, total, line_taxable_total]
 						else:
 							if (cgst_p in cgst_paid):
-								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][0]+=cgst_v
 								cgst_paid[cgst_p][1]=total
 								cgst_paid[cgst_p][2]+=line_taxable_total
 							else:
 								cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
 
 							if (sgst_p in sgst_paid):
-								[sgst_p][0]+=sgst_v
+								sgst_paid[sgst_p][0]+=sgst_v
 								sgst_paid[sgst_p][1]=total
 								cgst_paid[cgst_p][2]+=line_taxable_total
 							else:
@@ -1718,21 +1718,21 @@ def sales_return_save(request):
 
 						if (is_igst):
 							if (igst_p in igst_paid):
-								[igst_p][0]+=igst_v
+								igst_paid[igst_p][0]+=igst_v
 								igst_paid[igst_p][1]=total
 								igst_paid[igst_p][2]+=line_taxable_total
 							else:
 								igst_paid[igst_p]=[igst_v, total, line_taxable_total]
 						else:
 							if (cgst_p in cgst_paid):
-								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][0]+=cgst_v
 								cgst_paid[cgst_p][1]=total
 								cgst_paid[cgst_p][2]+=line_taxable_total
 							else:
 								cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
 
 							if (sgst_p in sgst_paid):
-								[sgst_p][0]+=sgst_v
+								sgst_paid[sgst_p][0]+=sgst_v
 								sgst_paid[sgst_p][1]=total
 								sgst_paid[sgst_p][2]+=line_taxable_total
 							else:
@@ -1750,20 +1750,7 @@ def sales_return_save(request):
 							if v[2]>0:
 								new_tax_transaction_register("CGST",3, k, v[0], v[1], v[2], new_invoice.id, \
 									new_invoice.return_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
-								# new_tax_transaction=tax_transaction()
-								# new_tax_transaction.transaction_type=3
-								# new_tax_transaction.tax_type="CGST"
-								# new_tax_transaction.tax_percent=k
-								# new_tax_transaction.tax_value=v
-								# new_tax_transaction.transaction_bill_id=new_invoice.id
-								# new_tax_transaction.transaction_bill_no=new_invoice.return_id
-								# new_tax_transaction.date=date
-								# new_tax_transaction.tenant=this_tenant
-								# if customer_gst:
-									# new_tax_transaction.is_registered = True
-								# else:
-									# new_tax_transaction.is_registered = False
-								# new_tax_transaction.save()
+								
 
 						for k,v in sgst_paid.items():
 							if v[2]>0:

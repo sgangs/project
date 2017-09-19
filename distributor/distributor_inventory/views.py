@@ -32,6 +32,7 @@ from distributor_master.models import Unit, Product, Warehouse
 from distributor_user.models import Tenant
 from distributor_account.models import Account, tax_transaction, payment_mode, accounting_period,\
 									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory
+from distributor.global_utils import paginate_data
 from .forms import *
 from .models import *
 from .serializers import *
@@ -219,6 +220,33 @@ def inventory_wastage_template(request):
 	return render (request, 'inventory/inventory_wastage.html',{'extension':extension})
 
 
+@login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def transfer_detail_view(request, pk):
+	return render(request,'inventory/internal_challan_detail.html', {'extension': 'base.html', 'pk':pk})
+
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def transfer_details(request, pk):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		transfer=inventory_transfer.objects.for_tenant(this_tenant).values('id','transfer_id','initiated_on',\
+		'from_warehouse','from_warehouse_address','to_warehouse', 'to_warehouse_address',).get(id=pk)
+		
+		line_items=list(inventory_transfer_items.objects.filter(transfer=transfer['id']).values('id','product__name','product__id',\
+			'product__hsn','quantity',))
+		
+		transfer['line_items']=line_items
+		# invoice['tenant_gst']=this_tenant.gst
+		# invoice['tenant_name']=this_tenant.name
+		# invoice['tenant_dl1']=this_tenant.dl_1
+		# invoice['tenant_dl2']=this_tenant.dl_2
+		
+		jsondata = json.dumps(transfer, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+
+
 @api_view(['GET', 'POST'],)
 def inventory_transfer_data(request):
 	this_tenant=request.user.tenant
@@ -235,25 +263,31 @@ def inventory_transfer_data(request):
 				record_transit=True
 			elif (record_transit == 'false'):
 				record_transit=False
+			else:
+				record_transit=False
+
 			all_data = json.loads(request.POST.get('all_details'))
 			total=0
 			if (from_warehouseid == to_warehouseid):
 				raise IntegrityError
-			# unitid=request.POST.get('unit')
-			# unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
-			# multiplier=unit.multiplier
-			# quantity=Decimal(request.POST.get('quantity'))*multiplier
-			# batch=request.POST.get('batch')
-			# manufacturing_date=request.POST.get('manufacturing_date')
-			# expiry_date=request.POST.get('expiry_date')
-			# serial_no=request.POST.get('serial_no')
+			
 			from_warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=from_warehouseid)
 			to_warehouse=Warehouse.objects.for_tenant(this_tenant).get(id=to_warehouseid)
 			with transaction.atomic():
 				try:
 					new_inventory_transfer=inventory_transfer()
 					new_inventory_transfer.from_warehouse=from_warehouse
+					new_inventory_transfer.from_warehouse_address=from_warehouse.address_1+", "+from_warehouse.address_2  
+					new_inventory_transfer.from_warehouse_state=from_warehouse.state
+					new_inventory_transfer.from_warehouse_city=from_warehouse.city
+					new_inventory_transfer.from_warehouse_pin=from_warehouse.pin
+
 					new_inventory_transfer.to_warehouse=to_warehouse
+					new_inventory_transfer.to_warehouse_address=to_warehouse.address_1+", "+to_warehouse.address_2  
+					new_inventory_transfer.to_warehouse_state=to_warehouse.state
+					new_inventory_transfer.to_warehouse_city=to_warehouse.city
+					new_inventory_transfer.to_warehouse_pin=to_warehouse.pin
+
 					new_inventory_transfer.initiated_on=date
 					new_inventory_transfer.total_value=total
 					new_inventory_transfer.in_transit=record_transit
@@ -261,7 +295,11 @@ def inventory_transfer_data(request):
 					new_inventory_transfer.save()
 
 					for data in all_data:
-						inventory_id=data['quantity']
+						print(data)
+						original_qty=data['quantity']
+						product_id=data['product_id']
+						unit_id=data['unit_id']
+						inventory_id=data['inventory_id']
 						product=Product.objects.for_tenant(this_tenant).get(id=product_id)
 						unit=Unit.objects.for_tenant(this_tenant).get(id=unit_id)
 						multiplier=unit.multiplier
@@ -269,13 +307,18 @@ def inventory_transfer_data(request):
 						inventory_item=Inventory.objects.for_tenant(this_tenant).get(id=inventory_id)
 						if (actual_qty>inventory_item.quantity_available):
 							raise IntegrityError
-						inventory_item.quantity_available-=actual_qty
-						inventory_item.save()
+						elif (actual_qty == inventory_item.quantity_available):
+							inventory_item.delete()
+						else:	
+							inventory_item.quantity_available-=actual_qty
+							inventory_item.save()
 
 						new_item=inventory_transfer_items()
-						new_item.inventory_id=inventory_item.id
+						new_item.inventory_id=inventory_id
 						new_item.transfer=new_inventory_transfer
 						new_item.product=product
+						new_item.product_name=product.name
+						new_item.product_hsn=product.hsn_code
 						new_item.quantity=original_qty
 						new_item.unit=unit
 						# new_inventory.batch=batch
@@ -288,6 +331,22 @@ def inventory_transfer_data(request):
 						new_item.mrp=inventory_item.mrp
 						new_item.tenant=this_tenant
 						new_item.save()
+
+						new_inventory=Inventory()
+						new_inventory.product=product
+						new_inventory.warehouse=to_warehouse
+						new_inventory.purchase_date=inventory_item.purchase_date
+						new_inventory.purchase_quantity=actual_qty
+						new_inventory.quantity_available=actual_qty
+						# new_inventory.batch=batch
+						# new_inventory.manufacturing_date=manufacturing_date
+						# new_inventory.expiry_date=expiry_date
+						# new_inventory.serial_no=serial_no
+						new_inventory.purchase_price=inventory_item.purchase_price
+						new_inventory.tentative_sales_price=inventory_item.tentative_sales_price
+						new_inventory.mrp=inventory_item.mrp
+						new_inventory.tenant=this_tenant
+						new_inventory.save()
 
 						total+=inventory_item.purchase_price*actual_qty
 						new_inventory_transfer.total_value=total
@@ -308,6 +367,75 @@ def inventory_transfer_data(request):
 
 
 	jsondata = json.dumps(response_data)
+	return HttpResponse(jsondata)
+
+
+@login_required
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def transfer_list(request):
+	return render(request,'inventory/transfer_list.html', {'extension': 'base.html'})
+
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def transfer_list_data(request):
+	this_tenant=request.user.tenant
+	print('here')
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
+		response_data={}
+		filter_data={}
+		if (calltype == 'all_transfer'):
+			transfers=inventory_transfer.objects.for_tenant(this_tenant).all().values('id','transfer_id', \
+				'initiated_on','from_warehouse', 'from_warehouse_address', 'to_warehouse', 'to_warehouse_address', 'total_value').\
+				order_by('-initiated_on', '-transfer_id')[:300]
+		
+		elif (calltype == 'apply_filter'):
+			customers=json.loads(request.GET.get('customers'))
+			start=request.GET.get('start')
+			end=request.GET.get('end')
+			invoice_no=request.GET.get('invoice_no')
+			productid=request.GET.get('productid')
+			sent_with=request.GET.get('sent_with')
+			if (start and end):
+				invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
+							select_related('invoiceLineItem_salesInvoice').\
+							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+			if (len(customers)>0):
+				customers_list=[]
+				for item in customers:
+					customers_list.append(item['customerid'])
+				if (sent_with == 'all_invoices'):
+					invoices=invoices.filter(customer__in=customers_list).\
+						all()
+				if (sent_with == 'unpaid_invoices'):
+					invoices=invoices.filter(final_payment_date__isnull=True, customer__in=customers_list).\
+						all()
+			else:
+				if (sent_with == 'all_invoices'):
+					pass
+				if (sent_with == 'unpaid_receipts'):
+					invoices=invoices.filter(final_payment_date__isnull=True).\
+						all()
+			if invoice_no:
+				invoices=invoices.filter(invoice_id__icontains=invoice_no)
+			if productid:
+				product=Product.objects.for_tenant(this_tenant).get(id=productid)
+				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
+						values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+		
+			filter_summary=invoices.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
+			filter_data['total_pending'] = filter_summary['pending']
+			filter_data['total_value'] = filter_summary['total_sum']
+		
+		if page_no:
+			response_data =  paginate_data(page_no, 10, list(transfers))
+			response_data.update(filter_data)
+		else:
+			response_data['object']=list(transfers)
+			response_data.update(filter_data)
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
 

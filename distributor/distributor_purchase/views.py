@@ -388,7 +388,8 @@ def purchase_receipt_save(request):
 
 						else:
 							if (cgst_p in cgst_paid):
-								[cgst_p][0]+=cgst_v
+								print('here')
+								cgst_paid[cgst_p][0]+=cgst_v
 								cgst_paid[cgst_p][1]=total
 								cgst_paid[cgst_p][2]+=line_taxable_total
 							else:
@@ -399,7 +400,6 @@ def purchase_receipt_save(request):
 								sgst_paid[sgst_p][2]+=line_taxable_total
 							else:
 								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
-
 
 					is_vendor_gst = True if vendor_gst else False
 					if (is_igst):

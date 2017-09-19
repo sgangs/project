@@ -13,7 +13,7 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
 		<!-- Optional theme - This will be gradually obsolete -->
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+		<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous"> -->
 
     <!-- Optional theme: Bootstrap Paper - This can be used after updating html files accordingly -->
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/Paperer/bootstrap.min.css" crossorigin="anonymous"> -->
@@ -190,7 +190,7 @@
             <li><a href="{% url 'sales:invoice_list' %}">Sales Invoice List</a></li>
             <li><a href="{% url 'sales:open_invoices' %}">Open Invoice List</a></li>
             <li><a href="{% url 'sales:sales_report' %}">Sales Report</a></li>
-            <li><a href="#">Customer Report</a>
+            <li><a href="" ="#">Customer Report</a>
                 <div>
                   <ul>
                     <li><a href="{% url 'sales:customer_wise_sales' %}">Customer-wise Sales</a></li>
@@ -223,8 +223,9 @@
           <ul>
             <li><a href="{% url 'inventory:inventory_template' %}">Current Inventory</a></li>
             <li><a href="{% url 'inventory:opening_inventory' %}">Joining Inventory</a></li>
-            <li><a href="{% url 'inventory:inventory_transfer_template' %}">Inter Warehouse Transfer</a></li>
-            <li><a href="{% url 'inventory:inventory_wastage_template' %}">Manage Inventory Wastage</a></li>
+            <li><a href="{% url 'inventory:inventory_transfer_template' %}">Inventory Transfer</a></li>
+            <li><a href="{% url 'inventory:transfer_list' %}">Transfer List</a></li>
+            <li><a href="{% url 'inventory:inventory_wastage_template' %}">Inventory Wastage</a></li>
             <li><a href="{% url 'inventory:product_valuation_movement_template' %}">Product Movement Valuation</a></li>
           <!--   <li><a href="{% url 'sales:new_sales_invoice' %}">Cretae Sales Invoice</a></li>
             <li><a href="{% url 'sales:invoice_list' %}">Sales Report</a></li> -->

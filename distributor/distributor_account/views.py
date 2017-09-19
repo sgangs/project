@@ -77,8 +77,10 @@ def get_tax_report(request):
 		response_data['cgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
 				filter(transaction_type=1,tax_type='CGST', is_registered=True, date__range=[start,end]).\
 				aggregate(Sum('tax_value'))['tax_value__sum']
+
 		response_data['sgst_input']=tax_transaction.objects.for_tenant(this_tenant).\
-				filter(transaction_type=1,tax_type='SGST', is_registered=True, date__range=[start,end]).\
+				filter(transaction_type=1,tax_type='SGST',
+				 is_registered=True, date__range=[start,end]).\
 				aggregate(Sum('tax_value'))['tax_value__sum']
 		response_data['igst_input']=tax_transaction.objects.for_tenant(this_tenant).\
 				filter(transaction_type=1,tax_type='IGST', is_registered=True, date__range=[start,end]).\
@@ -86,18 +88,18 @@ def get_tax_report(request):
 
 		if (report_type == 'b2b'):
 			response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-						filter(transaction_type=2,tax_type='CGST', date__range=[start,end]).\
+						filter(transaction_type=2,tax_type='CGST', is_registered=True, date__range=[start,end]).\
 						aggregate(Sum('tax_value'))['tax_value__sum']
 			response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-						filter(transaction_type=2,tax_type='SGST', date__range=[start,end]).\
+						filter(transaction_type=2,tax_type='SGST', is_registered=True, date__range=[start,end]).\
 						aggregate(Sum('tax_value'))['tax_value__sum']
 			response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-						filter(transaction_type=2,tax_type='IGST', date__range=[start,end]).\
+						filter(transaction_type=2,tax_type='IGST', is_registered=True, date__range=[start,end]).\
 						aggregate(Sum('tax_value'))['tax_value__sum']
 
 		elif (report_type == 'b2cl'):
 			response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-						filter(transaction_type__in=[2,5],tax_type='CGST', date__range=[start,end], is_registered=False, line_wo_tax__gte = 250000).\
+						filter(transaction_type__in=[2,5],tax_type='CGST', date__range=[start,end],  line_wo_tax__gte = 250000).\
 						aggregate(Sum('tax_value'))['tax_value__sum']
 			response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
 						filter(transaction_type__in=[2,5],tax_type='SGST', date__range=[start,end], is_registered=False, line_wo_tax__gte = 250000).\
@@ -120,13 +122,13 @@ def get_tax_report(request):
 		else:
 			#This data can also be taken from chart of accounts
 			response_data['cgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-						filter(transaction_type__in=[2,5],tax_type='CGST', is_registered=True, date__range=[start,end]).\
+						filter(transaction_type__in=[2,5],tax_type='CGST', date__range=[start,end]).\
 						aggregate(Sum('tax_value'))['tax_value__sum']
 			response_data['sgst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-						filter(transaction_type__in=[2,5],tax_type='SGST', is_registered=True, date__range=[start,end]).\
+						filter(transaction_type__in=[2,5],tax_type='SGST', date__range=[start,end]).\
 						aggregate(Sum('tax_value'))['tax_value__sum']
 			response_data['igst_output']=tax_transaction.objects.for_tenant(this_tenant).\
-						filter(transaction_type__in=[2,5],tax_type='IGST', is_registered=True, date__range=[start,end]).\
+						filter(transaction_type__in=[2,5],tax_type='IGST', date__range=[start,end]).\
 						aggregate(Sum('tax_value'))['tax_value__sum']
 		
 		if not response_data['cgst_input']:
