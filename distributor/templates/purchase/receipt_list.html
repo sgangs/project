@@ -52,6 +52,7 @@
 	<button type="submit" class="btn btn-primary btn-sm unpaid"><i class="fa fa-star"></i> View Unpaid Receipts</button>
 	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa--exclamation-circle"></i> View Overdue Receipts</button>
 	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
+	<button type="submit" class="btn btn-primary btn-sm invoice_summary"><i class="fa fa-folder"></i> Invoice Summary</button>
 </div>
 <br>
 <p>
@@ -169,6 +170,38 @@
 	</div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="summary" tabindex="-1" role="dialog" aria-labelledby="summaryLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Purchase Summary</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group datediv">
+							<label for="classname" class="control-label">Total Amount Purchased</label>
+							<p class="amount_invoiced"></p>
+						</div>
+					</div>
+				</div>
+		    	<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group vendordiv">
+							<label for="classname" class="control-label">Toal Payment Due</label>
+							<p class="amount_pending"></p>
+						</div>
+					</div>
+				</div>
+			</form>    
+	   	</div>
+	    </div>
+	</div>
+</div>
+
+
 <div class="prev_next">
 	<div class='add_nav'>
 	</div>
@@ -200,6 +233,9 @@ $('.purpay').attr('data-target',"#payment")
 
 $('.filterbtn').attr('data-toggle',"modal")
 $('.filterbtn').attr('data-target',"#filter")
+
+$('.invoice_summary').attr('data-toggle',"modal")
+$('.invoice_summary').attr('data-target',"#summary")
 
 $('.date_payment').datepicker({
 	    autoclose: true,

@@ -593,6 +593,7 @@ def all_invoices(request):
 				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
 						values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
 		
+			#Update code to check this only if page_no is str(1) 
 			filter_summary=invoices.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
 			filter_data['total_pending'] = filter_summary['pending']
 			filter_data['total_value'] = filter_summary['total_sum']

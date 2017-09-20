@@ -4,12 +4,20 @@ var total_payment=0, all_receipts = true, unpaid_receipts = false, overdue_recei
 
 load_receipts(1)
 
+$('.invoice_summary').hide();
+
 $('.all').click(function(){
+    filter_applied=false;
+    date_update();
+    dateChanged=false;
     load_receipts(1);
 });
 
 $('.apply_reset').click(function(){
+    $('.invoice_summary').hide();
     filter_applied=false;
+    date_update();
+    dateChanged=false;
     load_receipts(1);
 });
 
@@ -130,7 +138,13 @@ var end = moment();
 var start = moment(end).subtract(60, 'days');
 var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
 var dateChanged=false;
+date_update();
+
+function date_update(){
+// var end = new Date();
 // console.log(start.format('DD-MM-YYYY'));
+startdate=start.format('DD-MM-YYYY');
+enddate=end.format('DD-MM-YYYY');
 
 $('.date_range').daterangepicker({
     'showDropdowns': true,
@@ -152,6 +166,7 @@ $('.date_range').daterangepicker({
         enddate=end.format('YYYY-MM-DD');
         $('.details').attr('disabled', false);
 });
+};
 
 
 $('.apply_filter').click(function(e){
@@ -229,6 +244,11 @@ function filter_data(page_no) {
             })
 
             apply_navbutton(jsondata, page_no);
+            if (page_no == 1){
+                $('.invoice_summary').show();
+                $('.amount_invoiced').html('Rs.'+jsondata['total_value'])
+                $('.amount_pending').html('Rs.'+jsondata['total_pending'])
+            }
         },
         // handle a non-successful response
         error : function() {

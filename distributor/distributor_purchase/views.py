@@ -502,10 +502,12 @@ def purchase_receipt_save(request):
 
 
 # @login_required
-@api_view(['GET','POST'],)
+@api_view(['GET'],)
 def all_receipts(request):
 	this_tenant=request.user.tenant
 	page_no = request.GET.get('page_no')
+	filter_data={}
+	response_data={}
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
 		if (calltype == 'all_receipt'):
@@ -566,10 +568,21 @@ def all_receipts(request):
 		response_data={}
 		# print(receipts.count())
 		if page_no:
+			if (page_no == str(1)):
+				filter_summary=receipts.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
+				filter_data['total_pending'] = filter_summary['pending']
+				filter_data['total_value'] = filter_summary['total_sum']
+				
 			response_data =  paginate_data(page_no, 10, list(receipts))
+			if (page_no == str(1)):
+				response_data.update(filter_data)
+			 
 		else:
+			filter_summary=receipts.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
+			filter_data['total_pending'] = filter_summary['pending']
+			filter_data['total_value'] = filter_summary['total_sum']
 			response_data['object']=list(receipts)
-		
+	
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 

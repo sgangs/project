@@ -22,6 +22,7 @@ $('.all').click(function(){
 $('.apply_reset').click(function(){
     filter_applied=false;
     $('select').val([]).selectpicker('refresh');
+    $('.invoice_summary').hide();
     $('.product_name').val('');
     $('.product_id').val('');
     $('.invoice_no').val('');
