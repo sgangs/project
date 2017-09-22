@@ -1,5 +1,4 @@
 state_list=(('35','Andaman & Nicobar Island'),
-			# ('28','Andhra Pradesh'),
 			('37','Andhra Pradesh'),
 			('12','Arunachal Pradesh'),
 			('18','Assam'),
@@ -35,6 +34,8 @@ state_list=(('35','Andaman & Nicobar Island'),
 			('09','Uttar Pradesh'),
 			('05','Uttarkhand'),
 			('19','West Bengal'),)
+
+# ('28','Andhra Pradesh'),
 
 account=(('Basic','Basic'),
 			('SMS_Active','SMS_Active'))

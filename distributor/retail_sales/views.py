@@ -307,12 +307,12 @@ def sales_invoice_save(request):
 						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
 						multiplier=unit.multiplier
 						
-						original_actual_sales_price=Decimal(data['sales'])
+						# original_actual_sales_price=Decimal(data['sales'])
+						original_actual_sales_price = Decimal(data['sales_after_tax']) 
 						actual_sales_price=Decimal(original_actual_sales_price/multiplier)
 						
 						original_quantity=int(data['quantity'])
 						this_taxable_total=Decimal(data['taxable_total'])
-						# print(this_taxable_total)
 						quantity=original_quantity*multiplier
 						if maintain_inventory:
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
@@ -369,12 +369,12 @@ def sales_invoice_save(request):
 						LineItem.unit_id=unitid
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
-						if (product.has_batch):
-							LineItem.batch=batch
-							LineItem.manufacturing_date=manufacturing_date
-							LineItem.expiry_date=expiry_date
-						if (product.has_instance):
-							LineItem.serial_no=serial_no
+						# if (product.has_batch):
+						# 	LineItem.batch=batch
+						# 	LineItem.manufacturing_date=manufacturing_date
+						# 	LineItem.expiry_date=expiry_date
+						# if (product.has_instance):
+						# 	LineItem.serial_no=serial_no
 						
 						LineItem.sales_price=original_actual_sales_price
 						

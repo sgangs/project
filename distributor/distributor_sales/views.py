@@ -1470,7 +1470,7 @@ def finalize_open_invoices(request):
 					tax_transaction.objects.for_tenant(this_tenant).filter(date=date,transaction_type=2,transaction_bill_id=new_invoice.id).\
 								delete()
 					#delete line item
-					# line_items.delete()
+					line_items.delete()
 					#update invoices
 					new_invoice.subtotal=0
 					new_invoice.cgsttotal = 0

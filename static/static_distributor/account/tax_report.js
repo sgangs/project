@@ -4,7 +4,7 @@ var transactions=['Purchase','Sales', 'Purchase Debit','Sales Credit','Retail Sa
 
 
 var end = moment();
-var start = moment(end).subtract(60, 'days');
+var start = moment(end).subtract(30, 'days');
 var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
 var dateChanged=false;
 date_update();
@@ -36,7 +36,7 @@ $('.date_range').daterangepicker({
         format: 'DD-MM-YYYY',
     },
     "dateLimit": {
-        "days": 90
+        "days": 31
     },
     'autoApply':true,
     // 'minDate': moment(start),
@@ -134,8 +134,11 @@ $('.apply_filter').click(function(e) {
 $('.b2b_report').click(function(e) {
     filter_data(report_type='b2b');
     load_summary(report_type='b2b');
-    console.log(('.report_text'));
     $('.report_text').html('Current Report: B2B Report')
+})
+
+$('.b2b_download').click(function(e) {
+    download_report(report_type='b2b');
 })
 
 $('.b2cl_report').click(function(e) {
@@ -144,10 +147,18 @@ $('.b2cl_report').click(function(e) {
     $('.report_text').html('Current Report: B2CL Report')
 })
 
+$('.b2cl_download').click(function(e) {
+    download_report(report_type='b2cl');
+})
+
 $('.b2cs_report').click(function(e) {
     filter_data(report_type='b2cs');
     load_summary(report_type='b2cs');
     $('.report_text').html('Current Report: B2CS Report')
+})
+
+$('.b2cs_download').click(function(e) {
+    download_report(report_type='b2cs');
 })
 
 function filter_data(report_type) {
@@ -207,6 +218,17 @@ function filter_data(report_type) {
     });
 
 };
+
+function download_report(report_type) {
+    if (!dateChanged){
+        startdate = startdate.split("-").reverse().join("-")
+        enddate = enddate.split("-").reverse().join("-")
+        dateChanged= true;
+    }
+
+    var download_url='/account/tax-report/'+startdate+'/'+enddate+'/'+report_type+'/'
+    location.href = download_url;
+}
 
 
 });

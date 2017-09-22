@@ -425,7 +425,7 @@ function new_data(){
             product_id : product_id,
             quantity: quantity,
             unit_id: unit_id,
-            sales: sales,
+            sales_after_tax: sales,
             discount_amount: disc_amt,
             cgst_p: cgst_p,
             cgst_v:cgst_v,

@@ -2,6 +2,7 @@ import datetime as dt
 from datetime import datetime
 from io import BytesIO
 import xlsxwriter
+from decimal import Decimal
 
 from django.utils.translation import ugettext
 
@@ -190,4 +191,3 @@ def purchase_invoice_excel(line_items, receipt, tenant):
     xlsx_data = output.getvalue()
     return xlsx_data
 
-    

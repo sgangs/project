@@ -1,6 +1,10 @@
 import json
 import re
+import csv
+
+import datetime as date_first
 from datetime import datetime
+from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
@@ -17,12 +21,11 @@ from rest_framework.response import Response
 from .serializers import *
 
 from distributor_master.models import Product
-from distributor.variable_list import account_type_general
+from distributor.variable_list import account_type_general, state_list
 from distributor_user.models import Tenant
 from .models import *
 from .journalentry import *
 from .account_support import *
-# from .excel_download import *
 
 # @login_required
 @api_view(['GET','POST'],)
@@ -62,12 +65,15 @@ def get_tax_report(request):
 	this_tenant=request.user.tenant
 	calltype=request.GET.get('calltype')
 	response_data={}
+	
 	if (calltype == 'all_list'):
-		# start=request.GET.get('start')
-		# end=request.GET.get('end')
-		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).values('transaction_type','tax_type','line_wo_tax',\
-			'tax_percent','tax_value','bill_value','date','transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
-			.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+		end=date_first.date.today()
+		start=end-date_first.timedelta(days=30)
+		
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[start,end]).\
+			values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date','transaction_bill_no','date',\
+			'is_registered', 'customer_gst', 'customer_state').order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+	
 	elif (calltype == 'short_summary'):
 		start=request.GET.get('start')
 		end=request.GET.get('end')
@@ -179,6 +185,87 @@ def get_tax_report(request):
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+
+
+@api_view(['GET'],)
+def download_tax_report(request, fromdate, todate, report_type):
+	this_tenant=request.user.tenant
+	state_dict=dict((x, y) for x, y in state_list)
+	response_data={}
+	final_data=[]
+	
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="'+report_type+'.csv"'
+
+	writer = csv.writer(response)
+	
+
+	if (report_type == 'b2b'):
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[fromdate,todate],\
+				is_registered=True, transaction_type__in=[2,5], tax_type__in=['CGST', 'IGST'])\
+				.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+				'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+				.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+
+		writer.writerow(['GSTIN/UIN of Recipient', 'Invoice Number', 'Invoice date', 'Invoice Value', 'Place Of Supply',\
+    				'Reverse Charge', 'Invoice Type', 'E-Commerce GSTIN', 'Rate', 'Taxable Value', 'Cess Amount'])
+		
+		for item in response_data:
+			if (item['tax_type'] == 'CGST'):
+				writer.writerow([item['customer_gst'], item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\
+						item['customer_state']+'-'+state_dict[item['customer_state']], 'N', 'Regular', '',\
+						Decimal(item['tax_percent']*2), item['line_wo_tax'], ''])
+			else:
+				writer.writerow([item['customer_gst'], item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\
+						item['customer_state']+'-'+state_dict[item['customer_state']], 'N', 'Regular', '',\
+						Decimal(item['tax_percent']), item['line_wo_tax'], ''])
+
+	elif (report_type == 'b2cl'):
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[fromdate,todate],\
+				is_registered=False, line_wo_tax__gte = 250000, transaction_type__in=[2,5], tax_type__in=['CGST', 'IGST'])\
+				.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+				'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+				.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+
+		writer.writerow(['Invoice Number', 'Invoice date', 'Invoice Value', 'Place Of Supply',\
+    				'Rate', 'Taxable Value', 'Cess Amount', 'E-Commerce GSTIN',])
+		
+		for item in response_data:
+			if (item['tax_type'] == 'CGST'):
+				writer.writerow([item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\
+						item['customer_state']+'-'+state_dict[item['customer_state']], Decimal(item['tax_percent']*2), item['line_wo_tax'], '', ''])
+			else:
+				writer.writerow([item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\
+						item['customer_state']+'-'+state_dict[item['customer_state']], Decimal(item['tax_percent']), item['line_wo_tax'], '', ''])
+
+
+	elif (report_type == 'b2cs'):
+		# response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[fromdate,todate],\
+		# 		is_registered=False, line_wo_tax__lt = 250000, transaction_type__in=[2,5], tax_type__in=['CGST', 'IGST'])\
+		# 		.values('transaction_type','tax_type','line_wo_tax','tax_percent','tax_value','bill_value','date',\
+		# 		'transaction_bill_no','date','is_registered', 'customer_gst', 'customer_state')\
+		# 		.order_by('transaction_type','-date','-transaction_bill_no','tax_type','tax_percent'))
+
+		response_data=list(tax_transaction.objects.for_tenant(request.user.tenant).filter(date__range=[fromdate,todate],\
+				is_registered=False, line_wo_tax__lt = 250000, transaction_type__in=[2,5], tax_type__in=['CGST', 'IGST'])\
+				.values('customer_state','tax_type','tax_percent',).annotate(taxable_val=Sum('line_wo_tax')).\
+				order_by('customer_state','tax_type','tax_percent',))\
+
+		writer.writerow(['Type', 'Place of Supply', 'Rate', 'Taxable Value', 'Cess Amount', 'E-Commerce GSTIN',])
+		
+		for item in response_data:
+			if (item['tax_type'] == 'CGST'):
+				writer.writerow(['OE', item['customer_state']+'-'+state_dict[item['customer_state']],\
+					Decimal(item['tax_percent']*2), item['taxable_val'], '', ''])
+			else:
+				writer.writerow(['OE', item['customer_state']+'-'+state_dict[item['customer_state']],\
+					Decimal(item['tax_percent']), item['taxable_val'], '', ''])
+	
+	
+
+	return response
+
 
 @login_required
 def new_gst_purchase(request):
