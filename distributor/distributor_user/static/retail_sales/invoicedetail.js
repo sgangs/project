@@ -78,7 +78,8 @@ $('.printout').click(function(){
   
 
      $(".print_style").
-        text("@media print {#print{display: block;}#not_print{display: none;}} @page{size: A4; margin: 0mm;}");
+        // text("@media print {#print{display: block;}#not_print{display: none;}} @page{size: A4; margin: 0mm;}");
+        text("@media print {#print{display: block;}#not_print{display: none;}}");
     // $(".print_style").
     //     text("@media print {#print{display: block;}#not_print{display: none;}} @page{size: 3in 10in; margin: 0mm;}");
 

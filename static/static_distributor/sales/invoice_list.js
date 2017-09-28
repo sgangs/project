@@ -187,31 +187,31 @@ var dateChanged=false;
 date_update();
 
 function date_update(){
-// var end = new Date();
-// console.log(start.format('DD-MM-YYYY'));
-startdate=start.format('DD-MM-YYYY');
-enddate=end.format('DD-MM-YYYY');
+    // var end = new Date();
+    // console.log(start.format('DD-MM-YYYY'));
+    startdate=start.format('DD-MM-YYYY');
+    enddate=end.format('DD-MM-YYYY');
 
-$('.date_range').daterangepicker({
-    'showDropdowns': true,
-    'locale': {
-        format: 'DD-MM-YYYY',
-    },
-    "dateLimit": {
-        "days": 90
-    },
-    'autoApply':true,
-    // 'minDate': moment(start),
-    // 'maxDate': moment(end)  
-    'startDate' : start,
-    'endDate' : end,
-    },
-    function(start, end, label) {
-        dateChanged=true;
-        startdate=start.format('YYYY-MM-DD');
-        enddate=end.format('YYYY-MM-DD');
-        $('.details').attr('disabled', false);
-});
+    $('.date_range').daterangepicker({
+        'showDropdowns': true,
+        'locale': {
+            format: 'DD-MM-YYYY',
+        },
+        "dateLimit": {
+            "days": 90
+        },
+        'autoApply':true,
+        // 'minDate': moment(start),
+        // 'maxDate': moment(end)  
+        'startDate' : start,
+        'endDate' : end,
+        },
+        function(start, end, label) {
+            dateChanged=true;
+            startdate=start.format('YYYY-MM-DD');
+            enddate=end.format('YYYY-MM-DD');
+            $('.details').attr('disabled', false);
+    });
 };
 
 
@@ -265,6 +265,44 @@ $('.apply_filter').click(function(e){
     filter_data(1);
 });
 
+function encodeQueryData(data) {
+   let ret = [];
+   for (let d in data)
+     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+   return ret.join('&');
+}
+
+
+$('.download').click(function(e){
+    // filter_data(1, 'download');
+    // url='/sales/invoicelist/listall/'+get_id+'/'
+    if (!dateChanged){
+        startdate = startdate.split("-").reverse().join("-")
+        enddate = enddate.split("-").reverse().join("-")
+        dateChanged= true;
+    }
+
+    var customers=[];
+    $.each($(".customer_filter option:selected"), function(){
+        customerid=$(this).data('id');
+        // if (customerid == 'undefined' || typeof(customerid) == undefined){
+        if ($.trim(customerid).length>0){
+            var customer={
+                customerid: customerid
+            };
+            customers.push(customer);
+        }        
+    });
+
+    var data = { 'customers': JSON.stringify(customers), 'start': startdate, 'end': enddate, 'calltype': 'apply_filter', 'returntype':'download' };
+    var querystring = encodeQueryData(data);
+    console.log(customers)
+    console.log(querystring)
+    var download_url='/sales/invoicelist/listall/?'+querystring
+    location.href = download_url;
+    $('#filter').modal('hide');
+});
+
 
 function filter_data(page_no) {
     var customers=[];
@@ -289,6 +327,7 @@ function filter_data(page_no) {
     // }
     invoice_no=$('.invoice_no').val();
     productid=$('.product_id').val();
+    invoice_status=$(".invoice_status").find(':selected').data('id');
     
     // console.log(dateChanged)
     if (!dateChanged){
@@ -307,6 +346,7 @@ function filter_data(page_no) {
             end: enddate,
             productid: productid,
             invoice_no: invoice_no,
+            invoice_status: invoice_status,
             customers: JSON.stringify(customers),
             page_no: page_no,
             csrfmiddlewaretoken: csrf_token},

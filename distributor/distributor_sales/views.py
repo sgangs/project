@@ -1,5 +1,7 @@
 import datetime as date_first
 from decimal import Decimal
+import json
+
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -7,8 +9,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
 from django.db.models import Sum, Count, F
 from django.shortcuts import render, redirect
+from django.template import Context
 from django.http import HttpResponse
-import json
 
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
@@ -23,7 +25,7 @@ from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor.variable_list import small_large_limt
 
-from distributor.global_utils import paginate_data, new_tax_transaction_register
+from distributor.global_utils import paginate_data, new_tax_transaction_register, render_to_pdf
 from .sales_utils import *
 from .models import *
 from .serializers import *
@@ -564,8 +566,10 @@ def all_invoices(request):
 			start=request.GET.get('start')
 			end=request.GET.get('end')
 			invoice_no=request.GET.get('invoice_no')
+			invoice_status=request.GET.get('invoice_status')
 			productid=request.GET.get('productid')
 			sent_with=request.GET.get('sent_with')
+			returntype=request.GET.get('returntype')
 			if (start and end):
 				invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
 							select_related('invoiceLineItem_salesInvoice').\
@@ -574,12 +578,12 @@ def all_invoices(request):
 				customers_list=[]
 				for item in customers:
 					customers_list.append(item['customerid'])
-				if (sent_with == 'all_invoices'):
-					invoices=invoices.filter(customer__in=customers_list).\
-						all()
 				if (sent_with == 'unpaid_invoices'):
-					invoices=invoices.filter(final_payment_date__isnull=True, customer__in=customers_list).\
-						all()
+					invoices=invoices.filter(final_payment_date__isnull=True, customer__in=customers_list).all()
+				# if (sent_with == 'all_invoices'):
+				# 	invoices=invoices.filter(customer__in=customers_list).all()
+				else:
+					invoices=invoices.filter(customer__in=customers_list).all()
 			else:
 				if (sent_with == 'all_invoices'):
 					pass
@@ -588,10 +592,28 @@ def all_invoices(request):
 						all()
 			if invoice_no:
 				invoices=invoices.filter(invoice_id__icontains=invoice_no)
+			if invoice_status:
+				if (invoice_status == 'open'):
+					invoices=invoices.filter(is_final=False)
+				elif (invoice_status == 'final'):
+					invoices=invoices.filter(is_final=True)
 			if productid:
 				product=Product.objects.for_tenant(this_tenant).get(id=productid)
 				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
 						values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+
+			if (returntype == 'download'):
+				invoices = invoices.order_by('customer_name', 'customer', '-date', '-invoice_id')
+				context = {
+					'invoices': invoices,
+					'tenant':this_tenant
+				}
+				pdf = render_to_pdf('sales/customer_pdf.html', context)
+				response = HttpResponse(pdf, content_type='application/pdf')
+				filename = "Sales Invoice Summary.pdf" 
+				content = "attachment; filename='%s'" %(filename)
+				response['Content-Disposition'] = content
+				return response
 		
 			#Update code to check this only if page_no is str(1) 
 			filter_summary=invoices.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))

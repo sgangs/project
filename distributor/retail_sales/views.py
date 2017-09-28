@@ -27,6 +27,7 @@ from distributor.global_utils import paginate_data, new_tax_transaction_register
 from .sales_utils import *
 from .models import *
 
+TWOPLACES = Decimal(10) ** -2
 
 @login_required
 def new_sales_invoice(request):
@@ -176,8 +177,8 @@ def sales_invoice_save(request):
 		response_data = {}
 		this_tenant=request.user.tenant
 		if (calltype == 'save' or calltype == 'mobilesave'):
-			with transaction.atomic():
-				try:
+			try:
+				with transaction.atomic():
 					date = date_first.date.today()
 					if (calltype == 'save'):
 						bill_data = json.loads(request.data.get('bill_details'))
@@ -199,17 +200,16 @@ def sales_invoice_save(request):
 					else:
 						payment_mode_selected=payment_mode.objects.for_tenant(this_tenant).get(default=True)
 					
-					subtotal=Decimal(request.data.get('subtotal'))
-					cgsttotal=Decimal(request.data.get('cgsttotal'))
-					sgsttotal=Decimal(request.data.get('sgsttotal'))
-					total=Decimal(request.data.get('total'))
+					subtotal=Decimal(request.data.get('subtotal')).quantize(TWOPLACES)
+					cgsttotal=Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
+					sgsttotal=Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
+					total=Decimal(request.data.get('total')).quantize(TWOPLACES)
 					sum_total = subtotal+cgsttotal+sgsttotal
+					round_value = 0
 					if (abs(sum_total - total) <0.90 ):
-						total = sum_total
-
+						round_value = sum_total - total
+					
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
-
-
 					ware_address=warehouse.address_1+", "+warehouse.address_2
 					ware_state=warehouse.state
 					ware_city=warehouse.city
@@ -285,13 +285,13 @@ def sales_invoice_save(request):
 							serial_no=''
 
 						discount_amount=data['discount_amount']
-						line_taxable_total=Decimal(data['taxable_total'])
-						line_total=Decimal(data['line_total'])
+						line_taxable_total=Decimal(data['taxable_total']).quantize(TWOPLACES)
+						line_total=Decimal(data['line_total']).quantize(TWOPLACES)
 
-						cgst_p=Decimal(data['cgst_p'])
-						cgst_v=Decimal(data['cgst_v'])
-						sgst_p=Decimal(data['sgst_p'])
-						sgst_v=Decimal(data['sgst_v'])
+						cgst_p=Decimal(data['cgst_p']).quantize(TWOPLACES)
+						cgst_v=Decimal(data['cgst_v']).quantize(TWOPLACES)
+						sgst_p=Decimal(data['sgst_p']).quantize(TWOPLACES)
+						sgst_v=Decimal(data['sgst_v']).quantize(TWOPLACES)
 
 						is_tax=data['is_tax']
 						if (is_tax == 'true'):
@@ -308,12 +308,12 @@ def sales_invoice_save(request):
 						multiplier=unit.multiplier
 						
 						# original_actual_sales_price=Decimal(data['sales'])
-						original_actual_sales_price = Decimal(data['sales_after_tax']) 
+						original_actual_sales_price = Decimal(data['sales_after_tax']).quantize(TWOPLACES)
 						actual_sales_price=Decimal(original_actual_sales_price/multiplier)
 						
-						original_quantity=int(data['quantity'])
-						this_taxable_total=Decimal(data['taxable_total'])
+						original_quantity=Decimal(data['quantity']).quantize(TWOPLACES)
 						quantity=original_quantity*multiplier
+						
 						if maintain_inventory:
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
 									product=productid, warehouse=warehouse,).order_by('purchase_date')
@@ -348,7 +348,7 @@ def sales_invoice_save(request):
 									total_purchase_price+=quantity_updated*item.purchase_price
 									quantity_updated=0								
 							if (quantity_updated>0):
-								raise IntegrityError
+								raise IntegrityError(('Quantity Not Available for: '+product.name))
 							price_list_dict['detail']=price_list_list
 							price_list_json = json.dumps(price_list_dict,  cls=DjangoJSONEncoder)
 
@@ -484,6 +484,10 @@ def sales_invoice_save(request):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
 						new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
 
+					if (round_value>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
+						new_journal_entry(this_tenant, journal, round_value, account, 2, date)
+
 					# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cash")
 					account = payment_mode_selected.payment_account
 					new_journal_entry(this_tenant, journal, total, account, 1, date)
@@ -493,7 +497,7 @@ def sales_invoice_save(request):
 
 					if (debit != credit):
 						if ((debit['value__sum'] - credit['value__sum'])>0.98):
-							raise IntegrityError
+							raise IntegrityError (('Credit and Debit not matching'))
 
 					if maintain_inventory:
 						
@@ -536,13 +540,16 @@ def sales_invoice_save(request):
 
 					response_data['pk']=new_invoice.id
 					response_data['id']=new_invoice.invoice_id
-				except:
-					transaction.rollback()
+			except Exception as err:
+				print(err)
+				response_data  = err.args 
+				transaction.rollback()
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
 
+#This is used bth in app & website. Change to POST before prodcution.
 @api_view(['GET'],)
 def sales_invoice_delete(request):
 		if request.method == 'GET':
@@ -552,13 +559,9 @@ def sales_invoice_delete(request):
 			if (calltype == 'delete'):
 				with transaction.atomic():
 					try:
-						# warehouse_id=request.data.get('warehouse')
 						invoice_pk=request.GET.get('invoice_id')
 						old_invoice=retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_pk)
 		
-						# warehouse = invoice.warehouse
-						# old_invoice=retail_invoice()
-										
 						all_line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice=old_invoice)
 						
 						#Does this tenant maintain inventory?
@@ -1119,3 +1122,5 @@ def sales_summary_graph(request):
 	sales_daily=retail_sales_day_wise(start, end, this_tenant)
 	jsondata = json.dumps(sales_daily, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+

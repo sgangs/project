@@ -171,12 +171,14 @@ $("#product_table").on("click", ".barcode", function(){
 });
 
 $("#product_table").on("click", ".rate", function(){
+    var prod_id=$(this).closest('tr').find('td:nth-child(1)').html();
     var name=$(this).closest('tr').find('td:nth-child(2)').html();
     var rate=$(this).closest('tr').find('td:nth-child(9)').html();
     var rate_id=$(this).closest('tr').find('td:nth-child(10)').html();
     var rate_is_tax=$(this).closest('tr').find('td:nth-child(11)').html();
     $('.product_name_update').html(name);
     $('.retail_rate_update').val(rate);
+    $('.product_id_rate_update').html(prod_id);
     $('.retail_rate_id').html(rate_id);
 
     $('.is_tax_update').prop('checked', rate_is_tax);
@@ -212,6 +214,7 @@ function update_rate(){
         swal("Oops...", "Retail Sales Rate must be a number greater than zero.", "error");
     }
     rate_id = $('.retail_rate_id').html();
+    prod_id = $('.product_id_rate_update').html();
     is_tax = $('.is_tax_update').is(":checked");
     // var is_present = $(this).find('td:nth-child(6) input').is(":checked");
     if (proceed){
@@ -222,6 +225,7 @@ function update_rate(){
                 data:{new_rate: new_rate,
                     rate_id: rate_id,
                     is_tax: is_tax,
+                    prod_id: prod_id,
                     calltype: "updaterate",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               

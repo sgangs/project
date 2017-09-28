@@ -51,4 +51,5 @@ urlpatterns = [
     
     url(r'^customer-summary/$', views.customer_wise_summary, name='customer_wise_summary'),
     url(r'^customer-summary/data/$', views.get_customer_wise_summary, name='get_customer_wise_summary'),
+    # url(r'^customer-detail/pdf/$', views.customer_data_pdf, name='customer_data_pdf'),
 ]

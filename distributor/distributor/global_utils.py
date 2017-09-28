@@ -1,5 +1,12 @@
+from io import BytesIO
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
+from django.http import HttpResponse
+from django.template.loader import get_template
+
+from xhtml2pdf import pisa
+
 from distributor_account.models import Account, tax_transaction
 
 
@@ -40,3 +47,12 @@ def new_tax_transaction_register(tax_type, trn_type, percent, tax_value, bill_va
 	new_tax_transaction.customer_gst=customer_gst
 	new_tax_transaction.customer_state=customer_state
 	new_tax_transaction.save()
+
+def render_to_pdf(template_src, context_dict={}):
+	template = get_template(template_src)
+	html  = template.render(context_dict)
+	result = BytesIO()
+	pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+	if not pdf.err:
+		return HttpResponse(result.getvalue(), content_type='application/pdf')
+	return None

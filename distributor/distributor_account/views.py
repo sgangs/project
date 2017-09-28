@@ -332,22 +332,22 @@ def account_details_view(request):
 		ledgerid=request.POST.get('ledger')
 		account_type=request.POST.get('account_type')
 		remarks=request.POST.get('remarks')
-		try:
-			opendebit=Decimal(request.POST.get('opendebit'))
-		except:
-			opendebit=0.00
-		try:
-			opencredit=Decimal(request.POST.get('opencredit'))
-		except:
-			opencredit=0.00
-		try:
-			debit=Decimal(request.POST.get('debit'))
-		except:
-			debit=0.00
-		try:
-			credit=Decimal(request.POST.get('credit'))
-		except:
-			credit=0.00
+		# try:
+		# 	opendebit=Decimal(request.POST.get('opendebit'))
+		# except:
+		# 	opendebit=0.00
+		# try:
+		# 	opencredit=Decimal(request.POST.get('opencredit'))
+		# except:
+		# 	opencredit=0.00
+		# try:
+		# 	debit=Decimal(request.POST.get('debit'))
+		# except:
+		# 	debit=0.00
+		# try:
+		# 	credit=Decimal(request.POST.get('credit'))
+		# except:
+		# 	credit=0.00
 		try:
 			ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledgerid)
 		except:
@@ -507,6 +507,7 @@ def account_opening_view(request):
 	extension="base.html"
 	return render (request, 'account/opening_value.html',{'extension':extension})
 
+#pdate this view to get opening data based on accountid/all and accounting year as user input. Check where this api is getting called
 @api_view(['GET', 'POST'],)
 def account_opening_data(request):
 	this_tenant=request.user.tenant
@@ -662,3 +663,47 @@ def balance_sheet(request):
 		# response_data=[]
 	jsondata = json.dumps(response_data)
 	return render(request, 'account/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s', 'extension':extension})
+
+
+@login_required
+def update_opening_balance_view(request):
+	extension = 'base.html'
+	return render(request,'account/update_opening.html', {'extension': extension})
+
+
+@api_view(['GET'],)
+def get_account_account_year(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		accountid = request.GET.get('accountid')
+		account_period_id = request.GET.get('account_period')
+		
+		account=Account.objects.for_tenant(this_tenant).get(id=accountid)
+		account_period=accounting_period.objects.for_tenant(this_tenant).get(id=account_period_id)
+		
+		acct_year = list(account_year.objects.for_tenant(this_tenant).filter(accounting_period=account_period, account=account).\
+					values('opening_debit', 'opening_credit', 'current_debit', 'current_credit', 'closing_debit', 'closing_credit'))
+
+		
+		jsondata = json.dumps(acct_year, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+
+
+@api_view(['POST'],)
+def update_opening_balance(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'POST':
+		accountid = request.data.get('accountid')
+		opening_debit = request.data.get('opening_debit')
+		opening_credit = request.data.get('opening_credit')
+		account=Account.objects.for_tenant(this_tenant).get(id=accountid)
+		first_year=accounting_period.objects.for_tenant(this_tenant).get(is_first_year=True)
+		acct_year = account_year.objects.for_tenant(this_tenant).get(accounting_period=first_year, account=account)
+		acct_year.opening_debit = opening_debit
+		acct_year.opening_credit = opening_credit
+		acct_year.save()
+
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)

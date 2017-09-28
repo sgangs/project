@@ -374,7 +374,7 @@ class product_sales_rate(models.Model):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
 
-	class Meta:
-		unique_together = (("product", "tenant"),)
+	# class Meta:
+		# unique_together = (("product", "tenant"),)
 		#ordering = ('name',)
 	

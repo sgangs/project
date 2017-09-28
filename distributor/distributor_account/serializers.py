@@ -23,7 +23,7 @@ class AccountingPeriodSerializers (serializers.ModelSerializer):
 	# payment_account=serializers.StringRelatedField()
 	class Meta:
 		model = accounting_period
-		fields = ('id','start','end', 'current_period', 'finalized')
+		fields = ('id','start','end', 'current_period', 'finalized', 'is_first_year')
 
 # class AccountYearSerializer(serializers.ModelSerializer):
 #     class Meta:

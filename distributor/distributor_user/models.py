@@ -51,7 +51,7 @@ class Tenant(models.Model):
 	trial=models.BooleanField('Is the tenant under trail?')
 	trial_from=models.DateField(null=True, blank=True)
 	trial_to=models.DateField(null=True, blank=True)
-	paid_due=models.DateField(null=True, blank=True)
+	paid_due=models.DateField(null=True, blank=True) #Next payment due on
 	is_active=models.BooleanField(default=True)
 	updated = models.DateTimeField(auto_now=True)
 

@@ -3,6 +3,13 @@ vat_type=["No VAT", "On MRP", "On actual"];
 vat_type_reverse={"No VAT":0, "On MRP":1, "On actual":2};
 var vat_input, vat_percent, unit_data, unit_multi={}, maintain_inventory, unit_names={};
 
+function round_off(value){
+    value=parseInt(value*1000)/1000
+    value=parseFloat(value.toFixed(2))
+    return value
+}
+
+
 $(document).on('keydown.autocomplete', '.name', function() {
     var el=this;
     $(this).autocomplete({
@@ -14,11 +21,14 @@ $(document).on('keydown.autocomplete', '.name', function() {
             maintain_inventory=ui['item']['inventory']
             $(el).closest('tr').addClass("updating");
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
-            $(el).closest('tr').find('td:nth-child(6) input').val(ui['item']['unit']);
-            $(el).closest('tr').find('td:nth-child(7)').html(ui['item']['unit_id']);
+            // $(el).closest('tr').find('td:nth-child(6) input').val(ui['item']['unit']);
+            // $(el).closest('tr').find('td:nth-child(7)').html(ui['item']['unit_id']);
+            $(el).closest('tr').find('td:nth-child(6) .unit').val(ui['item']['unit_id']);
+            $(el).closest('tr').find('td:nth-child(7)').html(unit_multi[ui['item']['unit_id']]);
             $(el).closest('tr').find('td:nth-child(12) input').val(ui['item']['cgst']);
             $(el).closest('tr').find('td:nth-child(14) input').val(ui['item']['sgst']);
-            get_product_rate(el, ui['item']['id'])
+            get_product_rate(el, ui['item']['id']);
+            $('.unit').selectpicker('refresh');
         }
     });
 });
@@ -34,7 +44,6 @@ function get_product_rate(el, product_id){
         // handle a successful response
         success : function(jsondata) {
             updating_row=$('.details').find('.updating')
-            console.log(jsondata);
             // console.log(jsondata['rate'][0]['tentative_sales_rate']);
             if (jsondata['rate'][0]){
                 $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
@@ -108,6 +117,35 @@ function load_warehouse(){
     });
 }
 
+load_units()
+
+function load_units(){
+    $.ajax({
+        url : "/master/dimensionunit/unitdata/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            unit_data=jsondata
+            $.each(jsondata, function(){
+                unit_multi[this.id]=parseFloat(this.multiplier);
+                unit_names[this.id]=this.name;
+                $('#unit').append($('<option>',{
+                    'data-id': this.id,
+                    'title':this.symbol,
+                    'text': this.name,
+                }));
+            });
+            $('#unit').selectpicker('refresh');
+            // $('#unit').html('refresh',true);
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No unit is registered.", "error");
+        }
+    });
+}
+
 
 $('.details').on("mouseenter", ".first", function() {
     $( this ).children( ".delete" ).show();
@@ -154,9 +192,21 @@ $(".details").on("keydown", ".dv", function(){
 });
 
 
+$(".details").on("change", ".unit", function(){
+    var unit_id = $(this).find(':selected').data('id');
+    unit_multi_selected=unit_multi[unit_id]
+    $(this).closest('tr').find('td:nth-child(7)').html(unit_multi_selected);
+    if (maintain_inventory){
+        var el=this;
+        get_qty_avl(el);
+    }
+    // get_total();
+});
+
+
 
 function get_qty_avl(el){
-    // var unit_id = $(el).closest('tr').find('td:nth-child(6) .unit :selected').data('id');
+    var unit_id = $(el).closest('tr').find('td:nth-child(6) .unit :selected').data('id');
     var quantity =  parseFloat($(el).closest('tr').find('td:nth-child(4) input').val());
     var quantity_avl = parseFloat($(el).closest('tr').find('td:nth-child(5)').html());
     if (isNaN(quantity_avl)){
@@ -170,15 +220,15 @@ function get_qty_avl(el){
     // if (isNaN(free_tax)){
         // free_tax=0;
     // }
-    // var unit_multi_selected = parseFloat($(el).closest('tr').find('td:nth-child(7)').html());
-    // quantity_avl=quantity_avl/unit_multi_selected;
+    var unit_multi_selected = parseFloat($(el).closest('tr').find('td:nth-child(7)').html());
+    quantity_avl=quantity_avl/unit_multi_selected;
     if (!$(el).closest('tr').hasClass("has-error")){
         if ((quantity)>quantity_avl ){
-            var unit_symbol=$(el).closest('tr').find('td:nth-child(6) input').val();
+            // var unit_symbol=$(el).closest('tr').find('td:nth-child(6) input').val();
             swal({
                 title: "Oops",
                 text: "Total Invoiced Quantity cannot be greater than available quantity. <br>"+
-                        " Total available quantity: "+quantity_avl+" "+unit_symbol+".",
+                        " Total available quantity: "+quantity_avl+" "+unit_names[unit_id]+".",
                 type: "warning",
                 showCancelButton: false,
                 closeOnConfirm: true,
@@ -211,14 +261,14 @@ function get_total(){
         var quantity=parseFloat($(cells[2]).val());
         var qty_avl=parseFloat($(a[i]).find('td:nth-child(5)').html());
         
-        var sales_rate=$(cells[4]).val()
+        var sales_rate=$(cells[3]).val()
         
         // discount_type=$(a[i]).find('td:nth-child(11) :selected').data('id');
         // discount_val=$(cells[4]).val();
-        discount_amt=$(cells[5]).val();
+        discount_amt=$(cells[4]).val();
         
-        cgst_percent=parseFloat($(cells[6]).val());
-        sgst_percent=parseFloat($(cells[7]).val());
+        cgst_percent=parseFloat($(cells[5]).val());
+        sgst_percent=parseFloat($(cells[6]).val());
 
         if(isNaN(cgst_percent)){
             cgst_percent=0;
@@ -254,19 +304,21 @@ function get_total(){
         if (is_tax) {
             total_tax_per=cgst_percent+sgst_percent
             total_tax_divider=(100+total_tax_per)/100
-            tax_total=this_total-this_total/total_tax_divider
-            cgst_total=tax_total/2;
-            sgst_total=tax_total/2;
-            this_final_total=this_total
+            tax_total=round_off(this_total-this_total/total_tax_divider)
+            console.log((this_total-this_total/total_tax_divider))
+            console.log((this_total-this_total/total_tax_divider)/2)
+            cgst_total=round_off(tax_total/2);
+            sgst_total=round_off(tax_total/2);
+            this_final_total=round_off(this_total);
             total+=this_final_total
-            subtotal+=this_final_total-tax_total
-            this_total = this_total - tax_total
+            subtotal+=this_final_total-(cgst_total+ sgst_total)
+            this_total = this_total - (cgst_total+ sgst_total)
         }
         else{
-            cgst_total=(this_total*cgst_percent)/100;
-            sgst_total=(this_total*sgst_percent)/100;
-            tax_total = cgst_total+sgst_total
-            this_final_total=this_total+cgst_total+sgst_total
+            cgst_total=round_off((this_total*cgst_percent)/100);
+            sgst_total=round_off((this_total*sgst_percent)/100);
+            tax_total = cgst_total+sgst_total;
+            this_final_total=this_total+cgst_total+sgst_total;
             total+=this_final_total
             subtotal+=this_final_total-tax_total
         }
@@ -283,6 +335,8 @@ function get_total(){
     }
     // console.log(total)
     // console.log(subtotal)
+    subtotal = round_off(subtotal)
+    total = round_off(total)
     
     $('.subtotal_receipt').html(subtotal.toFixed(2))
     $('.taxtotal_receipt').html(tax_total.toFixed(2))
@@ -378,8 +432,7 @@ function new_data(){
             }
         }
 
-        var unit_id = $(this).find('td:nth-child(7)').html();
-
+        var unit_id = $(this).find('td:nth-child(6) :selected').data('id');
         
         var sales = parseFloat($(this).find('td:nth-child(8) input').val());
         if (isNaN(sales)){
@@ -419,13 +472,14 @@ function new_data(){
         
         var line_total = $(this).find('td:nth-child(16)').html();
 
-        var taxable_total = line_total - cgst_v - sgst_v
+        var taxable_total = line_total - cgst_v - sgst_v;
+        var sales_after_tax = round_off(taxable_total/quantity); 
         
         var item = {
             product_id : product_id,
             quantity: quantity,
             unit_id: unit_id,
-            sales_after_tax: sales,
+            sales_after_tax: sales_after_tax,
             discount_amount: disc_amt,
             cgst_p: cgst_p,
             cgst_v:cgst_v,
@@ -437,10 +491,12 @@ function new_data(){
         };
         items.push(item);
     });
+
+    cgst_total_sum = round_off(cgst_total_sum);
+    sgst_total_sum = round_off(sgst_total_sum);
     // console.log(items)
     // console.log(customer_name)
-    console.log(cgst_total_sum)
-    console.log(sgst_total_sum)
+    
     if (proceed){
         (function() {
             $.ajax({
@@ -465,11 +521,14 @@ function new_data(){
                 
                 success : function(jsondata) {
                     var show_success=true
-                    if (show_success){
+                    if (jsondata['id']){
                         swal("Hooray", "New sale invoice generated", "success");
                         var url='/retailsales/invoice/detailview/'+jsondata['pk']+'/'
                         location.href = url;
                         // setTimeout(location.reload(true),1000);
+                    }
+                    else{
+                        swal("Oops...", jsondata, "error");
                     }
                 },
                 // handle a non-successful response

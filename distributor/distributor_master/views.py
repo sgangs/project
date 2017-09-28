@@ -436,17 +436,27 @@ def product_view(request):
 
 		elif calltype == 'updaterate':
 			rate_id = request.data.get('rate_id')
-			new_rate = Decimal(request.data.get('new_rate'))
+			revised_rate = Decimal(request.data.get('new_rate'))
 			is_tax = request.data.get('is_tax')
-			if (new_rate > 0):
+			prod_id = request.data.get('prod_id')
+			if (revised_rate > 0):
 				if (is_tax == 'true'):
 					is_tax=True
 				elif (is_tax == 'false'):
 					is_tax=False
-				old_rate=product_sales_rate.objects.get(id=rate_id)
-				old_rate.tentative_sales_rate=new_rate
-				old_rate.is_tax_included=is_tax
-				old_rate.save()
+				if (rate_id):
+					old_rate=product_sales_rate.objects.get(id=rate_id)
+					old_rate.tentative_sales_rate=revised_rate
+					old_rate.is_tax_included=is_tax
+					old_rate.save()
+				else:
+					new_rate=product_sales_rate()
+					print(prod_id)
+					new_rate.product=Product.objects.for_tenant(this_tenant).get(id=prod_id)
+					new_rate.tentative_sales_rate=revised_rate
+					new_rate.is_tax_included=is_tax
+					new_rate.tenant=this_tenant
+					new_rate.save()
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)

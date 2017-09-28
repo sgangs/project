@@ -178,7 +178,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="row">
+				<!-- <div class="row">
 			    	<div class="col-xs-10">
 						<div class="form-group vendordiv">
 							<label for="classname" class="control-label">Filter by Invoice Type</label>
@@ -189,11 +189,25 @@
 							</select>
 						</div>
 					</div>
+				</div> -->
+				<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group vendordiv">
+							<label for="classname" class="control-label">Filter by Invoice Status</label>
+							<select class="form-control selectpicker invoice_status" id="invoice_status">
+								<option disabled selected hidden style='display: none' value>Select Invoice Status</option>
+								<option data-id="all">All Invoices</option>
+								<option data-id="open">Open Invoices</option>
+								<option data-id="final">Final/Canceled Invoices</option>
+							</select>
+						</div>
+					</div>
 				</div>
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
 		    	<button type="button" class="btn btn-primary btn-sm apply_filter">Apply Filters</button>
+		    	<button type="button" class="btn btn-primary btn-sm download">Apply Filters &amp Download</button>
 		    	<button type="button" class="btn btn-primary btn-sm apply_reset">Reset all</button>
 		    </div>
 	    </div>

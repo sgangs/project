@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+
+  <body>  
+
+    <h3>{{tenant.name}}</h3>
+    
+      <table repeat="2" id='table'>
+        <thead>
+          <tr>
+            <td colspan="5"><h5>Customer wise sales summary</h5></td>
+          </tr>
+          <tr>
+            <th class="header">Invoice No</th>
+            <th class="header">Date</th>
+            <th class="header">Customer Name</th>
+            <th class="header">Invoice Value</th>
+            <th class="header">Amount Paid</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for invoice in invoices %}
+              <tr align="center">
+                <td align="center">{{invoice.invoice_id}}</td>
+                <td align="center">{{invoice.date}}</td>
+                <td align="center">{{invoice.customer_name}}</td>
+                <td align="center">{{invoice.total}}</td>
+                <td align="center">{{invoice.amount_paid}}</td>
+
+               </tr>
+            {% endfor %}       
+        </tbody>
+      </table>
+    
+  </body>
+
+  <style type="text/css">
+
+  h5 {
+    color: #034a63;
+    font-style: italic;
+    font-weight: bold;
+    text-shadow: 2px 2px #FFFFFF;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  h3{
+    color: #034a63;
+    /*font-style: italic;*/
+    font-weight: bold;
+    text-shadow: 6px 6px #FFFF00;
+    text-shadow: 10px 10px 2px #FFFF00;
+    font-size: 20px;
+    text-align: center;
+  }
+    
+  #table {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  #table td, #table th {
+      border: 1px solid #ddd;
+      padding: 2px;
+  }
+
+  #table tr:nth-child(even){background-color: #f2f2f2;}
+
+  #table th {
+      background-color: #034a63;
+      color: white;
+  }
+
+  #box {
+    background: #f4f4f4;
+    border: 1px solid #bbbbbb;
+    width: 200px;
+    height: 200px;
+    margin: 60px auto;
+    position: relative;
+  }
+         
+  #box:before {
+    border: 1px solid white;
+    content: '';
+    width: 198px;
+    height: 198px;
+    position: absolute;
+  }
+         
+  #box:after {
+    content: '';
+    position: absolute;
+    width: 196px;
+    height: 196px;
+    border: 1px solid #bbbbbb;
+    left: 1px; top: 1px;
+  }
+
+
+  </style>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

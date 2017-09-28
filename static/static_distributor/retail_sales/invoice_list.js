@@ -39,6 +39,8 @@ function load_invoices(){
                 "<td>"+this.cgsttotal+"</td>"+
                 "<td>"+this.sgsttotal+"</td>"+
                 "<td>"+this.total+"</td>"+
+                "<td hidden='true'>"+this.id+"</td>"+
+                "<td class='delete'>Click here to delete</td>"+
                 "</tr>");
             })
         },
@@ -57,9 +59,66 @@ function load_invoices(){
 $("#receipt_table").on("click", ".link", function(){
     // console.log('here');
     get_url=$(this).closest('tr').find('td:nth-child(1)').html();
-    console.log(get_url)
     location.href = get_url;
 });
+
+$("#receipt_table").on("click", ".delete", function(){
+    get_id=$(this).closest('tr').find('td:nth-child(7)').html();
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure you want to delete the invoice? Note that once deleted, it cannot be recovered",
+        type: "warning",
+        showCancelButton: true,
+          // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+        }, function(isConfirm){
+            if (isConfirm){
+                setTimeout(function(){reconfirm(get_id)},600)            
+            }
+    })
+});
+
+function reconfirm(invoice_pk){
+    swal({
+        title: "Please reconfirm?",
+        text: "Are you sure you want to delete the invoice? Please reconfirm.",
+        type: "warning",
+        showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+        }, function(isConfirm){
+            if (isConfirm){
+                setTimeout(function(){delete_invoice(invoice_pk)},600)            
+            }
+    })
+}
+
+function delete_invoice(invoice_pk){
+    $.ajax({
+        url : "/retailsales/invoice/delete/", 
+        type: "GET",
+        data: {invoice_id: invoice_pk,
+            calltype: 'delete',
+        },
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            swal("Hooray...", "Invoice is deleted.", "success");
+            setTimeout(location.reload(true),1500);
+            },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No sales data exist.", "error");
+        }
+    });
+}
+
 
 // load_metadata()
 
