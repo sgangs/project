@@ -204,13 +204,14 @@ def get_balance_sheet(request, start, end, period):
                 long_liability+=total
                 if (this_debit or this_credit):
                     response_data.append({'data_type':'long_liability','account':item.name,'total':str(total)})
+        
         elif(item.account_type in ('equ')):
             total-=journal_debit['value__sum']
             total+=journal_credit['value__sum']
             drawings+=total
             if (this_debit or this_credit):
-                response_data.append({'data_type':'liability','account':item.name,'total':str(total)})
-
+                response_data.append({'data_type':'equity','account':item.name,'total':str(total)})
+    
     inventory_acc=account_inventory.objects.for_tenant(request.user.tenant).get(name="Inventory")
     inventory_closing=account_year_inventory.objects.for_tenant(request.user.tenant).get(account_inventory=inventory_acc, accounting_period=period)
     response_data.append({'data_type':'assets','account':"Closing Inventory",\
@@ -218,7 +219,9 @@ def get_balance_sheet(request, start, end, period):
             
     total_asset=asset+long_asset+(inventory_closing.current_debit-inventory_closing.current_credit)
     profit=get_profit_loss(request,start,end, period, sent="balance-sheet")
-    total_liability=liability+long_liability+profit+drawings
+    total_liability=liability+long_liability+profit
+    if (drawings != 0):
+        response_data.append({'data_type':'total_equity','total':str(drawings)})
     response_data.append({'data_type':'total_asset','total':str(total_asset)})
     response_data.append({'data_type':'profit','total':str(profit)})
     response_data.append({'data_type':'total_liability','total':str(total_liability)})

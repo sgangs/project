@@ -5,7 +5,10 @@ $(function(){
     depreciation=0;
     liabilities=0;
     long_liabilities=0;
+    equity=0;
     profit=0;
+    tot_lia=0;
+    tot_eeq=0;
     for (i in accounts){
       if (accounts[i].data_type=='assets'){
         if (assets == 0){
@@ -163,7 +166,45 @@ $(function(){
         "<td>"+parseFloat(accounts[i].total)+"</td>"+
         "</tr>");
         liabilities+=1;
+        tot_lia=accounts[i].total;
       }
     }
+
+    for (i in accounts){
+      if (accounts[i].data_type=='equity'){
+        if (equity == 0){
+        $('#trail_balance').append("<tr class='data'>"+
+        "<td><b>EQUITY/OWNER'S CAPITAL</b></td>"+
+        "<td></td>"+
+        "</tr>");  
+        // $('#trail_balance').append("<tr class='data'>"+
+        // "<td>Current Liabilities</td>"+
+        // "<td></td>"+
+        // "</tr>");  
+        }
+        $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+        "<td>"+accounts[i].account+"</td>"+
+        "<td>"+parseFloat(accounts[i].total)+"</td>"+
+        "</tr>");
+        equity+=1;
+      }
+    }
+
+    for (i in accounts){
+      if (accounts[i].data_type=='total_equity'){
+      $('#trail_balance').append("<tr class='data info'>"+
+        "<td><b> TOTAL EQUITIES </b></td>"+
+        "<td>"+parseFloat(accounts[i].total)+"</td>"+
+        "</tr>");
+        equity+=1;
+        tot_eq = accounts[i].total
+      }
+    }
+    // tot_val = parseFloat(tot_lia)+parseFloat(tot_eq)
+    // $('#trail_balance').append("<tr class='data info'>"+
+    //     "<td><b> TOTAL LIABILITY & EQUITY </b></td>"+
+    //     "<td>"+tot_val+"</td>"+
+    //     "</tr>");
+    
 
 });

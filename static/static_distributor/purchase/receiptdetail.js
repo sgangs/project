@@ -73,7 +73,7 @@ function load_data(){
                     "<td class='hidden-print'>"+discount_types[this.discount2_type]+"</td>"+
                     // "<td>"+this.discount2_value+"</td>"+
                     // "<td class='visible-print-block'>"+d2_val+"</td>"+
-                    "<td>"+d2_val.toFixed(2)+"</td>"+
+                    "<td>"+d2_val+"</td>"+
                     "<td>"+this.line_tax+"</td>"+
                     "<td class='is_not_igst'>"+this.cgst_percent+"</td>"+
                     "<td class='is_not_igst'>"+this.cgst_value+"</td>"+

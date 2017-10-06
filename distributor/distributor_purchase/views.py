@@ -442,7 +442,7 @@ def purchase_receipt_save(request):
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
 					if (debit != credit):
-						raise IntegrityError
+						raise IntegrityError (('Debit and credit value not matching'))
 					if this_tenant.maintain_inventory:
 
 						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
@@ -775,9 +775,10 @@ def delete_purchase(request):
 									elif(discount_type_2 == 2):
 										purchase_price=(purchase_price-discount_value_2/quantity)
 
+								purchase_price = round(purchase_price,2)
 								purchase_price_min=purchase_price-Decimal(0.01)
 								purchase_price_max=purchase_price+Decimal(0.01)
-								purchase_price = round(purchase_price,2)
+								# purchase_price = round(purchase_price,2)
 								
 
 								try:
@@ -811,7 +812,7 @@ def delete_purchase(request):
 										item.save()
 										quantity_updated=0								
 								if (quantity_updated>0):
-									raise IntegrityError
+									raise IntegrityError (('Quantity of item: '+productid+' not available.'))
 								
 								if (total_free >0):
 									product_list=Inventory.objects.for_tenant(this_tenant).filter(purchase_date = purchase_date, \
@@ -835,7 +836,7 @@ def delete_purchase(request):
 											item.save()
 											quantity_updated=0								
 									if (quantity_updated>0):
-										raise IntegrityError
+										raise IntegrityError (('Quantity of item: '+productid+' not available.'))
 
 
 							#Update Warehouse Valuation
@@ -969,7 +970,7 @@ def debit_note_save(request):
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
 					if (debit != credit):
-						raise IntegrityError
+						raise IntegrityError (('Debit and credit value not matching.'))
 
 					products_cost=0
 
@@ -1420,3 +1421,4 @@ def order_delete(request):
 		
 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
+

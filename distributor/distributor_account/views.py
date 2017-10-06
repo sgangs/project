@@ -332,22 +332,22 @@ def account_details_view(request):
 		ledgerid=request.POST.get('ledger')
 		account_type=request.POST.get('account_type')
 		remarks=request.POST.get('remarks')
-		# try:
-		# 	opendebit=Decimal(request.POST.get('opendebit'))
-		# except:
-		# 	opendebit=0.00
-		# try:
-		# 	opencredit=Decimal(request.POST.get('opencredit'))
-		# except:
-		# 	opencredit=0.00
-		# try:
-		# 	debit=Decimal(request.POST.get('debit'))
-		# except:
-		# 	debit=0.00
-		# try:
-		# 	credit=Decimal(request.POST.get('credit'))
-		# except:
-		# 	credit=0.00
+		try:
+			opendebit=Decimal(request.POST.get('opendebit'))
+		except:
+			opendebit=0.00
+		try:
+			opencredit=Decimal(request.POST.get('opencredit'))
+		except:
+			opencredit=0.00
+		try:
+			debit=Decimal(request.POST.get('debit'))
+		except:
+			debit=0.00
+		try:
+			credit=Decimal(request.POST.get('credit'))
+		except:
+			credit=0.00
 		try:
 			ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledgerid)
 		except:
