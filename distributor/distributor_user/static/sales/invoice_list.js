@@ -294,7 +294,10 @@ $('.download').click(function(e){
         }        
     });
 
-    var data = { 'customers': JSON.stringify(customers), 'start': startdate, 'end': enddate, 'calltype': 'apply_filter', 'returntype':'download' };
+    payment_status=$(".payment_status").find(':selected').data('id');
+
+    var data = { 'customers': JSON.stringify(customers), 'start': startdate, 'end': enddate, 'payment_status': payment_status, 
+            'calltype': 'apply_filter', 'returntype':'download' };
     var querystring = encodeQueryData(data);
     var download_url='/sales/invoicelist/listall/?'+querystring
     location.href = download_url;
