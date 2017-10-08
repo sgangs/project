@@ -570,8 +570,20 @@ def all_invoices(request):
 			productid=request.GET.get('productid')
 			sent_with=request.GET.get('sent_with')
 			returntype=request.GET.get('returntype')
+			payment_status=request.GET.get('payment_status')
 			if (start and end):
-				invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
+				if (payment_status == 'unpaid'):
+					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], final_payment_date__isnull=True).all().\
+							select_related('invoiceLineItem_salesInvoice').\
+							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+
+				elif (payment_status == 'paid'):
+					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], final_payment_date__isnull=False).all().\
+							select_related('invoiceLineItem_salesInvoice').\
+							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+
+				else:
+					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
 							select_related('invoiceLineItem_salesInvoice').\
 							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
 			if (len(customers)>0):

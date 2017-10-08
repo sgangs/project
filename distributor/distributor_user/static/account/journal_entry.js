@@ -255,7 +255,7 @@ function new_data(){
                 success : function(jsondata) {
                     var show_success=true
                     if (show_success){
-                        swal("Hooray", "New customer added", "success");
+                        swal("Hooray", "Journal entry recorded.", "success");
                         setTimeout(location.reload(true),1000);
                     }
                     //console.log(jsondata);

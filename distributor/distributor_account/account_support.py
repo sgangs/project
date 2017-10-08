@@ -208,10 +208,11 @@ def get_balance_sheet(request, start, end, period):
         elif(item.account_type in ('equ')):
             total-=journal_debit['value__sum']
             total+=journal_credit['value__sum']
-            drawings+=total
-            if (this_debit or this_credit):
-                response_data.append({'data_type':'equity','account':item.name,'total':str(total)})
-    
+            if (total != 0):
+                drawings+=total
+                if (this_debit or this_credit):
+                    response_data.append({'data_type':'equity','account':item.name,'total':str(total)})
+
     inventory_acc=account_inventory.objects.for_tenant(request.user.tenant).get(name="Inventory")
     inventory_closing=account_year_inventory.objects.for_tenant(request.user.tenant).get(account_inventory=inventory_acc, accounting_period=period)
     response_data.append({'data_type':'assets','account':"Closing Inventory",\

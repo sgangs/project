@@ -1,14 +1,28 @@
 $(function(){
 
-var total_payment=0, page_no=0, incerease = true, decrease=false, all_invoices = true,
-    unpaid_invoices = false, overdue_invoices=false;
+var page_no=0, all_invoices = true, filter_applied=false;;
 
 load_invoices()
 
-$('.all').click(function(){
-    load_invoices();
-    page_no+=1;
-});
+function apply_navbutton(jsondata, page_no){
+    $('.navbtn').remove()
+    for (i =jsondata['start']+1; i<=jsondata['end']; i++){
+        if (i==page_no){
+                    // $('.add_nav').append("<a href='#' class='btn nav_btn btn-sm btn-default' data=1 style='margin-right:0.2%'>"+i+"</a>")
+            $('.add_nav').append("<button title='Your Current Page' class='btn btn-sm navbtn btn-info' "+
+                "value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+        else{
+            $('.add_nav').append("<button title='Go to page no: "+i+"' class='btn btn-sm navbtn btn-default'"+
+                " value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+    }
+}
+
+// $('.all').click(function(){
+//     load_invoices();
+//     page_no+=1;
+// });
 
 function load_invoices(){
     $.ajax({
@@ -18,17 +32,10 @@ function load_invoices(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $('.payment_summary').hide();
+            all_invoices = true;
             $("#receipt_table .data").remove();
-            if (incerease == true){
-                page_no+=1;
-            }
-            else{
-                page_no-=1;
-            }
-            $('.all').hide();
-            $('.unpaid').show();
-            $('.overdue').show();
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/retailsales/invoice/detailview/'+this.id+'/'
                 date=this.date
                 date=date.split("-").reverse().join("-")
@@ -43,6 +50,8 @@ function load_invoices(){
                 "<td class='delete'>Click here to delete</td>"+
                 "</tr>");
             })
+
+            // apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
         error : function() {
@@ -78,7 +87,7 @@ $("#receipt_table").on("click", ".delete", function(){
             if (isConfirm){
                 setTimeout(function(){reconfirm(get_id)},600)            
             }
-    })
+    })  
 });
 
 function reconfirm(invoice_pk){
@@ -120,60 +129,139 @@ function delete_invoice(invoice_pk){
 }
 
 
-// load_metadata()
+$(".add_nav").on("click", ".navbtn", function(){
+    if (filter_applied){
+        filter_data($(this).val())
+    }
+    else{
+        load_invoices($(this).val())
+    }
+});
 
-// function load_metadata(){
-//     $.ajax({
-//         url : "metadata/", 
-//         type: "GET",
-//         dataType: 'json',
-//         // handle a successful response
-//         success : function(jsondata) {
-//             console.log(jsondata);
-//             if (jsondata['invoice_value']['total__sum']==null){
-//                 jsondata['invoice_value']['total__sum']='0.00'
-//             }
-//             if (jsondata['invoice_paid']['amount_received__sum']==null){
-//                 jsondata['invoice_paid']['amount_received__sum']='0.00'
-//             }
-//             if (jsondata['invoice_overdue']['total__sum']==null){
-//                 jsondata['invoice_overdue']['total__sum']='0.00'
-//             }
-//             $('.value').append($.trim(jsondata['invoice_value']['total__sum']));
-//             $('.paid').append($.trim(jsondata['invoice_paid']['amount_received__sum']));
-//             $('.overdue_value').append($.trim(jsondata['invoice_overdue']['total__sum']));
-//         },
-//         // handle a non-successful response
-//         error : function() {
-//             swal("Oops...", "No sales data exist.", "error");
-//         }
-//     });
-// }
 
-// var end = new Date();
 var end = moment();
 var start = moment(end).subtract(60, 'days');
+var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
+var dateChanged=false;
+date_update();
 
-// console.log(start.format('DD-MM-YYYY'));
+function date_update(){
+    // var end = new Date();
+    // console.log(start.format('DD-MM-YYYY'));
+    startdate=start.format('DD-MM-YYYY');
+    enddate=end.format('DD-MM-YYYY');
 
-$('.date_range').daterangepicker({
-    'showDropdowns': true,
-    'locale': {
-        format: 'DD/MM/YYYY',
-    },
-    "dateLimit": {
-        "days": 30
-    },
-    'autoApply':true,
-    // 'minDate': moment(start),
-    // 'maxDate': moment(end)  
-    'startDate' : start,
-    'endDate' : end,
-    },
-    function(start, end, label) {
-        startdate=start.format('YYYY-MM-DD');
-        enddate=end.format('YYYY-MM-DD');
-        $('.details').attr('disabled', false);
+    $('.date_range').daterangepicker({
+        'showDropdowns': true,
+        'locale': {
+            format: 'DD-MM-YYYY',
+        },
+        "dateLimit": {
+            "days": 90
+        },
+        'autoApply':true,
+        // 'minDate': moment(start),
+        // 'maxDate': moment(end)  
+        'startDate' : start,
+        'endDate' : end,
+        },
+        function(start, end, label) {
+            dateChanged=true;
+            startdate=start.format('YYYY-MM-DD');
+            enddate=end.format('YYYY-MM-DD');
+            $('.details').attr('disabled', false);
+    });
+};
+
+
+$('.apply_filter').click(function(e){
+    filter_data(1);
+});
+
+function filter_data(page_no) {
+    invoice_no=$('.invoice_no').val();
+    
+    // console.log(dateChanged)
+    if (!dateChanged){
+        startdate = startdate.split("-").reverse().join("-")
+        enddate = enddate.split("-").reverse().join("-")
+        dateChanged= true;
+    } 
+    // console.log(enddate);
+
+    $.ajax({
+        url : "listall/", 
+        type: "GET",
+        data:{ calltype:"apply_filter",
+            start: startdate,
+            end: enddate,
+            invoice_no: invoice_no,
+            // page_no: page_no,
+            csrfmiddlewaretoken: csrf_token},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $('.payment_summary').show();
+            filter_applied=true;
+            $("#receipt_table .data").remove();
+            $('#filter').modal('hide');
+            $.each(jsondata['object'], function(){
+                var url='/retailsales/invoice/detailview/'+this.id+'/'
+                date=this.date
+                date=date.split("-").reverse().join("-")
+                $('#receipt_table').append("<tr class='data' align='center'>"+
+                "<td hidden='true'>"+url+"</td>"+
+                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                "<td>"+date+"</td>"+
+                "<td>"+this.cgsttotal+"</td>"+
+                "<td>"+this.sgsttotal+"</td>"+
+                "<td>"+this.total+"</td>"+
+                "<td hidden='true'>"+this.id+"</td>"+
+                "<td class='delete'>Click here to delete</td>"+
+                "</tr>");
+            })
+            $("#summary_table .data").remove();
+            $.each(jsondata['payment details'], function(){
+                $('#summary_table').append("<tr class='data' align='center'>"+
+                "<td>"+this.payment_mode_name+"</td>"+
+                "<td>"+this.value+"</td>"+
+                "</tr>");
+            })
+            // apply_navbutton(jsondata, page_no);
+            // $('.amount_invoiced').html('Rs.'+jsondata['total_value'])
+            // $('.amount_pending').html('Rs.'+jsondata['total_pending'])
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No sales invoice exist.", "error");
+        }
+    });
+
+}
+
+
+function encodeQueryData(data) {
+   let ret = [];
+   for (let d in data)
+     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+   return ret.join('&');
+}
+
+
+$('.download').click(function(e){
+    // filter_data(1, 'download');
+    // url='/sales/invoicelist/listall/'+get_id+'/'
+    if (!dateChanged){
+        startdate = startdate.split("-").reverse().join("-")
+        enddate = enddate.split("-").reverse().join("-")
+        dateChanged= true;
+    }
+
+    var data = { 'start': startdate, 'end': enddate, 'calltype': 'apply_filter', 'returntype':'download' };
+    var querystring = encodeQueryData(data);
+    var download_url='/sales/invoicelist/listall/?'+querystring
+    location.href = download_url;
+    $('#filter').modal('hide');
 });
 
 

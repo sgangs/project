@@ -6,8 +6,10 @@ urlpatterns = [
 
     url(r'^noinventory/$', views.not_maintained_inventory, name='not_maintained_inventory'),
     url(r'^getproduct/$', views.get_product, name='get_product'),
-    url(r'^getcurrentdata$', views.inventory_data, name='inventory_data'),
+    url(r'^getcurrentdata/$', views.inventory_data, name='inventory_data'),
     url(r'^currentinventory/$', views.inventory_template, name='inventory_template'),
+
+    url(r'^getcurrentinventory/$', views.inventory_man_wise, name='inventory_man_wise'),
     
     url(r'^openinginventory/$', views.opening_inventory, name='opening_inventory'),
     url(r'^openinginventory/data/$', views.opening_inventory_data, name='opening_inventory_data'),

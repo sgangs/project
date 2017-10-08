@@ -27,7 +27,8 @@
 
 
 <div>
-	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
+	<button type="submit" class="btn btn-success btn-xs filterbtn"><i class="fa fa-filter"></i> Filter</button>
+	<button type="submit" class="btn btn-primary btn-xs payment_summary"><i class="fa fa-folder"></i> Payment Summary</button>
 </div>
 <br>
 
@@ -93,7 +94,36 @@
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
-		    	<button type="button" class="btn btn-primary apply">Apply Filters</button>
+		    	<button type="button" class="btn btn-primary apply_filter">Apply Filters</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="filterSummary" tabindex="-1" role="dialog" aria-labelledby="filterSummaryLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Filter By</h4>
+		    </div>
+	    <div class="modal-body">
+	    	<div class="table-responsive">
+		    	<table class="table table-striped table-bordered table-hover" id="summary_table">
+			      	<thead class="thead-inverse header-background">
+			        	<tr>
+				            <th class="text-center">Payment Mode</th>
+				            <th class="text-center">Amount Paid</th>
+				        </tr>
+					</thead>
+			        <tbody>        	
+			        </tbody>
+			  	</table> 
+			</div>
+		        
+	   	</div>
+		    <div class="modal-footer">
+		    	
 		    </div>
 	    </div>
 	</div>
@@ -123,6 +153,9 @@
 csrf_token='{{csrf_token}}';
 $('.filterbtn').attr('data-toggle',"modal")
 $('.filterbtn').attr('data-target',"#filter")
+
+$('.payment_summary').attr('data-toggle',"modal")
+$('.payment_summary').attr('data-target',"#filterSummary")
 
 
 </script>

@@ -400,6 +400,7 @@ def product_view(request):
 			sgst=request.data.get('sgst')
 			igst=request.data.get('igst')
 			hsn=request.data.get('hsn')
+			manufac=request.data.get('manufac')
 			taxes=tax_structure.objects.for_tenant(this_tenant).all()
 			# state=request.data.get('state')
 			if not sku:
@@ -410,6 +411,7 @@ def product_view(request):
 			old_product=Product.objects.for_tenant(this_tenant).get(id=pk)
 			old_product.name=name
 			old_product.sku=sku
+			old_product.manufacturer = Manufacturer.objects.for_tenant(this_tenant).get(id=manufac)
 			
 			if barcode:
 				try:

@@ -6,7 +6,7 @@ import datetime as dt
 
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.timezone import localtime
@@ -62,11 +62,28 @@ def inventory_data(request):
 					select_related('product', 'warehouse').values('product__name','product__sku','purchase_date','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name','purchase_date',))
-	if (calltype == 'current'):
+	elif (calltype == 'current'):
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
 					select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name'))
+	elif (calltype == 'manufacturer group'):
+		current_inventory = list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+						select_related('product__manufacturer',).values('product__manufacturer__name', 'product__manufacturer__id').\
+						annotate(total_value=Sum(F('quantity_available')*F('purchase_price'))))
+	elif (calltype == 'manufacturer products'):
+		manufacturer_id = request.GET.get('manufac_id')
+		print(manufacturer_id)
+		if not manufacturer_id or manufacturer_id == 'null':
+			products=Product.objects.for_tenant(this_tenant).filter(manufacturer__isnull=True)
+		else:
+			manufacturer = Manufacturer.objects.for_tenant(this_tenant).get(id=manufacturer_id)
+			products=Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer)
+		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
+					select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
+					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
+					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name'))
+
 	jsondata = json.dumps(current_inventory, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -691,3 +708,15 @@ def delete_opening_inventory(request):
 			except:
 				transaction.rollback()
 		return HttpResponse(jsondata)
+
+
+@api_view(['GET', 'POST', ])
+def inventory_man_wise(request):
+	this_tenant=request.user.tenant
+	
+	current_inventory = list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+						values('product__manufacturer__name').\
+						annotate(tol_value=Sum(F('quantity_available')*F('purchase_price'))))
+
+	jsondata = json.dumps(current_inventory, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

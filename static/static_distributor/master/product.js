@@ -1,7 +1,8 @@
 $(function(){
 
-var has_attribute=false, attr_name, product_name, sku, vat_type, tax, reorder, unit, brand, group, has_batch,tax_array={},
+var has_attribute=false, attr_name, product_name, sku, vat_type, tax, reorder, unit, brand, group, has_batch,tax_array={}, manufac_array={},
     has_instance;
+
 
 // var tax_array={};
 
@@ -130,6 +131,32 @@ function load_tax(){
         // handle a non-successful response
         error : function() {
             swal("Oops...", "No tax data exist.", "error");
+        }
+    });
+}
+
+load_manufac()
+
+function load_manufac(){
+    $.ajax({
+        url : "/master/manufacbrand/manufacdata/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                tax_array[this.name]=this.id;
+                manufac_array[this.name]=this.id;
+                $('#manufac_data_prod').append($('<option/>',{
+                    'value': this.id,
+                    'text': this.name
+                }));
+            })
+            // $('#manufac_data_prod').selectpicker('refresh');
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No manufacturer data exist.", "error");
         }
     });
 }
@@ -557,6 +584,7 @@ $("#product_table").on("click", ".link", function(){
             $('#cgst_data_prod').val(tax_array[jsondata['cgst']])
             $('#sgst_data_prod').val(tax_array[jsondata['sgst']])
             $('#igst_data_prod').val(tax_array[jsondata['igst']])
+            $('#manufac_data_prod').val(tax_array[jsondata['manufacturer']])
             $('.editable').attr('disabled', true);
             // $('#cgst_data_prod').selectpicker('refresh');
             // $('#sgst_data_prod').selectpicker('refresh');
@@ -604,6 +632,7 @@ function update_data(){
     cgst_update=$('#cgst_data_prod').val()
     sgst_update=$('#sgst_data_prod').val()
     igst_update=$('#igst_data_prod').val()
+    manufac_update=$('#manufac_data_prod').val()
     // zone=$(".zone").find(':selected').data('id');
     
     if (name_update == '' || typeof(name_update) =='undefined' || sku_update == '' || typeof(sku_update) =='undefined' ){
@@ -622,6 +651,7 @@ function update_data(){
                     cgst:cgst_update,
                     sgst:sgst_update,
                     igst:igst_update,
+                    manufac: manufac_update,
                     calltype: "updateproduct",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               

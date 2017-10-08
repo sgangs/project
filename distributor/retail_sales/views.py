@@ -704,27 +704,118 @@ def invoice_detail_view(request, pk):
 def invoice_list(request):
 	return render(request,'retail_sales/sales_list.html', {'extension': 'base.html'})
 
+#This has to be updated to provide details as needed by the app
 @api_view(['GET'],)
-def all_invoices(request):
+def all_invoice_app(request):
 	this_tenant=request.user.tenant
+	print('here')
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
 		end=date_first.date.today()
 		start=end-date_first.timedelta(days=15)
+		response_data={}
 		if (calltype == 'all_invoices'):
 			# page_no = request.GET.get('page')
 			invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
 				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
+			
 			# page_no=1
 			# paginator = Paginator(invoices, 3)
 			# receipts_paginated=paginator.page(page_no)
 			# for item in receipts_paginated:
 			# 	print(item)
-		# elif (calltype== 'customer_pending'):
-		# 	customerid = request.GET.get('customerid')
-		# 	invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid).\
-		# 		values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')
-		response_data = list(invoices)		
+		
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def all_invoices(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
+		end=date_first.date.today()
+		start=end-date_first.timedelta(days=15)
+		response_data={}
+		filter_data={}
+		if (calltype == 'all_invoices'):
+			# page_no = request.GET.get('page')
+			invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
+				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
+			
+			filter_summary=list(invoices.values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).\
+							annotate(value = Sum('total')))
+			
+			# page_no=1
+			# paginator = Paginator(invoices, 3)
+			# receipts_paginated=paginator.page(page_no)
+			# for item in receipts_paginated:
+			# 	print(item)
+		
+
+		elif (calltype == 'apply_filter'):
+			start=request.GET.get('start')
+			end=request.GET.get('end')
+			invoice_no=request.GET.get('invoice_no')
+			# productid=request.GET.get('productid')
+			# sent_with=request.GET.get('sent_with')
+			returntype=request.GET.get('returntype')
+			# payment_status=request.GET.get('payment_status')
+			if (start and end):
+				invoices = retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
+				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
+				# invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
+							# select_related('invoiceLineItem_salesInvoice').\
+							# values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+			
+			if invoice_no:
+				invoices=invoices.filter(invoice_id__icontains=invoice_no)
+			
+
+			# if productid:
+			# 	product=Product.objects.for_tenant(this_tenant).get(id=productid)
+			# 	invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
+			# 			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+
+			if (returntype == 'download'):
+				invoices = invoices.order_by('customer_name', 'customer', '-date', '-invoice_id')
+				context = {
+					'invoices': invoices,
+					'tenant':this_tenant
+				}
+				pdf = render_to_pdf('sales/customer_pdf.html', context)
+				response = HttpResponse(pdf, content_type='application/pdf')
+				filename = "Sales Invoice Summary.pdf" 
+				content = "attachment; filename='%s'" %(filename)
+				response['Content-Disposition'] = content
+				return response
+		
+			#Update code to check this only if page_no is str(1)
+
+			#Send data details as in how much has been sent by what payment mode 
+			
+			filter_summary=list(invoices.values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).\
+							annotate(value = Sum('total')))
+			filter_data['payment details']=filter_summary
+			# filter_data['total_pending'] = filter_summary['pending']
+			# filter_data['total_value'] = filter_summary['total_sum']
+			# print(filter_summary)
+		
+		if page_no:
+			response_data =  paginate_data(page_no, 10, list(invoices))
+			response_data.update(filter_data)
+		else:
+			response_data['object']=list(invoices)
+			response_data.update(filter_data)
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+
+
+
+
 		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

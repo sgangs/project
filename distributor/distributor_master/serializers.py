@@ -68,6 +68,7 @@ class ProductDetailSerializers (serializers.ModelSerializer):
 	cgst=serializers.StringRelatedField()
 	sgst=serializers.StringRelatedField()
 	igst=serializers.StringRelatedField()
+	manufacturer=serializers.StringRelatedField()
 	class Meta:
 		model = Product
 		fields = ('id','name','sku', 'barcode', 'hsn_code','cgst','sgst','igst','reorder_point','manufacturer','has_batch',\

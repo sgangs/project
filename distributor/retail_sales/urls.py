@@ -8,12 +8,16 @@ urlpatterns = [
     url(r'^invoice/api/getproductbarcode$', views.get_product_barcode, name='get_product_barcode'),
     url(r'^invoice/api/getproductrate$', views.get_product_inventory, name='getinvoice'),
     url(r'^invoice/api/getproduct/details$', views.get_product_data, name='get_product_data'),
+    
     url(r'^invoice/save/$', views.sales_invoice_save, name='sales_invoice_save'),
+    
     url(r'^invoice/detailview/(?P<pk>[-\S]+)/$$', views.invoice_detail_view, name='invoice_detail_view'),
     url(r'^invoice/detail/(?P<pk>[-\S]+)/$', views.invoice_details, name='invoice_details'),
     url(r'^invoice/invoicenodetails/$', views.invoice_details_with_no, name='invoice_details_with_no'),
+    
     url(r'^invoicelist/$', views.invoice_list, name='invoice_list'),
     url(r'^invoicelist/listall/$', views.all_invoices, name='all_invoices'),
+    url(r'^invoicelist/listall/app/$', views.all_invoice_app, name='all_invoice_app'),
 
     url(r'^invoice/purchasedetails/$', views.invoice_purchase_wise_details, name='invoice_purchase_wise_details'),
 

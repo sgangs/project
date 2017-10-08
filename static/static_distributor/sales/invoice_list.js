@@ -1,6 +1,6 @@
 $(function(){
 
-var total_payment=0, page_no=0, incerease = true, decrease=false, all_invoices = true,
+var total_payment=0, page_no=0, all_invoices = true,
     unpaid_invoices = false, overdue_invoices=false, filter_applied=false;
 
 $('.overdue').hide();
@@ -296,8 +296,6 @@ $('.download').click(function(e){
 
     var data = { 'customers': JSON.stringify(customers), 'start': startdate, 'end': enddate, 'calltype': 'apply_filter', 'returntype':'download' };
     var querystring = encodeQueryData(data);
-    console.log(customers)
-    console.log(querystring)
     var download_url='/sales/invoicelist/listall/?'+querystring
     location.href = download_url;
     $('#filter').modal('hide');
@@ -328,6 +326,7 @@ function filter_data(page_no) {
     invoice_no=$('.invoice_no').val();
     productid=$('.product_id').val();
     invoice_status=$(".invoice_status").find(':selected').data('id');
+    payment_status=$(".payment_status").find(':selected').data('id');
     
     // console.log(dateChanged)
     if (!dateChanged){
@@ -347,6 +346,7 @@ function filter_data(page_no) {
             productid: productid,
             invoice_no: invoice_no,
             invoice_status: invoice_status,
+            payment_status: payment_status,
             customers: JSON.stringify(customers),
             page_no: page_no,
             csrfmiddlewaretoken: csrf_token},
