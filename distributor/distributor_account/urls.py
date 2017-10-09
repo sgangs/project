@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     url(r'^getaccounttype/$', views.get_account_type, name='get_account_type'),
-    url(r'^payment-mode/data/$', views.payment_mode_view, name='payment_mode_view'),
+    url(r'^payment-mode/getdata/$', views.payment_mode_view, name='payment_mode_view'),
     url(r'^payment-mode/$', views.payment_mode_data, name='payment_mode_data'),
     url(r'^account/data/$', views.account_details_view, name='account_details_view'),
     

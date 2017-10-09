@@ -4,7 +4,7 @@ load_modes()
 
 function load_modes(){
     $.ajax({
-        url : "data/", 
+        url : "getdata/", 
         type: "GET",
         dataType: 'json',
         // handle a successful response
@@ -85,7 +85,7 @@ function new_mode(){
     if (proceed){
         (function() {
             $.ajax({
-                url : "data/" , 
+                url : "getdata/" , 
                 type: "POST",
                 data:{name: name,
                     account:account,
