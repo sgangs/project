@@ -23,7 +23,7 @@ $(document).on('keydown.autocomplete', '.name', function() {
             $(el).closest('tr').find('td:nth-child(7) .unit').val(ui['item']['unit_id']);
             $(el).closest('tr').find('td:nth-child(16) input').val(ui['item']['cgst']);
             $(el).closest('tr').find('td:nth-child(18) input').val(ui['item']['sgst']);
-            $(el).closest('tr').find('td:nth-child(20) input').val(ui['item']['igst']);
+            // $(el).closest('tr').find('td:nth-child(20) input').val(ui['item']['igst']);
             // vat_input=ui['item']['vat_type']
             // $(el).closest('tr').find('td:nth-child(17) ').html(vat_type[vat_input]);
             // vat_percent=ui['item']['tax']
@@ -397,8 +397,8 @@ $('.addmore').click(function(){
     '<td colspan="1" class="cgstv">0.00</td>'+
     '<td colspan="1"><input class="form-control sgstp"></td>'+
     '<td colspan="1" class="sgstv">0.00</td>'+
-    '<td colspan="1"><input class="form-control igstp"></td>'+
-    '<td colspan="1" class="igstv">0.00</td>'+
+    '<td colspan="1" hidden><input class="form-control igstp"></td>'+
+    '<td colspan="1" class="igstv" hidden>0.00</td>'+
     '<td colspan="1" class="tv">0.00</td>';
     $('.details').append(data);
 
