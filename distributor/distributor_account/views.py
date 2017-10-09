@@ -30,11 +30,55 @@ from .account_support import *
 # @login_required
 @api_view(['GET','POST'],)
 def payment_mode_view(request):
+	this_tenant = request.user.tenant
 	if request.method == 'GET':
-		payment_modes=payment_mode.objects.for_tenant(request.user.tenant).order_by('default')
+		payment_modes=payment_mode.objects.for_tenant(this_tenant).order_by('default')
 		serializer = PaymentModeSerializers(payment_modes, many=True)
 		# return Response(json.dumps(taxes,cls=DjangoJSONEncoder))
 		return Response(serializer.data)
+	elif request.method == 'POST':
+		calltype = request.POST.get('calltype')
+		response_data = {}
+		if (calltype == 'newmode'):
+			name=request.POST.get('name')
+			accountid=request.POST.get('account')
+			default=request.POST.get('is_default')
+			if (default == 'true' or default == True):
+				default = True
+			elif (default == 'false' or default == False):
+				default = False
+
+			print("here")
+
+			try:
+				with transaction.atomic():
+					if (default):
+						default_account=payment_mode.objects.for_tenant(this_tenant).get(default=True)
+						default_account.default=False
+						default_account.save()
+
+					account=Account.objects.for_tenant(this_tenant).get(id=accountid)
+					new_mode=payment_mode()
+					new_mode.name=name
+					new_mode.payment_account=account
+					new_mode.default=default
+					new_mode.tenant=this_tenant
+					new_mode.save()				
+			except Exception as err:
+				print(err)
+				# response_data  = err.args 
+				transaction.rollback()
+						
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+
+@login_required
+def payment_mode_data(request):
+	extension="base.html"
+	this_tenant=request.user.tenant
+	return render (request, 'account/payment_mode.html',{'extension':extension})
+
 
 @api_view(['GET','POST'],)
 def ledger_group_view(request):
@@ -376,32 +420,6 @@ def account_details_view(request):
 		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 		
-
-@login_required
-def payment_mode_data(request):
-	extension="base.html"
-	this_tenant=request.user.tenant
-	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
-		response_data = {}
-		if (calltype == 'newmode'):
-			name=request.POST.get('name')
-			accountid=request.POST.get('accountid')
-			default=request.POST.get('default')
-			if (default == 'true'):
-				default = True
-			elif (default == 'false'):
-				default = False
-			account=Account.objects.for_tenant(this_tenant).get(id=accountid)
-			new_mode=payment_mode()
-			new_mode.name=name
-			new_mode.payment_account=account
-			new_mode.details=details
-			new_mode.tenant=this_tenant
-			new_mode.save()			
-		jsondata = json.dumps(response_data)
-		return HttpResponse(jsondata)
-	return render (request, 'account/payment_mode.html',{'extension':extension})
 
 @login_required
 def account_data(request):

@@ -713,19 +713,20 @@ def all_invoice_app(request):
 		calltype = request.GET.get('calltype')
 		page_no = request.GET.get('page_no')
 		end=date_first.date.today()
-		start=end-date_first.timedelta(days=15)
+		start=end-date_first.timedelta(days=100)
 		response_data={}
-		if (calltype == 'all_invoices'):
+		# if (calltype == 'all_invoices'):
 			# page_no = request.GET.get('page')
-			invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
+		invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
 				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
-			
+		
 			# page_no=1
 			# paginator = Paginator(invoices, 3)
 			# receipts_paginated=paginator.page(page_no)
 			# for item in receipts_paginated:
 			# 	print(item)
-		
+	response_data = list(invoices)
+
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
