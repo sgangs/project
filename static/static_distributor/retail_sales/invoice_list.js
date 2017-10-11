@@ -2,6 +2,17 @@ $(function(){
 
 var page_no=0, all_invoices = true, filter_applied=false;;
 
+$('.apply_reset').click(function(){
+    filter_applied=false;
+    // $('select').val([]).selectpicker('refresh');
+    $('.payment_summary').hide();
+    $('.invoice_no').val('');
+    date_update();
+    dateChanged=false;
+    load_invoices(1);
+});
+
+
 load_invoices()
 
 function apply_navbutton(jsondata, page_no){
@@ -33,8 +44,10 @@ function load_invoices(){
         // handle a successful response
         success : function(jsondata) {
             $('.payment_summary').hide();
+            $('#filter').modal('hide');
             all_invoices = true;
             $("#receipt_table .data").remove();
+            
             $.each(jsondata['object'], function(){
                 var url='/retailsales/invoice/detailview/'+this.id+'/'
                 date=this.date

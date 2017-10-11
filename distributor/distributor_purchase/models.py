@@ -55,6 +55,8 @@ class purchase_receipt(models.Model):
 	payable_by=models.DateField(blank=True, null=True)
 	final_payment_date=models.DateField(blank=True, null=True)
 	# purchase_order=models.ForeignKey(purchase_order, blank=True, null=True related_name='purchaseReceipt_purchaseOrder')
+	#True means inventory type purchase, false means non inventory type purchase
+	inventory_type = models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,related_name='purchaseReceipt_purchase_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
@@ -99,18 +101,18 @@ class receipt_line_item(models.Model):
 	date=models.DateField(default=dt.date.today)
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
-	product_sku=models.CharField(max_length =50)
+	product_sku=models.CharField(max_length =50, blank=True, null=True)
 	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	vat_type=models.CharField(max_length =15, blank=True, null=True)
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
-	unit=models.CharField(max_length=20)
-	unit_multi=models.DecimalField(max_digits=8, decimal_places=2, default=1)
+	unit=models.CharField(max_length=20, blank=True, null=True)
+	unit_multi=models.DecimalField(max_digits=8, decimal_places=2, default=1, blank=True, null=True)
 
-	quantity=models.DecimalField(max_digits=10, decimal_places=3)
-	quantity_returned=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	quantity=models.DecimalField(max_digits=10, decimal_places=3, blank=True, null=True)
+	quantity_returned=models.DecimalField(max_digits=10, decimal_places=3, default=0, blank=True, null=True)
 	# free_without_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
-	free_with_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	free_with_tax=models.DecimalField(max_digits=10, decimal_places=3, default=0, blank=True, null=True)
 
 	batch=models.CharField(max_length=20, blank=True, null=True)
 	serial_no=models.CharField(max_length=100, blank=True, null=True) #This is for items with serial no

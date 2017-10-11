@@ -3,7 +3,7 @@ from distributor_purchase.models import purchase_receipt, purchase_order
 # from distributor_master.models import Product, Unit
 
 def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, duedate, subtotal, cgsttotal, sgsttotal, igsttotal, 
-		round_value, total, amount_paid = 0, from_purchase_order = False, order_id = None):
+		round_value, total, amount_paid = 0, from_purchase_order = False, order_id = None, inventory_type=True):
 
 	vendor_name=vendor.name
 	ven_address=vendor.address_1+", "+vendor.address_2
@@ -56,6 +56,7 @@ def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, dued
 	new_receipt.total = total
 	new_receipt.duedate = duedate
 	new_receipt.amount_paid = 0
+	new_receipt.inventory_type = inventory_type
 	if (from_purchase_order):
 		new_receipt.order_id = order_id	
 	new_receipt.save()

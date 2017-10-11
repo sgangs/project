@@ -146,7 +146,7 @@
           <ul>
             <li><a href="{% url 'account:account_period_view' %}">Accounting Period</a></li>
             <li><a href="{% url 'account:account_data' %}">Account List</a></li>
-            <li><a href="{% url 'account:payment_mode_data' %}">Payment Mode List</a></li>
+            <li><a href="{% url 'account:payment_mode_data' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Payment Mode List</a></li>
             <li><a href="{% url 'account:new_journal_entry' %}">Journal Entry</a></li>
             <li><a href="#">Ledger Group</a></li>
             <li><a href="{% url 'account:new_tax_report' %}">Tax Report</a></li>
@@ -171,9 +171,15 @@
       <ul class="PurchaseNav">
         <li><a href="#"><span><i class="fa fa-shopping-bag"></i></span> Purchase</a>
           <ul>
-            <li><a href="{% url 'purchase:purchase_order_new' %}">Create Purchase Order</a></li>
-            <li><a href="{% url 'purchase:order_list_view' %}">Order List</a></li>
-            <li><a href="{% url 'purchase:purchase_receipt_new' %}">Cretae Purchase Receipt</a></li>
+            <li><a href="{% url 'purchase:purchase_order_new' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Create Purchase Order</a></li>
+            <li><a href="{% url 'purchase:order_list_view' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Order List</a></li>
+            <li title="Click to create purchase receipt"><a href="#">Generate Receipt</a>
+              <ul>
+                <li><a href="{% url 'purchase:purchase_receipt_new' %}">Purchase Receipt</a></li>
+                <li><a href="{% url 'purchase:purchase_receipt_new_noninventory' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup> Purchase Receipt for Non Invenotry Item</a></li>
+                <li></li>
+              </ul>
+            </li>
             <li><a href="{% url 'purchase:receipt_list' %}">Receipt List</a></li>
             <li><a href="{% url 'purchase:payment_list_view' %}">Payment Report</a></li>
             <li><a href="#">Purchase Return</a></li>
@@ -199,7 +205,7 @@
                   </ul>
                 </div>
               </li>
-            <li><a href="{% url 'sales:hsn_report' %}">HSN Report</a></li>
+            <li><a href="{% url 'sales:hsn_report' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>HSN Report</a></li>
             <li><a href="{% url 'sales:collection_list_view' %}">Collection List</a></li>
             <li><a href="{% url 'sales:sales_return_view' %}">Sales Return</a></li>
             <li><a href="{% url 'sales:return_list_view' %}">Sales Return List</a></li>

@@ -71,24 +71,24 @@
 	<thead>
     	<tr class="text-center">
         	<th class="text-center" span="4">Item</th>
-            <th class="text-center">HSN Code</th>
-            <th class="text-center">Qty</th>
+            <th class="text-center noninventory">HSN Code</th>
+            <th class="text-center noninventory">Qty</th>
             <!-- <th class="text-center hidden-print"><h5>Free w/o tax</h5></th> -->
-            <th class="text-center">Free</th>
-            <th class="text-center">Unit</th>
+            <th class="text-center noninventory">Free</th>
+            <th class="text-center noninventory">Unit</th>
             <!-- <th class="text-center visible-print-block"><h5>Free</h5></th> -->
             <th class="text-center">Purchase Rate</th>
-            <th class="text-center">Tentative Sales Price</th>
-            <th class="text-center">MRP</th>
-            <th class="text-center hidden-print">Disc. Type-1</th>
-            <th class="text-center">Disc. Value-1</th>
+            <th class="text-center noninventory">Tentative Sales Price</th>
+            <th class="text-center noninventory">MRP</th>
+            <th class="text-center hidden-print noninventory">Disc. Type-1</th>
+            <th class="text-center noninventory">Disc. Value-1</th>
             <!-- <th class="text-center hidden-print"><h5>Disc. Value-1</h5></th>
             <th class="text-center visible-print-block"><h5>Disc. Amt.-1</h5></th> -->
-            <th class="text-center hidden-print">Disc. Type-2</th>
-            <th class="text-center">Disc. Value-2</th>
+            <th class="text-center hidden-print noninventory">Disc. Type-2</th>
+            <th class="text-center noninventory">Disc. Value-2</th>
             <!-- <th class="text-center hidden-print"><h5>Disc. Value-2</h5></th>
             <th class="text-center visible-print-block"><h5>Disc. Amt.-2</h5></th> -->
-            <th class="text-center">Taxable Total</th>
+            <th class="text-center noninventory">Taxable Total</th>
             <!-- <th class="text-center"><h5>VAT %</h5></th> -->
             <th class="text-center is_not_igst">CGST%</th>
             <th class="text-center is_not_igst">CGST Amt</th>
@@ -126,7 +126,7 @@
 </div> -->
 <div class="row text-right">
 	<div class="col-xs-6">
-		<table class="table metadata boderless">
+		<table class="table metadata boderless" hidden>
 			<tr class='text-left'>
 				<td colspan="1" class='text-left'>Payment Due date</td>
 				<td colspan="1" class='text-left'></td>
@@ -135,43 +135,34 @@
 			</tr>						
 		</table>
 	</div>
-	<div class="col-xs-4 col-xs-offset-2">
+	<div class="col-xs-12">
 		<table class="table metadata boderless">
 			<tr>
 				<td>Subtotal</td>
 				<td>Rs.</td>
 		        <td class='subtotal_receipt'></td>
-			</tr>
-			<!-- <tr>
-				<td>Grand Discount</td>
-				<td>Rs.</td>
-		        <td class='grand_discount'>0.00</td>
-			</tr> -->
-			<tr hidden>
-				<td>Tax Total</td>
-				<td>Rs.</td>
-		        <td class='taxtotal_receipt'></td>
-			</tr>
-            <tr>
+			 
                 <td>CGST Total</td>
                 <td>Rs.</td>
                 <td class='cgsttotal_receipt'></td>
-            </tr>
-            <tr>
+                
                 <td>SGST Total</td>
                 <td>Rs.</td>
                 <td class='sgsttotal_receipt'></td>
-            </tr>
-            <tr>
+                
                 <td>Round Off</td>
                 <td>Rs.</td>
                 <td class='round'></td>
-            </tr>
-			<tr>
-				<td>Total Payable</td>
+                
+                <td>Total Payable</td>
 				<td>Rs.</td>
 		        <td class='total_receipt'></td>
 			</tr>
+            <tr hidden>
+                <td>Tax Total</td>
+                <td>Rs.</td>
+                <td class='taxtotal_receipt'></td>
+            </tr>
 		</table>
 	</div>
 </div>
