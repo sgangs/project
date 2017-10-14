@@ -153,7 +153,7 @@ $(".add_nav").on("click", ".navbtn", function(){
 
 
 var end = moment();
-var start = moment(end).subtract(60, 'days');
+var start = moment(end).subtract(15, 'days');
 var startdate=start.format('DD-MM-YYYY'), enddate=end.format('DD-MM-YYYY');
 var dateChanged=false;
 date_update();
@@ -170,7 +170,7 @@ function date_update(){
             format: 'DD-MM-YYYY',
         },
         "dateLimit": {
-            "days": 90
+            "days": 31
         },
         'autoApply':true,
         // 'minDate': moment(start),

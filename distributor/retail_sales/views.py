@@ -1,5 +1,6 @@
 import datetime as date_first
 from decimal import Decimal
+import json
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -8,11 +9,9 @@ from django.db import IntegrityError, transaction
 from django.db.models import Sum, Count
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-import json
+
 
 from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Customer, Warehouse, product_sales_rate
@@ -86,8 +85,9 @@ def get_product_inventory(request):
 
 		response_data['quantity']=product_quantity
 		response_data['rate']=product_rate
-	
+
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
+	print(jsondata)
 	return HttpResponse(jsondata)
 
 @api_view(['GET'],)
@@ -430,19 +430,6 @@ def sales_invoice_save(request):
 						
 
 					for k,v in cgst_paid.items():
-						# if v>0:
-						# 	new_tax_transaction=tax_transaction()
-						# 	new_tax_transaction.transaction_type=5
-						# 	new_tax_transaction.tax_type="CGST"
-						# 	new_tax_transaction.tax_percent=k
-						# 	new_tax_transaction.tax_value=v
-						# 	new_tax_transaction.transaction_bill_id=new_invoice.id
-						# 	new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-						# 	new_tax_transaction.date=date
-						# 	new_tax_transaction.is_registered=False
-						# 	new_tax_transaction.tenant=this_tenant
-						# 	new_tax_transaction.save()
-
 						try:
 							if v[2]>0:
 								new_tax_transaction_register("CGST",5, k, v[0],v[1],v[2], new_invoice.id, \
@@ -451,19 +438,6 @@ def sales_invoice_save(request):
 							pass
 
 					for k,v in sgst_paid.items():
-						# if v>0:
-						# 	new_tax_transaction=tax_transaction()
-						# 	new_tax_transaction.transaction_type=5
-						# 	new_tax_transaction.tax_type="SGST"
-						# 	new_tax_transaction.tax_percent=k
-						# 	new_tax_transaction.tax_value=v
-						# 	new_tax_transaction.transaction_bill_id=new_invoice.id
-						# 	new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-						# 	new_tax_transaction.date=date
-						# 	new_tax_transaction.is_registered=False
-						# 	new_tax_transaction.tenant=this_tenant
-						# 	new_tax_transaction.save()
-
 						try:
 							if v[2]>0:
 								new_tax_transaction_register("SGST",5, k, v[0],v[1],v[2], new_invoice.id,\
@@ -557,6 +531,7 @@ def sales_invoice_delete(request):
 			response_data = {}
 			this_tenant=request.user.tenant
 			if (calltype == 'delete'):
+				# response_data = delete_inventory(request)
 				with transaction.atomic():
 					try:
 						invoice_pk=request.GET.get('invoice_id')
@@ -657,6 +632,433 @@ def sales_invoice_delete(request):
 			return HttpResponse(jsondata)
 
 
+@api_view(['GET'],)
+def sales_invoice_edit_view(request):
+	return render(request,'retail_sales/edit_invoice.html', {'extension': 'base.html'})
+
+
+@api_view(['POST'],)
+def sales_invoice_edit(request):
+		if request.method == 'POST':
+			calltype = request.POST.get('calltype')
+			response_data = {}
+			this_tenant=request.user.tenant
+			if (calltype == 'edit' or calltype == 'editmobile'):
+				print('In edit')
+				# response_data = delete_inventory(request)
+				with transaction.atomic():
+					try:
+						invoice_pk=request.data.get('invoice_pk')
+						old_invoice=retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_pk)
+
+						all_line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice=old_invoice)
+						
+						#Does this tenant maintain inventory?
+						maintain_inventory=this_tenant.maintain_inventory
+						total_purchase_price=0
+						#saving the invoice_line_item and linking them with foreign key to receipt
+
+						if maintain_inventory:
+							for item in all_line_items:
+								productid=item.product
+								multiplier=item.unit_multi
+								# print(multiplier)
+								try:
+									original_tentative_sales_price=item.tentative_sales_price
+									tentative_sales_price=original_tentative_sales_price/multiplier
+								except:
+									tentative_sales_price=0
+								try:
+									original_mrp=item.mrp
+									mrp=original_mrp/multiplier
+								except:
+									mrp=0
+								product_items=json.loads(item.other_data)['detail']
+								for each_item in product_items:
+									total_purchase_price+=Decimal(each_item['quantity'])*Decimal(each_item['pur_rate'])
+									inventory=Inventory()
+									inventory.product=productid
+									inventory.warehouse=old_invoice.warehouse
+									inventory.purchase_quantity=Decimal(each_item['quantity'])
+									inventory.quantity_available=Decimal(each_item['quantity'])
+									inventory.purchase_date=each_item['date']
+									inventory.purchase_price=Decimal(each_item['pur_rate'])
+									inventory.tentative_sales_price=tentative_sales_price
+									inventory.mrp=mrp
+									inventory.tenant=this_tenant
+									inventory.save()
+
+							#Update Warehouse Valuation
+							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=old_invoice.warehouse)
+							warehouse_valuation_change.valuation+=total_purchase_price
+							warehouse_valuation_change.save()
+								
+							# delete inventory_ledger() - only if you maintain inventory
+							inventory_ledger.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=9,\
+									transaction_bill_id=old_invoice.invoice_id).delete()
+						
+						# delete tax_transaction
+						tax_transaction.objects.for_tenant(this_tenant).filter(date=old_invoice.date,transaction_type=5,\
+									transaction_bill_id=old_invoice.id).delete()
+						#delete old line items
+						all_line_items.delete()
+
+						#delete all journal entries
+						old_journal=Journal.objects.for_tenant(this_tenant).get(trn_type=7, transaction_bill_id=old_invoice.id)
+						# Update the current balance of all journal related accounts
+						journal_line_items=journal_entry.objects.for_tenant(this_tenant).filter(journal=old_journal)
+						acct_period = accounting_period.objects.for_tenant(this_tenant).get(start__lte=old_journal.date, end__gte=old_journal.date)
+						
+						for item in journal_line_items:
+							trn_type = item.transaction_type
+							account = item.account
+							account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+							if (trn_type == 1):
+								account_journal_year.current_debit=account_journal_year.current_debit-item.value
+							elif (trn_type == 2):
+								account_journal_year.current_credit=account_journal_year.current_credit-item.value
+							account_journal_year.save()
+						old_journal.delete()
+						
+						#delete all inventory journal entries
+						old_journal_inv=journal_inventory.objects.for_tenant(this_tenant).filter(trn_type=7, transaction_bill_id=old_invoice.id)
+						# Update the current balance of all inventory journal related accounts
+						journal_inv_line_items = journal_entry_inventory.objects.for_tenant(this_tenant).filter(journal__in=old_journal_inv)
+						for item in journal_inv_line_items:
+							inventory_acct = item.account
+							account_journal_year=account_year_inventory.objects.get(account_inventory=inventory_acct, accounting_period = acct_period)
+							if (trn_type == 1):
+								account_journal_year.current_debit=account_journal_year.current_debit-item.value
+							elif (trn_type == 2):
+								account_journal_year.current_credit=account_journal_year.current_credit-item.value
+							account_journal_year.save()
+						
+						old_journal_inv.delete()
+						# raise IntegrityError
+
+						# old_invoice.delete()
+
+						#Edit Invoice with new data
+
+						if (calltype == 'edit'):
+							bill_data = json.loads(request.data.get('bill_details'))
+						else:
+							bill_data = request.data.get('bill_details')
+						
+						# if (paymentmode_id):
+						# 	payment_mode_selected=payment_mode.objects.for_tenant(this_tenant).get(id=paymentmode_id)
+						# else:
+						# 	payment_mode_selected=payment_mode.objects.for_tenant(this_tenant).get(default=True)
+						
+						subtotal=Decimal(request.data.get('subtotal')).quantize(TWOPLACES)
+						cgsttotal=Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
+						sgsttotal=Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
+						total=Decimal(request.data.get('total')).quantize(TWOPLACES)
+						sum_total = subtotal+cgsttotal+sgsttotal
+						round_value = 0
+						if (abs(sum_total - total) <0.90 ):
+							round_value = sum_total - total
+						
+						old_invoice.subtotal=subtotal
+						old_invoice.cgsttotal=cgsttotal
+						old_invoice.sgsttotal=sgsttotal
+						# new_invoice.taxtotal=taxtotal
+						
+						#This will provide the details, whether this is B2CL or B2CS
+						# if (subtotal<small_large_limt):
+						# 	new_invoice.gst_type=3
+						# else:
+						# 	new_invoice.gst_type=2
+						
+
+						old_invoice.total = total
+						old_invoice.amount_paid = total
+						old_invoice.save()
+						
+						products_cost=0
+						
+						vat_paid={}
+						cgst_paid={}
+						sgst_paid={}
+						
+						cgst_total=0
+						sgst_total=0
+						
+						#Does this tenant maintain inventory?
+						maintain_inventory=this_tenant.maintain_inventory
+						total_purchase_price=0
+						date = old_invoice.date
+
+						warehouse = old_invoice.warehouse
+						ware_address=warehouse.address_1+", "+warehouse.address_2
+						ware_state=warehouse.state
+						ware_city=warehouse.city
+						ware_pin=warehouse.pin
+
+						paymentmode_id = old_invoice.payment_mode_id
+
+						payment_mode_selected=payment_mode.objects.for_tenant(this_tenant).get(id=paymentmode_id)
+						#saving the invoice_line_item and linking them with foreign key to receipt
+						for data in bill_data:
+							productid=data['product_id']
+							unit_name=data['unit_name']
+							multiplier=Decimal(data['unit_multi']).quantize(TWOPLACES)
+							price_list={}
+							price_list_dict={}
+							price_list_list=[]
+
+							try:
+								batch=data['batch']
+								manufacturing_date=data['manufacturing_date']
+								expiry_date=data['expiry_date']
+							except:
+								batch=''
+								manufacturing_date=''
+								expiry_date=''
+							try:
+								serial_no=data['serial_no']
+							except:
+								serial_no=''
+
+							discount_amount=data['discount_amount']
+							line_taxable_total=Decimal(data['taxable_total']).quantize(TWOPLACES)
+							line_total=Decimal(data['line_total']).quantize(TWOPLACES)
+
+							cgst_p=Decimal(data['cgst_p']).quantize(TWOPLACES)
+							cgst_v=Decimal(data['cgst_v']).quantize(TWOPLACES)
+							sgst_p=Decimal(data['sgst_p']).quantize(TWOPLACES)
+							sgst_v=Decimal(data['sgst_v']).quantize(TWOPLACES)
+
+							is_tax=data['is_tax']
+							if (is_tax == 'true'):
+								is_tax = True
+							elif(is_tax == 'false' or is_tax == ''):
+								is_tax = False
+
+							cgst_total+=cgst_v
+							sgst_total+=sgst_v
+
+							product=Product.objects.for_tenant(this_tenant).select_related('tax').get(id=productid)
+									
+							# unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
+							# multiplier=unit.multiplier
+							
+							# original_actual_sales_price=Decimal(data['sales'])
+							original_actual_sales_price = Decimal(data['sales_after_tax']).quantize(TWOPLACES)
+							actual_sales_price=Decimal(original_actual_sales_price/multiplier)
+							
+							original_quantity=Decimal(data['quantity']).quantize(TWOPLACES)
+							quantity=original_quantity*multiplier
+							
+							if maintain_inventory:
+								product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
+										product=productid, warehouse=warehouse,).order_by('purchase_date')
+								quantity_updated=quantity
+								i=0
+								for item in product_list:
+									i+=1
+									if (quantity_updated<1):
+										break
+									original_available=item.quantity_available
+									if (quantity_updated>=original_available):
+										item.quantity_available=0
+										products_cost+=item.purchase_price*original_available
+										item.save()
+										inventory_data={'date':item.purchase_date, 'quantity':original_available, \
+														'pur_rate':item.purchase_price}
+										price_list_list.append(inventory_data)
+										price_list[i]={'date':item.purchase_date,\
+													'quantity':original_available, 'pur_rate':item.purchase_price}
+										total_purchase_price+=original_available*item.purchase_price
+										quantity_updated-=original_available
+										
+									else:
+										item.quantity_available-=quantity_updated
+										products_cost+=item.purchase_price*quantity_updated
+										item.save()
+										inventory_data={'date':item.purchase_date, 'quantity':quantity_updated,\
+														'pur_rate':item.purchase_price}
+										price_list_list.append(inventory_data)
+										price_list[i]={'date':item.purchase_date,\
+													'quantity':quantity_updated, 'pur_rate':item.purchase_price}
+										total_purchase_price+=quantity_updated*item.purchase_price
+										quantity_updated=0								
+								if (quantity_updated>0):
+									raise IntegrityError(('Quantity Not Available for: '+product.name))
+								price_list_dict['detail']=price_list_list
+								price_list_json = json.dumps(price_list_dict,  cls=DjangoJSONEncoder)
+
+							LineItem = invoice_line_item()
+							LineItem.retail_invoice = old_invoice
+							LineItem.product= product
+							LineItem.product_name= product.name
+							LineItem.product_sku=product.sku
+							LineItem.product_hsn=product.hsn_code
+							LineItem.date = date
+							LineItem.cgst_percent=cgst_p
+							LineItem.cgst_value=cgst_v
+							LineItem.sgst_percent=sgst_p
+							LineItem.sgst_value=sgst_v
+							LineItem.is_tax_included=is_tax
+							
+							LineItem.unit=unit_name
+							# LineItem.unit_id=unitid - This is not yet operational.
+							LineItem.unit_multi=multiplier
+							LineItem.quantity=original_quantity
+							# if (product.has_batch):
+							# 	LineItem.batch=batch
+							# 	LineItem.manufacturing_date=manufacturing_date
+							# 	LineItem.expiry_date=expiry_date
+							# if (product.has_instance):
+							# 	LineItem.serial_no=serial_no
+							
+							LineItem.sales_price=original_actual_sales_price
+							
+							if maintain_inventory:
+								LineItem.other_data=price_list_json
+							LineItem.discount_amount=discount_amount
+							# LineItem.line_before_tax=line_total - cgst_v - sgst_v
+							LineItem.line_before_tax=line_taxable_total
+							LineItem.line_total=line_total
+							LineItem.tenant=this_tenant
+							LineItem.save()
+
+							if maintain_inventory:						
+								#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
+								for k,v in price_list.items():
+									new_inventory_ledger=inventory_ledger()
+									new_inventory_ledger.product=product
+									new_inventory_ledger.warehouse=warehouse
+									new_inventory_ledger.transaction_type=9
+									new_inventory_ledger.date=date
+									new_inventory_ledger.quantity=v['quantity']
+									new_inventory_ledger.actual_sales_price=actual_sales_price
+									new_inventory_ledger.purchase_price=v['pur_rate']
+									new_inventory_ledger.transaction_bill_id=old_invoice.invoice_id
+									new_inventory_ledger.tenant=this_tenant
+									new_inventory_ledger.save()
+								
+								warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+								warehouse_valuation_change.valuation-=total_purchase_price
+								warehouse_valuation_change.save()
+
+							# if (cgst_p in sgst_paid):
+							# 	cgst_paid[cgst_p]+=cgst_v
+							# else:
+							# 	cgst_paid[cgst_p]=cgst_v
+							# if (sgst_p in sgst_paid):
+							# 	sgst_paid[sgst_p]+=sgst_v
+							# else:
+							# 	sgst_paid[sgst_p]=sgst_v
+
+							if (cgst_p in cgst_paid):
+								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][1]=total
+								cgst_paid[cgst_p][2]+=line_taxable_total
+							else:
+								cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
+							if (sgst_p in sgst_paid):
+								sgst_paid[sgst_p][0]+=sgst_v
+								sgst_paid[sgst_p][1]=total
+								sgst_paid[sgst_p][2]+=line_taxable_total
+							else:
+								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
+							
+
+						for k,v in cgst_paid.items():
+							try:
+								if v[2]>0:
+									new_tax_transaction_register("CGST",5, k, v[0],v[1],v[2], old_invoice.id, \
+										old_invoice.invoice_id, date, this_tenant, False, customer_gst=None, customer_state=ware_state)
+							except:
+								pass
+
+						for k,v in sgst_paid.items():
+							try:
+								if v[2]>0:
+									new_tax_transaction_register("SGST",5, k, v[0],v[1],v[2], old_invoice.id,\
+										old_invoice.invoice_id, date, this_tenant, False, customer_gst=None, customer_state=ware_state)
+							except:
+								pass
+
+						#One more journal entry for COGS needs to be done
+						remarks="Retail Invoice No: "+str(old_invoice.invoice_id)
+						journal=new_journal(this_tenant, date,"Sales",remarks, trn_id=old_invoice.id, trn_type=7)
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
+						new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
+						if (cgst_total>0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Output")
+							new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
+
+						if (sgst_total>0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
+							new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
+
+						if (round_value>0):
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
+							new_journal_entry(this_tenant, journal, round_value, account, 2, date)
+
+						# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cash")
+						account = payment_mode_selected.payment_account
+						new_journal_entry(this_tenant, journal, total, account, 1, date)
+						
+						debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+						credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+
+						if (debit != credit):
+							if ((debit['value__sum'] - credit['value__sum'])>0.98):
+								raise IntegrityError (('Credit and Debit not matching'))
+
+						if maintain_inventory:
+							
+							inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+							acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+							inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+												get(account_inventory=inventory_acct, accounting_period = acct_period)
+							inventory_acct_year.current_debit-=total_purchase_price
+							inventory_acct_year.save()
+
+							new_journal_inv=journal_inventory()
+							new_journal_inv.date=date
+							new_journal_inv.transaction_bill_id=old_invoice.id
+							new_journal_inv.trn_type=7
+							new_journal_inv.tenant=this_tenant
+							new_journal_inv.save()
+							new_entry_inv=journal_entry_inventory()
+							new_entry_inv.transaction_type=1
+							new_entry_inv.journal=new_journal_inv
+							new_entry_inv.account=inventory_acct
+							new_entry_inv.value=-total_purchase_price
+							new_entry_inv.tenant=this_tenant
+							new_entry_inv.save()
+
+							inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
+							acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+							inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+												get(account_inventory=inventory_acct, accounting_period = acct_period)
+							inventory_acct_year.current_debit+=total_purchase_price
+							inventory_acct_year.save()
+
+							new_entry_inv=journal_entry_inventory()
+							new_entry_inv.transaction_type=1
+							new_entry_inv.journal=new_journal_inv
+							new_entry_inv.account=inventory_acct
+							new_entry_inv.value=total_purchase_price
+							new_entry_inv.tenant=this_tenant
+							new_entry_inv.save()
+
+
+						response_data['pk']=old_invoice.id
+						response_data['id']=old_invoice.invoice_id
+
+						response_data['success'] = True
+					except:
+						transaction.rollback()
+
+			jsondata = json.dumps(response_data)
+			return HttpResponse(jsondata)
+
+
 @api_view(['GET', 'POST'],)
 def invoice_details(request, pk):
 	this_tenant=request.user.tenant
@@ -685,7 +1087,7 @@ def invoice_details_with_no(request):
 		'total','amount_paid').get(invoice_id=invoice_no)
 		
 		line_items=list(invoice_line_item.objects.filter(retail_invoice=invoice['id']).order_by('id').values('id','product_name','product_hsn',\
-			'product_id','unit','unit_multi','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
+			'product', 'product_id','unit','unit_multi','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
 			'is_tax_included', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
 		
 		invoice['line_items']=line_items
@@ -713,7 +1115,7 @@ def all_invoice_app(request):
 		calltype = request.GET.get('calltype')
 		page_no = request.GET.get('page_no')
 		end=date_first.date.today()
-		start=end-date_first.timedelta(days=100)
+		start=end-date_first.timedelta(days=3)
 		response_data={}
 		# if (calltype == 'all_invoices'):
 			# page_no = request.GET.get('page')
@@ -809,15 +1211,6 @@ def all_invoices(request):
 		else:
 			response_data['object']=list(invoices)
 			response_data.update(filter_data)
-	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
-	return HttpResponse(jsondata)
-
-
-
-
-
-
-		
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -1013,7 +1406,7 @@ def sales_return_save(request):
 						LineItem.sgst_percent=sgst_p
 						LineItem.sgst_value=sgst_v
 						
-						LineItem.unit=unit
+						LineItem.unit=unit_name
 						LineItem.unit_multi=multiplier
 						LineItem.quantity=original_quantity
 						

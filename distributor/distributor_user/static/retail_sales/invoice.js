@@ -43,11 +43,13 @@ function get_product_rate(el, product_id){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            console.log(jsondata);
             updating_row=$('.details').find('.updating')
             // console.log(jsondata['rate'][0]['tentative_sales_rate']);
             if (jsondata['rate'][0]){
+                console.log('here')
                 $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
-                // $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
+                $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
                 $(updating_row).find('td:nth-child(11)').html(jsondata['rate'][0]['is_tax_included']);
             }
             else{

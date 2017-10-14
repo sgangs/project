@@ -95,7 +95,8 @@ class invoice_line_item(models.Model):
 	
 	# vat_type=models.CharField(max_length =15)
 	# tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
-
+	# Add Unit ID (Not FK) for unit.
+	# unit=models.CharField(max_length=20)
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 

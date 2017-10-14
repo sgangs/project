@@ -10,143 +10,76 @@ function round_off(value){
 }
 
 
-$(document).on('keydown.autocomplete', '.name', function() {
-    var el=this;
-    $(this).autocomplete({
-        source : "api/getproduct", 
-        minLength: 3,
-        timeout: 200,
-        select: function( event, ui ) {
-            // console.log(ui['item']);
-            maintain_inventory=ui['item']['inventory']
-            $(el).closest('tr').addClass("updating");
-            $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
-            // $(el).closest('tr').find('td:nth-child(6) input').val(ui['item']['unit']);
-            // $(el).closest('tr').find('td:nth-child(7)').html(ui['item']['unit_id']);
-            $(el).closest('tr').find('td:nth-child(6) .unit').val(ui['item']['unit_id']);
-            $(el).closest('tr').find('td:nth-child(7)').html(unit_multi[ui['item']['unit_id']]);
-            $(el).closest('tr').find('td:nth-child(12) input').val(ui['item']['cgst']);
-            $(el).closest('tr').find('td:nth-child(14) input').val(ui['item']['sgst']);
-            get_product_rate(el, ui['item']['id']);
-            $('.unit').selectpicker('refresh');
-        }
-    });
-});
-
-function get_product_rate(el, product_id){
-    warehouse_id=$('.warehouse').find(':selected').data('id');
+$('.get_invoice').click(function(){
+    invoice_no=$('.invoice_no').val();
+    
     $.ajax({
-        url : "api/getproductrate", 
+        url : "/retailsales/invoice/invoicenodetails/", 
         type: "GET",
-        data:{product_id: product_id,
-            warehouse_id: warehouse_id},
+        data:{invoice_no: invoice_no,},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
-            updating_row=$('.details').find('.updating')
-            // console.log(jsondata['rate'][0]['tentative_sales_rate']);
-            if (jsondata['rate'][0]){
-                console.log('here')
-                $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
-                $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
-                $(updating_row).find('td:nth-child(11)').html(jsondata['rate'][0]['is_tax_included']);
-            }
-            else{
-                $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
-                // $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
-                $(updating_row).find('td:nth-child(11)').html(false);   
-            }
-            $(updating_row).removeClass('updating');
-            
-            // May have to consider multiple sales rate
-
-            // $(".prod_data .prod_indi_data").remove();
-            // $.each(jsondata, function(){
-            //     $('.prod_data').append("<tr class='prod_indi_data'>"+
-            //     "<td class='prod_tsp'>"+this.tentative_sales_price +"</td>"+
-            //     "<td class='prod_mrp'>"+this.mrp+"</td>"+
-            //     "<td class='prod_qa'>"+this.available+"</td>"+
-            //     "<td class='prod_qa'>"+default_unit+"</td>"+
-            //     "</tr>");
-            // })
-            // $('#productdetails').modal('show');
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "No product inventory exist.", "error");
-        }
-    });
-}
-
-// $('.prod_data').on('click','.prod_indi_data', function(){
-//     // console.log('clicked');
-//     updating_row=$('.details').find('.updating')
-//     mrp=$(this).closest('tr').find('td:nth-child(2)').html()
-//     tsp=$(this).closest('tr').find('td:nth-child(1)').html()
-//     qty_avl=$(this).closest('tr').find('td:nth-child(3)').html()
-//     $(updating_row).find('td:nth-child(5)').html(qty_avl);
-//     $(updating_row).find('td:nth-child(8)').html(tsp);
-//     $(updating_row).find('td:nth-child(9)').html(mrp);
-//     $(updating_row).find('td:nth-child(10) input').val(tsp);
-//     $(updating_row).removeClass('updating');
-//     $('#productdetails').modal('hide');
-//     // console.log(mrp)
-// });
-
-
-load_warehouse()
-
-function load_warehouse(){
-    $.ajax({
-        url : "/master/warehouse/getdata/", 
-        type: "GET",
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            $.each(jsondata, function(){
-                $('#warehouse').append($('<option>',{
-                    'data-id': this.id,
-                    'text': this.address_1 + " "+ this.address_2
-                }));
+            $(".details .data").remove();
+            $('.invoice_pk').html(jsondata['id'])
+            $.each(jsondata['line_items'], function(){
+                $('.details').append("<tr class='data text-center'>"+
+                    '<td hidden>'+this.product+'</td>'+
+                    '<td colspan="1" class="first"><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>'+
+                    '<td colspan="1"><input class="form-control" value="'+this.product_name+'" disabled></td>'+
+                    '<td colspan="1"><input class="form-control qty" value="'+this.quantity+'" width="15%"></td>'+
+                    '<td colspan="1" class="qty_avl" hidden>'+parseFloat(this.quantity)+'</td>'+
+                    '<td colspan="1">'+this.unit+'</td>'+ //Change this to unit_id later on.
+                    '<td colspan="1" class="unit_multiplier">'+this.unit_multi+'</td>'+
+                    '<td colspan="1"><input class="form-control sr" value="'+this.sales_price+'" width="15%"></td>'+
+                    '<td colspan="1" hidden><input class="form-control da"></td>'+
+                    '<td colspan="1" class="total" hidden>0.00</td>'+
+                    '<td colspan="1" width="10%"><input type="checkbox" class="is_tax"/></td>'+
+                    '<td colspan="1" width="10%"><input class="form-control cgstp" value="'+this.cgst_percent+'"></td>'+
+                    '<td colspan="1" class="cgstv">'+this.cgst_value+'</td>'+
+                    '<td colspan="1" width="10%"><input class="form-control sgstp" value="'+this.sgst_percent+'"></td>'+
+                    '<td colspan="1" class="sgstv">'+this.sgst_value+'</td>'+
+                    '<td colspan="1" class="tv">'+this.line_total+'</td>'+
+                    '</tr>'
+                )
             });
-            $('#warehouse').selectpicker('refresh')
+            $('.total_receipt').html(jsondata['total']);        
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No warehouse data exist.", "error");
+            swal("Oops...", "Please cehck the invoice no. No data exist.", "error");
         }
     });
-}
+})
 
-load_units()
+// load_units()
 
-function load_units(){
-    $.ajax({
-        url : "/master/dimensionunit/unitdata/", 
-        type: "GET",
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            unit_data=jsondata
-            $.each(jsondata, function(){
-                unit_multi[this.id]=parseFloat(this.multiplier);
-                unit_names[this.id]=this.name;
-                $('#unit').append($('<option>',{
-                    'data-id': this.id,
-                    'title':this.symbol,
-                    'text': this.name,
-                }));
-            });
-            $('#unit').selectpicker('refresh');
-            // $('#unit').html('refresh',true);
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "No unit is registered.", "error");
-        }
-    });
-}
+// function load_units(){
+//     $.ajax({
+//         url : "/master/dimensionunit/unitdata/", 
+//         type: "GET",
+//         dataType: 'json',
+//         // handle a successful response
+//         success : function(jsondata) {
+//             unit_data=jsondata
+//             $.each(jsondata, function(){
+//                 unit_multi[this.id]=parseFloat(this.multiplier);
+//                 unit_names[this.id]=this.name;
+//                 $('#unit').append($('<option>',{
+//                     'data-id': this.id,
+//                     'title':this.symbol,
+//                     'text': this.name,
+//                 }));
+//             });
+//             $('#unit').selectpicker('refresh');
+//             // $('#unit').html('refresh',true);
+//         },
+//         // handle a non-successful response
+//         error : function() {
+//             swal("Oops...", "No unit is registered.", "error");
+//         }
+//     });
+// }
 
 
 $('.details').on("mouseenter", ".first", function() {
@@ -165,16 +98,12 @@ $('.details').on("click", ".delete", function() {
 $(".details").on("keyup", ".qty", function(){
     var el=this;
     get_total();
-    if (maintain_inventory){
-        get_qty_avl(el);
-    }
+    get_qty_avl(el);
 });
 $(".details").on("keydown", ".qty", function(){
     var el=this;
     get_total();
-    if (maintain_inventory){
-        get_qty_avl(el);
-    }
+    get_qty_avl(el);
 });
 
 
@@ -184,31 +113,34 @@ $(".details").on("keyup", ".sr", function(){
 $(".details").on("keydown", ".sr", function(){
     get_total();
 });
-
-$(".details").on("keyup", ".dv", function(){
+$(".details").on("change", ".is_tax", function(){
     get_total();
 });
 
-$(".details").on("keydown", ".dv", function(){
-    get_total();
-});
+// $(".details").on("keyup", ".dv", function(){
+//     get_total();
+// });
+
+// $(".details").on("keydown", ".dv", function(){
+//     get_total();
+// });
 
 
-$(".details").on("change", ".unit", function(){
-    var unit_id = $(this).find(':selected').data('id');
-    unit_multi_selected=unit_multi[unit_id]
-    $(this).closest('tr').find('td:nth-child(7)').html(unit_multi_selected);
-    if (maintain_inventory){
-        var el=this;
-        get_qty_avl(el);
-    }
-    // get_total();
-});
+// $(".details").on("change", ".unit", function(){
+//     var unit_id = $(this).find(':selected').data('id');
+//     unit_multi_selected=unit_multi[unit_id]
+//     $(this).closest('tr').find('td:nth-child(7)').html(unit_multi_selected);
+//     if (maintain_inventory){
+//         var el=this;
+//         get_qty_avl(el);
+//     }
+//     // get_total();
+// });
 
 
 
 function get_qty_avl(el){
-    var unit_id = $(el).closest('tr').find('td:nth-child(6) .unit :selected').data('id');
+    var unit_name = $(el).closest('tr').find('td:nth-child(6)').html();
     var quantity =  parseFloat($(el).closest('tr').find('td:nth-child(4) input').val());
     var quantity_avl = parseFloat($(el).closest('tr').find('td:nth-child(5)').html());
     if (isNaN(quantity_avl)){
@@ -229,8 +161,9 @@ function get_qty_avl(el){
             // var unit_symbol=$(el).closest('tr').find('td:nth-child(6) input').val();
             swal({
                 title: "Oops",
-                text: "Total Invoiced Quantity cannot be greater than available quantity. <br>"+
-                        " Total available quantity: "+quantity_avl+" "+unit_names[unit_id]+".",
+                text: "Total Invoiced Quantity cannot be greater than original invoice quantity. <br>"+
+                        " Total original quantity: "+quantity_avl+" "+unit_name+".",
+                        // " Total original quantity: "+quantity_avl+" "+unit_name[unit_id]+".",                        
                 type: "warning",
                 showCancelButton: false,
                 closeOnConfirm: true,
@@ -260,14 +193,16 @@ function get_total(){
         // get all cells with input field
         cells = a[i].querySelectorAll('input:last-child');
         
-        var quantity=parseFloat($(cells[2]).val());
+        var quantity=parseFloat($(cells[1]).val());
+        // console.log(quantity)
         var qty_avl=parseFloat($(a[i]).find('td:nth-child(5)').html());
         
-        var sales_rate=$(cells[3]).val()
+        var sales_rate=$(cells[2]).val()
+        // console.log(sales_rate)
         
         // discount_type=$(a[i]).find('td:nth-child(11) :selected').data('id');
         // discount_val=$(cells[4]).val();
-        discount_amt=$(cells[4]).val();
+        discount_amt=$(cells[3]).val();
         
         cgst_percent=parseFloat($(cells[5]).val());
         sgst_percent=parseFloat($(cells[6]).val());
@@ -294,12 +229,16 @@ function get_total(){
         //     sales_disc_rate=sales_disc_rate - discount_val/quantity;
         //     this_total=(this_total - discount_val);
         // }
-        is_tax=$(a[i]).find('td:nth-child(11)').html()
+        // is_tax=$(a[i]).find('td:nth-child(11)').html()
+        is_tax = $(a[i]).find('td:nth-child(11) input').is(":checked")
+
+        // console.log(is_tax);
 
         discount_amt=$(a[i]).find('td:nth-child(9) input').val()
         
         // sales_disc_rate=sales_disc_rate - discount_val/quantity;
         this_total=(this_total - discount_amt);
+        // console.log(this_total)
 
         // console.log(i+": "+is_tax)
         
@@ -307,8 +246,6 @@ function get_total(){
             total_tax_per=cgst_percent+sgst_percent
             total_tax_divider=(100+total_tax_per)/100
             tax_total=round_off(this_total-this_total/total_tax_divider)
-            console.log((this_total-this_total/total_tax_divider))
-            console.log((this_total-this_total/total_tax_divider)/2)
             cgst_total=round_off(tax_total/2);
             sgst_total=round_off(tax_total/2);
             this_final_total=round_off(this_total);
@@ -346,38 +283,14 @@ function get_total(){
 };
 
 
-$('.addmore').click(function(){
-    count=$('.details tr').length;
-    var data='<tr class="data">'+
-    '<td hidden><input class="id"></td>'+
-    '<td colspan="1" class="first"><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>'+
-    '<td colspan="3"><input class="form-control name"></td>'+
-    '<td colspan="1"><input class="form-control qty"></td>'+
-    '<td colspan="1" class="qty_avl" hidden>'+0+'</td>'+
-    '<td colspan="1"><input class="form-control unit_symbol"></td>'+
-    '<td colspan="1" class="unit_id" hidden></td>'+
-    '<td colspan="1"><input class="form-control sr"></td>'+
-    '<td colspan="1"><input class="form-control da"></td>'+
-    '<td colspan="1" class="total" hidden>0.00</td>'+
-    '<td colspan="1" hidden class="is_tax"></td>'+
-    '<td colspan="1" class="cgstp" hidden><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="cgstv" hidden></td>'+
-    '<td colspan="1" class="sgstp" hidden><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="sgstv" hidden></td>'+
-    '<td colspan="1" class="tv">0.00</td></tr>'
-    $('.details').append(data);
-
-})
-
-
 $('.submit').click(function(e) {
     swal({
         title: "Are you sure?",
-        text: "Are you sure you want to generate a new sales invoice?",
+        text: "Are you sure you want to update the sales invoice?",
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, generate new sales invoice!",
+        confirmButtonText: "Yes, update sales invoice!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
@@ -393,27 +306,20 @@ function new_data(){
     var sgst_total_sum=0
     var items=[];
     var proceed=true;
-    customer_phone=$('.cust_phone').val();
-    customer_name=$('.cust_name').val();
-    customer_address=$('.cust_address').val();
-    customer_email=$('.cust_email').val();
-    customer_gender=$('.cust_gender').find(':selected').data('id');
-    customer_dob=$('.cust_dom').val();
-
-    warehouseid=$('.warehouse').find(':selected').data('id');
-    date=$('.date').val()
+    
     subtotal=parseFloat($('.subtotal_receipt').html());
     // taxtotal=parseFloat($('.taxtotal_receipt').html());
     total=parseFloat($('.total_receipt').html());
-    if (warehouseid == '' || typeof(warehouseid) =='undefined'){
-        proceed = false;
-        swal("Oops...", "Please select a warehouse. ", "error");
-    }
+
+    invoice_pk=$('.invoice_pk').html();
+    
     $(".details tr.data").each(function() {
-        var product_id = $(this).find('td:nth-child(1) input').val();
+        var product_id = $(this).find('td:nth-child(1)').html();
+        console.log(product_id);
         if (product_id == '' || product_id =='undefined'){
             proceed=false;
-            swal("Oops...", "Please enter a product ", "error");
+            console.log(product_id);
+            swal("Oops...", "There are some error. ", "error");
             $(this).closest('tr').addClass("has-error");
         }
 
@@ -421,41 +327,43 @@ function new_data(){
         var quantity_avl = parseFloat($(this).find('td:nth-child(5)').html());
         if (isNaN(quantity)){
             proceed=false;
+            console.log('here');
             swal("Oops...", "Please enter a quantity ", "error");
             $(this).closest('tr').addClass("has-error");
         }
 
         
-        if (maintain_inventory){
-            var qty_proceed= get_qty_avl(this);
-            if (!qty_proceed){
-                swal("Oops...", "You don't have enough quantity available. ", "error");
-                proceed=false;
-            }
+        var qty_proceed= get_qty_avl(this);
+        if (!qty_proceed){
+            swal("Oops...", "Revised quantity cannot be more than original invoice quantity. Please generate new invoice in that case. ", "error");
+            proceed=false;
         }
-
-        var unit_id = $(this).find('td:nth-child(6) :selected').data('id');
         
         var sales = parseFloat($(this).find('td:nth-child(8) input').val());
         if (isNaN(sales)){
             proceed=false;
+            console.log('here');
             swal("Oops...", "Please enter a sales rate ", "error");
             $(this).closest('tr').addClass("has-error");
         }
         
+        var unit_name = $(this).find('td:nth-child(6)').html();
+        var unit_multi = $(this).find('td:nth-child(7)').html();
+
         // var disc_type = $(this).find('td:nth-child(11) :selected').data('id');
         // var disc = parseFloat($(this).find('td:nth-child(12) input').val());
         // if (isNaN(disc)){
         //     disc=0;
         // }
 
-        var disc_amt = parseFloat($(this).find('td:nth-child(9) input').val());
+        // var disc_amt = parseFloat($(this).find('td:nth-child(9) input').val());
 
-        if (isNaN(disc_amt)){
-            disc_amt=0
-        }
+        // if (isNaN(disc_amt)){
+        //     disc_amt=0
+        // }
+        var disc_amt=0
 
-        var is_tax = $(this).find('td:nth-child(11)').html();
+        var is_tax = $(this).find('td:nth-child(11) input').is(":checked");
 
         var cgst_p = parseFloat($(this).find('td:nth-child(12) input').val());
         var cgst_v = parseFloat($(this).find('td:nth-child(13)').html());
@@ -480,7 +388,8 @@ function new_data(){
         var item = {
             product_id : product_id,
             quantity: quantity,
-            unit_id: unit_id,
+            unit_name: unit_name,
+            unit_multi: unit_multi,
             sales_after_tax: sales_after_tax,
             discount_amount: disc_amt,
             cgst_p: cgst_p,
@@ -496,35 +405,27 @@ function new_data(){
 
     cgst_total_sum = round_off(cgst_total_sum);
     sgst_total_sum = round_off(sgst_total_sum);
-    // console.log(items)
-    // console.log(customer_name)
+    console.log(items)
     
     if (proceed){
         (function() {
             $.ajax({
                 url : "save/" , 
                 type: "POST",
-                data:{customer_phone:customer_phone,
-                    customer_name:customer_name,
-                    customer_address:customer_address,
-                    customer_gender:customer_gender,
-                    customer_dob,customer_dob,
-                    customer_email,customer_email,
-                    warehouse:warehouseid,
-                    subtotal: subtotal,
+                data:{subtotal: subtotal,
                     cgsttotal: cgst_total_sum,
                     sgsttotal: sgst_total_sum,
-                    // is_tax: is_tax,
                     total: total,
+                    invoice_pk: invoice_pk,
                     bill_details: JSON.stringify(items),
-                    calltype: "save",
+                    calltype: "edit",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 
                 success : function(jsondata) {
                     var show_success=true
                     if (jsondata['id']){
-                        swal("Hooray", "New sale invoice generated", "success");
+                        swal("Hooray", "Sales invoice updated", "success");
                         var url='/retailsales/invoice/detailview/'+jsondata['pk']+'/'
                         location.href = url;
                         // setTimeout(location.reload(true),1000);

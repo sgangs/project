@@ -8,12 +8,16 @@ urlpatterns = [
     url(r'^invoice/api/getproductbarcode$', views.get_product_barcode, name='get_product_barcode'),
     url(r'^invoice/api/getproductrate$', views.get_product_inventory, name='getinvoice'),
     url(r'^invoice/api/getproduct/details$', views.get_product_data, name='get_product_data'),
-    
+
+    url(r'^invoice/$', views.new_sales_invoice, name='new_sales_invoice'),    
     url(r'^invoice/save/$', views.sales_invoice_save, name='sales_invoice_save'),
     
     url(r'^invoice/detailview/(?P<pk>[-\S]+)/$$', views.invoice_detail_view, name='invoice_detail_view'),
     url(r'^invoice/detail/(?P<pk>[-\S]+)/$', views.invoice_details, name='invoice_details'),
     url(r'^invoice/invoicenodetails/$', views.invoice_details_with_no, name='invoice_details_with_no'),
+
+    url(r'^invoiceedit/$', views.sales_invoice_edit_view, name='sales_invoice_edit_view'),
+    url(r'^invoiceedit/save/$', views.sales_invoice_edit, name='sales_invoice_edit'),
     
     url(r'^invoicelist/$', views.invoice_list, name='invoice_list'),
     url(r'^invoicelist/listall/$', views.all_invoices, name='all_invoices'),
@@ -22,7 +26,6 @@ urlpatterns = [
     url(r'^invoice/purchasedetails/$', views.invoice_purchase_wise_details, name='invoice_purchase_wise_details'),
 
     # url(r'^invoicelist/metadata/$', views.invoices_metadata, name='invoices_metadata'),
-    url(r'^invoice/$', views.new_sales_invoice, name='new_sales_invoice'),
     
     url(r'^invoice/delete/$', views.sales_invoice_delete, name='sales_invoice_delete'),
 
