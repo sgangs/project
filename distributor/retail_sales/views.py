@@ -1158,9 +1158,10 @@ def all_invoices(request):
 		
 
 		elif (calltype == 'apply_filter'):
-			start=request.GET.get('start')
-			end=request.GET.get('end')
-			invoice_no=request.GET.get('invoice_no')
+			start = request.GET.get('start')
+			end = request.GET.get('end')
+			invoice_no = request.GET.get('invoice_no')
+			payment_mode = request.GET.get('payment_mode')
 			# productid=request.GET.get('productid')
 			# sent_with=request.GET.get('sent_with')
 			returntype=request.GET.get('returntype')
@@ -1174,6 +1175,9 @@ def all_invoices(request):
 			
 			if invoice_no:
 				invoices=invoices.filter(invoice_id__icontains=invoice_no)
+
+			if payment_mode:
+				invoices=invoices.filter(payment_mode_id=payment_mode)
 			
 
 			# if productid:

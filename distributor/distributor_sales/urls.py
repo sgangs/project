@@ -40,6 +40,9 @@ urlpatterns = [
     
     url(r'^salesreport/$', views.sales_report, name='sales_report'),
     url(r'^salesreport/data/$', views.sales_report_data, name='sales_report_data'),
+
+    url(r'^groupsalesreport/$', views.group_sales_report_select, name='group_sales_report_select'),
+    url(r'^groupsalesreport/data/$', views.get_group_sales_report_select, name='get_group_sales_report_select'),
     
     url(r'^salesreport/customerwise/$', views.customer_wise_sales, name='customer_wise_sales'),
     url(r'^salesreport/customerwise/data/$', views.customer_wise_sales_data, name='customer_wise_sales_data'),

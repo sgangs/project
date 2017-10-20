@@ -411,7 +411,10 @@ def product_view(request):
 			old_product=Product.objects.for_tenant(this_tenant).get(id=pk)
 			old_product.name=name
 			old_product.sku=sku
-			old_product.manufacturer = Manufacturer.objects.for_tenant(this_tenant).get(id=manufac)
+			try:
+				old_product.manufacturer = Manufacturer.objects.for_tenant(this_tenant).get(id=manufac)
+			except:
+				pass
 			
 			if barcode:
 				try:

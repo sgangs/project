@@ -73,6 +73,31 @@ function load_invoices(){
     });
 }
 
+
+load_payment()
+
+function load_payment(){
+    $.ajax({
+        url : "/retailsales/paymentmode/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                $('#payment_mode').append($('<option>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+            });
+            $('#payment_mode').selectpicker('refresh')
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "There was error in retriving payment mode data.", "error");
+        }
+    });
+}
+
 // Taking care of navigation
 
 // function navigation(){
@@ -193,6 +218,7 @@ $('.apply_filter').click(function(e){
 
 function filter_data(page_no) {
     invoice_no=$('.invoice_no').val();
+    payment_mode=$(".payment_mode").find(':selected').data('id');
     
     // console.log(dateChanged)
     if (!dateChanged){
@@ -209,6 +235,7 @@ function filter_data(page_no) {
             start: startdate,
             end: enddate,
             invoice_no: invoice_no,
+            payment_mode: payment_mode,
             // page_no: page_no,
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',

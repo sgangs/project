@@ -21,6 +21,8 @@
 
 {%block content%}
 
+<!-- <body background="{% static 'img/Bright Vault.png' %}"> -->
+
 <div class="container">
         <div class="row">
             <div class="col-md-8 col-xs-12 ">
@@ -99,6 +101,11 @@
     <script src="{% static 'landing/sales_30days_chart.js' %}"></script>
     <script src="{% static 'landing/invoiced_payment_chart.js' %}"></script>
     <!-- <script src="{% static 'landing/monthly_sales_dimple.js' %}"></script> -->
+    <style type="text/css">
+        body{
+        background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+        }
+    </style>
     
     
 {% endblock %}

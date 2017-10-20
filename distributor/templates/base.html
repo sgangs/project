@@ -196,12 +196,13 @@
             <li><a href="{% url 'sales:sales_edit_view' %}">Edit Sales Invoice</a></li>
             <li><a href="{% url 'sales:invoice_list' %}">Sales Invoice List</a></li>
             <li><a href="{% url 'sales:open_invoices' %}">Open Invoice List</a></li>
-            <li><a href="{% url 'sales:sales_report' %}">Sales Report</a></li>
-            <li><a href="" ="#">Customer Report</a>
+            <li><a href="" ="#">Sales Report</a>
                 <div>
                   <ul>
-                    <li><a href="{% url 'sales:customer_wise_sales' %}">Customer-wise Sales</a></li>
+                    <li><a href="{% url 'sales:group_sales_report_select' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Group-wise Report</a></li>
+                    <li><a href="{% url 'sales:customer_wise_sales' %}">Customer-wise Report</a></li>
                     <li><a href="{% url 'sales:customer_wise_summary' %}">Customer-wise Summary</a></li>
+                    <li><a href="{% url 'sales:sales_report' %}">Graphical Report</a></li>
                   </ul>
                 </div>
               </li>

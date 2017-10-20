@@ -2019,3 +2019,38 @@ def get_customer_wise_summary(request):
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def group_sales_report_select(request):
+	extension="base.html"
+	return render (request, 'sales/sales_report_select.html',{'extension':extension})
+
+@api_view(['GET'],)
+def get_group_sales_report_select(request):
+	from django.db.models.functions import TruncMonth
+	this_tenant = request.user.tenant
+	response_data={}
+	calltype = request.GET.get('calltype')
+	start=request.GET.get('start')
+	end=request.GET.get('end')
+
+	if (calltype == 'monthwise'):
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
+			.annotate(month=TruncMonth('date')).values('month').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
+	
+	elif (calltype == 'zonewise'):
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
+			.values('customer__zone__name').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
+	
+	elif (calltype == 'datewise'):
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
+			.values('date').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
+
+	elif (calltype == 'customerwise'):
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
+			.values('customer', 'customer_name').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
+
+	response_data['object']=list(invoices)
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
