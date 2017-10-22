@@ -27,7 +27,6 @@ from rest_framework.response import Response
 
 from distributor_user.forms import UserRegistrationForm,CustomerRegistrationForm
 from distributor_user.models import User, Tenant
-from .forms import LoginForm
 from distributor_account.models import accounting_period, payment_mode
 from distributor_inventory.models import warehouse_valuation
 from distributor_master.models import Warehouse
@@ -37,16 +36,12 @@ from distributor_account.account_support import get_income_expense
 from distributor.variable_list import state_list
 
 from .user_creation import *
+from .forms import revisedPasswordResetForm
 
 #landing page
 class HomeView(TemplateView):
     template_name = "index.html"
 
-
-#Redirect authenticated users to landing page
-# def Registration(request):
-    # return render(request,'registration_success.html')
-    
 #Redirect authenticated users to landing page
 def custom_login(request):
     if request.user.is_authenticated():
@@ -54,6 +49,19 @@ def custom_login(request):
         return redirect(landing)
     else:
         return login(request)
+
+#Add one more level of authentication for forgot password. Then send the mail.
+def custom_password_reset(request, from_email, subject_template_name, password_reset_form):
+    form = revisedPasswordResetForm()
+    print("This is here")
+    if request.method == 'POST':
+        form = revisedPasswordResetForm(request.POST)
+        if form.is_valid():
+            return password_reset(request,html_email_template_name='registration/password_reset_email.html',)
+            # return HttpResponse("Wow")
+    else:
+        form = revisedPasswordResetForm()        
+    return render(request,'registration/password_reset_form.html', {'form': form})
     
 #registration page
 def RegisterView(request):

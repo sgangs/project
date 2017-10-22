@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'captcha',
     'distributor_user',
     'distributor_master',
     'distributor_purchase',
@@ -143,7 +144,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # SECURE_BROWSER_XSS_FILTER = True
 # SECURE_CONTENT_TYPE_NOSNIFF = True
 
-
+#CAPTCHA SETTINGS
+NOCAPTCHA = True
+RECAPTCHA_USE_SSL = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

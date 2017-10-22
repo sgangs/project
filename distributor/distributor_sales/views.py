@@ -2036,7 +2036,7 @@ def get_group_sales_report_select(request):
 
 	if (calltype == 'monthwise'):
 		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
-			.annotate(month=TruncMonth('date')).values('month').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
+			.annotate(month=TruncMonth('date')).values('month').order_by('month').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
 	
 	elif (calltype == 'zonewise'):
 		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
@@ -2044,7 +2044,7 @@ def get_group_sales_report_select(request):
 	
 	elif (calltype == 'datewise'):
 		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
-			.values('date').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
+			.values('date').order_by('date').annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid'))
 
 	elif (calltype == 'customerwise'):
 		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end])\
