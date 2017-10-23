@@ -390,7 +390,7 @@ def sales_invoice_save(request):
 							else:
 								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
 
-
+					
 					#create tax transactions.
 					#tax_transaction(cgst_paid, sgst_paid, igst_paid, 2, new_invoice.id, new_invoice.invoice_id, date, this_tenant, customer_gst)
 					is_customer_gst = True if customer_gst else False
@@ -1093,10 +1093,14 @@ def sales_invoice_edit(request):
 							if (sgst_p in sgst_paid):
 								sgst_paid[sgst_p][0]+=sgst_v
 								sgst_paid[sgst_p][1]=total
-								cgst_paid[cgst_p][2]+=line_taxable_total
+								sgst_paid[sgst_p][2]+=line_taxable_total
 							else:
 								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
-						
+					
+					# print("CGST Paid")
+					# print (cgst_paid)
+					# print("SGST Paid")
+					# print(sgst_paid)	
 
 					is_customer_gst = True if customer_gst else False
 					if (is_igst):
@@ -1107,11 +1111,17 @@ def sales_invoice_edit(request):
 					else:
 						for k,v in cgst_paid.items():
 							if v[2]>0:
+								# print("CGST")
+								# print(v[1])
+								# print(v[2])
 								new_tax_transaction_register("CGST",2, k, v[0],v[1], v[2], old_invoice.id,\
 									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
 						for k,v in sgst_paid.items():
 							if v[2]>0:
+								# print("SGST")
+								# print(v[1])
+								# print(v[2])
 								new_tax_transaction_register("SGST",2, k, v[0],v[1], v[2], old_invoice.id,\
 									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
@@ -1352,8 +1362,6 @@ def finalize_open_invoices(request):
 					if (new_invoice.igsttotal>0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Output")
 						new_journal_entry(this_tenant, journal, new_invoice.igsttotal, account, 2, date)
-
-					#Change here
 
 					if (new_invoice.roundoff!=0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
