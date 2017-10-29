@@ -87,7 +87,6 @@ def get_product_inventory(request):
 		response_data['rate']=product_rate
 
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
-	print(jsondata)
 	return HttpResponse(jsondata)
 
 @api_view(['GET'],)

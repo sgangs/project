@@ -15,6 +15,7 @@ urlpatterns = [
 
     url(r'^vendor/getdata/$', views.vendor_view, name='vendor_view'),
     url(r'^vendor/$', views.vendor_data, name='vendor_data'),
+    url(r'^vendor/autocomplete$', views.get_vendor_autocomplete, name='get_vendor_autocomplete'),
     # url(r'^uploadvendor/$', views.import_vendor, name='import_vendor'),
     
     

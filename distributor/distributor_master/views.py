@@ -230,6 +230,24 @@ def vendor_view(request):
 			old_vendor.save()			
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
+
+@api_view(['GET','POST'],)
+def get_vendor_autocomplete(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		q = request.GET.get('term', '')
+		vendors = Vendor.objects.for_tenant(this_tenant).filter(name__icontains  = q)[:10]
+		response_data = []
+		for item in vendors:
+			item_json = {}
+			item_json['id'] = item.id
+			item_json['label'] = item.name
+			response_data.append(item_json)
+		data = json.dumps(response_data)
+	else:
+		data = 'fail'
+	mimetype = 'application/json'
+	return HttpResponse(data, mimetype)
 	
 # @login_required
 @api_view(['GET','POST'],)

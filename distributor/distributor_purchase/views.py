@@ -34,7 +34,7 @@ from .excel_download import *
 @api_view(['GET','POST'],)
 def get_product(request):
 	this_tenant=request.user.tenant
-	if request.is_ajax():
+	if request.method == 'GET':
 		q = request.GET.get('term', '')
 		calltype=request.GET.get('calltype')
 		if (calltype == 'product_id'):
@@ -90,6 +90,53 @@ def get_product(request):
 		data = 'fail'
 	mimetype = 'application/json'
 	return HttpResponse(data, mimetype)
+
+@api_view(['GET'],)
+def get_product_data_id(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		try:
+			product_id = request.GET.get('product_id')
+			product = Product.objects.for_tenant(this_tenant).get(id=product_id)
+						# select_related('default_unit', 'tax')
+			response_data['product_name'] = product.name
+			response_data['product_id'] = product.id
+			response_data['unit_id'] = product.default_unit.id
+			response_data['unit'] = product.default_unit.symbol
+			try:
+				response_data['cgst'] = product.cgst.percentage
+			except:
+				response_data['cgst'] = 0
+			try:
+				response_data['sgst'] = product.sgst.percentage
+			except:
+				response_data['sgst'] = 0
+			
+			# try:
+			# 	response_data['igst'] = item.igst.percentage
+			# except:
+			# 	response_data['igst'] = 0
+
+			# response_data.append(item_json)
+
+		except:
+			response_data['error']='Product Does not exist'			
+	
+	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@api_view(['POST'],)
+def trying_save_data(request):
+	this_tenant=request.user.tenant
+	data = request.data
+	print(data)
+	response_data={}
+		
+	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
 
 @api_view(['GET'],)
 def product_inventory_details(request):

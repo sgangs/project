@@ -9,8 +9,11 @@ urlpatterns = [
     url(r'^receipt/save/$', views.purchase_receipt_save, name='purchase_receipt_save'),
     url(r'^receipt/detailview/(?P<pk>[-\S]+)/$', views.receipts_detail_view, name='receipts_detail_view'),
     url(r'^receipt/api/getproduct$', views.get_product, name='get_product'),
+    url(r'^receipt/api/getproduct/details$', views.get_product_data_id, name='get_product_data_id'),
     url(r'^receipt/detail/(?P<pk>[-\S]+)/$', views.receipts_details, name='receipts_details'),
     url(r'^receipt/excel/(?P<pk>[-\S]+)/$$', views.excel_receipt, name='excel_receipt'),
+
+    url(r'^receipt/trysave/$', views.trying_save_data, name='trying_save_data'),
 
     url(r'^receipt/delete/$', views.delete_purchase, name='delete_purchase'),
 
