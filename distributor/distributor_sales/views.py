@@ -2062,3 +2062,37 @@ def get_group_sales_report_select(request):
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+def billsummary_profit(request):
+	extension="base.html"
+	return render (request, 'sales/billsummary_profit.html',{'extension':extension})
+
+@api_view(['GET'],)
+def billsummary_profit_data(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		start=request.GET.get('start')
+		end=request.GET.get('end')
+
+		# invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).values('id','invoice_id', 'subtotal').\
+		# 		annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid')))
+
+		invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).\
+				values('id','invoice_id', 'subtotal', 'date','customer', 'customer_name', 'total'))
+		
+		for invoice in invoices:
+			total_purchase = 0
+			lines = invoice_line_item.objects.filter(sales_invoice=invoice['id'])
+			for line in lines:
+				items = json.loads(line.other_data)['detail']
+				for i in items:
+					total_purchase+=Decimal(i['pur_rate'])*Decimal(i['quantity'])
+			invoice['purchase']=total_purchase
+	
+	response_data['object'] = invoices
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

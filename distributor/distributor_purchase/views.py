@@ -127,13 +127,38 @@ def get_product_data_id(request):
 	return HttpResponse(jsondata)
 
 
-@api_view(['POST'],)
-def trying_save_data(request):
+@api_view(['GET'],)
+def get_product_data_barcode(request):
 	this_tenant=request.user.tenant
-	data = request.data
-	print(data)
 	response_data={}
-		
+	if request.method == 'GET':
+		try:
+			product_barcode = request.GET.get('product_barcode')
+			product = Product.objects.for_tenant(this_tenant).get(barcode=product_barcode)
+						# select_related('default_unit', 'tax')
+			response_data['product_name'] = product.name
+			response_data['product_id'] = product.id
+			response_data['unit_id'] = product.default_unit.id
+			response_data['unit'] = product.default_unit.symbol
+			try:
+				response_data['cgst'] = product.cgst.percentage
+			except:
+				response_data['cgst'] = 0
+			try:
+				response_data['sgst'] = product.sgst.percentage
+			except:
+				response_data['sgst'] = 0
+			
+			# try:
+			# 	response_data['igst'] = item.igst.percentage
+			# except:
+			# 	response_data['igst'] = 0
+
+			# response_data.append(item_json)
+
+		except:
+			response_data['error']='Product Does not exist'			
+	
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -167,7 +192,7 @@ def purchase_receipt_save(request):
 		this_tenant=request.user.tenant
 		from_purchase_order = False
 		#saving the receipt
-		if (calltype == 'save'):
+		if (calltype == 'save' or 'mobilesave'):
 			calledfrom = request.data.get('calledfrom')
 			if (calledfrom == 'purchaseorder'):
 				from_purchase_order = True
@@ -197,8 +222,11 @@ def purchase_receipt_save(request):
 					# 	total = sum_total
 					duedate=request.data.get('duedate')
 
-					bill_data = json.loads(request.data.get('bill_details'))
-
+					if (calltype == 'save'):
+						bill_data = json.loads(request.data.get('bill_details'))
+					else:
+						bill_data = request.data.get('bill_details')
+						
 					order_id=None
 
 					if (from_purchase_order):
@@ -259,8 +287,12 @@ def purchase_receipt_save(request):
 						cgst_v=Decimal(data['cgst_v'])
 						sgst_p=Decimal(data['sgst_p'])
 						sgst_v=Decimal(data['sgst_v'])
-						igst_p=Decimal(data['igst_p'])
-						igst_v=Decimal(data['igst_v'])
+						try:
+							igst_p=Decimal(data['igst_p'])
+							igst_v=Decimal(data['igst_v'])
+						except:
+							igst_p=0
+							igst_v=0
 
 						cgst_total+=cgst_v
 						sgst_total+=sgst_v
@@ -281,7 +313,10 @@ def purchase_receipt_save(request):
 						
 						original_purchase_price=Decimal(data['purchase'])
 						
-						original_free_with_tax=Decimal(data['free_tax'])
+						try:
+							original_free_with_tax=Decimal(data['free_tax'])
+						except:
+							original_free_with_tax=0
 
 						try:
 							original_tentative_sales_price=Decimal(data['sales'])
@@ -519,30 +554,11 @@ def purchase_receipt_save(request):
 						new_entry_inv.tenant=this_tenant
 						new_entry_inv.save()
 
-					# else:
-					# 	remarks="Purchase Receipt No: "+str(new_receipt.receipt_id)
-					# 	journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=1)
-					# 	account= Account.objects.for_tenant(this_tenant).get(name__exact="Purchase")
-					# 	new_journal_entry(this_tenant, journal, subtotal, account, 1, date)
-					# 	if (cgst_total>0):
-					# 		account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Input")
-					# 		new_journal_entry(this_tenant, journal, cgst_total, account, 1, date)
-					# 	if (sgst_total>0):
-					# 		account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Input")
-					# 		new_journal_entry(this_tenant, journal, sgst_total, account, 1, date)
-					# 	if (igst_total>0):
-					# 		account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Input")
-					# 		new_journal_entry(this_tenant, journal, igst_total, account, 1, date)
-						
-					# 	account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					# 	new_journal_entry(this_tenant, journal, total, account, 2, date)
-
-					# 	debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-					# 	credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-					# 	if (debit != credit):
-					# 		raise IntegrityError
-
-					response_data=new_receipt.id
+					if (calltype == 'save'):
+						response_data=new_receipt.id
+					else:
+						# response_data['pk']=new_invoice.id
+						response_data['id']=new_receipt.id
 				except:
 					transaction.rollback()
 

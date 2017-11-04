@@ -930,6 +930,13 @@ def warehouse_data(request):
 
 
 @login_required
+def product_group(request):
+	extension="base.html"
+	# this_tenant=request.user.tenant
+	return render (request, 'master/product_group_list.html',{'extension':extension,'states':state_list })
+
+
+@login_required
 def customer_import_format(request):
 	# if 'excel' in request.POST:
 	response = HttpResponse(content_type='application/vnd.ms-excel')

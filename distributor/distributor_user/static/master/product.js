@@ -660,7 +660,7 @@ function update_data(){
                 success : function(jsondata) {
                     var show_success=true
                     if (show_success){
-                        swal("Hooray", "Customer data updated.", "success");
+                        swal("Hooray", "Product data updated.", "success");
                         setTimeout(location.reload(true),1000);
                     }
                     //console.log(jsondata);

@@ -269,6 +269,7 @@ def get_income_expense(this_tenant, no_months):
         current_COGS_entries=journal_entry_inventory.objects.filter(journal__in=current_cogs_journals,account=cogs_accounts).\
                     aggregate(debit=Sum(Case(When(transaction_type=1, then='value'),output_field=DecimalField())),\
                         credit=Sum(Case(When(transaction_type=2, then='value'),output_field=DecimalField())))
+        
         if (current_income_entries['credit'] == None):
             current_income_entries['credit'] = 0
         if (current_income_entries['debit'] == None):
