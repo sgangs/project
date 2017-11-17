@@ -521,7 +521,7 @@ def purchase_receipt_save(request):
 						new_journal_entry(this_tenant, journal, round_value, account, 1, date)
 						
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					new_journal_entry(this_tenant, journal, total, account, 2, date)						
+					new_journal_entry(this_tenant, journal, total, account, 2, date, vendor.name, vendor.id)						
 							
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
@@ -733,7 +733,7 @@ def purchase_receipt_noninventory_save(request):
 						new_journal_entry(this_tenant, journal, round_value, account, 1, date)
 						
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					new_journal_entry(this_tenant, journal, total, account, 2, date)						
+					new_journal_entry(this_tenant, journal, total, account, 2, date, vendor.name, vendor.id)						
 							
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
@@ -937,7 +937,7 @@ def payment_register(request):
 				journal=new_journal(this_tenant,date,group_name="Purchase",\
 					remarks='Payment Against: '+invoiceids, trn_id=new_purchase_payment.id, trn_type=2, other_data=payment_json)
 				account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-				new_journal_entry(this_tenant, journal, total_payment, account, 1, date)
+				new_journal_entry(this_tenant, journal, total_payment, account, 1, date, vendor.name, vendor.id)
 				new_journal_entry(this_tenant, journal, total_payment, mode.payment_account, 2, date)
 				
 			except:
@@ -1672,3 +1672,25 @@ def order_delete(request):
 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
+
+@api_view(['GET'],)
+def vendor_ledger(request):
+	extension="base.html"
+	return render (request, 'purchase/vendor_ledger.html',{'extension':extension})
+
+
+@api_view(['GET'],)
+def vendor_ledger_data(request):
+	this_tenant=request.user.tenant
+	response_data = {}
+	start=request.GET.get('start')
+	end=request.GET.get('end')
+	vendorid=int(request.GET.get('vendorid'))
+	journal = Journal.objects.for_tenant(request.user.tenant).filter(date__range=[start,end], trn_type__in = [1,2,3],)
+	entries=list(journal_entry.objects.for_tenant(request.user.tenant).filter(related_data__id=vendorid, journal__in = journal)\
+			.prefetch_related('journal').\
+			values('related_data', 'transaction_type', 'journal__id', 'journal__date','transaction_type','journal__remarks', 'value',).\
+			all().order_by('journal__date'))	
+	response_data['object'] = entries
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

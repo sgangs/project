@@ -201,7 +201,6 @@
                   <ul>
                     <li><a href="{% url 'sales:group_sales_report_select' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Group-wise Report</a></li>
                     <li><a href="{% url 'sales:customer_wise_sales' %}">Customer-wise Report</a></li>
-                    <li><a href="{% url 'sales:customer_wise_summary' %}">Customer-wise Summary</a></li>
                     <li><a href="{% url 'sales:sales_report' %}">Graphical Report</a></li>
                   </ul>
                 </div>
@@ -209,8 +208,8 @@
             <li><a href="{% url 'sales:billsummary_profit' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Profit List</a></li>
             <li><a href="{% url 'sales:hsn_report' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>HSN Report</a></li>
             <li><a href="{% url 'sales:collection_list_view' %}">Collection List</a></li>
-            <li><a href="{% url 'sales:sales_return_view' %}">Sales Return</a></li>
-            <li><a href="{% url 'sales:return_list_view' %}">Sales Return List</a></li>
+            <li><a href="#">Sales Return</a></li>
+            <li><a href="#">Sales Return List</a></li>
           </ul>
         </li>
       </ul>
@@ -223,7 +222,13 @@
             <li><a href="{% url 'retailsales:sales_invoice_edit_view' %}"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Edit Invoice</a></li>
             <li><a href="#">Sales Return</a></li>
             <li><a href="#">Sales Return Report</a></li>
-            <li><a href="{% url 'retailsales:eod_sales_report' %}">End of Day Report</a></li>
+            <li><a href="#">End of Day Report</a>
+              <ul>
+                <li><a href="{% url 'retailsales:eod_sales_report' %}">Product Wise Report</a></li>
+                <li><a href="#"><sup><i class="fa fa-star" style="color:red;"> New</i></sup> Invoice Wise Report</a></li>
+                <li></li>
+              </ul>
+            </li>
           </ul>
         </li>
       </ul>

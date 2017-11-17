@@ -17,15 +17,18 @@ def new_journal(tenant, date, group_name, remarks='', trn_id=None, trn_type=None
 	journal.save()
 	return journal
 
-def new_journal_entry(tenant, journal, value, account, trn_type, date):
+def new_journal_entry(tenant, journal, value, account, trn_type, date, entity_name = None, entity_id = None):
 	entry=journal_entry()
 	entry.tenant=tenant
 	entry.journal=journal
 	entry.value=value
 	entry.account= account
+	if entity_id:
+		entry.related_data = {'id' : entity_id}
 	entry.transaction_type = trn_type
 	entry.save()
-
+	print(entry.related_data)
+	
 	acct_period=accounting_period.objects.for_tenant(tenant).get(start__lte=date, end__gte=date)
 	account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
 	if (trn_type == 1):

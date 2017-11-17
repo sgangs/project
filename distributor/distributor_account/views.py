@@ -632,6 +632,12 @@ def account_journal_entries(request, pk_detail):
 	entries=journal_entry.objects.filter(account=account).select_related('journal').all()
 	return render(request, 'account/accountwisejournal.html',{'account':account, 'entries':entries, 'extension':extension})
 
+@login_required
+def customer_pending(request):
+	entries = list(journal_entry.objects.filter(related_data__id=2).values('related_data', 'transaction_type', 'journal__date').all())
+	jsondata = json.dumps(entries,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
 
 # @api_view(['GET', 'POST'],)
 @login_required

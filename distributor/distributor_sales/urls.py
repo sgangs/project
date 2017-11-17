@@ -32,11 +32,6 @@ urlpatterns = [
     url(r'^collectionlistview/$', views.collection_list_view, name='collection_list_view'),
     url(r'^invoice/customerpending/$', views.get_customer_pending, name='get_customer_pending'),
     
-    url(r'^invoice/salesreturn/data/$', views.get_return_data, name='get_return_data'),
-    url(r'^invoice/salesreturn/$', views.sales_return_view, name='sales_return_view'),
-    url(r'^invoice/salesreturn/save/$', views.sales_return_save, name='sales_return_save'),
-    url(r'^salesreturn/$', views.return_list_view, name='return_list_view'),
-    url(r'^salesreturn/listall/$', views.all_return, name='all_return'),
     
     url(r'^salesreport/$', views.sales_report, name='sales_report'),
     url(r'^salesreport/data/$', views.sales_report_data, name='sales_report_data'),
@@ -47,16 +42,15 @@ urlpatterns = [
     url(r'^salesreport/customerwise/$', views.customer_wise_sales, name='customer_wise_sales'),
     url(r'^salesreport/customerwise/data/$', views.customer_wise_sales_data, name='customer_wise_sales_data'),
 
-    url(r'^salesreport/customerwisesummary/data/$', views.get_customer_wise_summary, name='get_customer_wise_summary'),
-
     url(r'^hsnreport/$', views.hsn_report, name='hsn_report'),
     url(r'^hsnreport/data/$', views.get_hsn_report, name='get_hsn_report'),
     
-    url(r'^customer-summary/$', views.customer_wise_summary, name='customer_wise_summary'),
-    url(r'^customer-summary/data/$', views.get_customer_wise_summary, name='get_customer_wise_summary'),
+    url(r'^customer-ledger/$', views.customer_ledger, name='customer_ledger'),
+    url(r'^customer-ledger/data/$', views.customer_ledger_data, name='customer_ledger_data'),
 
     # url(r'^salesreport/$', views.sales_report, name='sales_report'),
     url(r'^billsummary-profit/$', views.billsummary_profit, name='billsummary_profit'),
     url(r'^billsummary-profit/data/$', views.billsummary_profit_data, name='billsummary_profit_data'),
     # url(r'^customer-detail/pdf/$', views.customer_data_pdf, name='customer_data_pdf'),
 ]
+

@@ -217,6 +217,7 @@ class journal_entry(models.Model):
 	account=models.ForeignKey(Account,related_name='journalEntry_account')
 	transaction_type=models.PositiveSmallIntegerField('Transaction type', choices=transaction_type)
 	value=models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+	related_data = JSONField(blank=True, null=True) #must contain just customer_id/vendor_id . Can add other data as customer name later.
 	tenant=models.ForeignKey(Tenant, related_name='journalEntry_account_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

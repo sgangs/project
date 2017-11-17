@@ -43,4 +43,6 @@ urlpatterns = [
     url(r'^journalview/(?P<pk_detail>[-\S]+)/$', views.journal_detail, name='journal_detail'),
     
     url(r'^gst-payment/$', views.gst_payment, name='gst_payment'),
+
+    url(r'^customerpending/$', views.customer_pending, name='customer_pending'),
 ]

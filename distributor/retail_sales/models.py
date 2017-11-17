@@ -46,6 +46,7 @@ class retail_invoice(models.Model):
 	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	# igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
+	roundoff=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
 	# final_payment_date=models.DateField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='retailInvoice_sales_user_tenant')

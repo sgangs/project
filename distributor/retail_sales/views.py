@@ -203,6 +203,7 @@ def sales_invoice_save(request):
 					cgsttotal=Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
 					sgsttotal=Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
 					total=Decimal(request.data.get('total')).quantize(TWOPLACES)
+					roundoff=Decimal(request.data.get('roundoff')).quantize(TWOPLACES)
 					sum_total = subtotal+cgsttotal+sgsttotal
 					round_value = 0
 					if (abs(sum_total - total) <0.90 ):
@@ -247,6 +248,7 @@ def sales_invoice_save(request):
 					
 
 					new_invoice.total = total
+					new_invoice.roundoff = roundoff
 					new_invoice.amount_paid = total
 					new_invoice.save()
 					
@@ -457,9 +459,9 @@ def sales_invoice_save(request):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
 						new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
 
-					if (round_value>0):
+					if (roundoff != 0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
-						new_journal_entry(this_tenant, journal, round_value, account, 2, date)
+						new_journal_entry(this_tenant, journal, roundoff, account, 2, date)
 
 					# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cash")
 					account = payment_mode_selected.payment_account
@@ -643,7 +645,6 @@ def sales_invoice_edit(request):
 			response_data = {}
 			this_tenant=request.user.tenant
 			if (calltype == 'edit' or calltype == 'editmobile'):
-				print('In edit')
 				# response_data = delete_inventory(request)
 				with transaction.atomic():
 					try:
@@ -1090,7 +1091,6 @@ def invoice_details_with_no(request):
 			'is_tax_included', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
 		
 		invoice['line_items']=line_items
-
 		invoice['tenant_name']=this_tenant.name
 		
 		jsondata = json.dumps(invoice, cls=DjangoJSONEncoder)
@@ -1109,15 +1109,12 @@ def invoice_list(request):
 @api_view(['GET'],)
 def all_invoice_app(request):
 	this_tenant=request.user.tenant
-	print('here')
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
 		page_no = request.GET.get('page_no')
 		end=date_first.date.today()
 		start=end-date_first.timedelta(days=3)
 		response_data={}
-		# if (calltype == 'all_invoices'):
-			# page_no = request.GET.get('page')
 		invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
 				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
 		
