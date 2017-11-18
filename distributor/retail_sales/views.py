@@ -203,11 +203,15 @@ def sales_invoice_save(request):
 					cgsttotal=Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
 					sgsttotal=Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
 					total=Decimal(request.data.get('total')).quantize(TWOPLACES)
-					roundoff=Decimal(request.data.get('roundoff')).quantize(TWOPLACES)
+					try:
+						roundoff=Decimal(request.data.get('roundoff')).quantize(TWOPLACES)
+					except:
+						roundoff = 0
 					sum_total = subtotal+cgsttotal+sgsttotal
-					round_value = 0
-					if (abs(sum_total - total) <0.90 ):
-						round_value = sum_total - total
+					
+					# round_value = 0
+					# if (abs(sum_total - total) <0.90 ):
+					# 	round_value = sum_total - total
 					
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 					ware_address=warehouse.address_1+", "+warehouse.address_2
@@ -367,7 +371,7 @@ def sales_invoice_save(request):
 						LineItem.is_tax_included=is_tax
 						
 						LineItem.unit=unit.symbol
-						LineItem.unit_id=unitid
+						LineItem.unit_id = unitid
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
 						# if (product.has_batch):
@@ -516,7 +520,6 @@ def sales_invoice_save(request):
 					response_data['pk']=new_invoice.id
 					response_data['id']=new_invoice.invoice_id
 			except Exception as err:
-				print(err)
 				response_data  = err.args 
 				transaction.rollback()
 
@@ -641,10 +644,10 @@ def sales_invoice_edit_view(request):
 @api_view(['POST'],)
 def sales_invoice_edit(request):
 		if request.method == 'POST':
-			calltype = request.POST.get('calltype')
+			calltype = request.data.get('calltype')
 			response_data = {}
 			this_tenant=request.user.tenant
-			if (calltype == 'edit' or calltype == 'editmobile'):
+			if (calltype == 'edit' or calltype == 'mobileedit'):
 				# response_data = delete_inventory(request)
 				with transaction.atomic():
 					try:
@@ -754,10 +757,16 @@ def sales_invoice_edit(request):
 						cgsttotal=Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
 						sgsttotal=Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
 						total=Decimal(request.data.get('total')).quantize(TWOPLACES)
+						try:
+							roundoff=Decimal(request.data.get('roundoff')).quantize(TWOPLACES)
+						except:
+							roundoff = 0
+
 						sum_total = subtotal+cgsttotal+sgsttotal
-						round_value = 0
-						if (abs(sum_total - total) <0.90 ):
-							round_value = sum_total - total
+						
+						# round_value = 0
+						# if (abs(sum_total - total) <0.90 ):
+						# 	round_value = sum_total - total
 						
 						old_invoice.subtotal=subtotal
 						old_invoice.cgsttotal=cgsttotal
@@ -771,6 +780,7 @@ def sales_invoice_edit(request):
 						# 	new_invoice.gst_type=2
 						
 
+						old_invoice.roundoff = roundoff
 						old_invoice.total = total
 						old_invoice.amount_paid = total
 						old_invoice.save()
@@ -802,6 +812,7 @@ def sales_invoice_edit(request):
 						for data in bill_data:
 							productid=data['product_id']
 							unit_name=data['unit_name']
+							unit_id=data['unit_id']
 							multiplier=Decimal(data['unit_multi']).quantize(TWOPLACES)
 							price_list={}
 							price_list_dict={}
@@ -840,11 +851,9 @@ def sales_invoice_edit(request):
 
 							product=Product.objects.for_tenant(this_tenant).select_related('tax').get(id=productid)
 									
-							# unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
-							# multiplier=unit.multiplier
 							
 							# original_actual_sales_price=Decimal(data['sales'])
-							original_actual_sales_price = Decimal(data['sales_after_tax']).quantize(TWOPLACES)
+							original_actual_sales_price = Decimal(data['sales_before_tax']).quantize(TWOPLACES)
 							actual_sales_price=Decimal(original_actual_sales_price/multiplier)
 							
 							original_quantity=Decimal(data['quantity']).quantize(TWOPLACES)
@@ -902,9 +911,10 @@ def sales_invoice_edit(request):
 							LineItem.is_tax_included=is_tax
 							
 							LineItem.unit=unit_name
-							# LineItem.unit_id=unitid - This is not yet operational.
+							LineItem.unit_id=unit_id
 							LineItem.unit_multi=multiplier
 							LineItem.quantity=original_quantity
+							
 							# if (product.has_batch):
 							# 	LineItem.batch=batch
 							# 	LineItem.manufacturing_date=manufacturing_date
@@ -994,9 +1004,9 @@ def sales_invoice_edit(request):
 							account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Output")
 							new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
 
-						if (round_value>0):
+						if (roundoff != 0):
 							account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
-							new_journal_entry(this_tenant, journal, round_value, account, 2, date)
+							new_journal_entry(this_tenant, journal, roundoff, account, 2, date)
 
 						# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cash")
 						account = payment_mode_selected.payment_account
@@ -1068,7 +1078,7 @@ def invoice_details(request, pk):
 		'total','amount_paid').get(id=pk)
 		
 		line_items=list(invoice_line_item.objects.filter(retail_invoice=invoice['id']).order_by('id').values('id','product_name','product_hsn',\
-			'product_id','unit','unit_multi','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
+			'product_id','unit','unit_multi', 'unit_id','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
 			'is_tax_included', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
 		invoice['line_items']=line_items
 
@@ -1083,12 +1093,12 @@ def invoice_details_with_no(request):
 	invoice_no=request.GET.get('invoice_no')
 	if request.method == 'GET':
 		invoice=retail_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date','customer_name',\
-			'warehouse_address','warehouse_city', 'warehouse_pin','subtotal','cgsttotal','sgsttotal',\
+			'warehouse_address','warehouse_city', 'warehouse_pin','subtotal','cgsttotal','sgsttotal','roundoff',	\
 		'total','amount_paid').get(invoice_id=invoice_no)
 		
 		line_items=list(invoice_line_item.objects.filter(retail_invoice=invoice['id']).order_by('id').values('id','product_name','product_hsn',\
-			'product', 'product_id','unit','unit_multi','quantity','quantity_returned','sales_price','discount_amount','line_before_tax','line_total',\
-			'is_tax_included', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
+			'product', 'product_id','unit','unit_multi', 'unit_id','quantity','quantity_returned','sales_price','discount_amount','line_before_tax',\
+			'line_total', 'is_tax_included', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
 		
 		invoice['line_items']=line_items
 		invoice['tenant_name']=this_tenant.name

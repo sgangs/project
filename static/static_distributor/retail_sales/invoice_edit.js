@@ -30,7 +30,7 @@ $('.get_invoice').click(function(){
                     '<td colspan="1"><input class="form-control qty" value="'+this.quantity+'" width="15%"></td>'+
                     '<td colspan="1" class="qty_avl" hidden>'+parseFloat(this.quantity)+'</td>'+
                     '<td colspan="1">'+this.unit+'</td>'+ //Change this to unit_id later on.
-                    '<td colspan="1" class="unit_multiplier">'+this.unit_multi+'</td>'+
+                    '<td colspan="1" class="unit_multiplier" hidden>'+this.unit_multi+'</td>'+
                     '<td colspan="1"><input class="form-control sr" value="'+this.sales_price+'" width="15%"></td>'+
                     '<td colspan="1" hidden><input class="form-control da"></td>'+
                     '<td colspan="1" class="total" hidden>0.00</td>'+
@@ -40,6 +40,7 @@ $('.get_invoice').click(function(){
                     '<td colspan="1" width="10%"><input class="form-control sgstp" value="'+this.sgst_percent+'"></td>'+
                     '<td colspan="1" class="sgstv">'+this.sgst_value+'</td>'+
                     '<td colspan="1" class="tv">'+this.line_total+'</td>'+
+                    '<td colspan="1" class="unit_id" hidden>'+this.unit_id+'</td>'+
                     '</tr>'
                 )
             });
@@ -349,6 +350,7 @@ function new_data(){
         
         var unit_name = $(this).find('td:nth-child(6)').html();
         var unit_multi = $(this).find('td:nth-child(7)').html();
+        var unit_id = $(this).find('td:nth-child(17)').html();
 
         // var disc_type = $(this).find('td:nth-child(11) :selected').data('id');
         // var disc = parseFloat($(this).find('td:nth-child(12) input').val());
@@ -383,14 +385,15 @@ function new_data(){
         var line_total = $(this).find('td:nth-child(16)').html();
 
         var taxable_total = line_total - cgst_v - sgst_v;
-        var sales_after_tax = round_off(taxable_total/quantity); 
+        var sales_before_tax = round_off(taxable_total/quantity); 
         
         var item = {
             product_id : product_id,
             quantity: quantity,
             unit_name: unit_name,
             unit_multi: unit_multi,
-            sales_after_tax: sales_after_tax,
+            unit_id: unit_id,
+            sales_before_tax: sales_before_tax,
             discount_amount: disc_amt,
             cgst_p: cgst_p,
             cgst_v:cgst_v,
