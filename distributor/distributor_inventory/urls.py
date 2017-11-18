@@ -25,8 +25,12 @@ urlpatterns = [
     url(r'^transfer/detail/(?P<pk>[-\S]+)/$', views.transfer_details, name='transfer_details'),
 
     url(r'^inventorywastage/$', views.inventory_wastage_template, name='inventory_wastage_template'),
+    
     url(r'^productvaluationmovement/data/$', views.product_valuation_movement_data, name='product_valuation_movement_data'),
     url(r'^productvaluationmovement/$', views.product_valuation_movement_template, name='product_valuation_movement_template'),
+
+    url(r'^product-movement-consolidated/$', views.product_movement_consolidated_view, name='product_movement_consolidated_view'),
+    url(r'^product-movement-consolidated/data/$', views.product_movement_consolidated_data, name='product_movement_consolidated_data'),
 
     url(r'^openinginventory/product/data/$', views.productwise_opening_inventory, name='productwise_opening_inventory'),
     url(r'^inventory/delete/$', views.delete_inventory_view, name='delete_inventory_view'),

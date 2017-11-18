@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+
+  <body>  
+
+    <h3>{{tenant.name}}</h3>
+    
+      <table repeat="2" id='table'>
+        <thead>
+          <tr>
+            <td colspan="4"><h5>Current Inventory Data</h5></td>
+          </tr>
+          <tr>
+            <th class="header">Product Name</th>
+            <th class="header">Warehouse</th>
+            <th class="header">Unit Purchase Rate</th>
+            <th class="header">Stock In Hand</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inventory in inventories %}
+              <tr align="center">
+                <td align="center">{{inventory.product__name}}</td>
+                <td align="center">{{inventory.warehouse__address_1}}, {{inventory.warehouse__address_2}}, {{inventory.warehouse__city}} </td>
+                <td align="center">{{inventory.purchase_price}}</td>
+                <td align="center">{{inventory.available}}</td>
+               </tr>
+            {% endfor %}       
+        </tbody>
+      </table>
+    
+  </body>
+
+  <style type="text/css">
+
+  h5 {
+    color: #034a63;
+    font-style: italic;
+    font-weight: bold;
+    text-shadow: 2px 2px #FFFFFF;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  h3{
+    color: #034a63;
+    /*font-style: italic;*/
+    font-weight: bold;
+    text-shadow: 6px 6px #FFFF00;
+    text-shadow: 10px 10px 2px #FFFF00;
+    font-size: 20px;
+    text-align: center;
+  }
+    
+  #table {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  #table td, #table th {
+      border: 1px solid #ddd;
+      padding: 2px;
+  }
+
+  #table tr:nth-child(even){background-color: #f2f2f2;}
+
+  #table th {
+      background-color: #034a63;
+      color: white;
+  }
+
+  #box {
+    background: #f4f4f4;
+    border: 1px solid #bbbbbb;
+    width: 200px;
+    height: 200px;
+    margin: 60px auto;
+    position: relative;
+  }
+         
+  #box:before {
+    border: 1px solid white;
+    content: '';
+    width: 198px;
+    height: 198px;
+    position: absolute;
+  }
+         
+  #box:after {
+    content: '';
+    position: absolute;
+    width: 196px;
+    height: 196px;
+    border: 1px solid #bbbbbb;
+    left: 1px; top: 1px;
+  }
+
+
+  </style>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

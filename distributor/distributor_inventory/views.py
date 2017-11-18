@@ -6,7 +6,7 @@ import datetime as dt
 
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Case, When
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.timezone import localtime
@@ -32,7 +32,7 @@ from distributor_master.models import Unit, Product, Warehouse
 from distributor_user.models import Tenant
 from distributor_account.models import Account, tax_transaction, payment_mode, accounting_period,\
 									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory
-from distributor.global_utils import paginate_data
+from distributor.global_utils import paginate_data, render_to_pdf
 from .forms import *
 from .models import *
 from .serializers import *
@@ -57,20 +57,40 @@ def inventory_data(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
 	calltype = request.GET.get('calltype')
+	
 	if (calltype == 'stockwise'):
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
 					select_related('product', 'warehouse').values('product__name','product__sku','purchase_date','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name','purchase_date',))
+	
 	elif (calltype == 'current'):
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
 					select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name'))
+	
 	elif (calltype == 'manufacturer group'):
 		current_inventory = list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
 						select_related('product__manufacturer',).values('product__manufacturer__name', 'product__manufacturer__id').\
 						annotate(total_value=Sum(F('quantity_available')*F('purchase_price'))))
+	
+	elif(calltype == 'download_current'):
+		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+					select_related('product', 'warehouse').values('product__name','expiry_date',\
+					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
+					annotate(available=Sum('quantity_available')).order_by('product__name'))
+		context = {
+			'inventories': current_inventory,
+			'tenant':this_tenant
+		}
+		pdf = render_to_pdf('inventory/current_inventory_pdf.html', context)
+		response = HttpResponse(pdf, content_type='application/pdf')
+		filename = "Sales Invoice Summary.pdf" 
+		content = "attachment; filename='%s'" %(filename)
+		response['Content-Disposition'] = content
+		return response
+
 	elif (calltype == 'manufacturer products'):
 		manufacturer_id = request.GET.get('manufac_id')
 		print(manufacturer_id)
@@ -720,3 +740,53 @@ def inventory_man_wise(request):
 
 	jsondata = json.dumps(current_inventory, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+
+@api_view(['GET'])
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def product_movement_consolidated_view(request):
+	extension="base.html"
+	return render (request, 'inventory/product_movement_consolidated.html',{'extension':extension})
+
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def product_movement_consolidated_data(request):
+	this_tenant = request.user.tenant
+	start = request.GET.get('start')
+	end = request.GET.get('end')
+	warehouse = request.GET.get('warehouse')
+	inventory_details = list(inventory_ledger.objects.for_tenant(this_tenant).filter(warehouse = warehouse, date__range=[start, end]).\
+					select_related('product').values('product','product__name').order_by('product__name').annotate(\
+						purchase_total=Sum(Case(When(transaction_type = 1, then = "quantity"))),\
+						sales_total=Sum(Case(When(transaction_type__in = [2,9], then = "quantity")))))
+
+	jsondata = json.dumps(inventory_details, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def all_invoices(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
+		response_data={}
+		filter_data={}
+		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], final_payment_date__isnull=True).all().\
+			select_related('invoiceLineItem_salesInvoice').\
+			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+
+		# if (returntype == 'download'):
+		invoices = invoices.order_by('customer_name', 'customer', '-date', '-invoice_id')
+		context = {
+			'invoices': invoices,
+			'tenant':this_tenant
+		}
+		pdf = render_to_pdf('sales/customer_pdf.html', context)
+		response = HttpResponse(pdf, content_type='application/pdf')
+		filename = "Sales Invoice Summary.pdf" 
+		content = "attachment; filename='%s'" %(filename)
+		response['Content-Disposition'] = content
+		return response

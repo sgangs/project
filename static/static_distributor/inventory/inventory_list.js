@@ -181,4 +181,20 @@ $("#manufacturer_inventory").on("click", ".link", function(){
 });
 
 
+function encodeQueryData(data) {
+   let ret = [];
+   for (let d in data)
+     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+   return ret.join('&');
+}
+
+
+$('.download').click(function(e){
+    
+    var data = { 'calltype': 'download_current', };
+    var querystring = encodeQueryData(data);
+    var download_url='/inventory/getcurrentdata/?'+querystring
+    location.href = download_url;
+});
+
 });
