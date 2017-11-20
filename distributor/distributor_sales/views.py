@@ -2119,3 +2119,5 @@ def customer_ledger_data(request):
 	response_data['object'] = entries
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+

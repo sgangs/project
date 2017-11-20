@@ -30,8 +30,8 @@ from distributor_user.models import User, Tenant
 from distributor_account.models import accounting_period, payment_mode
 from distributor_inventory.models import warehouse_valuation
 from distributor_master.models import Warehouse
-from distributor_sales.sales_utils import sales_day_wise, sales_raised_value, sales_collected_value
-from retail_sales.sales_utils import retail_sales_day_wise
+from distributor_sales.sales_utils import sales_day_wise, sales_raised_value, sales_collected_value, top_distributor_product_sales
+from retail_sales.sales_utils import retail_sales_day_wise, top_retail_product_sales
 from distributor_account.account_support import get_income_expense
 from distributor.variable_list import state_list
 
@@ -288,14 +288,18 @@ def landing(request):
     this_tenant=request.user.tenant
     end=date_first.date.today()
     start=end-date_first.timedelta(days=30)
+    start_5_days = end-date_first.timedelta(days=5)
     if (this_tenant.tenant_type == 2):
-    	sales_daily=retail_sales_day_wise(start, end, this_tenant)
+        sales_daily=retail_sales_day_wise(start, end, this_tenant)
+        top_sales = top_retail_product_sales(this_tenant, start_5_days, end, 5)
     else:
-    	sales_daily=sales_day_wise(start, end, this_tenant)
+        sales_daily=sales_day_wise(start, end, this_tenant)
+        top_sales = top_distributor_product_sales(this_tenant, start_5_days, end, 5)
     invoice_value=sales_raised_value(start, end, this_tenant)
     payment_value=sales_collected_value(start, end, this_tenant)
     current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
     income_expense=get_income_expense(this_tenant,4)
+    
     # print(income_expense)
     return render(request,'landing.html', {'sales_daily':json.dumps(sales_daily, cls=DjangoJSONEncoder),\
             'invoice_value':json.dumps(invoice_value, cls=DjangoJSONEncoder), \

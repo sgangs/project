@@ -53,6 +53,7 @@ def not_maintained_inventory(request):
 
 # @login_required
 @api_view(['GET', 'POST', ])
+# @user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def inventory_data(request):
 	extension="base.html"
 	this_tenant=request.user.tenant
@@ -86,7 +87,7 @@ def inventory_data(request):
 		}
 		pdf = render_to_pdf('inventory/current_inventory_pdf.html', context)
 		response = HttpResponse(pdf, content_type='application/pdf')
-		filename = "Sales Invoice Summary.pdf" 
+		filename = "Current Inventory.pdf" 
 		content = "attachment; filename='%s'" %(filename)
 		response['Content-Disposition'] = content
 		return response
@@ -763,30 +764,3 @@ def product_movement_consolidated_data(request):
 
 	jsondata = json.dumps(inventory_details, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
-
-
-@api_view(['GET'],)
-@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
-def all_invoices(request):
-	this_tenant=request.user.tenant
-	if request.method == 'GET':
-		calltype = request.GET.get('calltype')
-		page_no = request.GET.get('page_no')
-		response_data={}
-		filter_data={}
-		invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], final_payment_date__isnull=True).all().\
-			select_related('invoiceLineItem_salesInvoice').\
-			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
-
-		# if (returntype == 'download'):
-		invoices = invoices.order_by('customer_name', 'customer', '-date', '-invoice_id')
-		context = {
-			'invoices': invoices,
-			'tenant':this_tenant
-		}
-		pdf = render_to_pdf('sales/customer_pdf.html', context)
-		response = HttpResponse(pdf, content_type='application/pdf')
-		filename = "Sales Invoice Summary.pdf" 
-		content = "attachment; filename='%s'" %(filename)
-		response['Content-Disposition'] = content
-		return response

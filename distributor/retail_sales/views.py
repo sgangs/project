@@ -1,6 +1,7 @@
 import datetime as date_first
 from decimal import Decimal
 import json
+import csv
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -1554,21 +1555,46 @@ def sales_return_save(request):
 		return HttpResponse(jsondata)
 
 
-@api_view(['GET',],)
+@api_view(['GET'],)
 def eod_sales_data(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
-		date=request.GET.get('date')
-		warehouse=request.GET.get('warehouse')
-		# date=date_first.date.today()
-		invoice=retail_invoice.objects.for_tenant(this_tenant).filter(date=date, warehouse = warehouse)
-		returns=sales_return.objects.for_tenant(this_tenant).filter(date=date, warehouse = warehouse)
-		line_items=list(invoice_line_item.objects.filter(retail_invoice__in=invoice).select_related('product').order_by('product__name',).\
-					values('product__name',).annotate(sold_quantity=Sum('quantity')).annotate(value_sold=Sum('line_before_tax')))
-		return_line_items=list(return_line_item.objects.filter(sales_return__in=returns).select_related('product').order_by('product__name',).\
-					values('product__name',).annotate(returned_quantity=Sum('quantity')).annotate(value_returned=Sum('line_before_tax')))
-		line_items.extend(return_line_items)
-		jsondata = json.dumps(line_items, cls=DjangoJSONEncoder)
+		try:
+			calltype = request.GET.get('calltype')
+		except:
+			calltype = 'data'
+		
+		if (calltype == 'eod_download_csv'):
+			response = HttpResponse(content_type='text/csv')
+			response['Content-Disposition'] = 'attachment; filename="eodReport.csv"'
+
+			writer = csv.writer(response)
+			date=request.GET.get('date')
+			warehouse=request.GET.get('warehouse')
+			# invoice=retail_invoice.objects.for_tenant(this_tenant).filter(date=date, warehouse = warehouse)
+			invoice=retail_invoice.objects.for_tenant(this_tenant)
+			line_items=list(invoice_line_item.objects.filter(retail_invoice__in=invoice).select_related('product').order_by('product__name',).\
+						values('product__name',).annotate(sold_quantity=Sum('quantity')).annotate(value_sold=Sum('line_before_tax')))
+
+			writer.writerow(['Product Name', 'Quantity Sold', 'Value(Excluding Tax) Sold'])
+
+			for item in line_items:
+				writer.writerow([item['product__name'], item['sold_quantity'], item['value_sold']])
+
+			return response
+
+		else:	
+			date=request.GET.get('date')
+			warehouse=request.GET.get('warehouse')
+			# date=date_first.date.today()
+			invoice=retail_invoice.objects.for_tenant(this_tenant).filter(date=date, warehouse = warehouse)
+			returns=sales_return.objects.for_tenant(this_tenant).filter(date=date, warehouse = warehouse)
+			line_items=list(invoice_line_item.objects.filter(retail_invoice__in=invoice).select_related('product').order_by('product__name',).\
+						values('product__name',).annotate(sold_quantity=Sum('quantity')).annotate(value_sold=Sum('line_before_tax')))
+			return_line_items=list(return_line_item.objects.filter(sales_return__in=returns).select_related('product').order_by('product__name',).\
+						values('product__name',).annotate(returned_quantity=Sum('quantity')).annotate(value_returned=Sum('line_before_tax')))
+			line_items.extend(return_line_items)
+			jsondata = json.dumps(line_items, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
 @login_required

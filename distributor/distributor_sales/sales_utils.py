@@ -4,7 +4,7 @@ from django.db.models import Sum
 
 from distributor_account.models import Account, Journal, journal_entry, tax_transaction
 from distributor_inventory.models import Inventory, inventory_ledger
-from distributor_sales.models import sales_invoice, sales_payment
+from distributor_sales.models import sales_invoice, sales_payment, invoice_line_item
 # from distributor_master.models import Product, Unit
 
 def new_sales_invoice(tenant, customer, warehouse, date, duedate,
@@ -118,3 +118,9 @@ def new_inventory_ledger_sales(product, warehouse, trn_type, date, quantity, pur
 # 	# response_data['has_previous']=paginator.has_previous()
 # 	# response_data['has_next']=paginator.has_next()
 # 	return response_data 
+
+def top_distributor_product_sales(this_tenant, start, end, nos):
+	invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all()
+	line_items = list(invoice_line_item.objects.filter(sales_invoice__in=invoices).values('product', 'product__name').\
+					annotate(total_sold=Sum('quantity')).order_by('-total_sold')[:nos])
+	print(line_items)
