@@ -2,6 +2,7 @@ import datetime as dt
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_save
@@ -14,6 +15,10 @@ from phonenumber_field.modelfields import PhoneNumberField
 from rest_framework.authtoken.models import Token
 
 from distributor.variable_list import state_list, account, user_type, tenant_type
+
+class TenantManager(models.Manager):
+	def for_tenant(self, tenant):
+		return self.get_queryset().filter(tenant=tenant)
 
 #This is the list of schools. Add paid until model and get it to work with decorators
 class Tenant(models.Model):
@@ -84,40 +89,23 @@ class tenant_payment(models.Model):
 
 
 #This is the individual user module
+#User type has to be an arrayfield with the option of multiple fields - the list of permissions an user can have.
 class User(AbstractUser):
 	id=models.BigAutoField(primary_key=True)
 	aadhaar_no=models.CharField("Aadhaar Number", blank=True, max_length=20)
 	tenant = models.ForeignKey(Tenant,related_name='user_tenant')
 	phone=PhoneNumberField("Phone Number")
-	user_type=models.CharField(max_length=10,choices=user_type)
+	# user_type=models.CharField(max_length=10,choices=user_type)
+	#Options for user type - "master", "retail_sales", "retail_sales_lead", "retail_sales", "distributor_sales", "distributor_sales_lead"
+	#"service_sales", "service_sales_lead", "purchase", "purchase_lead", "overall_lead"
+
+	user_type=ArrayField(models.CharField(max_length=20), blank=True, null=True)
 	#registered_on=models.DateTimeField(null=True, blank=True)
 	updated = models.DateTimeField(auto_now=True)
+	# objects = TenantManager()
 	
 	class Meta(object):
 		unique_together = ('email',)
-
-
-class user_permission(models.Model):
-	id=models.BigAutoField(primary_key=True)
-	tenant = models.ForeignKey(Tenant,related_name='userPermission_tenant')
-	user = models.ForeignKey(Tenant,related_name='userPermission_user')
-	#create is for:create, update, delete.
-	#For all master models
-	can_create_master=models.BooleanField()
-	can_authorize_master=models.BooleanField()
-	#For all purchase models
-	can_create_purchase=models.BooleanField()
-	can_authorize_purchase=models.BooleanField()
-	#For all sales models
-	can_create_sales=models.BooleanField()
-	can_authorize_sales=models.BooleanField()
-	#For all accounts models
-	can_create_sales=models.BooleanField()
-	can_authorize_sales=models.BooleanField()
-	updated = models.DateTimeField(auto_now=True)
-
-
-
 
 # @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 # def create_auth_token(sender, instance=None, created=False, **kwargs):

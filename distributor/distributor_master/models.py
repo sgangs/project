@@ -1,9 +1,12 @@
 import datetime as dt
 from datetime import datetime
+
+from django.contrib.postgres.fields import JSONField
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import signals
-from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+
 from phonenumber_field.modelfields import PhoneNumberField
 
 from distributor_user.models import Tenant, User
@@ -116,9 +119,9 @@ class Attribute(models.Model):
 
 #Product group, example "T-Shirts", "Lipsticks"
 class Group(models.Model):
-	id=models.BigAutoField(primary_key=True)
-	name=models.CharField(db_index=True, max_length=50)
-	tenant=models.ForeignKey(Tenant,related_name='group_master_user_tenant')
+	id = models.BigAutoField(primary_key=True)
+	name = models.CharField(db_index=True, max_length=30)
+	tenant = models.ForeignKey(Tenant,related_name='group_master_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 	
@@ -132,6 +135,27 @@ class Group(models.Model):
 		
 	def __str__(self):
 		return self.name
+
+
+#Service group, example "T-Shirts", "Lipsticks"
+class service_group(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	name=models.CharField(db_index=True, max_length=50)
+	tenant=models.ForeignKey(Tenant,related_name='serviceGroup_master_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+	
+	# def get_absolute_url(self):
+	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+
+	class Meta:
+		unique_together = (("name", "tenant"),)
+		#ordering = ('name',)	
+		
+	def __str__(self):
+		return self.name
+
 
 #Brand example "Lakme","Eva", "Axe"
 class Brand(models.Model):
@@ -163,9 +187,9 @@ class Product(models.Model):
 				(3,'On Cost Price'),)
 	id=models.BigAutoField(primary_key=True)
 	name=models.CharField(db_index=True, max_length =200)
-	sku=models.CharField(db_index=True, max_length=50)
+	sku=models.CharField(db_index=True, max_length=20)
 	barcode=models.CharField(db_index=True, max_length=20, blank=True, null=True)
-	hsn_code=models.CharField(db_index=True, max_length=20, blank=True, null=True)
+	hsn_code=models.CharField(db_index=True, max_length=8, blank=True, null=True)
 	vat_type=models.PositiveSmallIntegerField('VAT type', choices=VAT_choice, default=3, blank=True, null=True)
 	tax=models.ForeignKey(tax_structure, blank=True, null=True, related_name='product_vat', on_delete=models.SET_NULL)
 	cgst=models.ForeignKey(tax_structure, blank=True, null=True, related_name='product_cgst', on_delete=models.SET_NULL)
@@ -180,6 +204,7 @@ class Product(models.Model):
 	has_batch=models.BooleanField(default=False)
 	has_instance=models.BooleanField(default=False)
 	has_attribute=models.BooleanField(default=False)
+	attributes=JSONField(blank=True, null=True)
 	remarks=models.CharField(max_length=200, blank=True, null=True)
 	is_active=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,related_name='product_master_user_tenant')
@@ -197,26 +222,56 @@ class Product(models.Model):
 	def __str__(self):
 		return self.name
 
-
-class product_attribute(models.Model):
+#This is the list of Services
+class Service(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	product=models.ForeignKey(Product,related_name='productAttribute_product')
-	attribute=models.ForeignKey(Attribute,related_name='productAttribute_attribute')
-	value=models.CharField(db_index=True, max_length=50)
-	tenant=models.ForeignKey(Tenant,related_name='productAttribute_master_user_tenant')
+	name=models.CharField(db_index=True, max_length =200)
+	sku=models.CharField(db_index=True, max_length=20)
+	barcode=models.CharField(db_index=True, max_length=20, blank=True, null=True)
+	hsn_code=models.CharField(db_index=True, max_length=8, blank=True, null=True)
+	cgst=models.ForeignKey(tax_structure, blank=True, null=True, related_name='service_cgst', on_delete=models.SET_NULL)
+	sgst=models.ForeignKey(tax_structure, blank=True, null=True, related_name='service_sgst', on_delete=models.SET_NULL)
+	igst=models.ForeignKey(tax_structure, blank=True, null=True, related_name='service_igst', on_delete=models.SET_NULL)
+	default_unit=models.ForeignKey(Unit,blank=True, null=True, related_name='service_unit', on_delete=models.SET_NULL)
+	group=models.ForeignKey(service_group,related_name='service_group', blank=True, null=True, on_delete=models.SET_NULL)	
+	attributes=JSONField(blank=True, null=True)
+	remarks=models.CharField(max_length=200, blank=True, null=True)
+	is_active=models.BooleanField(default=True)
+	tenant=models.ForeignKey(Tenant,related_name='service_master_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
+
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
 
-
 	class Meta:
-		unique_together = (("product", "attribute", "tenant"),)
-		#ordering = ('name',)
-		
+		unique_together = (("sku", "tenant"))
+	# 	ordering = ('name',)
+
 	def __str__(self):
-		return self.value
+		return self.name
+
+
+# class product_attribute(models.Model):
+# 	id=models.BigAutoField(primary_key=True)
+# 	product=models.ForeignKey(Product,related_name='productAttribute_product')
+# 	attribute=models.ForeignKey(Attribute,related_name='productAttribute_attribute')
+# 	value=models.CharField(db_index=True, max_length=50)
+# 	tenant=models.ForeignKey(Tenant,related_name='productAttribute_master_user_tenant')
+# 	objects = TenantManager()
+# 	updated = models.DateTimeField(auto_now=True)
+	
+# 	# def get_absolute_url(self):
+# 	# 	return reverse('master:detail', kwargs={'detail':self.slug})
+
+
+# 	class Meta:
+# 		unique_together = (("product", "attribute", "tenant"),)
+# 		#ordering = ('name',)
+		
+# 	def __str__(self):
+# 		return self.value
 
 
 #This is the list of Zone
@@ -369,6 +424,16 @@ class product_sales_rate(models.Model):
 	is_tax_included=models.BooleanField(default=True)
 	tenant=models.ForeignKey(Tenant,related_name='productSalesRate_master_user_tenant')
 	objects = TenantManager()
+
+
+class service_sales_rate(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	service=models.ForeignKey(Service,related_name='serviceSalesRate_service')
+	tentative_sales_rate=models.DecimalField(max_digits=12, decimal_places=2)
+	is_tax_included=models.BooleanField(default=True)
+	tenant=models.ForeignKey(Tenant,related_name='serviceSalesRate_master_user_tenant')
+	objects = TenantManager()
+
 	
 	# def get_absolute_url(self):
 	# 	return reverse('master:detail', kwargs={'detail':self.slug})

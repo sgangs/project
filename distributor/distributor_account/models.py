@@ -183,6 +183,8 @@ class journal_group(models.Model):
 #7 - Retail Sales
 #8 - Retail Credit Note
 #9 - Normal Journal Entry
+#10 - Service Sales
+#11 - Service Credit Note
 
 #This is a list of journal entry
 class Journal(models.Model):
@@ -329,6 +331,8 @@ class inventory_value(models.Model):
 #4 for purchase debit note
 #5 for retail sales
 #6 for retail sales credit note
+#7 for service sales
+#8 for service sales credit note
 
 class tax_transaction(models.Model):
 	id=models.BigAutoField(primary_key=True)

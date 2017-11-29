@@ -123,4 +123,3 @@ def top_distributor_product_sales(this_tenant, start, end, nos):
 	invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all()
 	line_items = list(invoice_line_item.objects.filter(sales_invoice__in=invoices).values('product', 'product__name').\
 					annotate(total_sold=Sum('quantity')).order_by('-total_sold')[:nos])
-	print(line_items)

@@ -134,9 +134,21 @@
             <li><a href="{% url 'master:vendor_data' %}">Vendor</a></li>
             <li><a href="{% url 'master:tax_data' %}">Tax</a></li>
             <li><a href="{% url 'master:dimension_unit_data' %}">Unit &amp Dimension</a></li>
-            <li><a href="{% url 'master:manufacbrand_data' %}">Manufacturer</a></li>
+            <li title="Master for Products"><a href="#">Products</a>
+              <ul>
+                <li><a href="{% url 'master:manufacbrand_data' %}">Manufacturer</a></li>
+                <li><a href="{% url 'master:product_group' %}">Product Group</a></li>
+                <li><a href="{% url 'master:product_data' %}">Product</a></li>
+              </ul>
+            </li>
+            <li title="Master for Services"><a href="#">Services</a>
+              <ul>
+                <li><a href="#">Service Group</a></li>
+                <li><a href="#">Service Segment</a></li>
+                <li><a href="#">Service</a></li>
+              </ul>
+            </li>
             <li><a href="{% url 'master:warehouse_data' %}">Warehouse</a></li>
-            <li><a href="{% url 'master:product_data' %}">Product</a></li>
           </ul>
         </li>
       </ul>
@@ -225,6 +237,25 @@
             <li><a href="#">End of Day Report</a>
               <ul>
                 <li><a href="{% url 'retailsales:eod_sales_report' %}">Product Wise Report</a></li>
+                <li><a href="#"><sup><i class="fa fa-star" style="color:red;"> New</i></sup> Invoice Wise Report</a></li>
+                <li></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <!-- Service Sales -->
+      <ul class="RetailSalesNav">
+        <li><a href="#"><span><i class="fa fa-shopping-cart"></i></span> Service Sales</a>
+          <ul>
+            <li><a href="#">Cretae Sales Invoice</a></li>
+            <li><a href="#">Sales List</a></li>
+            <li><a href="#"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Edit Invoice</a></li>
+            <li><a href="#">Sales Return</a></li>
+            <li><a href="#">Sales Return Report</a></li>
+            <li><a href="#">End of Day Report</a>
+              <ul>
+                <li><a href="#">Product Wise Report</a></li>
                 <li><a href="#"><sup><i class="fa fa-star" style="color:red;"> New</i></sup> Invoice Wise Report</a></li>
                 <li></li>
               </ul>

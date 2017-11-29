@@ -474,7 +474,6 @@ def product_view(request):
 					old_rate.save()
 				else:
 					new_rate=product_sales_rate()
-					print(prod_id)
 					new_rate.product=Product.objects.for_tenant(this_tenant).get(id=prod_id)
 					new_rate.tentative_sales_rate=revised_rate
 					new_rate.is_tax_included=is_tax
@@ -836,17 +835,17 @@ def product_data(request):
 					new_product.tenant=this_tenant
 					new_product.remarks=remarks
 					new_product.save()
-					# new_product.tax.add(tax_selected)
-					if (has_attribute):
-						for data in attributes:
-							attr_id=int(data['attribute_id'])
-							value=data['value']
-							attr_selected=Attribute.objects.for_tenant(this_tenant).get(id=attr_id)
-							product_attr=product_attribute()
-							product_attr.product=new_product
-							product_attr.attribute=attr_selected
-							product_attr.value=value
-							product_attr.tenant=this_tenant
+					
+					# if (has_attribute):
+					# 	for data in attributes:
+					# 		attr_id=int(data['attribute_id'])
+					# 		value=data['value']
+					# 		attr_selected=Attribute.objects.for_tenant(this_tenant).get(id=attr_id)
+					# 		product_attr=product_attribute()
+					# 		product_attr.product=new_product
+					# 		product_attr.attribute=attr_selected
+					# 		product_attr.value=value
+					# 		product_attr.tenant=this_tenant
 				except:
 					transaction.rollback()
 					messages.add_message(request, messages.WARNING, "There were some errors. Note Barcode & SKU must be unique."+
@@ -935,6 +934,41 @@ def product_group(request):
 	# this_tenant=request.user.tenant
 	return render (request, 'master/product_group_list.html',{'extension':extension,'states':state_list })
 
+@api_view(['GET','POST'],)
+def product_group_data(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		# if (calltype == 'one_service'):
+		# 	serviceid = request.GET.get('serviceid')
+		# 	service=Service.objects.for_tenant(this_tenant).get(id=serviceid)
+		# 	serializer = ServiceDetailSerializers(service)
+		# else:
+		product_groups=list(Group.objects.for_tenant(this_tenant).order_by( 'name',).values('id','name'))
+		print(product_groups)
+		
+		jsondata = json.dumps(product_groups, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+	
+	elif request.method == 'POST':
+		calltype = request.data.get('calltype')
+		response_data = {}
+
+		if (calltype == 'newgroup'):
+			response_data = {}
+			name=request.POST.get('name')
+			
+			new_group=Group()
+			new_group.name=name
+			new_group.tenant=this_tenant
+			new_group.save()
+			
+			jsondata = json.dumps(response_data)
+			return HttpResponse(jsondata)
+
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
 
 @login_required
 def customer_import_format(request):
@@ -953,3 +987,202 @@ def product_import_format(request):
 	xlsx_data = product_format()
 	response.write(xlsx_data)
 	return response
+
+@login_required
+def service_view(request):
+	extension="base.html"
+	return render (request, 'master/service_list.html',{'extension':extension})
+
+
+# @login_required
+@api_view(['GET','POST'],)
+def service_data(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		if (calltype == 'one_service'):
+			serviceid = request.GET.get('serviceid')
+			service=Service.objects.for_tenant(this_tenant).get(id=serviceid)
+			serializer = ServiceDetailSerializers(service)
+		else:
+			services=Service.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
+					select_related('default_unit').prefetch_related('serviceSalesRate_service')
+			serializer = ServiceSerializers(services, many=True)
+		return Response(serializer.data)
+	elif request.method == 'POST':
+		calltype = request.data.get('calltype')
+		response_data = {}
+
+		if (calltype == 'newservice'):
+			response_data = {}
+			name=request.POST.get('name')
+			sku=request.POST.get('sku')
+			hsn=request.POST.get('hsn')
+			# barcode=request.POST.get('barcode')
+			# if barcode:
+			# 	try:
+			# 		is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
+			# 	except:
+			# 		is_product=''
+			# 	if is_product:
+			# 		raise IntegrityError
+			# vat_type=request.POST.get('vat_type')
+			# tax=request.POST.get('tax')
+			cgst=request.POST.get('cgst')
+			sgst=request.POST.get('sgst')
+			igst=request.POST.get('igst')
+			unit_id=request.POST.get('unit')
+			
+			# brand_id=request.POST.get('brand')
+			# manufacturer_id=request.POST.get('manufacturer')
+			# group_id=request.POST.get('group')
+			# has_batch=request.POST.get('has_batch')
+			# has_instance=request.POST.get('has_instance')
+			# has_attribute=request.POST.get('has_attribute')
+			# if (has_batch == 'true'):
+			# 	has_batch=True
+			# elif(has_batch == 'false'):
+			# 	has_batch=False
+			# if (has_instance == 'true'):
+			# 	has_instance=True
+			# elif(has_instance == 'false'):
+			# 	has_instance=False
+			# if (has_attribute == 'true'):
+			# 	has_attribute=True
+			# elif(has_attribute == 'false'):
+			# 	has_attribute=False
+			# remarks=request.POST.get('remarks')
+			# tax_selected=tax_structure.objects.for_tenant(this_tenant).get(id=tax)
+			
+			tax_all=tax_structure.objects.for_tenant(this_tenant).all()
+			unit_selected=Unit.objects.for_tenant(this_tenant).get(id=unit_id)
+			# if (brand_id):
+			# 	brand_selected=Brand.objects.for_tenant(this_tenant).get(id=brand_id)
+			# if (group_id):
+			# 	group_selected=Group.objects.for_tenant(this_tenant).get(id=group_id)
+			# if (has_attribute):
+			# 	attributes = json.loads(request.POST.get('attributes'))
+			with transaction.atomic():
+				try:
+					new_service=Service()
+					new_service.name=name
+					new_service.sku=sku
+					new_service.hsn_code=hsn
+					# new_service.barcode=barcode
+					
+					if (cgst):
+						cgst_selected=tax_all.get(id=cgst)
+						new_service.cgst=cgst_selected
+					if (sgst):
+						sgst_selected=tax_all.get(id=sgst)
+						new_service.sgst=sgst_selected
+					if (igst):
+						igst_selected=tax_all.get(id=igst)
+						new_service.igst=igst_selected			
+					
+					new_service.default_unit=unit_selected
+					
+					# if (brand_id):
+					# 	new_product.brand=brand_selected
+					# if (group_id):
+					# 	new_product.group=group_selected
+					# new_product.has_batch=has_batch
+					# new_product.has_attribute=has_attribute
+					# new_product.has_instance=has_instance
+					
+					new_service.tenant=this_tenant
+					# new_service.remarks=remarks
+					new_service.save()
+					
+					# if (has_attribute):
+					# 	for data in attributes:
+					# 		attr_id=int(data['attribute_id'])
+					# 		value=data['value']
+					# 		attr_selected=Attribute.objects.for_tenant(this_tenant).get(id=attr_id)
+					# 		product_attr=product_attribute()
+					# 		product_attr.product=new_product
+					# 		product_attr.attribute=attr_selected
+					# 		product_attr.value=value
+					# 		product_attr.tenant=this_tenant
+				except:
+					transaction.rollback()
+					# messages.add_message(request, messages.WARNING, "There were some errors. Note Barcode & SKU must be unique."+
+					# 					" Name, SKU and default unit cannot be blank.")
+					response_data["error"] = "There were some errors. Note Barcode & SKU must be unique. Name, SKU and default unit cannot be blank." 
+			
+			jsondata = json.dumps(response_data)
+			return HttpResponse(jsondata)
+
+		elif calltype == 'updateservice':
+			pk=request.data.get('pk')
+			name=request.data.get('name')
+			sku=request.data.get('sku')
+			# barcode=request.data.get('barcode')
+			cgst=request.data.get('cgst')
+			sgst=request.data.get('sgst')
+			igst=request.data.get('igst')
+			hsn=request.data.get('hsn')
+			manufac=request.data.get('manufac')
+			taxes=tax_structure.objects.for_tenant(this_tenant).all()
+			# state=request.data.get('state')
+			if not sku:
+				raise IntegrityError
+			if not name:
+				raise IntegrityError
+			
+			old_service=Service.objects.for_tenant(this_tenant).get(id=pk)
+			old_service.name=name
+			old_service.sku=sku
+			# try:
+			# 	old_product.manufacturer = Manufacturer.objects.for_tenant(this_tenant).get(id=manufac)
+			# except:
+			# 	pass
+			
+			# if barcode:
+			# 	try:
+			# 		is_product=Product.objects.for_tenant(this_tenant).get(barcode=barcode)
+			# 	except:
+			# 		is_product=''
+				# if is_product:
+				# 	if (is_product.id != old_product.id):
+				# 		raise IntegrityError
+				# old_product.barcode = barcode
+			# else:
+			# 	old_product.barcode = None
+
+
+			if cgst:
+				old_service.cgst=taxes.get(id=cgst)
+			if sgst:
+				old_service.sgst=taxes.get(id=sgst)
+			if igst:
+				old_service.igst=taxes.get(id=igst)
+			# if hsn:
+			old_service.hsn_code=hsn
+			old_service.save()
+
+		elif calltype == 'updaterate':
+			rate_id = request.data.get('rate_id')
+			revised_rate = Decimal(request.data.get('new_rate'))
+			is_tax = request.data.get('is_tax')
+			service_id = request.data.get('service_id')
+			if (revised_rate > 0):
+				if (is_tax == 'true'):
+					is_tax=True
+				elif (is_tax == 'false'):
+					is_tax=False
+				if (rate_id):
+					old_rate=product_sales_rate.objects.get(id=rate_id)
+					old_rate.tentative_sales_rate=revised_rate
+					old_rate.is_tax_included=is_tax
+					old_rate.save()
+				else:
+					new_rate=product_sales_rate()
+					new_rate.product=Product.objects.for_tenant(this_tenant).get(id=service_id)
+					new_rate.tentative_sales_rate=revised_rate
+					new_rate.is_tax_included=is_tax
+					new_rate.tenant=this_tenant
+					new_rate.save()
+
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)

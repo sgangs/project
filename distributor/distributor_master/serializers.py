@@ -84,3 +84,37 @@ class BrandSerializers (serializers.ModelSerializer):
 	class Meta:
 		model = Brand
 		fields = ('id','name','manufacturer')
+
+
+class ServiceRateSerializers (serializers.ModelSerializer):
+	service=serializers.StringRelatedField()
+	class Meta:
+		model = service_sales_rate
+		fields = ('id','service','tentative_sales_rate', 'is_tax_included')
+
+
+class ServiceSerializers (serializers.ModelSerializer):
+	default_unit=serializers.StringRelatedField()
+	# brand=serializers.StringRelatedField()
+	# group=serializers.StringRelatedField()
+	# serviceSalesRate_service = serializers.StringRelatedField(many=True)
+	rates = ServiceRateSerializers(source='serviceSalesRate_service', many=True)
+	class Meta:
+		model = Product
+		# fields = ('id','name','sku','hsn_code', 'barcode', 'default_unit', 'brand','group','remarks', 'rates')
+		fields = ('id','name','sku','hsn_code', 'default_unit', 'remarks', 'rates')
+
+
+class ServiceDetailSerializers (serializers.ModelSerializer):
+	default_unit=serializers.StringRelatedField()
+	# brand=serializers.StringRelatedField()
+	# group=serializers.StringRelatedField()
+	cgst=serializers.StringRelatedField()
+	sgst=serializers.StringRelatedField()
+	igst=serializers.StringRelatedField()
+	# manufacturer=serializers.StringRelatedField()
+	class Meta:
+		model = Product
+		# fields = ('id','name','sku', 'barcode', 'hsn_code','cgst','sgst','igst','reorder_point','manufacturer','has_batch',\
+		# 	'has_instance','has_attribute','default_unit', 'brand','group','remarks')
+		fields = ('id','name','sku', 'barcode', 'hsn_code','cgst','sgst','igst', 'default_unit', 'remarks')

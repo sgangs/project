@@ -1,0 +1,195 @@
+{% extends extension %}
+
+{%block title%}
+
+<title>User List</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/css/intlTelInput.css">
+
+
+{% endblock %} 
+
+{% block content%}
+	
+<div>
+	<button type="submit" class="btn btn-primary btn-sm new"><i class="fa fa-star"></i> Add New User</button>
+</div>
+<h1></h1>
+<!-- <div class="col-md-4  alert alert-danger">
+	
+</div>
+<div class="col-md-4  alert alert-danger">
+	
+</div> -->
+
+<div class="table-responsive">
+    	<table class="table table-striped table-bordered table-hover" id="customer">
+      	<thead class="thead-inverse header-background">
+        	<tr>
+	            <th class="text-center" hidden>ID</th>
+	            <th class="text-center">Name</th>
+	            <th class="text-center">username</th>
+	            <th class="text-center">Email-id</th>
+	            <th class="text-center">Addhar No.</th>
+	            <th class="text-center">User Permissions</th>
+          	</tr>
+		</thead>
+        <tbody>        	
+        </tbody>
+  	</table> 
+</div>
+<!-- Modal -->
+<div class="modal fade" id="event" tabindex="-1" role="dialog" aria-labelledby="eventLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Add New User</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post" class="new_user">
+		    	<div class="form-group namediv">
+					<label for="classname" class="control-label">Username*</label>
+					<input type="text" class="form-control username" placeholder="150 characters or fewer. Letters, digits and @/./+/-/_ only.">
+				</div>
+				<p class="bg-danger namediverror" hidden>Username is already taken. Please change the username.</p>
+
+				<div class="form-group firstnamediv">
+					<label for="classname" class="control-label">First Name* </label>
+					<input type="text" class="form-control firstname">
+				</div>
+
+				<div class="form-group lastnamediv">
+					<label for="classname" class="control-label">Last Name* </label>
+					<input type="text" class="form-control lastname">	
+				</div>
+				
+				<div class="form-group emaildiv">
+					<label for="classname" class="control-label">Email address*</label>
+					<input type="email" class="form-control email" required pattern="[^@]+@[^@]+\.[a-zA-Z]{2,6}">
+				</div>
+				<p class="bg-danger emaildiverror" hidden>Email address is already taken. Please change the email address.</p>
+				<p class="bg-warning emailformaterror" hidden>Please enter a valid email address.</p>
+
+				<div class="form-group aadhardiv">
+					<label for="classname" class="control-label">Aadhar Number</label>
+					<input type="text" class="form-control aadhar">						
+				</div>
+				
+				<div class="form-group phonediv">
+					<label for="classname" class="control-label">Phone/Contact</label>
+					<input type="tel" class="form-control phone">
+					<span id="valid-msg" class="hide">✓ Valid</span>
+					<span id="error-msg" class="hide">Invalid number</span>			
+				</div>
+				
+				<div class="form-group passworddiv">
+					<label class="control-label">Password *</label>
+					<input type="password" class="form-control password" name="" maxlength="20" placeholder="Minimum 8 characters. Must not be similar to username">
+				</div>
+				<p class="bg-danger password-p" hidden="true"></p>
+				
+				<div class="form-group repeatdiv">
+					<label class="control-label">Repeat Password *</label>
+					<input type="password" class="form-control repeat" name="" maxlength="20" placeholder="Must be same as password">
+				</div>
+				<p class="bg-danger repeat-p" hidden="true">Passwords do not match</p>
+				<div class="form-group permissiondiv">
+					<label for="classname" class="control-label">User Permissions*</label>
+					<select class="form-control selectpicker permission" data-live-search="true" multiple title="Choose user permission..." data-max-options="4" data-max-options-text = "One user can have at max 4 functions.">
+						<optgroup label="Service Sales">
+							<option data-subtext="Cannot edit/delete invoice" data-id = "service_sales">Service Salesperson</option>
+							<option data-subtext="All service sales access" data-id = "service_sales_lead">Service Sales Lead</option>
+						</optgroup>
+						<optgroup label="Retail Sales">
+							<option data-subtext="Cannot edit/delete invoice" data-id = "retail_sales">Retail Salesperson</option>
+							<option data-subtext="All retail sales access" data-id = "retail_sales_lead">Retail Sales Lead</option>
+						</optgroup>
+						<optgroup label="Distributor Sales">
+							<option data-subtext="Cannot edit/delete invoice" data-id = "distributor_sales">Distributor Salesperson</option>
+							<option data-subtext="All distributor sales access" data-id = "distributor_sales_lead">Distributor Sales Lead</option>
+						</optgroup>
+						<optgroup label="Purchases">
+							<option data-subtext="Cannot edit/delete purchases" data-id = "purchase">Purchase Person</option>
+							<option data-subtext="All purchase access" data-id = "purchase_lead">Purchase Lead</option>
+						</optgroup>
+						<optgroup label="General">
+						<option data-subtext="All access. Next only to owner/master profile." data-id = "overall_lead">Overall Lead</option>
+					</select>
+
+				</div>
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary submit">Submit</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+
+{% load static from staticfiles %}
+
+<script src="{% static 'user_tenant/user.js' %}"></script>
+
+<style type="text/css">
+	.iti-flag {background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/img/flags.png");}  
+	@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2 / 1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {
+  			.iti-flag {background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/img/flags@2x.pngpath/to/flags@2x.png");}
+	}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/js/intlTelInput.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pwstrength-bootstrap/2.1.1/pwstrength-bootstrap.min.js"></script>
+
+
+<script>
+
+$('.new').attr('data-toggle',"modal")
+$('.new').attr('data-target',"#event")
+csrf_token='{{csrf_token}}';
+
+// $('.password').pwstrength({
+//     ui: { showVerdictsInsideProgressBar: true,
+//     showErrors: true },
+//     minChar: 8
+// });
+
+// var check = $(".new_user").validate();
+// console.log(check);
+
+$(".phone").intlTelInput({
+  initialCountry: "IN",
+  geoIpLookup: function(callback) {
+    $.get('http://ipinfo.io', function() {}, "jsonp").always(function(resp) {
+      var countryCode = (resp && resp.country) ? resp.country : "";
+      callback(countryCode);
+    });
+  },
+  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/js/utils.js" // just for formatting/placeholders etc
+});
+
+$(".phone_data").intlTelInput({
+  initialCountry: "IN",
+  geoIpLookup: function(callback) {
+    $.get('http://ipinfo.io', function() {}, "jsonp").always(function(resp) {
+      var countryCode = (resp && resp.country) ? resp.country : "";
+      callback(countryCode);
+    });
+  },
+  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/js/utils.js" // just for formatting/placeholders etc
+});
+
+
+</script>
+
+{% endblock %}
+
+
+

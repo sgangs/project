@@ -35,7 +35,8 @@ urlpatterns = [
     url(r'^warehouse/getdata/$', views.warehouse_view, name='warehouse_view'),
     url(r'^warehouse/$', views.warehouse_data, name='warehouse_data'),
 
-    url(r'^productgroup/$', views.product_group, name='tax_view'),
+    url(r'^productgroup/$', views.product_group, name='product_group'),
+    url(r'^productgroup/data/$', views.product_group_data, name='product_group_data'),
     
     url(r'^product/$', views.product_data, name='product_data'),
     url(r'^product/attributedata/$', views.attribute_view, name='attribute_view'),
@@ -44,4 +45,7 @@ urlpatterns = [
     url(r'^uploadproduct/$', views.import_product, name='import_product'),
     url(r'^product/format/$', views.product_import_format, name='product_import_format'),
     # url(r'^uploadproduct/$', views.import_product, name='import_product'),
+
+    url(r'^service/$', views.service_view, name='service_view'),
+    url(r'^service/data/$', views.service_data, name='service_data'),
 ]

@@ -1,12 +1,14 @@
-from django.db import models
-from django.core.urlresolvers import reverse
-from django.contrib.postgres.fields import JSONField
-from django.template.defaultfilters import slugify
 import datetime as dt
 from datetime import datetime
+
+from django.db import models
+# from django.core.urlresolvers import reverse
+from django.contrib.postgres.fields import JSONField
+# from django.template.defaultfilters import slugify
+
 from phonenumber_field.modelfields import PhoneNumberField
 
-from distributor_master.models import Product, retail_customer, Unit, Warehouse, tax_structure
+from distributor_master.models import Product, retail_customer, Unit, Warehouse
 from distributor_user.models import Tenant 
 from distributor_account.models import payment_mode
 

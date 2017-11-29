@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'distributor_account',
     'distributor_inventory',
     'retail_sales',
+    'service_sales',
     'phonenumber_field',
     'rest_framework',
     'rest_framework_jwt',

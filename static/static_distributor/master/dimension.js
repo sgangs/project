@@ -145,9 +145,6 @@ function new_unit(){
     symbol=$('.symbol').val()
     multiplier=$('.multi').val()
     dimension=$(".dim").find(':selected').data('id');
-    console.log(name);
-    console.log(symbol);
-    console.log(multiplier);
     
     if (name == '' || name =='undefined' || symbol == '' || symbol =='undefined' || isNaN(multiplier) || multiplier <=0 ||
             isNaN(dimension) || dimension <=0){

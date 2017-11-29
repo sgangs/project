@@ -2,7 +2,7 @@
 
 {%block title%}
 
-<title>Product Catalogue</title>
+<title>Service Catalogue</title>
 
 
 {% endblock %} 
@@ -10,9 +10,9 @@
 {% block content%}
 	
 <div>
-	<button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-star"></i> Add New Product</button>
+	<button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-star"></i> Add New Service</button>
 	<button type="submit" class="btn btn-primary btn-xs new_attr"><i class="fa fa-star"></i> Add New Attribute</button>
-	<a href="{% url 'master:import_product' %}"><button class="btn btn-primary btn-xs"><i class="fa fa-upload"></i> Bulk Upload Using Excel</button></a>
+	<!-- <a href="{% url 'master:import_product' %}"><button class="btn btn-primary btn-xs"><i class="fa fa-upload"></i> Bulk Upload Using Excel</button></a> -->
 </div>
 <h1></h1>
 <!-- <div class="col-md-4  alert alert-danger">
@@ -21,13 +21,6 @@
 <div class="col-md-4  alert alert-danger">
 	
 </div> -->
-{% if messages %}
-	{% for msg in messages %}       
-        <div class="alert alert-{{msg.level_tag}}" role="alert">
- 	{{msg.level_tag|title}}: {{msg.message}}
-	</div>
-    {% endfor %}
-{% endif %}
 
 
 <div class="table-responsive">
@@ -39,14 +32,14 @@
 	            <th class="text-center">HSN Code</th>
 	            <th class="text-center">SKU</th>
 	            <th class="text-center">Default Unit</th>
-	            <th class="text-center">Brand</th>
+	            <!-- <th class="text-center">Brand</th>
 	            <th class="text-center">Group</th>
-	            <th class="text-center">Remarks</th>
+	            <th class="text-center">Remarks</th> -->
 	            <th class="text-center">Retail Sales rate</th>
 	            <th class="text-center" hidden></th>
 	            <th class="text-center" hidden></th>
 	            <th class="text-center">Add Retail sales rate</th>
-	            <th class="text-center">Download Barcode</th>
+	            <!-- <th class="text-center">Download Barcode</th> -->
           	</tr>
 		</thead>
         <tbody>        	
@@ -58,69 +51,62 @@
 	<div class="modal-dialog" role="document">
 	    <div class="modal-content">
 		    <div class="modal-header">
-		    	<h4 class="modal-title" id="myModalLabel">Add New Product</h4>
+		    	<h4 class="modal-title" id="myModalLabel">Add New Service</h4>
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
 		    	<div>
 					<div class="error_box alert alert-danger" hidden>
-						<p class='year_error' hidden>Product with same SKU already exist</p>
+						<p class='year_error' hidden>Service with same SKU already exist</p>
 					</div>
 				</div>
+
 				<div class="form-group namediv">
-					<label for="classname" class="control-label">Product name</label>
-					<input type="text"class="form-control name" placeholder="Complete name, eg: Cotton Round Tee XL">
+					<label for="classname" class="control-label">Service name</label>
+					<input type="text"class="form-control name" placeholder="Complete name, eg: Hair Coloring Male">
 				</div>
+
 				<div class="form-group skudiv">
-					<label class="control-label">Product HSN Code</label>
-					<input type="text" class="form-control hsn" placeholder="Product HSN Code">		
+					<label class="control-label">Service HSN Code</label>
+					<input type="text" class="form-control hsn" placeholder="Service HSN Code">		
 				</div>
+
 				<div class="form-group skudiv">
-					<label class="control-label">Product SKU/Code</label>
-					<input type="text" class="form-control sku" placeholder="Proper SKU, eg: CRTXL (for Cotton Round Tee XL)">		
+					<label class="control-label">Service SKU/Code</label>
+					<input type="text" class="form-control sku" placeholder="Service SKU, eg: HCM (for Hair Coloring Male)">		
 				</div>
-				<div class="form-group skudiv">
-					<label class="control-label">Product Barocde Data</label>
-					<input type="text" class="form-control barcode_new" placeholder="Product BarCode Data">		
-				</div>
-				<!-- <div class="form-group vattypediv">
-					<label class="control-label">VAT Type</label>
-					<select class="form-control selectpicker vattype" data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select VAT Type</option>
-						<option data-id="0">NO VAT</option>
-						<option data-id="1">VAT on MRP</option>
-						<option data-id="2">VAT on Actual Price</option>
-					</select>
-				</div> -->
+				
 				<div class="form-group taxdiv">
 					<label class="control-label">CGST</label>
 					<select class="form-control selectpicker cgst" id='tax_cgst' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select CGST</option>
 					</select>
 				</div>
+				
 				<div class="form-group taxdiv">
 					<label class="control-label">SGST</label>
 					<select class="form-control selectpicker sgst" id='tax_sgst' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select SGST</option>
 					</select>
 				</div>
+				
 				<div class="form-group taxdiv">
 					<label class="control-label">IGST</label>
 					<select class="form-control selectpicker igst" id='tax_igst' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select IGST</option>
 					</select>
 				</div>
-				<div class="form-group reorderdiv">
+				<!-- <div class="form-group reorderdiv">
 					<label class="control-label">Re-order Point</label>
 					<input type="text" class="form-control reorder" placeholder="If you want to reorder after 10 SKU (in default-unit), enter: 10">		
-				</div>
+				</div> -->
 				<div class="form-group unitdiv">
 					<label class="control-label">Default Unit</label>
 					<select class="form-control selectpicker unit" id='unit' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select Default Unit</option>						
 					</select>
 				</div>
-				<div class="form-group branddiv">
+				<!-- <div class="form-group branddiv">
 					<label class="control-label">Brand</label>
 					<select class="form-control selectpicker brand" id='brand' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select Product Brand</option>						
@@ -131,7 +117,7 @@
 					<select class="form-control selectpicker group" id='group' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select Product Group</option>						
 					</select>
-				</div>
+				</div> -->
 				<div class="form-group has_batchdiv" hidden>
 					<label class="control-label">Will this item be maintained batch-wise</label>
 					<input type="checkbox" class="has_batch">		
@@ -163,8 +149,8 @@
 					</div>
 				
 					<button id="add-more" name="add-more" class="btn btn-xs btn-primary">Add More</button>					
-				
 				</div>
+			
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
@@ -186,19 +172,19 @@
 		    <form action="" method="post">
 		    	<div>
 					<div class="error_box alert alert-danger" hidden>
-						<p class='year_error' hidden>Product with same SKU already exist</p>
+						<p class='year_error' hidden>Service with same SKU already exist</p>
 					</div>
 				</div>
 				<div class="form-group namediv">
-					<label for="classname" class="control-label">Product name</label>
+					<label for="classname" class="control-label">Service name</label>
 					<p class="product_name_update"></p>
 				</div>
 				<div class="form-group iddiv" hidden>
-					<label for="classname" class="control-label">Product ID</label>
+					<label for="classname" class="control-label">Service ID</label>
 					<p class="product_id_rate_update"></p>
 				</div>
 				<div class="form-group skudiv">
-					<label class="control-label">Product Retail Rate</label>
+					<label class="control-label">Service Retail Rate</label>
 					<input type="number" class="form-control retail_rate_update">
 					<p class="retail_rate_id" hidden>
 				</div>
@@ -248,7 +234,7 @@
 	<div class="modal-dialog" role="document">
 	    <div class="modal-content">
 		    <div class="modal-header">
-		    	<h4 class="modal-title" id="myModalLabel">Product Details</h4>
+		    	<h4 class="modal-title" id="myModalLabel">Service Details</h4>
 		    </div>
 	    <div class="modal-body">
 		    <form action="" method="post">
@@ -256,54 +242,46 @@
 					<label for="classname" class="control-label"></label>
 					<input type="text" class="form-control id_data_prod" disabled>
 				</div>
+
 				<div class="form-group namediv">
-					<label for="classname" class="control-label">Product name</label>
+					<label for="classname" class="control-label">Service name</label>
 					<input type="text" class="form-control name_data_prod editable" disabled>
 				</div>
+
 				<div class="form-group skudiv">
-					<label class="control-label">Product SKU/Code</label>
+					<label class="control-label">Service SKU/Code</label>
 					<input type="text" class="form-control sku_data_prod editable" disabled>		
 				</div>
-				<div class="form-group barcodediv">
-					<label class="control-label">Product Barcode</label>
+				<!-- <div class="form-group barcodediv">
+					<label class="control-label">Service Barcode</label>
 					<input type="text" class="form-control barcode_data_prod editable" disabled>		
-				</div>
+				</div> -->
 				<div class="form-group hsndiv">
-					<label class="control-label">Product HSN Code</label>
+					<label class="control-label">Service HSN Code</label>
 					<input type="text" class="form-control hsn_data_prod editable" disabled>		
 				</div>
-				<!-- <div class="form-group vattypediv">
-					<label class="control-label">VAT Type</label>
-					<select class="form-control selectpicker vattype_data_prod" data-live-search="true">
-						<option data-id="0">NO VAT</option>
-						<option data-id="1">VAT on MRP</option>
-						<option data-id="2">VAT on Actual Price</option>
-					</select>
-				</div>
-				<div class="form-group taxdiv">
-					<label class="control-label">Tax</label>
-					<select class="form-control selectpicker tax_data_prod" id='tax' data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Tax Structure</option>
-					</select>
-				</div> -->
-				<div class="form-group reorderdiv">
+				
+				<div class="form-group cgstdiv">
 					<label class="control-label">CGST %</label>
 					<select class="form-control select cgst editable" id='cgst_data_prod' disabled>
 						<option disabled selected hidden style='display: none' value>CGST</option>
 					</select>
 				</div>
-				<div class="form-group reorderdiv">
+
+				<div class="form-group sgstdiv">
 					<label class="control-label">SGST %</label>
 					<select class="form-control select cgst editable" id='sgst_data_prod' disabled>
 						<option disabled selected hidden style='display: none' value>SGST</option>
 					</select>
 				</div>
-				<div class="form-group reorderdiv">
+				
+				<div class="form-group igsydiv">
 					<label class="control-label">IGST %</label>
 					<select class="form-control select cgst editable" id='igst_data_prod' disabled>
 						<option disabled selected hidden style='display: none' value>IGST</option>
 					</select>
 				</div>
+				
 				<!-- <div class="form-group reorderdiv">
 					<label class="control-label">Re-order Point</label>
 					<input type="text" class="form-control reorder_data_prod" placeholder="If you want to reorder after 10 SKU (in default-unit), enter: 10" disabled>		
@@ -320,12 +298,12 @@
 						<option disabled selected hidden style='display: none' value>Select Product Brand</option>						
 					</select>
 				</div> -->
-				<div class="form-group manufacdiv">
+				<!-- <div class="form-group manufacdiv">
 					<label class="control-label">Manufacturer</label>
 					<select class="form-control select manufac_data_prod editable" id='manufac_data_prod' disabled>
 						<option disabled selected hidden style='display: none' value>Select Product Manufacturer</option>
 					</select>
-				</div>
+				</div> -->
 				<!-- <div class="form-group groupdiv">
 					<label class="control-label">Product Group</label>
 					<select class="form-control selectpicker group" id='group' data-live-search="true" disabled>
@@ -386,11 +364,11 @@
 					<input type="text" class="form-control id_rate_prod" disabled>
 				</div>
 				<div class="form-group namediv">
-					<label for="classname" class="control-label">Product name</label>
+					<label for="classname" class="control-label">Service name</label>
 					<input type="text" class="form-control name_rate_prod" disabled>
 				</div>
 				<div class="form-group skudiv">
-					<label class="control-label">Product SKU/Code</label>
+					<label class="control-label">Service SKU/Code</label>
 					<input type="text" class="form-control sku_rate_prod" disabled>
 				</div>
 				<div class="form-group taxdiv">
@@ -464,7 +442,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'master/product.js' %}"></script>
+<script src="{% static 'master/service.js' %}"></script>
 
 <script>
 
@@ -477,9 +455,9 @@ $('.new_attr').attr('data-target',"#new_attr")
 csrf_token='{{csrf_token}}';
 </script>
 
-<style type="text/css">
+<!-- <style type="text/css">
 td a { display: block; width: 100%; height: 100%; }
-</style>
+</style> -->
 
 {% endblock %}
 

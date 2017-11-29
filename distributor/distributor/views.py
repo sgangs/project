@@ -291,10 +291,10 @@ def landing(request):
     start_5_days = end-date_first.timedelta(days=5)
     if (this_tenant.tenant_type == 2):
         sales_daily=retail_sales_day_wise(start, end, this_tenant)
-        top_sales = top_retail_product_sales(this_tenant, start_5_days, end, 5)
+        # top_sales = top_retail_product_sales(this_tenant, start_5_days, end, 5)
     else:
         sales_daily=sales_day_wise(start, end, this_tenant)
-        top_sales = top_distributor_product_sales(this_tenant, start_5_days, end, 5)
+        # top_sales = top_distributor_product_sales(this_tenant, start_5_days, end, 5)
     invoice_value=sales_raised_value(start, end, this_tenant)
     payment_value=sales_collected_value(start, end, this_tenant)
     current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)

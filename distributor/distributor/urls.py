@@ -44,11 +44,12 @@ urlpatterns = [
     url(r'^landing/$', views.landing, name='landing'),
     url(r'^tenant-user-metadata/$', views.tenant_user_metadata, name='tenant_user_metadata'),
 
-    url(r'^master/', include('distributor_master.urls',namespace='master', app_name='master')),
     url(r'^user/', include('distributor_user.urls',namespace='user', app_name='user')),
+    url(r'^master/', include('distributor_master.urls',namespace='master', app_name='master')),
     url(r'^purchase/', include('distributor_purchase.urls',namespace='purchase', app_name='purchase')),
     url(r'^sales/', include('distributor_sales.urls',namespace='sales', app_name='sales')),
     url(r'^retailsales/', include('retail_sales.urls',namespace='retailsales', app_name='retailsales')),
+    url(r'^servicesales/', include('service_sales.urls',namespace='servicesales', app_name='servicesales')),
     url(r'^account/', include('distributor_account.urls',namespace='account', app_name='account')),
     url(r'^inventory/', include('distributor_inventory.urls',namespace='inventory', app_name='inventory')),
     url(r'^payment/', include('payumoney.urls',namespace='payumoney', app_name='payumoney')),
