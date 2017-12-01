@@ -713,7 +713,7 @@ def edit_invoice_details(request):
 		invoice_id = request.GET.get('invoice_id')
 		invoice=sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date',\
 		'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address','warehouse_city',\
-		'warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal',\
+		'warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal', 'roundoff',\
 		'total','amount_paid').get(invoice_id=invoice_id)
 		
 		line_items=invoice_line_item.objects.filter(sales_invoice=invoice['id']).all()

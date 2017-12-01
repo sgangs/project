@@ -354,7 +354,7 @@ $('.addmore').click(function(){
     '<td colspan="3"><input class="form-control name"></td>'+
     '<td colspan="1"><input class="form-control qty"></td>'+
     '<td colspan="1" class="qty_avl" hidden>'+0+'</td>'+
-    '<td colspan="1"><input class="form-control unit_symbol"></td>'+
+    '<td colspan="1"><select class="form-control selectpicker unit" id="unit"></select></td>'+
     '<td colspan="1" class="unit_id" hidden></td>'+
     '<td colspan="1"><input class="form-control sr"></td>'+
     '<td colspan="1"><input class="form-control da"></td>'+
@@ -366,6 +366,15 @@ $('.addmore').click(function(){
     '<td colspan="1" class="sgstv" hidden></td>'+
     '<td colspan="1" class="tv">0.00</td></tr>'
     $('.details').append(data);
+
+    $.each(unit_data, function(){
+        $('.details').find('tr:eq('+count+')').find('#unit').append($('<option>',{
+            'data-id': this.id,
+            'title':this.symbol,
+            'text': this.name,
+        }));
+    });
+    $('.unit').selectpicker('refresh');
 
 })
 

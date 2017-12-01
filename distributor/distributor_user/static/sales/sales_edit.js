@@ -45,7 +45,8 @@ $('.get_invoice').click(function(){
             $('.subtotal_receipt').html(jsondata['subtotal']);
             $('.taxtotal_receipt').html(taxtotal.toFixed(2));
             $('.total_receipt').html(jsondata['total']);
-            $('.round').html(jsondata['roundoff']);
+            console.log(jsondata['roundoff']);
+            $('.round').val(jsondata['roundoff']);
             
             $.each(jsondata['line_items'], function(){
                 igst_total+=this.igst_value;

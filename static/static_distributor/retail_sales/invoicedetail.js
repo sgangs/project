@@ -27,6 +27,7 @@ function load_data(){
             $('.cgsttotal_receipt').append(parseFloat(jsondata['cgsttotal']).toFixed(2));
             $('.sgsttotal_receipt').append(parseFloat(jsondata['sgsttotal']).toFixed(2));
             $('.total_receipt').append(jsondata['total']);
+
             $.each(jsondata['line_items'], function(){
                 // free_total=parseFloat(this.free_with_tax)+parseFloat(this.free_without_tax)
                 pur_rate=parseFloat(this.quantity)*parseFloat(this.purchase_price)
@@ -53,11 +54,19 @@ function load_data(){
                     "<td>"+$.trim(this.product_hsn)+"<br>"+this.cgst_percent+"</td>"+
                     "<td>"+this.quantity+"<br>"+this.cgst_value+"</td>"+
                     "<td>"+this.unit+"<br>"+this.sgst_percent+"</td>"+
-                    // "<td class='visible-print-block'>"+free_total+"</td>"+
                     "<td>"+this.sales_price+"<br>"+this.sgst_value+"</td>"+
                     "<td>--<br>"+this.line_total+"</td></tr>"
-                    // "<td id='not_pos_print'>"+discount_types[this.discount_type]+"</td>"+
-                    );
+                );
+
+                // $('.details_pos').append("<tr class='data text-center'>"+
+                //     "<td colspan='5'>"+this.product_name+"</td></tr>"+
+                //     "<tr class='data text-center'>"+
+                //     "<td>"+$.trim(this.product_hsn)+"<br>"+this.cgst_percent+"</td>"+
+                //     "<td>"+this.quantity+"<br>"+this.cgst_value+"</td>"+
+                //     "<td>"+this.unit+"<br>"+this.sgst_percent+"</td>"+
+                //     "<td>"+this.sales_price+"<br>"+this.sgst_value+"</td>"+
+                //     "<td>"+$.trim(this.discount_amount)+"<br>"+this.line_total+"</td></tr>"
+                // );
             });
 
         },
