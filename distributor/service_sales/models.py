@@ -98,10 +98,10 @@ class invoice_line_item(models.Model):
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 
-	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
+	quantity=models.DecimalField(max_digits=7, decimal_places=3, default=0)
 	quantity_returned=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	
-	sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+	sales_price=models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 	is_tax_included=models.BooleanField(default=False)
 	# tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	# mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
@@ -120,7 +120,8 @@ class invoice_line_item(models.Model):
 	line_before_tax=models.DecimalField(max_digits=12, decimal_places=2)
 	line_total=models.DecimalField(max_digits=12, decimal_places=2)
 
-	user_details = JSONField(blank=True, null=True) # This will be like: {userid:contribution, userid:contribution....}
+	# This will be like: [{userid:contribution, userid_name:user's_name}, {userid:contribution, userid_name:user's_name}], where userid = pk of user
+	user_details = JSONField(blank=True, null=True) 
 
 	tenant=models.ForeignKey(Tenant,related_name='invoiceLineItem_serviceSales_user_tenant')
 	objects = TenantManager()
@@ -133,6 +134,9 @@ class invoice_line_item(models.Model):
 # 	service_line = models.ForeignKey(invoice_line_item, related_name='invoiceLineItemUser_invoiceLineItem')
 # 	service_name = models.CharField(max_length =200)
 # 	user = models.ForeignKey(User, related_name='invoiceLineItemUser_serviceSales_user_user')
+# 	contrib = models.DecimalField(max_digits = 3, decimal_places = 1)
 # 	tenant = models.ForeignKey(Tenant,related_name='invoiceLineItemUser_serviceSales_user_tenant')
 # 	objects = TenantManager()
 # 	updated = models.DateTimeField(auto_now=True)
+
+

@@ -48,13 +48,16 @@ function get_product_rate(el, product_id){
                 // $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
                 $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
                 $(updating_row).find('td:nth-child(11)').html(jsondata['rate'][0]['is_tax_included']);
-                $(updating_row).find('td:nth-child(12)').html(jsondata['cgst']);
-                $(updating_row).find('td:nth-child(14)').html(jsondata['sgst']);
+                $(updating_row).find('td:nth-child(12) input').val(jsondata['cgst']);
+                $(updating_row).find('td:nth-child(14) input').val(jsondata['sgst']);
             }
             else{
+                console.log('here')
                 $(updating_row).find('td:nth-child(5)').html(jsondata['quantity']);
                 // $(updating_row).find('td:nth-child(8) input').val(jsondata['rate'][0]['tentative_sales_rate']);
-                $(updating_row).find('td:nth-child(11)').html(false);   
+                $(updating_row).find('td:nth-child(11)').html(false);
+                $(updating_row).find('td:nth-child(12) input').val(jsondata['cgst']);
+                $(updating_row).find('td:nth-child(14) input').val(jsondata['sgst']);
             }
             $(updating_row).removeClass('updating');
             
@@ -362,7 +365,7 @@ function get_total(){
     for (var a = document.querySelectorAll('table.details tbody tr'), i = 0; a[i]; ++i) {
         // get all cells with input field
         cells = a[i].querySelectorAll('input:last-child');
-        
+
         var quantity=parseFloat($(cells[2]).val());
         var qty_avl=parseFloat($(a[i]).find('td:nth-child(5)').html());
         
@@ -595,7 +598,7 @@ function new_data(){
         var line_total = $(this).find('td:nth-child(16)').html();
 
         var taxable_total = line_total - cgst_v - sgst_v;
-        var sales_after_tax = round_off(taxable_total/quantity); 
+        var sales_before_tax = round_off(taxable_total/quantity); 
 
         var count = $(this).find('td:nth-child(18)').html();
 
@@ -633,7 +636,7 @@ function new_data(){
             product_id : product_id,
             quantity: quantity,
             unit_id: unit_id,
-            sales_after_tax: sales_after_tax,
+            sales_before_tax: sales_before_tax,
             discount_amount: disc_amt,
             cgst_p: cgst_p,
             cgst_v:cgst_v,
@@ -678,7 +681,7 @@ function new_data(){
                     var show_success=true
                     if (jsondata['id']){
                         swal("Hooray", "New sale invoice generated", "success");
-                        var url='/retailsales/invoice/detailview/'+jsondata['pk']+'/'
+                        var url='/servicesales/invoice/productdetailview/'+jsondata['pk']+'/'
                         location.href = url;
                         // setTimeout(location.reload(true),1000);
                     }

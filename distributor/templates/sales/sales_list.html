@@ -48,15 +48,16 @@
 
 
 <div>
-	<button type="submit" class="btn btn-primary btn-sm all"><i class="fa fa-star"></i> View All Invoices</button>
-	<button type="submit" class="btn btn-primary btn-sm unpaid"><i class="fa fa-star"></i> View Unpaid Invoices</button>
-	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa-exclamation-circle"></i> View Overdue Invoices</button>
-	<button type="submit" class="btn btn-success btn-sm filterbtn"><i class="fa fa-filter"></i> Filter</button>
-	<button type="submit" class="btn btn-primary btn-sm invoice_summary"><i class="fa fa-folder"></i> Invoice Summary</button>
+	<!-- <button type="submit" class="btn btn-primary btn-xs all"><i class="fa fa-star"></i> View All Invoices</button> -->
+	<!-- <button type="submit" class="btn btn-primary btn-sm unpaid"><i class="fa fa-star"></i> View Unpaid Invoices</button>
+	<button type="submit" class="btn btn-danger btn-sm overdue"><i class="fa fa-exclamation-circle"></i> View Overdue Invoices</button> -->
+	<button type="submit" class="btn btn-warning btn-xs finalizeselectbtn"><i class="fa fa-joomla"></i> Finalize Invoices</button>
+	<button type="submit" class="btn btn-success btn-xs filterbtn"><i class="fa fa-filter"></i> Filter</button>
+	<button type="submit" class="btn btn-primary btn-xs invoice_summary"><i class="fa fa-folder"></i> Invoice Summary</button>
 </div>
 <br>
 <div>
-	<button type="submit" class="btn btn-primary btn-sm purpay"><i class="fa fa-rupee"></i> Sales Collection</button>
+	<button type="submit" class="btn btn-primary btn-xs purpay"><i class="fa fa-rupee"></i> Sales Collection</button>
 </div>
 <br>
 
@@ -131,6 +132,62 @@
 		    <div class="modal-footer">
 		    	<button type="button" class="btn btn-primary register" disabled>Register Payment</button>
 		    </div>
+	    </div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="finalize" tabindex="-1" role="dialog" aria-labelledby="finalizeLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Sales Invoice Status Change</h4>
+		    </div>
+	    <div class="modal-body">
+
+	    			    
+		    <form action="" method="post">
+		    	<div class="form-group namediv">
+					<label for="classname" class="control-label">Select Customer</label>
+					<select class="form-control selectpicker customerfinalize" id="customerfinalize" data-live-search="true">
+						<option disabled selected hidden style='display: none' value>Select Customer</option>				
+					</select>
+				</div>
+				<!-- <div class="form-group namediv">
+					<label for="classname" class="control-label">Select Payment Mode</label>
+					<select class="form-control selectpicker mode" id="mode" data-live-search="true">
+						<option disabled selected hidden style='display: none' value>Select Payment Mode</option>				
+					</select>
+				</div> -->
+				<!-- <div class="form-group modediv">
+					<label for="classname" class="control-label">Payment Date</label>
+					<input class="form-control date_payment">
+				</div> -->
+				<div class="form-group detaildiv" hidden>
+					<table class="table table-striped table-bordered table-hover" id="finalize_table">
+				      	<thead class="thead-inverse header-background">
+				        	<tr>
+					            <th class="text-center" hidden></th>
+					            <th class="text-center">Invoice No.</th>
+					            <th class="text-center">Invoice Date</th>
+					            <th class="text-center">Total Amount</th>
+					            <!-- <th class="text-center">Amount Already Paid</th> -->
+					            <th class="text-center" title="Select to change invoice status">Select Invoice</th>
+					        </tr>
+						</thead>
+					</table>
+				</div>				
+			</form>    
+	   	</div>
+		    <!-- <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary finali" disabled>Finalize Invoices</button>
+		    </div> -->
+		    <div class="modal-footer">
+				<button title="Click to Finalize Invoices" class="btn btn-primary btn-xs finalizebtn"><i class="fa fa-check"></i></button>
+				<button type="submit" title="Click to Cancel Invoices" class="btn btn-warning btn-xs cancelbtn"><i class="fa fa-close"></i></button>
+				<button title="Click to Delete Invoices" class="btn btn-danger btn-xs deletebtn"><i class="fa fa-minus"></i></button>
+			</div>
+
 	    </div>
 	</div>
 </div>
@@ -289,6 +346,9 @@ $('.filterbtn').attr('data-target',"#filter")
 
 $('.invoice_summary').attr('data-toggle',"modal")
 $('.invoice_summary').attr('data-target',"#summary")
+
+$('.finalizeselectbtn').attr('data-toggle',"modal")
+$('.finalizeselectbtn').attr('data-target',"#finalize")
 
 $('.date_payment').datepicker({
 	autoclose: true,

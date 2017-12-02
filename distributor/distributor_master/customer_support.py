@@ -10,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext
 # from school.id_definition import make_id
 # from school_genadmin.models import Batch
-from .models import Customer, Unit, Product, tax_structure, Zone, product_sales_rate
+from .models import Customer, Unit, Product, tax_structure, Zone, product_sales_rate, Manufacturer, Group
 from distributor.variable_list import state_list
 
 
@@ -163,7 +163,12 @@ def product_register(excel_data, this_tenant):
     sheet = tmp.sheet_by_index(0)
     num_rows = sheet.nrows
     unit=Unit.objects.for_tenant(this_tenant).get(name='Number')
+    manufacturers=Manufacturer.objects.for_tenant(this_tenant).all()
+    groups=Group.objects.for_tenant(this_tenant).all()
     for i in range(2, num_rows):
+        manufac = None
+        group_selected = None
+
         has_rate=False
         row = sheet.row_values(i)
         if (row[0] == None or row[0] == "" or row[2] == None or row[2] == "") :
@@ -190,24 +195,29 @@ def product_register(excel_data, this_tenant):
                                 hsn=str(int(row[1]))
                             except:
                                 pass
+                        
                         if row[4]:
                             try:
                                 cgst=taxes.get(name=row[4])
                             except:
                                 pass
+                        
                         if row[5]:
                             try:
                                 sgst=taxes.get(name=row[5])
                             except:
                                 pass
+                        
                         if row[6]:
                             try:
                                 igst=taxes.get(name=row[6])
                             except:
                                 pass
+                        
                         if row[7]:
                             retail_sales_rate=row[7]
                             has_rate = True
+                        
                         if row[8]:
                             is_tax=row[8]
                             if is_tax == 'Y' or is_tax == 'y':
@@ -216,9 +226,23 @@ def product_register(excel_data, this_tenant):
                                 is_tax = False
                         else:
                             is_tax = False
-                            
-                        new_product=Product.objects.create(name=row[0],hsn_code=hsn, sku=row[2],barcode=str(str(row[3]).rstrip('0').rstrip('.')), default_unit=unit,\
-                            cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant)
+
+                        if row[9]:
+                            manufacturer_name = row[9]
+                            try:
+                                manufac = manufacturers.get(name = manufacturer_name)
+                            except:
+                                manufac = None
+
+                        if row[10]:
+                            group_name = row[10]
+                            try:
+                                group_selected = groups.get(name = group_name)
+                            except:
+                                group_selected = None
+                                                        
+                        new_product=Product.objects.create(name=row[0],hsn_code=hsn, sku=row[2],barcode=str(str(row[3]).rstrip('0').rstrip('.')),\
+                            default_unit=unit,cgst=cgst, sgst=sgst, igst=igst, manufacturer = manufac, group=group_selected, tenant=this_tenant)
 
                         if has_rate:
                             new_rate=product_sales_rate.objects.create(product=new_product, tentative_sales_rate=retail_sales_rate,\
@@ -234,19 +258,23 @@ def product_register(excel_data, this_tenant):
                             cgst=taxes.get(name=row[4])
                         except:
                             pass
+                    
                     if row[5]:
                         try:
                             sgst=taxes.get(name=row[5])
                         except:
                             pass
+                    
                     if row[6]:
                         try:
                             igst=taxes.get(name=row[6])
                         except:
                             pass
+                    
                     if row[7]:
                         retail_sales_rate=row[7]
                         has_rate = True
+                    
                     if row[8]:
                         is_tax=row[8]
                         if is_tax == 'Y' or is_tax == 'y':
@@ -255,13 +283,28 @@ def product_register(excel_data, this_tenant):
                             is_tax = False
                     else:
                         is_tax = False
-                    new_product=Product.objects.create(name=row[0],hsn_code=hsn, sku=row[2],barcode=str(row[3]).rstrip('0').rstrip('.'), default_unit=unit,\
-                        cgst=cgst, sgst=sgst, igst=igst, tenant=this_tenant)
 
+                    if row[9]:
+                        manufacturer_name = row[9]
+                        try:
+                            manufac = manufacturers.get(name = manufacturer_name)
+                        except:
+                            manufac = None
+
+                    if row[10]:
+                        group_name = row[10]
+                        try:
+                            group_selected = groups.get(name = group_name)
+                        except:
+                            group_selected = None
+
+                    new_product=Product.objects.create(name=row[0],hsn_code=hsn, sku=row[2],barcode=str(row[3]).rstrip('0').rstrip('.'),\
+                        default_unit=unit,cgst=cgst, sgst=sgst, igst=igst, manufacturer = manufac, group=group_selected, tenant=this_tenant)
+                    
                     if has_rate:
                         new_rate=product_sales_rate.objects.create(product=new_product, tentative_sales_rate=retail_sales_rate,\
                             is_tax_included=is_tax, tenant=this_tenant)
-            
+
     with transaction.atomic():
         try:
             Product.objects.bulk_create(objects_product)

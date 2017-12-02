@@ -94,7 +94,7 @@ def get_product_rate(request):
 		# 		warehouse=warehouse_id).aggregate(Sum('quantity_available'))['quantity_available__sum']
 		service_rate=list(service_sales_rate.objects.for_tenant(this_tenant).filter(service=service_id).\
 					values('tentative_sales_rate', 'is_tax_included'))
-		service = Service.objects.for_tenant(this_tenant).filter(id=service_id).select_related('cgst', 'sgst')
+		service = Service.objects.for_tenant(this_tenant).get(id=service_id)
 		try:
 			cgst = service.cgst.percentage
 		except:
@@ -107,8 +107,7 @@ def get_product_rate(request):
 		response_data['rate']=service_rate
 		response_data['cgst']=cgst
 		response_data['sgst']=sgst
-
-
+		
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -279,16 +278,19 @@ def sales_invoice_save(request):
 						multiplier=unit.multiplier
 						
 						# original_actual_sales_price=Decimal(data['sales'])
-						original_actual_sales_price = Decimal(data['sales_after_tax']).quantize(TWOPLACES)
+						original_actual_sales_price = Decimal(data['sales_before_tax']).quantize(TWOPLACES)
 						actual_sales_price=Decimal(original_actual_sales_price/multiplier)
 						
 						original_quantity=Decimal(data['quantity']).quantize(TWOPLACES)
 						quantity=original_quantity*multiplier
 						salespersons_raw = data['salespersons']
-						salespersons = []
+						salespersons = {}
 						for i in salespersons_raw:
 							salesperson = User.objects.get(tenant = this_tenant, id = i['id'])
-							salespersons.append({'id' : salesperson.id, 'name': salesperson.first_name+" "+salesperson.last_name, 'cont':i['cont']})
+							# salespersons.append({'id': salesperson.id, salesperson.id : i['cont'], salesperson.id : i['cont'], \
+							# 				'name': salesperson.first_name+" "+salesperson.last_name,})
+							salespersons[str(salesperson.id)] = i['cont']
+							salespersons[str(salesperson.id)+"_name"] = salesperson.first_name+" "+salesperson.last_name
 
 						LineItem = invoice_line_item()
 						LineItem.service_invoice = new_invoice
@@ -420,7 +422,6 @@ def invoice_service_details(request, pk):
 	if request.method == 'GET':
 		invoice=service_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date', 'warehouse_address','warehouse_city',\
 			'warehouse_pin','subtotal','cgsttotal','sgsttotal','total','amount_paid').get(id=pk)
-		
 		line_items=list(invoice_line_item.objects.filter(service_invoice=invoice['id']).order_by('id').values('id','service_name','service_hsn',\
 			'service_id','unit', 'quantity','quantity_returned','user_details',))
 		
@@ -520,5 +521,53 @@ def all_invoices(request):
 		else:
 			response_data['object']=list(invoices)
 			response_data.update(filter_data)
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@login_required
+def user_service_view(request):
+	return render(request,'service_sales/user_wise_sales.html', {'extension': 'base.html'})
+
+
+@api_view(['GET'],)
+def user_service_data(request):
+	from django.db.models import Count
+	
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		# page_no = request.GET.get('page_no')
+		page_no = None
+		user_id = request.GET.get('userid')
+		end = request.GET.get('end')
+		start = request.GET.get('start')
+		response_data={}
+		filter_data={}
+		
+		if (calltype == 'all_invoices'):
+			# page_no = request.GET.get('page')
+			invoices=service_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end))
+			# filter_summary=list(invoices.values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).\
+			# 				annotate(value = Sum('total')))
+			# annotate(contrib = KeyTransform(str(user_id), 'user_details')).\
+
+			line_items = invoice_line_item.objects.for_tenant(this_tenant).filter(service_invoice__in = invoices, user_details__has_key = user_id).\
+						select_related('service_invoice').\
+						values('service_name', 'unit', 'quantity', 'quantity_returned', 'line_before_tax', 'user_details', 'service_invoice__invoice_id')
+
+			
+		elif (calltype == 'service_count'):
+			print("In service count")
+			# page_no = request.GET.get('page')
+			invoices=service_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end))
+			
+			line_items = invoice_line_item.objects.for_tenant(this_tenant).filter(service_invoice__in = invoices, user_details__has_key = user_id).\
+						values('service_name').annotate(total=Count('service_name')).order_by('service_name')
+
+		
+		response_data['object']=list(line_items)
+			# response_data.update(filter_data)
+	
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

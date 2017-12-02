@@ -233,9 +233,14 @@ function load_customer(){
                     'data-id': this.id,
                     'text': this.name + ": "+ this.key
                 }));
+                $('#customerfinalize').append($('<option>',{
+                    'data-id': this.id,
+                    'text': this.name + ": "+ this.key
+                }));
             });
             $('#customer').selectpicker('refresh');
             $('#customer_filter').selectpicker('refresh');
+            $('#customerfinalize').selectpicker('refresh');
         },
         // handle a non-successful response
         error : function() {
@@ -468,7 +473,6 @@ $('.customer').change(function() {
 });
 
 
-
 $('.register').click(function(e) {
     var total_payment_check=0
     var count = 0
@@ -635,6 +639,161 @@ function new_data(){
         }());
     }
 }
+
+
+$('.customerfinalize').change(function() {
+    customerid=parseInt($(".customerfinalize").find(':selected').data('id'));
+    if (customerid != 'undefined'){
+        (function() {
+            $.ajax({
+                url : "/sales/invoice/openinvoice/listall/",
+                type: "GET",
+                data:{ customerid: customerid,
+                    calltype:"customer_finalize"},
+                dataType: 'json',               
+                        // handle a successful response
+                success : function(jsondata) {
+                    $("#finalize_table .finalize_data").remove();
+                    if (jsondata.object.length>0){
+                    
+                        $('.detaildiv').attr('hidden',false);
+                        $('.register').attr('disabled',false);
+                        $.each(jsondata.object, function(){
+                            $('#finalize_table').append("<tr class='finalize_data' align='center'>"+
+                            "<td hidden='true'>"+this.id+"</td>"+
+                            "<td>"+this.invoice_id+"</td>"+
+                            "<td>"+this.date+"</td>"+
+                            "<td>"+this.total+"</td>"+
+                            // "<td>"+this.amount_paid+"</td>"+
+                            "<td><input type='checkbox'></td>"+
+                            "</tr>");
+                        });
+                    }
+                },
+                        // handle a non-successful response
+                error : function() {
+                    swal("Oops..", "it seems no pending invoice exist.", "error");
+                }
+            });
+        }());
+    }
+});
+
+
+$('.finalizebtn').click(function(){
+    // post_data("Finalize");
+    swal({
+        title: "Are you sure?",
+        text: "<p>Are you sure you want to finalize and save the invoice?</p><p>Note that you cannot edit this invoice once finalized.</p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, finalize invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){reconfirm_status("Finalize")},600)         
+        }
+    })    
+});
+
+$('.deletebtn').click(function(){
+    // post_data("Delete");
+    swal({
+        title: "Are you sure?",
+        text: "<p>Are you sure you want to delete the invoice?</p><p>Note that you cannot edit or view this invoice once deleted. "+
+                "No record of this invoice shall exist. </p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){reconfirm_status("Delete")},600)            
+        }
+    })
+});
+
+$('.cancelbtn').click(function(){
+    // post_data("Delete");
+    swal({
+        title: "Are you sure?",
+        text: "<p>Are you sure you want to cancel the invoice?</p><p>Note that you cannot edit this invoice once deleted. "+
+                "You can see the list of canceled invoices. </p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, cancel invoice!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){reconfirm_status("Cancel")},600)            
+        }
+    })
+});
+
+function reconfirm_status(calltype){
+   swal({
+        title: "Please Reconfirm",
+        text: "This process cannot be undone. Please reconfirm.",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, reconfirmed!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){post_data(calltype)},600)            
+        }
+    }) 
+}
+    
+function post_data(calltype){
+    console.log(calltype);
+    items=[];
+    $("tr.finalize_data").each(function() {
+        var invoice_id = $(this).find('td:nth-child(1)').html();
+        var is_selected = $(this).find('td:nth-child(5) input').is(":checked");
+        if (is_selected){
+            var item = {
+                invoice_id : invoice_id,
+            };
+            items.push(item);
+        }
+    });
+    if (items.length > 0){
+        $.ajax({
+            url : "/sales/invoice/openinvoice/save/", 
+            type: "POST",
+            data: {invoices_list: JSON.stringify(items),
+                // calltype: "Finalize",
+                calltype: calltype,
+                csrfmiddlewaretoken: csrf_token},
+            dataType: 'json',
+            // handle a successful response
+            success : function(jsondata) {
+                swal("Hooray...", "Invoice status updated and saved.", "success");
+                setTimeout(location.reload(true),1000);
+            },
+            // handle a non-successful response
+            error : function() {
+                swal("Oops...", "There were errors in saving data.", "error");
+            }
+        });
+    }
+    else{
+        swal("Oops...", "Please select atleast one invoice.", "info");
+    }
+};
 
 
 });

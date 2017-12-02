@@ -29,18 +29,99 @@ function load_data(){
             $('.total_receipt').append(jsondata['total']);
             
             $.each(jsondata['line_items'], function(){
-                pur_rate=parseFloat(this.quantity)*parseFloat(this.purchase_price)
-                $('.details').append("<tr class='data text-center'>"+
+                length_users = this.user_details.length;
+                // if (length_users == 3){
+                //     $('.details').append("<tr class='data text-center'>"+
+                //     "<td id='not_pos_print'>"+this.service_name+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
+                //     "<td id='not_pos_print'>"+this.quantity+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['cont'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[2]['name'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[2]['cont'])+"</td>"+
+                //     "</tr>");
+                // }
+                // else if (length_users == 2){
+                //     $('.details').append("<tr class='data text-center'>"+
+                //     "<td id='not_pos_print'>"+this.service_name+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
+                //     "<td id='not_pos_print'>"+this.quantity+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['cont'])+"</td>"+
+                //     "<td id='not_pos_print'></td>"+
+                //     "<td id='not_pos_print'></td>"+
+                //     "</tr>");   
+                // }
+                // else if (length_users == 1){
+                //     $('.details').append("<tr class='data text-center'>"+
+                //     "<td id='not_pos_print'>"+this.service_name+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
+                //     "<td id='not_pos_print'>"+this.quantity+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
+                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
+                //     "<td id='not_pos_print'></td>"+
+                //     "<td id='not_pos_print'></td>"+
+                //     "<td id='not_pos_print'></td>"+
+                //     "<td id='not_pos_print'></td>"+
+                //     "</tr>");   
+                // }
+
+                if (length_users == 3){
+                    $('.details').append("<tr class='data text-center'>"+
                     "<td id='not_pos_print'>"+this.service_name+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
                     "<td id='not_pos_print'>"+this.quantity+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[0][this.user_details[0]['id']])+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[1]['cont'])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[1][this.user_details[1]['id']])+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.user_details[2]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[2]['cont'])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[2][this.user_details[2]['id']])+"</td>"+
                     "</tr>");
+                }
+                else if (length_users == 2){
+                    $('.details').append("<tr class='data text-center'>"+
+                    "<td id='not_pos_print'>"+this.service_name+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
+                    "<td id='not_pos_print'>"+this.quantity+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[0][this.user_details[0]['id']])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[1][this.user_details[1]['id']])+"</td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "</tr>");   
+                }
+                else if (length_users == 1){
+                    $('.details').append("<tr class='data text-center'>"+
+                    "<td id='not_pos_print'>"+this.service_name+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
+                    "<td id='not_pos_print'>"+this.quantity+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[0][this.user_details[0]['id']])+"</td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "</tr>");   
+                }
+                else{
+                    $('.details').append("<tr class='data text-center'>"+
+                    "<td id='not_pos_print'>"+this.service_name+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
+                    "<td id='not_pos_print'>"+this.quantity+"</td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "<td id='not_pos_print'></td>"+
+                    "</tr>");
+                }
             });
 
         },
