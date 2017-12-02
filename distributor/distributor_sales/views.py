@@ -1320,13 +1320,13 @@ def open_invoice_list(request):
 		calltype = 'Normal'
 
 	if (calltype == 'customer_finalize'):
-		customer_id = request.GET.get('customer_id')
-		invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False, customer = customer_id).values('id','invoice_id','date',\
-		'total').all().order_by('-date', '-invoice_id'))
+		customer_id = request.GET.get('customerid')
+		invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(customer = customer_id, is_final=False).values('id','invoice_id','date',\
+		'total').order_by('-date', '-invoice_id'))
 
-
-	invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date',\
-		'customer_name','customer_gst','warehouse_address','payable_by','total').all().order_by('-date', '-invoice_id'))
+	else:
+		invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date',\
+			'customer_name','customer_gst','warehouse_address','payable_by','total').all().order_by('-date', '-invoice_id'))
 
 	if page_no:
 		response_data=paginate_data(page_no, 10, invoices)
