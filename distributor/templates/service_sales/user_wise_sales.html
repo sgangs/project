@@ -18,25 +18,35 @@
 <br>
 <br>
 
-<div class="row">
-	<div class="form-group col-xs-4">
+<div class="row hidden-print">
+	<div class="form-group col-xs-3">
 		<label class="control-label">Select Date Range</label>				 
 		<input type="text" class="form-control date_range">
 	</div>
-	<div class="form-group col-xs-4">
+	<div class="form-group col-xs-3">
 		<label class="control-label">Select User</label>				 
 		<select class="form-control selectpicker user" id="user" data-live-search="true">
 			<option disabled selected hidden style='display: none' value>Select User</option>				
 		</select>
 	</div>
-	<div class="form-group col-xs-4" >
-		<label>Click to get data</label>
-		<p><button type="submit" class="btn btn-primary btn-sm get_data"><i class="fa fa-refresh"></i> Get Report</button></p>
-	</div>	
+	<div class="form-group col-xs-2" >
+		<label>Get Detailed Report</label>
+		<p><button type="submit" class="btn btn-primary btn-xs get_data"><i class="fa fa-refresh"></i> Get Detailed Report</button></p>
+	</div>
+	<div class="form-group col-xs-2" >
+		<label>Click to Service-Wise Report</label>
+		<p><button type="submit" class="btn btn-primary btn-xs get_data_servicewise"><i class="fa fa-refresh"></i> Get Service-Wise Report</button></p>
+	</div>
+	<div class="form-group col-xs-2" >
+		<label>Download Report</label>
+		<p><button type="submit" class="btn btn-primary btn-xs download"><i class="fa fa-refresh"></i> Download Report</button></p>
+	</div>
 </div>
 
+<p class='report_name' hidden></p>
+
 <div class="table-responsive">
-    	<table class="table table-striped table-bordered table-hover" id="report_table">
+    <table class="table table-striped table-bordered table-hover" id="report_table" hidden>
       	<thead class="thead-inverse header-background">
         	<tr>
 	            <th class="text-center">Invoice No</th>
@@ -50,14 +60,29 @@
         <tbody>
         </tbody>
   	</table> 
+
+  	<table class="table table-striped table-bordered table-hover" id="servicecount_table" hidden>
+      	<thead class="thead-inverse header-background">
+        	<tr>
+	            <th class="text-center">Service Name</th>
+	            <th class="text-center">Service Count</th>
+	            <!-- <th class="text-center">Tax Amount</th> -->
+	        </tr>
+		</thead>
+        <tbody>
+        </tbody>
+  	</table>
+
+
 </div>
 
-<div class="prev_next">
+<!-- <div class="prev_next">
 <ul class='add_nav'>
     <span class="clear_both"></span>
 </ul>
-</div>
+</div> -->
 
+<button type="button" class="btn btn-primary btn-xs printout hidden-print" hidden>Take Print Out</button>
 
 <!-- Sweetalert JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />

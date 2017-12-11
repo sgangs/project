@@ -80,7 +80,7 @@
 	<body>
 	<div class="blockcontent">
 			<!-- This div is the top-most navigation class -->
-			<div id="not_print">
+			<div id="not_print" class="hidden-print">
   				<div class="col-md-6">
 					<!-- <h2>{{request.user.tenant.name}}</h2> -->
 				  </div>
@@ -100,8 +100,8 @@
             </h4>
   				</div>
 			</div>
-			<ul class="nav nav-tabs" id="not_print"></ul>
-			<ul class="nav nav-pills navbar-light" id="not_print">
+			<ul class="nav nav-tabs hidden-print" id="not_print"></ul>
+			<ul class="nav nav-pills navbar-light hidden-print" id="not_print">
         <li role="presentation" class="navbar-left"> </li>
         {% block dashboard %}
         <li role="presentation" class="navbar-light" title="Click to go to Dashboard"><a href="{% url 'landing' %}"><i class="fa fa-home fa-2x"></i></a></li>
@@ -110,7 +110,7 @@
 	  			<li role="presentation" class="navbar-right"><a href="{% url 'logout' %}" title="Click to logout"><i class="fa fa-power-off fa-2x"></i></a></li>
 	  	</ul>
 
-    <nav id="primary-navigation" id="not_print">
+    <nav id="primary-navigation" id="not_print" class="hidden-print">
       <!-- Tenant -->
       <ul class="Tenant Name">
         <li><a href="#" title="Welcome to school"><b>{{request.user.tenant.name}}</b></a></li>
@@ -143,9 +143,9 @@
             </li>
             <li title="Master for Services"><a href="#">Services</a>
               <ul>
-                <li><a href="#">Service Group</a></li>
+                <li><a href="{% url 'master:service_group_view' %}">Service Group</a></li>
                 <li><a href="#">Service Segment</a></li>
-                <li><a href="#">Service</a></li>
+                <li><a href="{% url 'master:service_view' %}">Service</a></li>
               </ul>
             </li>
             <li><a href="{% url 'master:warehouse_data' %}">Warehouse</a></li>
@@ -245,12 +245,13 @@
         </li>
       </ul>
       <!-- Service Sales -->
-      <ul class="RetailSalesNav">
+      <ul class="ServiceSalesNav">
         <li><a href="#"><span><i class="fa fa-shopping-cart"></i></span> Service Sales</a>
           <ul>
-            <li><a href="#">Cretae Sales Invoice</a></li>
-            <li><a href="#">Sales List</a></li>
-            <li><a href="#"><sup><i class="fa fa-star" style="color:red;"> New</i></sup>Edit Invoice</a></li>
+            <li><a href="{% url 'servicesales:new_sales_invoice' %}">Cretae Sales Invoice</a></li>
+            <li><a href="{% url 'servicesales:invoice_list' %}">Sales List</a></li>
+            <li><a href="{% url 'servicesales:user_service_view' %}">User Wise Report</a></li>
+            <li><a href="#">Edit Invoice</a></li>
             <li><a href="#">Sales Return</a></li>
             <li><a href="#">Sales Return Report</a></li>
             <li><a href="#">End of Day Report</a>

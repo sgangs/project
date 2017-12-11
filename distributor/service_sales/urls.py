@@ -4,10 +4,11 @@ from . import views
 
 urlpatterns = [
     # url(r'^zone/getdata/$', views.zone_view, name='zone_view'),
-    url(r'^invoice/api/getproduct$', views.get_product, name='get_product'),
+    url(r'^invoice/api/getproduct$', views.get_service, name='get_service'),
     # url(r'^invoice/api/getproductbarcode$', views.get_product_barcode, name='get_product_barcode'),
-    url(r'^invoice/api/getproductrate$', views.get_product_rate, name='getinvoice'),
-    # url(r'^invoice/api/getproduct/details$', views.get_product_data, name='get_product_data'),
+    url(r'^invoice/api/getproductrate$', views.get_service_rate, name='get_service_rate'),
+    url(r'^invoice/api/getservice/details$', views.get_service_data, name='get_service_data'),
+    
     url(r'^getsalesusers/$', views.service_sales_user, name='service_sales_user'),
 
     url(r'^invoice/$', views.new_sales_invoice, name='new_sales_invoice'),

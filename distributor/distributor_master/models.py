@@ -442,4 +442,3 @@ class service_sales_rate(models.Model):
 	# class Meta:
 		# unique_together = (("product", "tenant"),)
 		#ordering = ('name',)
-	

@@ -11,7 +11,7 @@
 	
 <div>
 	<button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-star"></i> Add New Service</button>
-	<button type="submit" class="btn btn-primary btn-xs new_attr"><i class="fa fa-star"></i> Add New Attribute</button>
+	<!-- <button type="submit" class="btn btn-primary btn-xs new_attr"><i class="fa fa-star"></i> Add New Attribute</button> -->
 	<!-- <a href="{% url 'master:import_product' %}"><button class="btn btn-primary btn-xs"><i class="fa fa-upload"></i> Bulk Upload Using Excel</button></a> -->
 </div>
 <h1></h1>
@@ -32,9 +32,9 @@
 	            <th class="text-center">HSN Code</th>
 	            <th class="text-center">SKU</th>
 	            <th class="text-center">Default Unit</th>
-	            <!-- <th class="text-center">Brand</th>
+	            <!-- <th class="text-center">Brand</th> -->
 	            <th class="text-center">Group</th>
-	            <th class="text-center">Remarks</th> -->
+	            <!-- <th class="text-center">Remarks</th> -->
 	            <th class="text-center">Retail Sales rate</th>
 	            <th class="text-center" hidden></th>
 	            <th class="text-center" hidden></th>
@@ -111,13 +111,13 @@
 					<select class="form-control selectpicker brand" id='brand' data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select Product Brand</option>						
 					</select>
-				</div>
-				<div class="form-group groupdiv">
-					<label class="control-label">Product Group</label>
-					<select class="form-control selectpicker group" id='group' data-live-search="true">
-						<option disabled selected hidden style='display: none' value>Select Product Group</option>						
-					</select>
 				</div> -->
+				<div class="form-group groupdiv">
+					<label class="control-label">Service Group</label>
+					<select class="form-control selectpicker group" id='group' data-live-search="true">
+						<option disabled selected hidden style='display: none' value>Select Service Group</option>						
+					</select>
+				</div>
 				<div class="form-group has_batchdiv" hidden>
 					<label class="control-label">Will this item be maintained batch-wise</label>
 					<input type="checkbox" class="has_batch">		
@@ -275,7 +275,7 @@
 					</select>
 				</div>
 				
-				<div class="form-group igsydiv">
+				<div class="form-group igstdiv">
 					<label class="control-label">IGST %</label>
 					<select class="form-control select cgst editable" id='igst_data_prod' disabled>
 						<option disabled selected hidden style='display: none' value>IGST</option>
@@ -304,12 +304,12 @@
 						<option disabled selected hidden style='display: none' value>Select Product Manufacturer</option>
 					</select>
 				</div> -->
-				<!-- <div class="form-group groupdiv">
-					<label class="control-label">Product Group</label>
-					<select class="form-control selectpicker group" id='group' data-live-search="true" disabled>
-						<option disabled selected hidden style='display: none' value>Select Product Group</option>						
+				<div class="form-group groupdiv">
+					<label class="control-label">Service Group</label>
+					<select class="form-control select group_edit editable" id='group_edit' disabled>
+						<option disabled selected hidden style='display: none' value>Select Service Group</option>
 					</select>
-				</div> -->
+				</div>
 				<!-- <div class="form-group has_batchdiv">
 					<label class="control-label">Will this item be maintained batch-wise</label>
 					<input type="checkbox" class="has_batch_data_prod" disabled>		

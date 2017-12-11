@@ -1,14 +1,15 @@
 $(function(){
 
-var has_attribute=false, attr_name, service_name, sku, vat_type, tax, reorder, unit, brand, group, has_batch,tax_array={}, manufac_array={},
+var has_attribute=false, attr_name, service_name, sku, reorder, unit, brand, group, has_batch,tax_array={}, group_array={},
     has_instance;
+
 
 
 // var tax_array={};
 
-load_products()
+load_services()
 
-function load_products(){
+function load_services(){
     $.ajax({
         url : "data/", 
         type: "GET",
@@ -16,7 +17,7 @@ function load_products(){
         // handle a successful response
         success : function(jsondata) {
             $.each(jsondata, function(){
-                var url='/inventory/barcode/'+this.id+'/'
+                // var url='/inventory/barcode/'+this.id+'/'
                 // console.log(url)
                 if ($.trim(this.rates).length>0){
                     $('#product_table').append("<tr class='data' align='center'>"+
@@ -26,7 +27,7 @@ function load_products(){
                     "<td>"+this.sku+"</td>"+
                     "<td>"+$.trim(this.default_unit)+"</td>"+
                     // "<td>"+$.trim(this.brand)+"</td>"+
-                    // "<td>"+$.trim(this.group)+"</td>"+
+                    "<td>"+$.trim(this.group)+"</td>"+
                     // "<td>"+$.trim(this.remarks)+"</td>"+
                     "<td class='rate'>"+$.trim(this.rates[0].tentative_sales_rate)+"</td>"+
                     "<td hidden>"+$.trim(this.rates[0].id)+"</td>"+
@@ -43,7 +44,7 @@ function load_products(){
                     "<td>"+this.sku+"</td>"+
                     "<td>"+$.trim(this.default_unit)+"</td>"+
                     // "<td>"+$.trim(this.brand)+"</td>"+
-                    // "<td>"+$.trim(this.group)+"</td>"+
+                    "<td>"+$.trim(this.group)+"</td>"+
                     // "<td>"+$.trim(this.remarks)+"</td>"+
                     "<td class='rate'></td>"+
                     "<td hidden></td>"+
@@ -135,31 +136,37 @@ function load_tax(){
     });
 }
 
-// load_manufac()
+load_group()
 
-// function load_manufac(){
-//     $.ajax({
-//         url : "/master/manufacbrand/manufacdata/", 
-//         type: "GET",
-//         dataType: 'json',
-//         // handle a successful response
-//         success : function(jsondata) {
-//             $.each(jsondata, function(){
-//                 tax_array[this.name]=this.id;
-//                 manufac_array[this.name]=this.id;
-//                 $('#manufac_data_prod').append($('<option/>',{
-//                     'value': this.id,
-//                     'text': this.name
-//                 }));
-//             })
-//             // $('#manufac_data_prod').selectpicker('refresh');
-//         },
-//         // handle a non-successful response
-//         error : function() {
-//             swal("Oops...", "No manufacturer data exist.", "error");
-//         }
-//     });
-// }
+function load_group(){
+    $.ajax({
+        url : "/master/servicegroup/data/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                group_array[this.name]=this.id;
+                $('#group').append($('<option/>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+
+                $('#group_edit').append($('<option/>',{
+                    'value': this.id,
+                    'text': this.name
+                }));
+
+            })
+            $('#group').selectpicker('refresh');
+            // $('#group_edit').selectpicker('refresh');
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No service group data exist.", "error");
+        }
+    });
+}
 
 // load_attribute()
 
@@ -200,9 +207,9 @@ function load_tax(){
 $("#product_table").on("click", ".rate", function(){
     var prod_id=$(this).closest('tr').find('td:nth-child(1)').html();
     var name=$(this).closest('tr').find('td:nth-child(2)').html();
-    var rate=$(this).closest('tr').find('td:nth-child(9)').html();
-    var rate_id=$(this).closest('tr').find('td:nth-child(10)').html();
-    var rate_is_tax=$(this).closest('tr').find('td:nth-child(11)').html();
+    var rate=$(this).closest('tr').find('td:nth-child(7)').html();
+    var rate_id=$(this).closest('tr').find('td:nth-child(8)').html();
+    var rate_is_tax=$(this).closest('tr').find('td:nth-child(9)').html();
     $('.product_name_update').html(name);
     $('.retail_rate_update').val(rate);
     $('.product_id_rate_update').html(prod_id);
@@ -216,11 +223,11 @@ $("#product_table").on("click", ".rate", function(){
 $('.update_rate').click(function(e) {
     swal({
         title: "Are you sure?",
-        text: "Are you sure to update the product rate?",
+        text: "Are you sure to update the service rate?",
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, update product rate!",
+        confirmButtonText: "Yes, update service rate!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
@@ -241,18 +248,18 @@ function update_rate(){
         swal("Oops...", "Retail Sales Rate must be a number greater than zero.", "error");
     }
     rate_id = $('.retail_rate_id').html();
-    prod_id = $('.product_id_rate_update').html();
+    serviceid = $('.product_id_rate_update').html();
     is_tax = $('.is_tax_update').is(":checked");
     // var is_present = $(this).find('td:nth-child(6) input').is(":checked");
     if (proceed){
         (function() {
             $.ajax({
-                url : "productdata/" , 
+                url : "data/" , 
                 type: "POST",
                 data:{new_rate: new_rate,
                     rate_id: rate_id,
                     is_tax: is_tax,
-                    prod_id: prod_id,
+                    serviceid: serviceid,
                     calltype: "updaterate",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
@@ -346,7 +353,7 @@ function new_service(){
     var proceed=true, attributes=[];
     service_name=$('.name').val()
     sku=$('.sku').val()
-    barcode=$('.barcode_new').val()
+    // barcode=$('.barcode_new').val()
     hsn=$('.hsn').val()
     // vat_type=$(".vattype").find(':selected').data('id');
     // tax=$(".tax").find(':selected').data('id');
@@ -355,13 +362,13 @@ function new_service(){
     igst=$(".igst").find(':selected').data('id');
     unit=$(".unit").find(':selected').data('id');
     // brand=$(".brand").find(':selected').data('id');
-    // group=$(".group").find(':selected').data('id');
+    group=$(".group").find(':selected').data('id');
     // has_batch = $( ".has_batch" ).is(":checked");
     // has_instance = $( ".has_instance" ).is(":checked");
     
     if (service_name == '' || service_name =='undefined' || sku == '' || sku =='undefined' || unit == '' || typeof(unit) =='undefined'){
         proceed = false;
-        swal("Oops...", "Service must have a name and sku/product code.", "error");
+        swal("Oops...", "Service must have a name, sku/product code and default unit.", "error");
     }
     if (proceed){
         (function() {
@@ -372,7 +379,6 @@ function new_service(){
                     sku: sku,
                     hsn: hsn,
                     // barcode: barcode,
-                    // vat_type: vat_type,
                     // tax:tax,
                     cgst:cgst,
                     sgst:sgst,
@@ -380,7 +386,7 @@ function new_service(){
                     // reorder:reorder,
                     unit:unit,
                     // brand:brand,
-                    // group: group,
+                    group: group,
                     // has_batch: has_batch,
                     // has_instance: has_instance,
                     // attributes:JSON.stringify(attributes),
@@ -470,14 +476,22 @@ function new_attribute(){
 
 
 $("#product_table").on("click", ".add_price", function(){
-    productid=$(this).closest('tr').find('td:nth-child(1)').html();
-    productname=$(this).closest('tr').find('td:nth-child(2)').html();
-    productsku=$(this).closest('tr').find('td:nth-child(4)').html();
-    $('#modal_product_rate').modal('show');
-    $('.id_rate_prod').val(productid)
-    $('.name_rate_prod').val(productname)
-    $('.sku_rate_prod').val(productsku)
-    $('.sales_rate_prod').val('')
+    serviceid=$(this).closest('tr').find('td:nth-child(1)').html();
+    servicename=$(this).closest('tr').find('td:nth-child(2)').html();
+    servicesku=$(this).closest('tr').find('td:nth-child(4)').html();
+    existingrate=$(this).closest('tr').find('td:nth-child(7)').html();
+    // console.log(existingrate.length);
+    // console.log(isNaN(existingrate));
+    if (existingrate.length == 0){
+        $('#modal_product_rate').modal('show');
+        $('.id_rate_prod').val(serviceid)
+        $('.name_rate_prod').val(servicename)
+        $('.sku_rate_prod').val(servicesku)
+        $('.sales_rate_prod').val('')
+    }
+    else{
+        swal("Hmmm...", "Existing sales rate is already present. Kindly update the existing rate", "info");
+    }
 });
 
 $('.submitrate').click(function(e) {
@@ -501,7 +515,7 @@ $('.submitrate').click(function(e) {
     
 function new_rate(){
     var proceed=true;
-    productid=$('.id_rate_prod').val()
+    serviceid=$('.id_rate_prod').val()
     rate=parseFloat($('.sales_rate_prod').val());
     is_tax = $( ".tax_rate_prod" ).is(":checked");
     if (isNaN(rate) || rate<0){
@@ -512,7 +526,7 @@ function new_rate(){
             $.ajax({
                 url : "data/" , 
                 type: "POST",
-                data:{productid: productid,
+                data:{serviceid: serviceid,
                     rate: rate,
                     is_tax: is_tax,
                     calltype: "newrate",
@@ -552,8 +566,6 @@ $("#product_table").on("click", ".link", function(){
         dataType: 'json',
             // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
-            // console.log(jsondata[0]['name']);
             $('#modal_product_details').modal('show');
             $('.id_data_prod').val(jsondata['id'])
             $('.name_data_prod').val(jsondata['name'])
@@ -563,6 +575,7 @@ $("#product_table").on("click", ".link", function(){
             $('#cgst_data_prod').val(tax_array[jsondata['cgst']])
             $('#sgst_data_prod').val(tax_array[jsondata['sgst']])
             $('#igst_data_prod').val(tax_array[jsondata['igst']])
+            $('#group_edit').val(group_array[jsondata['group']])
             // $('#manufac_data_prod').val(tax_array[jsondata['manufacturer']])
             $('.editable').attr('disabled', true);
             // $('#cgst_data_prod').selectpicker('refresh');
@@ -611,8 +624,8 @@ function update_data(){
     cgst_update=$('#cgst_data_prod').val()
     sgst_update=$('#sgst_data_prod').val()
     igst_update=$('#igst_data_prod').val()
-    manufac_update=$('#manufac_data_prod').val()
-    // zone=$(".zone").find(':selected').data('id');
+    group_update=$('#group_edit').val()
+    // group_update=$(".group_update").find(':selected').data('id');
     
     if (name_update == '' || typeof(name_update) =='undefined' || sku_update == '' || typeof(sku_update) =='undefined' ){
         proceed_update = false;
@@ -630,8 +643,8 @@ function update_data(){
                     cgst:cgst_update,
                     sgst:sgst_update,
                     igst:igst_update,
-                    manufac: manufac_update,
-                    calltype: "updateproduct",
+                    group: group_update,
+                    calltype: "updateservice",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 // contentType: "application/json",

@@ -61,7 +61,6 @@ def user_list_data(request):
 		response_data = {}
 		calltype = request.GET.get('calltype')
 		if (calltype == 'get_users'):
-			print("here")
 			users = list(User.objects.filter(tenant = this_tenant).all().\
 					values('first_name', 'last_name', 'id', 'username', 'email', 'user_type', 'aadhaar_no'))
 			response_data = users

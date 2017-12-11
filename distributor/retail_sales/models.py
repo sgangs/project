@@ -1,5 +1,6 @@
 import datetime as dt
 from datetime import datetime
+from datetime import date as dt_date
 
 from django.db import models
 # from django.core.urlresolvers import reverse
@@ -21,7 +22,7 @@ class TenantManager(models.Manager):
 
 class retail_invoice(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	invoice_id = models.PositiveIntegerField(db_index=True)
+	invoice_id = models.BigIntegerField(db_index=True)
 	date=models.DateField(default=datetime.now)
 	customer=models.ForeignKey(retail_customer,blank=True, null=True,\
 						related_name='retailInvoice_retailsales_master_retailCustomer', on_delete=models.SET_NULL)
@@ -62,16 +63,37 @@ class retail_invoice(models.Model):
 	def save(self, *args, **kwargs):
 		if not self.id:
 			tenant=self.tenant.key
-			today=dt.date.today()
-			today_string=today.strftime('%y%m%d')
-			next_invoice_number='001'
+			today_string = self.date.strftime('%y%m%d')
+			if (self.date.month >4):
+				this_year_string = today_string[:2]
+				this_year_int = int(this_year_string)
+				next_year_int = this_year_int+1
+				next_year_string = str(next_year_int)
+				today_string = this_year_string + next_year_string
+			else:
+				next_year_string = today_string[:2]
+				next_year_int = int(next_year_string)
+				this_year_int = next_year_int-1
+				this_year_string = str(this_year_int)
+				today_string = this_year_string + next_year_string
+			
+			next_invoice_number = 1
 			last_invoice=type(self).objects.filter(tenant=self.tenant).\
-						filter(invoice_id__contains=today_string).order_by('invoice_id').last()
+						filter(invoice_id__contains='20'+today_string).order_by('invoice_id').last()
 			if last_invoice:
 				last_invoice_id=str(last_invoice.invoice_id)
 				last_invoice_number=int(last_invoice_id[6:])
-				next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
-			self.invoice_id=int(today_string + next_invoice_number)
+				# next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
+				next_invoice_number = last_invoice_number + 1
+			# self.invoice_id=int(today_string + next_invoice_number)
+			if (next_invoice_number < 9):
+				self.invoice_id = int( '20'+today_string + '00' + str(next_invoice_number))
+			elif (next_invoice_number < 99):
+				self.invoice_id = int( '20'+today_string + '0' + str(next_invoice_number))
+			else:
+				self.invoice_id = int( '20'+today_string + str(next_invoice_number))
+
+			# self.invoice_id = int( '20'+today_string + str(next_invoice_number))
 			
 		super(retail_invoice, self).save(*args, **kwargs)
 

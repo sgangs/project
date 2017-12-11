@@ -945,7 +945,6 @@ def product_group_data(request):
 		# 	serializer = ServiceDetailSerializers(service)
 		# else:
 		product_groups=list(Group.objects.for_tenant(this_tenant).order_by( 'name',).values('id','name'))
-		print(product_groups)
 		
 		jsondata = json.dumps(product_groups, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
@@ -1006,7 +1005,7 @@ def service_data(request):
 			serializer = ServiceDetailSerializers(service)
 		else:
 			services=Service.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
-					select_related('default_unit').prefetch_related('serviceSalesRate_service')
+					select_related('default_unit', 'group').prefetch_related('serviceSalesRate_service')
 			serializer = ServiceSerializers(services, many=True)
 		return Response(serializer.data)
 	elif request.method == 'POST':
@@ -1035,7 +1034,7 @@ def service_data(request):
 			
 			# brand_id=request.POST.get('brand')
 			# manufacturer_id=request.POST.get('manufacturer')
-			# group_id=request.POST.get('group')
+			group_id=request.POST.get('group')
 			# has_batch=request.POST.get('has_batch')
 			# has_instance=request.POST.get('has_instance')
 			# has_attribute=request.POST.get('has_attribute')
@@ -1058,8 +1057,8 @@ def service_data(request):
 			unit_selected=Unit.objects.for_tenant(this_tenant).get(id=unit_id)
 			# if (brand_id):
 			# 	brand_selected=Brand.objects.for_tenant(this_tenant).get(id=brand_id)
-			# if (group_id):
-			# 	group_selected=Group.objects.for_tenant(this_tenant).get(id=group_id)
+			if (group_id):
+				group_selected=service_group.objects.for_tenant(this_tenant).get(id=group_id)
 			# if (has_attribute):
 			# 	attributes = json.loads(request.POST.get('attributes'))
 			with transaction.atomic():
@@ -1084,8 +1083,8 @@ def service_data(request):
 					
 					# if (brand_id):
 					# 	new_product.brand=brand_selected
-					# if (group_id):
-					# 	new_product.group=group_selected
+					if (group_id):
+						new_service.group=group_selected
 					# new_product.has_batch=has_batch
 					# new_product.has_attribute=has_attribute
 					# new_product.has_instance=has_instance
@@ -1122,9 +1121,9 @@ def service_data(request):
 			sgst=request.data.get('sgst')
 			igst=request.data.get('igst')
 			hsn=request.data.get('hsn')
-			manufac=request.data.get('manufac')
+			group = request.data.get('group')
 			taxes=tax_structure.objects.for_tenant(this_tenant).all()
-			# state=request.data.get('state')
+			
 			if not sku:
 				raise IntegrityError
 			if not name:
@@ -1133,10 +1132,6 @@ def service_data(request):
 			old_service=Service.objects.for_tenant(this_tenant).get(id=pk)
 			old_service.name=name
 			old_service.sku=sku
-			# try:
-			# 	old_product.manufacturer = Manufacturer.objects.for_tenant(this_tenant).get(id=manufac)
-			# except:
-			# 	pass
 			
 			# if barcode:
 			# 	try:
@@ -1157,6 +1152,8 @@ def service_data(request):
 				old_service.sgst=taxes.get(id=sgst)
 			if igst:
 				old_service.igst=taxes.get(id=igst)
+			if group:
+				old_service.group=service_group.objects.for_tenant(this_tenant).get(id=group)
 			# if hsn:
 			old_service.hsn_code=hsn
 			old_service.save()
@@ -1165,24 +1162,80 @@ def service_data(request):
 			rate_id = request.data.get('rate_id')
 			revised_rate = Decimal(request.data.get('new_rate'))
 			is_tax = request.data.get('is_tax')
-			service_id = request.data.get('service_id')
+			serviceid = request.data.get('serviceid')
 			if (revised_rate > 0):
 				if (is_tax == 'true'):
 					is_tax=True
 				elif (is_tax == 'false'):
 					is_tax=False
 				if (rate_id):
-					old_rate=product_sales_rate.objects.get(id=rate_id)
-					old_rate.tentative_sales_rate=revised_rate
-					old_rate.is_tax_included=is_tax
+					old_rate = service_sales_rate.objects.get(id=rate_id)
+					old_rate.tentative_sales_rate = revised_rate
+					old_rate.is_tax_included = is_tax
 					old_rate.save()
 				else:
-					new_rate=product_sales_rate()
-					new_rate.product=Product.objects.for_tenant(this_tenant).get(id=service_id)
-					new_rate.tentative_sales_rate=revised_rate
-					new_rate.is_tax_included=is_tax
-					new_rate.tenant=this_tenant
+					new_rate = service_sales_rate()
+					new_rate.service = Service.objects.for_tenant(this_tenant).get(id=serviceid)
+					new_rate.tentative_sales_rate = revised_rate
+					new_rate.is_tax_included = is_tax
+					new_rate.tenant = this_tenant
 					new_rate.save()
+
+		elif (calltype == 'newrate'):
+			serviceid=request.POST.get('serviceid')
+			is_tax=request.POST.get('is_tax')
+			if (is_tax == 'true'):
+				is_tax=True
+			elif (is_tax == 'false'):
+				is_tax=False
+			rate=Decimal(request.POST.get('rate'))
+			if (rate > 0):
+				new_rate=service_sales_rate()
+				new_rate.service=Service.objects.for_tenant(this_tenant).get(id=serviceid)
+				new_rate.tentative_sales_rate=rate
+				new_rate.is_tax_included=is_tax
+				new_rate.tenant=this_tenant
+				new_rate.save()
+
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+@login_required
+def service_group_view(request):
+	extension="base.html"
+	# this_tenant=request.user.tenant
+	return render (request, 'master/service_group_list.html',{'extension':extension})
+
+@api_view(['GET','POST'],)
+def service_group_data(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		# if (calltype == 'one_service'):
+		# 	serviceid = request.GET.get('serviceid')
+		# 	service=Service.objects.for_tenant(this_tenant).get(id=serviceid)
+		# 	serializer = ServiceDetailSerializers(service)
+		# else:
+		service_groups=list(service_group.objects.for_tenant(this_tenant).order_by( 'name',).values('id','name'))
+		
+		jsondata = json.dumps(service_groups, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+	
+	elif request.method == 'POST':
+		calltype = request.data.get('calltype')
+		response_data = {}
+
+		if (calltype == 'newgroup'):
+			response_data = {}
+			name=request.POST.get('name')
+			
+			new_group=service_group()
+			new_group.name=name
+			new_group.tenant=this_tenant
+			new_group.save()
+			
+			jsondata = json.dumps(response_data)
+			return HttpResponse(jsondata)
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)

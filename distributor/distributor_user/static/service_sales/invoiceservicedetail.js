@@ -29,58 +29,34 @@ function load_data(){
             $('.total_receipt').append(jsondata['total']);
             
             $.each(jsondata['line_items'], function(){
-                length_users = this.user_details.length;
-                // if (length_users == 3){
-                //     $('.details').append("<tr class='data text-center'>"+
-                //     "<td id='not_pos_print'>"+this.service_name+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
-                //     "<td id='not_pos_print'>"+this.quantity+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['cont'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[2]['name'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[2]['cont'])+"</td>"+
-                //     "</tr>");
-                // }
-                // else if (length_users == 2){
-                //     $('.details').append("<tr class='data text-center'>"+
-                //     "<td id='not_pos_print'>"+this.service_name+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
-                //     "<td id='not_pos_print'>"+this.quantity+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[1]['cont'])+"</td>"+
-                //     "<td id='not_pos_print'></td>"+
-                //     "<td id='not_pos_print'></td>"+
-                //     "</tr>");   
-                // }
-                // else if (length_users == 1){
-                //     $('.details').append("<tr class='data text-center'>"+
-                //     "<td id='not_pos_print'>"+this.service_name+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
-                //     "<td id='not_pos_print'>"+this.quantity+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
-                //     "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
-                //     "<td id='not_pos_print'></td>"+
-                //     "<td id='not_pos_print'></td>"+
-                //     "<td id='not_pos_print'></td>"+
-                //     "<td id='not_pos_print'></td>"+
-                //     "</tr>");   
-                // }
-
+                length_users = Object.keys(this.user_details).length;
+                if (length_users != 0){
+                    length_users = length_users/2;
+                }
+                console.log(this.user_details);
+                user_ids=[]
+                // console.log(Object.keys(this.user_details));
+                // Object.keys(this.user_details).map((key)=> console.log(key + "->" + this[key]))
+                for (var key in this.user_details) {
+                    if (this.user_details.hasOwnProperty(key)) {
+                        if (key.indexOf("_name")<0) {
+                            user_ids.push(key);
+                        }
+                    }
+                }
+                // console.log(this.user_details[user_ids[0]]);
+                // console.log(this.user_details[user_ids[0]+"_name"][0]);
                 if (length_users == 3){
                     $('.details').append("<tr class='data text-center'>"+
                     "<td id='not_pos_print'>"+this.service_name+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
                     "<td id='not_pos_print'>"+this.quantity+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[0][this.user_details[0]['id']])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[1][this.user_details[1]['id']])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[2]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[2][this.user_details[2]['id']])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[0]+"_name"])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[0]])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[1]+"_name"])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[1]])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[2]+"_name"])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[2]])+"</td>"+
                     "</tr>");
                 }
                 else if (length_users == 2){
@@ -88,10 +64,10 @@ function load_data(){
                     "<td id='not_pos_print'>"+this.service_name+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
                     "<td id='not_pos_print'>"+this.quantity+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[0]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[0][this.user_details[0]['id']])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[1]['name'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[1][this.user_details[1]['id']])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[0]+"_name"])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[0]])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[1]+"_name"])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[1]])+"</td>"+
                     "<td id='not_pos_print'></td>"+
                     "<td id='not_pos_print'></td>"+
                     "</tr>");   
@@ -101,8 +77,8 @@ function load_data(){
                     "<td id='not_pos_print'>"+this.service_name+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.service_hsn)+"</td>"+
                     "<td id='not_pos_print'>"+this.quantity+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[0]['cont'])+"</td>"+
-                    "<td id='not_pos_print'>"+$.trim(this.user_details[0][this.user_details[0]['id']])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[0]+"_name"])+"</td>"+
+                    "<td id='not_pos_print'>"+$.trim(this.user_details[user_ids[0]])+"</td>"+
                     "<td id='not_pos_print'></td>"+
                     "<td id='not_pos_print'></td>"+
                     "<td id='not_pos_print'></td>"+

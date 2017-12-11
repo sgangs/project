@@ -633,7 +633,7 @@ function new_data(){
 
         
         var item = {
-            product_id : product_id,
+            service_id : product_id,
             quantity: quantity,
             unit_id: unit_id,
             sales_before_tax: sales_before_tax,

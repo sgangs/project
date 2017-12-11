@@ -48,4 +48,7 @@ urlpatterns = [
 
     url(r'^service/$', views.service_view, name='service_view'),
     url(r'^service/data/$', views.service_data, name='service_data'),
+
+    url(r'^servicegroup/$', views.service_group_view, name='service_group_view'),
+    url(r'^servicegroup/data/$', views.service_group_data, name='service_group_data'),
 ]

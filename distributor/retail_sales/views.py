@@ -177,8 +177,10 @@ def sales_invoice_save(request):
 		response_data = {}
 		this_tenant=request.user.tenant
 		if (calltype == 'save' or calltype == 'mobilesave'):
-			try:
-				with transaction.atomic():
+			# try:
+			with transaction.atomic():
+				# with transaction.atomic():
+				try:
 					date = date_first.date.today()
 					if (calltype == 'save'):
 						bill_data = json.loads(request.data.get('bill_details'))
@@ -289,8 +291,12 @@ def sales_invoice_save(request):
 							serial_no=data['serial_no']
 						except:
 							serial_no=''
+						
+						try:
+							discount_amount=Decimal(data['discount_amount']).quantize(TWOPLACES)
+						except:
+							discount_amount=data['discount_amount']
 
-						discount_amount=data['discount_amount']
 						line_taxable_total=Decimal(data['taxable_total']).quantize(TWOPLACES)
 						line_total=Decimal(data['line_total']).quantize(TWOPLACES)
 
@@ -520,9 +526,12 @@ def sales_invoice_save(request):
 
 					response_data['pk']=new_invoice.id
 					response_data['id']=new_invoice.invoice_id
-			except Exception as err:
-				response_data  = err.args 
-				transaction.rollback()
+			# except Exception as err:
+			# 	response_data  = err.args 
+			# 	transaction.rollback()
+				except Exception as err:
+					response_data  = err.args 
+					transaction.rollback()
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
@@ -1570,9 +1579,9 @@ def eod_sales_data(request):
 
 			writer = csv.writer(response)
 			date=request.GET.get('date')
-			warehouse=request.GET.get('warehouse')
-			# invoice=retail_invoice.objects.for_tenant(this_tenant).filter(date=date, warehouse = warehouse)
-			invoice=retail_invoice.objects.for_tenant(this_tenant)
+			warehouse=request.GET.get('warehouse_id')
+			date=request.GET.get('date')
+			invoice=retail_invoice.objects.for_tenant(this_tenant).filter(date=date, warehouse = warehouse)
 			line_items=list(invoice_line_item.objects.filter(retail_invoice__in=invoice).select_related('product').order_by('product__name',).\
 						values('product__name',).annotate(sold_quantity=Sum('quantity')).annotate(value_sold=Sum('line_before_tax')))
 
