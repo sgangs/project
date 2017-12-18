@@ -1,0 +1,158 @@
+{% extends extension %}
+
+{%block title%}
+
+<title>Sales Report</title>
+
+<link href="https://fonts.googleapis.com/css?family=Crimson+Text:400,700" rel="stylesheet">
+
+{% endblock %} 
+
+{% block content%}
+	
+
+<div class="row">
+	<div class="col-xs-4">
+    	<div class="panel panel-info manufacturer">
+        	<div class="panel-heading">
+            	<label>View Manufacturerwise Report</label>
+            </div>
+            <!-- <div class="panel-body">
+            	<p>Get monthwise summary report of your sales</p>
+			</div> -->
+		</div>
+	</div>
+	<div class="col-xs-4">
+    	<div class="panel panel-info group">
+        	<div class="panel-heading">
+            	<label>View Groupwise Report</label>
+            </div>
+            <!-- <div class="panel-body">
+            	<p>Get zonewise summary report of your sales</p>
+			</div> -->
+		</div>
+	</div>
+
+	<div class="col-xs-4">
+    	<div class="panel panel-info brand">
+        	<div class="panel-heading">
+            	<label>View Brandwise Report</label>
+            </div>
+            <!-- <div class="panel-body">
+            	<p>Get datewise summary report of your sales</p>
+			</div> -->
+		</div>
+	</div>
+	
+</div> 
+
+
+
+<br>
+<br>
+
+<div class="table-responsive response_details" hidden>
+    	<table class="table table-striped table-bordered table-hover" id="receipt_table">
+      	<thead class="thead-inverse header-background">
+        	<tr>
+	            <th class="text-center data_type">Name</th>
+	            <th class="text-center">Total Sales</th>
+			</tr>
+		</thead>
+        <tbody>        	
+        </tbody>
+  	</table> 
+</div>
+
+<div class="prev_next">
+	<div class='add_nav'>
+	</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="filter" tabindex="-1" role="dialog" aria-labelledby="filterLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Get Group Report</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div class="row">
+			    	<div class="col-xs-10">
+						<div class="form-group datediv">
+							<label for="classname" class="control-label">Select Date Range</label>
+							<input type="text" class="form-control date_range">
+						</div>
+					</div>
+				</div>		    	
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary btn-xs manufac_data_btn data_btn">Generate Manfacturerwise Report</button>
+		    	<button type="button" class="btn btn-primary btn-xs group_data_btn data_btn">Generate Groupwise Report</button>
+		    	<button type="button" class="btn btn-primary btn-xs brand_data_btn data_btn">Generate Brandwise Report</button>
+		    	<!-- <button type="button" class="btn btn-primary btn-xs apply_reset">Reset all</button> -->
+		    </div>
+	    </div>
+	</div>
+</div>
+
+
+<!-- Sweetalert JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
+
+<!-- Bootstrap Daterangepicker -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/daterangepicker.min.js"></script>
+
+{% load static from staticfiles %}
+
+<script src="{% static 'sales/sales_product_report_details.js' %}"></script>
+
+<script>
+csrf_token='{{csrf_token}}';
+$('.purpay').attr('data-toggle',"modal")
+$('.purpay').attr('data-target',"#payment")
+
+$('.filterbtn').attr('data-toggle',"modal")
+$('.filterbtn').attr('data-target',"#filter")
+
+$('.invoice_summary').attr('data-toggle',"modal")
+$('.invoice_summary').attr('data-target',"#summary")
+
+$('.date_payment').datepicker({
+	autoclose: true,
+	// endDate: moment(),
+	// endDate: '0d',
+	todayHighlight: true,
+	format: 'dd/mm/yyyy',    
+});
+$(".date_payment").datepicker("setDate", new Date());
+
+</script>
+
+<style type="text/css">
+	/*.modal-dialog {
+		width: 80%;
+		height: 80%;
+		margin: auto;
+		padding: 5%;
+	}
+
+	.modal-content {
+		height: auto;
+		min-height: 80%;
+		border-radius: 0;
+	}*/
+</style>
+
+{% endblock %}
+
+
+

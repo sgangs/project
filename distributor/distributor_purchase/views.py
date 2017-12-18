@@ -891,7 +891,10 @@ def payment_register(request):
 		modeid = request.data.get('modeid')
 		date = request.data.get('date')
 		payment_details = json.loads(request.data.get('payment_details'))
+		
+		vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
 		mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
+
 		total_payment=0
 		invoiceids=""
 		cheque_rtgs_all=""
@@ -1162,7 +1165,7 @@ def debit_note_save(request):
 		if (calltype == 'save'):
 			with transaction.atomic():
 				try:
-					customer_id = request.data.get('customer')
+					vendor_id = request.data.get('vendor')
 					warehouse_id=request.data.get('warehouse')
 					credit_note_no=request.data.get('credit_note_no')
 					date=request.data.get('date')
@@ -1171,14 +1174,14 @@ def debit_note_save(request):
 					total=Decimal(request.data.get('total'))
 					bill_data = json.loads(request.data.get('bill_details'))
 
-					customer = Customer.objects.for_tenant(this_tenant).get(id=customer_id)
+					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 
-					customer_name=customer.name
-					customer_address=customer.address_1+", "+customer.address_2
-					customer_state=customer.state
-					customer_city=customer.city
-					customer_pin=customer.pin
+					customer_name=vendor.name
+					customer_address=vendor.address_1+", "+vendor.address_2
+					customer_state=vendor.state
+					customer_city=vendor.city
+					customer_pin=vendor.pin
 					
 					ware_address=warehouse.address_1+", "+warehouse.address_2
 					ware_state=warehouse.state
@@ -1190,12 +1193,12 @@ def debit_note_save(request):
 
 					new_debit_note.date = date
 					
-					new_debit_note.customer=customer
-					new_debit_note.customer_name=customer_name
-					new_debit_note.customer_address=customer_address
-					new_debit_note.customer_state=customer_state
-					new_debit_note.customer_city=customer_city
-					new_debit_note.customer_pin=customer_pin
+					new_debit_note.vendor=customer
+					new_debit_note.vendor_name=customer_name
+					new_debit_note.vendor_address=customer_address
+					new_debit_note.vendor_state=customer_state
+					new_debit_note.vendor_city=customer_city
+					new_debit_note.vendor_pin=customer_pin
 
 					new_debit_note.warehouse=warehouse
 					new_debit_note.warehouse_address=ware_address
@@ -1208,19 +1211,19 @@ def debit_note_save(request):
 					new_debit_note.total = total
 					new_invoice.save()
 					
-					remarks="Debit Note No: "+str(new_debit_note.note_id)
-					journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_debit_note.id, trn_type=3)
-					# debit_note_account = request.data.get('debit_note_account')
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
-					new_journal_entry(this_tenant, journal, taxtotal, account, 2, date)
-					# This has to change.
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					new_journal_entry(this_tenant, journal, total, account, 1, date)
+					# remarks="Debit Note No: "+str(new_debit_note.note_id)
+					# journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_debit_note.id, trn_type=3)
+					# # debit_note_account = request.data.get('debit_note_account')
+					# account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+					# new_journal_entry(this_tenant, journal, taxtotal, account, 2, date)
+					# # This has to change.
+					# account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+					# new_journal_entry(this_tenant, journal, total, account, 1, date)
 					
-					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-					if (debit != credit):
-						raise IntegrityError (('Debit and credit value not matching.'))
+					# debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+					# credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+					# if (debit != credit):
+					# 	raise IntegrityError (('Debit and credit value not matching.'))
 
 					products_cost=0
 
@@ -1308,6 +1311,8 @@ def debit_note_save(request):
 						
 
 						#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
+						#Add purchase payment against the receipt. 
+						#Add journal entry for debit note, linking it to debit note and linking it to purchase payment.
 						for k,v in price_list.items():
 							new_inventory_ledger=inventory_ledger()
 							new_inventory_ledger.product=product

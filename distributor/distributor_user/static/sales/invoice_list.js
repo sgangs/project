@@ -249,6 +249,54 @@ function load_customer(){
     });
 }
 
+load_group()
+
+function load_group(){
+    $.ajax({
+        url : "/master/productgroup/data/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                $('#group_filter').append($('<option>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+            });
+            $('#group_filter').selectpicker('refresh');
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No product group exist.", "error");
+        }
+    });
+}
+
+load_manufacturer()
+
+function load_manufacturer(){
+    $.ajax({
+        url : "/master/manufacbrand/manufacdata/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                $('#manufacturer_filter').append($('<option>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+            });
+            $('#manufacturer_filter').selectpicker('refresh');
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No product manufacturer exist.", "error");
+        }
+    });
+}
+
 // This is used to overlay autocomplete over the modal.
 $( ".product_name" ).autocomplete({
   appendTo: "#filter"
@@ -322,6 +370,32 @@ function filter_data(page_no) {
             customers.push(customer);
         }        
     });
+
+    var groups=[];
+    $.each($(".group_filter option:selected"), function(){
+        groupid=$(this).data('id');
+        // if (customerid == 'undefined' || typeof(customerid) == undefined){
+        if ($.trim(groupid).length>0){
+            var group={
+                groupid: groupid
+            };
+            groups.push(group);
+        }        
+    });
+
+    var manufacturers=[];
+    $.each($(".manufacturer_filter option:selected"), function(){
+        manufacturerid=$(this).data('id');
+        // if (customerid == 'undefined' || typeof(customerid) == undefined){
+        if ($.trim(manufacturerid).length>0){
+            var manufacturer={
+                manufacturerid: manufacturerid
+            };
+            manufacturers.push(manufacturer);
+        }        
+    });
+
+
     if (unpaid_invoices){
         sent_with='unpaid_invoices';
     }
@@ -342,8 +416,7 @@ function filter_data(page_no) {
         enddate = enddate.split("-").reverse().join("-")
         dateChanged= true;
     } 
-    // console.log(enddate);
-
+    
     $.ajax({
         url : "listall/", 
         type: "GET",
@@ -355,7 +428,9 @@ function filter_data(page_no) {
             invoice_no: invoice_no,
             invoice_status: invoice_status,
             payment_status: payment_status,
+            groups: JSON.stringify(groups),
             customers: JSON.stringify(customers),
+            manufacturers: JSON.stringify(manufacturers),
             page_no: page_no,
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',

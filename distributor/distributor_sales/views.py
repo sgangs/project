@@ -37,7 +37,7 @@ def get_product(request):
 	this_tenant=request.user.tenant
 	if request.method == "GET":
 		q = request.GET.get('term', '')
-		products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].select_related('default_unit', \
+		products = Product.objects.for_tenant(this_tenant).filter(name__icontains = q )[:10].select_related('default_unit', \
 			'cgst','sgst','igst')
 		response_data = []
 		for item in products:
@@ -562,7 +562,9 @@ def all_invoices(request):
 				values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')[:300]
 
 		elif (calltype == 'apply_filter'):
+			
 			customers=json.loads(request.GET.get('customers'))
+			groups=json.loads(request.GET.get('groups'))
 			start=request.GET.get('start')
 			end=request.GET.get('end')
 			invoice_no=request.GET.get('invoice_no')
@@ -571,6 +573,7 @@ def all_invoices(request):
 			sent_with=request.GET.get('sent_with')
 			returntype=request.GET.get('returntype')
 			payment_status=request.GET.get('payment_status')
+			
 			if (start and end):
 				if (payment_status == 'unpaid'):
 					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], final_payment_date__isnull=True).all().\
@@ -602,6 +605,24 @@ def all_invoices(request):
 				if (sent_with == 'unpaid_receipts'):
 					invoices=invoices.filter(final_payment_date__isnull=True).\
 						all()
+			products = Product.objects.all()
+			if (len(groups)>0):
+				groups_list=[]
+				for item in groups:
+					groups_list.append(item['groupid'])
+
+				products = products.filter(group__in = groups_list)
+				# invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
+
+			# if (len(manufacturers)>0):
+			# 	manufacturers_list=[]
+			# 	for item in groups:
+			# 		manufacturers_list.append(item['groupid'])
+
+			# 	products = products.filter(manufacturer__in = manufacturers_list)
+			
+			invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
+
 			if invoice_no:
 				invoices=invoices.filter(invoice_id__icontains=invoice_no)
 			if invoice_status:
@@ -2075,6 +2096,40 @@ def get_group_sales_report_select(request):
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
+@api_view(['GET'],)
+def product_segment_sales_report(request):
+	extension="base.html"
+	return render (request, 'sales/sales_product_report_details.html',{'extension':extension})
+
+@api_view(['GET'],)
+def product_segment_sales_report_data(request):
+	from django.db.models.functions import TruncMonth
+	this_tenant = request.user.tenant
+	response_data={}
+	calltype = request.GET.get('calltype')
+	start=request.GET.get('start')
+	end=request.GET.get('end')
+	invoices = sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).select_related('product').all()
+	line_items = invoice_line_item.objects.filter(sales_invoice__in = invoices).select_related('product')
+
+	if (calltype == 'manufacturer'):
+		lines = line_items.values('product__manufacturer__name').annotate(total_sales=Sum('line_tax'))
+	
+	elif (calltype == 'group'):
+		lines = line_items.values('product__group__name').annotate(total_sales=Sum('line_tax'))
+
+	elif (calltype == 'brand'):
+		lines = line_items.values('product__brand__name').annotate(total_sales=Sum('line_tax'))
+
+	print(lines)
+
+	response_data['object']=list(lines)
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+#Update so that each bill has profit stored so that its not calculated. Add options for customerwise, zonewise, manufacwise,groupwise, brandwise & 
+#productwise profit.
 
 @api_view(['GET'],)
 def billsummary_profit(request):
@@ -2088,9 +2143,6 @@ def billsummary_profit_data(request):
 	if request.method == 'GET':
 		start=request.GET.get('start')
 		end=request.GET.get('end')
-
-		# invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).values('id','invoice_id', 'subtotal').\
-		# 		annotate(total_sales=Sum('total'), total_paid=Sum('amount_paid')))
 
 		invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).\
 				values('id','invoice_id', 'subtotal', 'date','customer', 'customer_name', 'total'))
