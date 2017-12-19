@@ -562,7 +562,7 @@ def all_invoices(request):
 				values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')[:300]
 
 		elif (calltype == 'apply_filter'):
-			
+
 			customers=json.loads(request.GET.get('customers'))
 			# groups=json.loads(request.GET.get('groups'))
 			start=request.GET.get('start')
@@ -603,9 +603,9 @@ def all_invoices(request):
 				if (sent_with == 'all_invoices'):
 					pass
 				if (sent_with == 'unpaid_receipts'):
-					invoices=invoices.filter(final_payment_date__isnull=True).\
-						all()
-			products = Product.objects.all()
+					invoices=invoices.filter(final_payment_date__isnull=True).all()
+			
+			# products = Product.objects.all()
 			
 			# if (len(groups)>0):
 			# 	groups_list=[]
@@ -622,7 +622,7 @@ def all_invoices(request):
 
 			# 	products = products.filter(manufacturer__in = manufacturers_list)
 			
-			invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
+			# invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
 
 			if invoice_no:
 				invoices=invoices.filter(invoice_id__icontains=invoice_no)
