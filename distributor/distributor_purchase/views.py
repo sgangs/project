@@ -472,7 +472,6 @@ def purchase_receipt_save(request):
 
 						else:
 							if (cgst_p in cgst_paid):
-								print('here')
 								cgst_paid[cgst_p][0]+=cgst_v
 								cgst_paid[cgst_p][1]=total
 								cgst_paid[cgst_p][2]+=line_taxable_total
@@ -1177,11 +1176,11 @@ def debit_note_save(request):
 					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 
-					customer_name=vendor.name
-					customer_address=vendor.address_1+", "+vendor.address_2
-					customer_state=vendor.state
-					customer_city=vendor.city
-					customer_pin=vendor.pin
+					vendor_name=vendor.name
+					vendor_address=vendor.address_1+", "+vendor.address_2
+					vendor_state=vendor.state
+					vendor_city=vendor.city
+					vendor_pin=vendor.pin
 					
 					ware_address=warehouse.address_1+", "+warehouse.address_2
 					ware_state=warehouse.state
@@ -1194,11 +1193,11 @@ def debit_note_save(request):
 					new_debit_note.date = date
 					
 					new_debit_note.vendor=customer
-					new_debit_note.vendor_name=customer_name
-					new_debit_note.vendor_address=customer_address
-					new_debit_note.vendor_state=customer_state
-					new_debit_note.vendor_city=customer_city
-					new_debit_note.vendor_pin=customer_pin
+					new_debit_note.vendor_name=vendor_name
+					new_debit_note.vendor_address=vendor_address
+					new_debit_note.vendor_state=vendor_state
+					new_debit_note.vendor_city=vendor_city
+					new_debit_note.vendor_pin=vendor_pin
 
 					new_debit_note.warehouse=warehouse
 					new_debit_note.warehouse_address=ware_address
@@ -1230,7 +1229,6 @@ def debit_note_save(request):
 					for data in bill_data:
 						productid=data['product_id']
 						unitid=data['unit_id']
-						is_tax=data['is_tax']
 
 						if is_tax =='true':
 							is_tax=True
@@ -1260,6 +1258,10 @@ def debit_note_save(request):
 								tentative_sales_price=original_tsp, mrp=original_mrp).order_by('purchase_date')
 						quantity_updated=quantity
 						total_purchase_price=0
+						
+						#If maintain inventory, add product back to database. Update the related journal. Also update the warehouse valuation.
+						#Modify the price list json to match purchase format.
+
 						i=0
 						for item in product_list:
 							i+=1
@@ -1293,9 +1295,13 @@ def debit_note_save(request):
 						LineItem.product= product
 						LineItem.product_name= product.name
 						LineItem.product_sku=product.sku
-						if is_tax:
-							LineItem.vat_type=product.vat_type
-							LineItem.tax_percent=product.tax.percentage
+						
+						LineItem.cgst_percent=cgst_p
+						LineItem.cgst_value=cgst_v
+						LineItem.sgst_percent=sgst_p
+						LineItem.sgst_value=sgst_v
+						LineItem.igst_percent=igst_p
+						LineItem.igst_value=igst_v
 
 						LineItem.unit=unit.symbol
 						LineItem.unit_multi=unit.multiplier
@@ -1311,19 +1317,24 @@ def debit_note_save(request):
 						
 
 						#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
-						#Add purchase payment against the receipt. 
+						#Adjust payment against the receipt. 
 						#Add journal entry for debit note, linking it to debit note and linking it to purchase payment.
+
+						#If maintain inventory
 						for k,v in price_list.items():
-							new_inventory_ledger=inventory_ledger()
-							new_inventory_ledger.product=product
-							new_inventory_ledger.warehouse=warehouse
-							new_inventory_ledger.transaction_type=5
-							new_inventory_ledger.date=date
-							new_inventory_ledger.quantity=v['quantity']
-							new_inventory_ledger.purchase_price=v['pur_rate']
-							new_inventory_ledger.transaction_bill_id=new_debit_note.note_id
-							new_inventory_ledger.tenant=this_tenant
-							new_inventory_ledger.save()
+							# new_inventory_ledger=inventory_ledger()
+							# new_inventory_ledger.product=product
+							# new_inventory_ledger.warehouse=warehouse
+							# new_inventory_ledger.transaction_type=5
+							# new_inventory_ledger.date=date
+							# new_inventory_ledger.quantity=v['quantity']
+							# new_inventory_ledger.purchase_price=v['pur_rate']
+							# new_inventory_ledger.transaction_bill_id=new_debit_note.note_id
+							# new_inventory_ledger.tenant=this_tenant
+							# new_inventory_ledger.save()
+
+							create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
+								purchase_price, mrp,new_receipt.receipt_id, this_tenant)
 						
 						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 						warehouse_valuation_change.valuation-=total_purchase_price
@@ -1560,7 +1571,6 @@ def purchase_order_save(request):
 					response_data['order_id']=new_order.id
 			
 			except Exception as err:
-				print(err)
 				response_data  = err.args 
 				transaction.rollback()
 
@@ -1586,7 +1596,6 @@ def all_orders(request):
 			vendors=json.loads(request.GET.get('vendors'))
 			start=request.GET.get('start')
 			order_type=request.GET.get('order_type')
-			print(order_type)
 			if (order_type == 'all'):
 				is_closed= [True, False]
 			elif (order_type == 'open'):

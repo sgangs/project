@@ -166,7 +166,7 @@ class debit_note(models.Model):
 	note_type=((1,'Goods Return'),
 			(2,'Payment Adjustment'))
 	note_id = models.CharField(blank=True, max_length=12)
-	note_type=models.CharField(max_length=12,choices=note_type)
+	note_type = models.CharField(max_length=12,choices=note_type)
 	
 	supplier_invoice = models.CharField(max_length=200,blank=True, null=True)
 	date=models.DateField(default=datetime.now)
@@ -233,9 +233,7 @@ class debit_note_line_item(models.Model):
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
-	vat_type=models.CharField(max_length =15, blank=True, null=True)
-	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
-
+	
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 

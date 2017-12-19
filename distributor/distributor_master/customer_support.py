@@ -165,12 +165,13 @@ def product_register(excel_data, this_tenant):
     unit=Unit.objects.for_tenant(this_tenant).get(name='Number')
     manufacturers=Manufacturer.objects.for_tenant(this_tenant).all()
     groups=Group.objects.for_tenant(this_tenant).all()
-    for i in range(2, num_rows):
+    for i in range(1, num_rows):
         manufac = None
         group_selected = None
 
         has_rate=False
         row = sheet.row_values(i)
+        print(row)
         if (row[0] == None or row[0] == "" or row[2] == None or row[2] == "") :
             row_no.append(i+1)
         elif (row[2] in product_id):
