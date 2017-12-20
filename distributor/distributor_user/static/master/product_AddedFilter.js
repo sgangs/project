@@ -24,6 +24,7 @@ function load_products(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $("#product_table .data").remove();
             $.each(jsondata, function(){
                 var url='/inventory/barcode/'+this.id+'/'
                 // console.log(url)
@@ -694,8 +695,6 @@ function filter_data(page_no) {
     startswith=$('.product_name').val();
     hsncode=$('.hsn_code').val();
 
-    console.log(startswith);
-    
     $.ajax({
         url : "productdata/", 
         type: "GET",
