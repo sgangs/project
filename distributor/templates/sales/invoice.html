@@ -150,13 +150,87 @@
 
 	</div>
 
+<script type="text/javascript">
+	var max_pages = 100;
+var page_count = 0;
 
+function snipMe() {
+  page_count++;
+  if (page_count > max_pages) {
+    return;
+  }
+  var long = $(this)[0].scrollHeight - Math.ceil($(this).innerHeight());
+  var children = $(this).children().toArray();
+  var removed = [];
+  while (long > 0 && children.length > 0) {
+    var child = children.pop();
+    $(child).detach();
+    removed.unshift(child);
+    long = $(this)[0].scrollHeight - Math.ceil($(this).innerHeight());
+  }
+  if (removed.length > 0) {
+    var a4 = $('<div class="container"></div>');
+    a4.append(removed);
+    $(this).after(a4);
+    snipMe.call(a4[0]);
+  }
+}
+
+$(document).ready(function() {
+  $('.container').each(function() {
+    snipMe.call(this);
+  });
+});
+</script>
 
 </body>
 
 <style type="text/css">
 	@page {
 	  size: A4;
+	  @bottom-right {
+	  	content: counter(page);
+	  }
 	}
+	.container{
+		box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5);
+		box-sizing: border-box;
+	}
+
+	@media print {
+		.page-break {
+			display: block;
+			page-break-before: always;
+		}
+
+		size: A4 portrait;
+	}
+
+
+	@media print{
+		body {
+		    margin: 0;
+		    padding: 0;
+		}
+
+		.container {
+			box-shadow: none;
+		    margin: 0;
+		    width: auto;
+		    height: auto;
+		}
+
+		.enable-print {
+		    display: block;
+		}
+	}
+
+	@media print{
+	    div{
+	        page-break-inside: avoid;
+	    }
+	}
+
 </style>
+
 </html>

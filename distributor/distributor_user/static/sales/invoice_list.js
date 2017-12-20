@@ -436,7 +436,6 @@ function filter_data(page_no) {
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
             $('.invoice_summary').show();
             filter_applied=true;
             $("#receipt_table .data").remove();

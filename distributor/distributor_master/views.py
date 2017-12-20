@@ -401,6 +401,21 @@ def product_view(request):
 			productid = request.GET.get('productid')
 			product=Product.objects.for_tenant(this_tenant).get(id=productid)
 			serializer = ProductDetailSerializers(product)
+		
+		elif (calltype == 'product_filter'):
+			startswith = request.GET.get('startswith')
+			hsncode = request.GET.get('hsncode')
+			
+			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
+					select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
+			
+			if startswith:
+				products=products.filter(name__istartswith = startswith)
+
+			if hsncode:
+				products=products.filter(hsn_code = hsncode)
+			
+			serializer = ProductSerializers(products, many=True)
 		else:
 			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
 					select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
