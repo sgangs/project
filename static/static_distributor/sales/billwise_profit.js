@@ -89,6 +89,7 @@ function load_receipts(page_no){
                 invoice_date=invoice_date.split("-").reverse().join("-");
 
                 profit = parseFloat(this.subtotal) - parseFloat(this.purchase);
+                profit_percent = (profit/parseFloat(this.subtotal))*100
                 
                 $('#profit_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'></td>"+
@@ -99,6 +100,7 @@ function load_receipts(page_no){
                 "<td>"+this.subtotal+"</td>"+
                 "<td>"+parseFloat(this.purchase).toFixed(2)+"</td>"+
                 "<td>"+profit.toFixed(2)+"</td>"+
+                "<td>"+profit_percent.toFixed(2)+"%</td>"+
                 "<td>"+this.total+"</td>"+
                 "</tr>");
             })
