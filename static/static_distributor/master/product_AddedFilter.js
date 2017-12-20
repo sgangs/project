@@ -693,6 +693,8 @@ $('.apply_filter').click(function(e){
 function filter_data(page_no) {
     startswith=$('.product_name').val();
     hsncode=$('.hsn_code').val();
+
+    console.log(startswith);
     
     $.ajax({
         url : "productdata/", 
