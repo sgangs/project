@@ -722,6 +722,9 @@ def invoice_details(request, pk):
 		invoice['line_items']=line_items
 		invoice['tenant_gst']=this_tenant.gst
 		invoice['tenant_name']=this_tenant.name
+		invoice['tenant_email']=this_tenant.email
+		invoice['tenant_phone']=str(this_tenant.phone)
+		# print(str(this_tenant.phone))
 		invoice['tenant_dl1']=this_tenant.dl_1
 		invoice['tenant_dl2']=this_tenant.dl_2
 		

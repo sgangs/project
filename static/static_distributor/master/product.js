@@ -6,6 +6,15 @@ var has_attribute=false, attr_name, product_name, sku, vat_type, tax, reorder, u
 
 // var tax_array={};
 
+$('.apply_reset').click(function(){
+    // filter_applied=false;
+    // $('select').val([]).selectpicker('refresh');
+    // $('.invoice_summary').hide();
+    $('.product_name').val('');
+    $('.hsn_code').val('');
+    load_products();
+});
+
 load_products()
 
 function load_products(){
@@ -15,6 +24,7 @@ function load_products(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $("#product_table .data").remove();
             $.each(jsondata, function(){
                 var url='/inventory/barcode/'+this.id+'/'
                 // console.log(url)
@@ -675,6 +685,78 @@ function update_data(){
     else{
         swal("Oops...", "Please note that name & sku must be filled and SKU must be unique.", "error");
     }
+}
+
+$('.apply_filter').click(function(e){
+    filter_data(1);
+});
+
+function filter_data(page_no) {
+    startswith=$('.product_name').val();
+    hsncode=$('.hsn_code').val();
+
+    $.ajax({
+        url : "productdata/", 
+        type: "GET",
+        data:{ calltype:"product_filter",
+            startswith: startswith,
+            hsncode: hsncode,
+            csrfmiddlewaretoken: csrf_token},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            // filter_applied=true;
+            $("#product_table .data").remove();
+            $('#filter').modal('hide');
+            $.each(jsondata, function(){
+                var url='/inventory/barcode/'+this.id+'/'
+                // console.log(url)
+                if ($.trim(this.rates).length>0){
+                    $('#product_table').append("<tr class='data' align='center'>"+
+                    "<td hidden='true'>"+this.id+"</td>"+
+                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
+                    "<td>"+$.trim(this.hsn_code)+"</td>"+
+                    "<td>"+this.sku+"</td>"+
+                    "<td>"+$.trim(this.default_unit)+"</td>"+
+                    "<td>"+$.trim(this.brand)+"</td>"+
+                    "<td>"+$.trim(this.group)+"</td>"+
+                    "<td>"+$.trim(this.remarks)+"</td>"+
+                    "<td class='rate'>"+$.trim(this.rates[0].tentative_sales_rate)+"</td>"+
+                    "<td hidden>"+$.trim(this.rates[0].id)+"</td>"+
+                    "<td hidden>"+$.trim(this.rates[0].is_tax_included)+"</td>"+
+                    "<td class='add_price'>Click to add sales rate</td>"+
+                    "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
+                    "</tr>");
+                }
+                else{
+                    $('#product_table').append("<tr class='data' align='center'>"+
+                    "<td hidden='true'>"+this.id+"</td>"+
+                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.name+"</td>"+
+                    "<td>"+$.trim(this.hsn_code)+"</td>"+
+                    "<td>"+this.sku+"</td>"+
+                    "<td>"+$.trim(this.default_unit)+"</td>"+
+                    "<td>"+$.trim(this.brand)+"</td>"+
+                    "<td>"+$.trim(this.group)+"</td>"+
+                    "<td>"+$.trim(this.remarks)+"</td>"+
+                    "<td class='rate'></td>"+
+                    "<td hidden></td>"+
+                    "<td hidden></td>"+
+                    "<td class='add_price'>Click to add sales rate</td>"+
+                    "<td class='barcode'><a href="+url+">Click to download barcode</a></td>"+
+                    "</tr>");   
+                }
+            })
+            
+            // apply_navbutton(jsondata, page_no);
+            // $('.amount_invoiced').html('Rs.'+jsondata['total_value'])
+            // $('.amount_pending').html('Rs.'+jsondata['total_pending'])
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "No sales invoice exist.", "error");
+        }
+    });
+
 }
 
 });
