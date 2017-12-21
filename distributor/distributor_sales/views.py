@@ -564,7 +564,7 @@ def all_invoices(request):
 		elif (calltype == 'apply_filter'):
 
 			customers=json.loads(request.GET.get('customers'))
-			# groups=json.loads(request.GET.get('groups'))
+			groups=json.loads(request.GET.get('groups'))
 			start=request.GET.get('start')
 			end=request.GET.get('end')
 			invoice_no=request.GET.get('invoice_no')
@@ -607,13 +607,13 @@ def all_invoices(request):
 			
 			# products = Product.objects.all()
 			
-			# if (len(groups)>0):
-			# 	groups_list=[]
-			# 	for item in groups:
-			# 		groups_list.append(item['groupid'])
+			if (len(groups)>0):
+				groups_list=[]
+				for item in groups:
+					groups_list.append(item['groupid'])
 
-			# 	products = products.filter(group__in = groups_list)
-				# invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
+				products = products.filter(group__in = groups_list)
+				invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
 
 			# if (len(manufacturers)>0):
 			# 	manufacturers_list=[]
@@ -622,7 +622,7 @@ def all_invoices(request):
 
 			# 	products = products.filter(manufacturer__in = manufacturers_list)
 			
-			# invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
+				# invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
 
 			if invoice_no:
 				invoices=invoices.filter(invoice_id__icontains=invoice_no)
