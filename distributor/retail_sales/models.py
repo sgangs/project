@@ -86,9 +86,9 @@ class retail_invoice(models.Model):
 				# next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
 				next_invoice_number = last_invoice_number + 1
 			# self.invoice_id=int(today_string + next_invoice_number)
-			if (next_invoice_number < 9):
+			if (next_invoice_number < 10):
 				self.invoice_id = int( '20'+today_string + '00' + str(next_invoice_number))
-			elif (next_invoice_number < 99):
+			elif (next_invoice_number < 100):
 				self.invoice_id = int( '20'+today_string + '0' + str(next_invoice_number))
 			else:
 				self.invoice_id = int( '20'+today_string + str(next_invoice_number))

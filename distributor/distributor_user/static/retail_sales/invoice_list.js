@@ -123,7 +123,7 @@ $("#receipt_table").on("click", ".delete", function(){
         html: false
         }, function(isConfirm){
             if (isConfirm){
-                setTimeout(function(){reconfirm(get_id)},600)            
+                setTimeout(function(){reconfirm(get_id)},600)   
             }
     })  
 });
@@ -141,7 +141,7 @@ function reconfirm(invoice_pk){
         html: false
         }, function(isConfirm){
             if (isConfirm){
-                setTimeout(function(){delete_invoice(invoice_pk)},600)            
+                setTimeout(function(){delete_invoice(invoice_pk)},600)
             }
     })
 }

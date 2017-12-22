@@ -1178,7 +1178,7 @@ def all_invoices(request):
 			end = request.GET.get('end')
 			invoice_no = request.GET.get('invoice_no')
 			payment_mode = request.GET.get('payment_mode')
-			groups = json.loads(request.GET.get('groups'))
+			# groups = json.loads(request.GET.get('groups'))
 			# productid=request.GET.get('productid')
 			# sent_with=request.GET.get('sent_with')
 			returntype=request.GET.get('returntype')
@@ -1196,13 +1196,13 @@ def all_invoices(request):
 			if payment_mode:
 				invoices=invoices.filter(payment_mode_id=payment_mode)
 
-			if (len(groups)>0):
-				groups_list=[]
-				for item in groups:
-					groups_list.append(item['groupid'])
+			# if (len(groups)>0):
+			# 	groups_list=[]
+			# 	for item in groups:
+			# 		groups_list.append(item['groupid'])
 
-				products = Product.objects.filter(group__in = groups_list)
-				invoices=invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
+			# 	products = Product.objects.filter(group__in = groups_list)
+			# 	invoices=invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
 
 			# if productid:
 			# 	product=Product.objects.for_tenant(this_tenant).get(id=productid)
