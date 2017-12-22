@@ -19,25 +19,41 @@
 <!--   </h3>
 </div> -->
 <div class="col-xs-12 text-center">
-  <h3>Debit Note Voucher Entry</h3>
+  <h3>DEBIT NOTE - NONINVENTORY</h3>
+  <!-- <h3><small>Receipt No #001</small></h3> -->
 </div>
 <br>
 <br>
-<div class="row col-xs-12">
-<p>Debit note voucher is only for debit note with purchase adjustment/discount. This should not be used for purchase inventory return</p>
+
+
+<div class="row">
+	<div class="form-group col-xs-4">
+		<label class="control-label">Select Vendor</label>
+		<select class="form-control selectpicker vendor" id="vendor" data-live-search="true">
+			<option disabled selected hidden style='display: none' value>Select Vendor</option>				
+		</select>		 
+	</div>
+	<div class="form-group col-xs-4">
+		<label class="control-label">Vendor Credit Note No</label>
+		<input class="form-control credit">		 
+	</div>
+	<div class="form-group col-xs-4">
+		<label class="control-label">Debit Note Date</label>				 
+		<input class="form-control date">
+	</div>	
 </div>
 
 <div class="row">
 	<div class="form-group col-xs-4">
-		<label class="control-label">Receipt Date</label>				 
-		<input class="form-control date">
-	</div>	
-</div>
-<div class="row">
+		<label class="control-label">Original Invoice No</label>
+		<input class="form-control invoice">		 
+	</div>
 	<div class="form-group col-xs-4">
-		<label class="control-label">Select Vendor</label>				 
-		<input class="form-control date">
-	</div>	
+		<label class="control-label">Reason For Debit Note</label>
+		<select class="form-control selectpicker reason" id="reason" data-live-search="true">
+			<option disabled selected hidden style='display: none' value>Select Reason For Debit Note</option>				
+		</select>
+	</div>
 </div>
 
 
@@ -45,40 +61,185 @@
 <table class="table table-striped table-bordered details">
 	<thead>
     	<tr>
-        	<th colspan="1"><h5></h5></th>
-        	<th colspan="1"><h5>Transaction Type</h5></th>
-            <th colspan="1"><h5>Account</h5></th>
-            <th colspan="1"><h5>Debit Value</h5></th>
-            <th colspan="1"><h5>Credit Value</h5></th>
+        	<th hidden></th>
+        	<th></th>
+        	<th style="width: 30%;">Detail</th>
+            <th hidden>Qty</th>
+            <!-- <th colspan="1"><h5>Free w/o tax</h5></th> -->
+            <th hidden>Free</th>
+            <th hidden></th>
+            <th hidden>Unit</th>
+            <th>Amount</th>
+            <th hidden>Tentative Sales Price</th>
+            <th hidden>MRP</th>
+            <th hidden>Disc. Type-1</th>
+            <th hidden>Disc. Value-1</th>
+            <th hidden>Disc. Type-2</th>
+            <th hidden>Disc. Value-2</th>
+            <th>Taxable Total</th>
+            <th>CGST %</th>
+            <th>CGST Val</th>
+            <th>SGST %</th>
+            <th>SGST Val</th>
+            <th hidden>IGST %</th>
+            <th hidden>IGST Val</th>
+            <!-- <th colspan="1"><h5>VAT Type</h5></th>
+            <th colspan="1"><h5>VAT %</h5></th> -->
+            <!-- <th colspan="1"><h5>CGST %</h5></th>
+            <th colspan="1"><h5>SGST %</h5></th>
+            <th colspan="1"><h5>IGST %</h5></th> -->
+            <th><h5>Total</h5></th>
         </tr>
 	</thead>
 	<tbody>
 		<tr class='data'>
-			<td colspan="1" class='first'><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>
-			<td colspan="1">
-				<select class="form-control select trn" id='trn'>
-					<option disabled selected hidden style='display: none' value>Select Transaction</option>
-					<option data-id=1>Debit</option>
-	            	<option data-id=2>Credit</option>
+			<td hidden><input class="id"></td>
+			<td class='first'><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>
+			<td><input class="form-control name"></td>
+            <td hidden><input class="form-control qty"></td>
+            <!-- <td colspan="1"><input class="form-control free"></td>-->
+            <td hidden><input class="form-control freet"></td>
+			<td hidden><input class="unitid"></td>
+			<td hidden>
+				<select class="form-control selectpicker unit" id='unit'>
 				</select>
 			</td>
-            <td colspan="1">
-            	<select class="form-control select acct" id='account'>
-            		<option disabled selected hidden style='display: none' value>Select Account</option>
+            <td><input class="form-control pr"></td>
+            <td hidden><input class="form-control tsr"></td>
+            <td hidden><input class="form-control mrp"></td>
+            <td hidden><select class="form-control selectpicker dt">
+					<option data-id=0 title="-">No Discount</option>
+					<option data-id=1 title=%>Percent(%)</option>
+					<option data-id=2 title="V">Value(V)</option>
 				</select>
 			</td>
-            <td colspan="1"><input type="number" class="form-control debit" disabled></td>
-            <td colspan="1"><input type="number" class="form-control credit" disabled></td>
+            <td hidden><input class="form-control dv"></td>
+            <td hidden><select class="form-control selectpicker dt2">
+					<option data-id=0 title="-">No Discount</option>
+					<option data-id=1 title=%>Percent(%)</option>
+					<option data-id=2 title="V">Value(V)</option>
+				</select>
+			</td>
+            <td hidden><input class="form-control dv2"></td>
+            <td class="total">0.00</td>
+            <!-- <td colspan="1" class="vt"></td>
+            <td colspan="1" class="vp"></td> -->
+            <td><input class="form-control cgstp"></td>
+            <td class="cgstv">0.00</td>
+            <td><input class="form-control sgstp"></td>
+            <td class="sgstv">0.00</td>
+            <td hidden><input class="form-control igstp"></td>
+            <td class="igstv" hidden>0.00</td>
+            <td class="tv">0.00</td>
 		</tr>
 	</tbody>
 </table>
 </div>
 
-<button type="button" class='addmore btn btn-success btn-xs'>+ Add</button>
+<button type="button" class='addmore btn btn-success btn-xs'>+ Add Product</button>
 <br>
 <br>
 
+<!-- <div class="row">
+	<div class="col-xs-2 text-left">
+		<strong>
+			<div>Additional Discount Type: </div><br>	    		        
+    	</strong>
+    </div>
+    <div class="col-xs-2 text-left">
+		<strong>
+			<div>Discount Value : </div><br>	    		        
+    	</strong>
+    </div>    
+</div> -->
 
+<!-- <div class="row text-right">
+	<div class="col-xs-2 col-xs-offset-8">
+    	<strong>
+			<div>Sub Total : </div><br>
+	    	<div>TAX : </div><br>
+	        <div>Total : </div><br>
+      	</strong>    	
+  	</div>
+
+  	<div class="col-xs-2">
+	    <strong>
+	      	<div class="subtotal">0 </div><br>
+	      	<div class="taxtotal"></div><br>
+	      	<div class="total"></div><br>
+	    </strong>
+  </div>
+</div> -->
+
+<div class="row text-right" hidden>
+	<div class="col-xs-6 col">
+		<table class="table metadata boderless">
+			<tr>
+				<td>Grand Discount (On subtotal)</td>
+				<td colspan="1"><select class="form-control select gdt">
+					<option data-id=0>No Disc.</option>
+					<option data-id=1>Percent(%)</option>
+					<option data-id=2>Value</option>
+					</select>
+				</td>
+				<td>Discount Value</td>
+				<td><input class="form-control gd"></td>
+			</tr>
+		</table>
+	</div>
+</div>
+<div class="row text-right billdata">
+	<div class="col-xs-6">
+		<table class="table metadata boderless" hidden>
+			<tr>
+				<td colspan="4">Payment Due date</td>
+				<td colspan="4"></td>
+				<td colspan="1"><input class="form-control duedate"></td>
+
+			</tr>						
+		</table>
+	</div>
+	<div class="col-xs-4 col-xs-offset-2">
+		<table class="table metadata boderless">
+			<tr>
+				<td>Subtotal</td>
+				<td>Rs.</td>
+		        <td><span class='subtotal_receipt'>0.00</span></td>
+			</tr>
+			<!-- <tr>
+				<td>Grand Discount</td>
+				<td>Rs.</td>
+		        <td class='grand_discount'>0.00</td>
+			</tr> -->
+			<tr hidden>
+				<td>Tax Total</td>
+				<td>Rs.</td>
+		        <td class='taxtotal_receipt'>0.00</td>
+			</tr>
+			<tr>
+				<td>CGST Total</td>
+				<td>Rs.</td>
+		        <td class='cgsttotal_receipt'>0.00</td>
+			</tr>
+			<tr>
+				<td>SGST Total</td>
+				<td>Rs.</td>
+		        <td class='sgsttotal_receipt'>0.00</td>
+			</tr>
+			<tr>
+				<td>Round Off</td>
+				<td>Rs.</td>
+		        <td ><input type="number" min="-0.99" max="0.99" step="0.01" class='form-control round'></td>
+			</tr>
+			<tr>
+				<td>Total Payable</td>
+				<td>Rs.</td>
+		        <td class='total_receipt'>0.00</td>
+			</tr>
+		</table>
+	</div>
+</div>
+<br>
 
 <button type="button" class="btn btn-primary submit">Save Record</button>
 
@@ -95,7 +256,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'account/journal_entry.js' %}"></script>
+<script src="{% static 'purchase/return_noninventory.js' %}"></script>
 
 <style type="text/css">
 	.boderless td, .boderless th{
@@ -105,6 +266,7 @@
 
 <script>
 	csrf_token='{{csrf_token}}';
+	var calledfrom = 'receipt'
 	$('.date').datepicker({
 	    autoclose: true,
 	    // endDate: moment(),

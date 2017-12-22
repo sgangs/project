@@ -28,11 +28,10 @@ urlpatterns = [
     url(r'^receipt/noninventory/$', views.purchase_receipt_new_noninventory, name='purchase_receipt_new_noninventory'),
     url(r'^receipt/noninventory/save/$', views.purchase_receipt_noninventory_save, name='purchase_receipt_noninventory_save'),
 
-    url(r'^debitnotereturn/$', views.debit_note_return_view, name='debit_note_return_view'),
-    
     url(r'^productinventorydetails/$', views.product_inventory_details, name='product_inventory_details'),
     
-    url(r'^debitnotereturn/$', views.debit_note_return_view, name='debit_note_return_view'),
+    # url(r'^debitnotereturn/$', views.debit_note_return_view, name='debit_note_return_view'),
+    url(r'^return/noninventory/$', views.debit_note_new_noninventory, name='debit_note_return_view'),
     
     url(r'^purchase_graph/$', views.purchase_crossfilter, name='purchase_crossfilter'),
     url(r'^purchase_graph/data/$', views.receipts_crossfilter, name='receipts_crossfilter'),

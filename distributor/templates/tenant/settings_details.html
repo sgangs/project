@@ -19,7 +19,6 @@
           <input type="text" class="form-control name" maxlength="100" disabled>)
     </div> -->
     <br>
-    <form class=".form-horizontal">
       <div class="form-group row companyaddressdiv">
         <label class="control-label col-sm-3 col-form-label">Address Line 1</label>
         <div class="col-sm-9">
@@ -35,37 +34,127 @@
       <div class="form-group row companyaddressdiv">
         <label class="control-label col-sm-3 col-form-label">Pincode</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control pin" maxlength="100" disabled>
+          <input type="text" class="form-control pin" maxlength="8" disabled>
         </div>
       </div>
       <div class="form-group row companynamediv">
         <label class="control-label col-sm-3 col-form-label">GST Number</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control gst" maxlength="100">
+          <input type="text" class="form-control gst" maxlength="20">
+        </div>
+      </div>
+      <div class="form-group row companypandiv">
+        <label class="control-label col-sm-3 col-form-label">PAN Number</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control pan" maxlength="20">
         </div>
       </div>
       <div class="form-group row companydl1div">
         <label class="control-label col-sm-3 col-form-label">Drug License 1</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control dl1" maxlength="100">
+          <input type="text" class="form-control dl1" maxlength="10">
         </div>
       </div>
       <div class="form-group row companydl2div">
         <label class="control-label col-sm-3 col-form-label">Drug License 2</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control dl2" maxlength="100">
+          <input type="text" class="form-control dl2" maxlength="10">
         </div>
       </div>
-    </form>
+      <div class="form-group row companypolicy1div">
+        <label class="control-label col-sm-3 col-form-label">Sales Policy</label>
+        <div class="col-sm-9"  align="left">
+          <button type="submit" class="btn btn-primary btn-xs addpolicy_btn"> Click here for sales policy, to be printed on Distributor Invoices (max - 5 policies)</button>
+        </div>
+      </div>
+
+
+    <button title="Click to Update Company Settings" class="btn update_btn">
+
+      <p id="icon" style="text-shadow: rgb(119, 71, 143) 0px 0px 0px, rgb(125, 75, 150) 1px 1px 0px, rgb(132, 79, 158) 2px 2px 0px, rgb(138, 83, 166) 3px 3px 0px, rgb(145, 87, 173) 4px 4px 0px, rgb(151, 91, 181) 5px 5px 0px, rgb(157, 94, 189) 6px 6px 0px, rgb(164, 98, 196) 7px 7px 0px; font-size: 20px; color: rgb(255, 255, 255);border-radius: 0%; text-align: center;"> <i id="icon" class="fa fa-check-circle" style="text-shadow: rgb(119, 71, 143) 0px 0px 0px, rgb(124, 74, 149) 1px 1px 0px, rgb(129, 78, 155) 2px 2px 0px, rgb(134, 81, 161) 3px 3px 0px, rgb(139, 84, 167) 4px 4px 0px, rgb(145, 87, 173) 5px 5px 0px, rgb(150, 90, 180) 6px 6px 0px, rgb(155, 93, 186) 7px 7px 0px, rgb(160, 96, 192) 8px 8px 0px, rgb(165, 99, 198) 9px 9px 0px; font-size: 20px; color: rgb(255, 255, 255); text-align: center; "></i> UPDATE </p> 
+
+    </button>
 
   </div>
   <div class="col-md-5 text-center">
-    <p><img src="{% static 'gif/details.gif' %}" alt=""></p>
+    <p style="position: fixed;"><img src="{% static 'gif/details.gif' %}" alt=""></p>
   </div>
+
+<!-- Modal -->
+<div class="modal fade" id="policy" tabindex="-1" role="dialog" aria-labelledby="policyLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="myModalLabel">Company Distributor Sales Policy(T&ampC)</h4>
+        </div>
+      <div class="modal-body">
+        <form action="" method="post">
+          <div class="form-group namediv">
+            <label for="classname" class="control-label">Distributor Sales Policy</label>
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered table-hover policy_table" id="policy_table">
+                <thead class="thead-inverse header-background">
+                  <tr>
+                    <th style="width: 5%;"></th>
+                    <th class="text-center">Policy Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- <tr class='data'>
+                    <td class='first'><button style="display: none;" class="delete btn btn-danger btn-xs">-</button></td>
+                    <td><textarea type="text" class="form-control policy" maxlength="150". placeholder="State the excat policy to be printed in distributor sales invoices. Maximum = 150 characters" style="resize: none;"></textarea></td>
+                  </tr> -->
+                </tbody>
+              </table> 
+            </div>
+            <button type="button" class='addmore btn btn-success btn-xs'>+ Add Policy</button>
+          </div>
+        </form>    
+      </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary confirm">Confirm</button>
+        </div>
+      </div>
+  </div>
+</div>
 
   {% load static from staticfiles %}
 
   <script src="{% static 'user_tenant/tenant_settings.js' %}"></script>
+  <script type="text/javascript">
+    csrf_token='{{csrf_token}}';
+    $('.addpolicy_btn').attr('data-toggle',"modal")
+    $('.addpolicy_btn').attr('data-target',"#policy")
+  </script>
+
+  <style type="text/css">
+    
+    #icon {
+        -webkit-transition-duration: 0.4s; /* Safari */
+        transition-duration: 0.4s;
+    }
+
+    #icon:hover {
+        background-color: #440066; /* Darker than purple */
+        color: white;
+    }
+
+    .update_btn {
+        background-color: #aa66cc; /* Lighter than purple */
+        -webkit-transition-duration: 0.4s; /* Safari */
+        transition-duration: 0.4s;
+    }
+
+    .update_btn:hover {
+        background-color: #440066; /* Darker than purple */
+        color: #aa66cc;
+    }    
+  </style>
+
+  <!-- Sweetalert JS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
 </div>
 {% endblock %}
 

@@ -1708,3 +1708,7 @@ def vendor_ledger_data(request):
 	response_data['object'] = entries
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def debit_note_new_noninventory(request):
+	return render(request,'purchase/debit_note_voucher.html', {'extension': 'base.html'})

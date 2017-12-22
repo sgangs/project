@@ -721,6 +721,8 @@ def invoice_details(request, pk):
 			'line_total', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
 		invoice['line_items']=line_items
 		invoice['tenant_gst']=this_tenant.gst
+		invoice['tenant_pan']=this_tenant.pan
+		invoice['tenant_tnc']=this_tenant.distributor_sales_policy
 		invoice['tenant_name']=this_tenant.name
 		invoice['tenant_email']=this_tenant.email
 		invoice['tenant_phone']=str(this_tenant.phone)

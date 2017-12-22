@@ -24,6 +24,15 @@
 <!-- <body background="{% static 'img/Bright Vault.png' %}"> -->
 
 <div class="container">
+        <div class="row display_message">
+            <div class="col-xs-12" style="text-align: center; position: fixed;">
+               <p id="icon" style="text-shadow: rgb(113, 137, 177) 0px 0px 0px, rgb(115, 140, 181) 1px 1px 0px, rgb(118, 143, 185) 2px 2px 0px, rgb(120, 146, 188) 3px 3px 0px, rgb(122, 149, 192) 4px 4px 0px, rgb(125, 152, 196) 5px 5px 0px, rgb(127, 155, 200) 6px 6px 0px, rgb(130, 158, 204) 7px 7px 0px, rgb(132, 161, 207) 8px 8px 0px, rgb(134, 164, 211) 9px 9px 0px, rgb(137, 167, 215) 10px 10px 0px, rgb(139, 170, 219) 11px 11px 0px, rgb(142, 172, 223) 12px 12px 0px, rgb(144, 175, 226) 13px 13px 0px, rgb(147, 178, 230) 14px 14px 0px, rgb(149, 181, 234) 15px 15px 0px, rgb(151, 184, 238) 16px 16px 0px, rgb(154, 187, 242) 17px 17px 0px, rgb(156, 190, 245) 18px 18px 0px, rgb(159, 193, 249) 19px 19px 0px; font-size: 26px; color: rgb(212, 36, 38); text-align: center;">
+                    <i id="icon" class="fa fa-birthday-cake" style="text-shadow: rgb(113, 137, 177) 0px 0px 0px, rgb(116, 141, 183) 1px 1px 0px, rgb(120, 146, 188) 2px 2px 0px, rgb(123, 150, 193) 3px 3px 0px, rgb(127, 154, 199) 4px 4px 0px, rgb(130, 158, 204) 5px 5px 0px, rgb(133, 162, 210) 6px 6px 0px, rgb(137, 167, 215) 7px 7px 0px, rgb(140, 171, 220) 8px 8px 0px, rgb(144, 175, 226) 9px 9px 0px, rgb(147, 179, 231) 10px 10px 0px, rgb(151, 183, 237) 11px 11px 0px, rgb(154, 188, 242) 12px 12px 0px, rgb(158, 192, 248) 13px 13px 0px; font-size: 20px; color: rgb(212, 36, 38);  text-align: center;"></i>
+
+                Happy Winter!</p>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-8 col-xs-12 ">
                 <div>
@@ -95,6 +104,18 @@
         // var percent_student = 50;
         // chart.circles("#teacherattendanceChart", percent_staff, colors[0]);
         // chart.circles("#studentattendanceChart", percent_student, colors[1]);
+        setTimeout(function() { $('.display_message').fadeOut('fast'); }, 3500);
+        $(window).scroll(function() {
+            if ($(this).scrollTop()>0)
+             {
+                $('.display_message').fadeOut();
+             }
+            else
+             {
+              $('.display_message').fadeIn();
+              setTimeout(function() { $('.display_message').fadeOut('fast'); }, 3500);
+             }
+         });
         
     </script>
 
@@ -104,9 +125,9 @@
     <style type="text/css">
         body{
         background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+        /*background-image: linear-gradient(120deg, #d42426 0%, #966465 100%);*/
+        /*color:#034a63 !important;*/
         }
     </style>
-    
-    
 {% endblock %}
 

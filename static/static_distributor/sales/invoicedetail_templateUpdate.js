@@ -122,9 +122,9 @@ function load_data(){
                     ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
                     +'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']+'<font size="2">');
 
-                
+                // Add Customer PAN later
                 $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
-                    +'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']);
+                    +'<br>'+'<br>'+'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']);
 
 
             }
@@ -132,8 +132,9 @@ function load_data(){
                 $('.customer').append('<font size="2">'+jsondata['customer_name']+
                     ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']+'<font size="2">');
 
-
-                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']);
+                // Add Customer PAN later
+                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
+                    +'<br>'+'<br>');
 
             }
             
@@ -145,8 +146,8 @@ function load_data(){
                 $(".tenant_name").html(jsondata['tenant_name'].toUpperCase());
 
                 $('.warehouse_template2').append(jsondata['warehouse_address']+
-                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<br>DL No:'+jsondata['tenant_dl1']+'/'
-                    +jsondata['tenant_dl2']);
+                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<br>PAN:'+jsondata['tenant_pan']+
+                    '<br>DL No:'+jsondata['tenant_dl1']+'/'+jsondata['tenant_dl2']);
 
             }
             else{
@@ -157,7 +158,7 @@ function load_data(){
                 // 
 
                 $('.warehouse_template2').append(jsondata['warehouse_address']+
-                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']);
+                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<br>PAN:'+jsondata['tenant_pan']);
             }
             // tenant_name_upper = jsondata['tenant_name'].toUpperCase();
             tenant_name_lower = jsondata['tenant_name'].toLowerCase();
@@ -199,6 +200,11 @@ function load_data(){
             var num_to_str_lower = num_to_str_upper.toLowerCase();
             var num_to_str = title_case(num_to_str_lower);
            $('.total_words_template2').append(num_to_str);
+
+           $.each(jsondata['tenant_tnc'], function(){
+                
+                $('.sales_tnc_body').append("<p>"+this+"</p>");
+            })
 
 
             $.each(jsondata['line_items'], function(){

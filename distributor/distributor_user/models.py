@@ -37,6 +37,7 @@ class Tenant(models.Model):
 	# cst=models.CharField("CST Number",max_length=20, blank=True, null=True)
 	# gst=models.CharField("GST Number",max_length=20, blank=True, null=True)
 
+	distributor_sales_policy=ArrayField(models.TextField(), blank=True, null=True)
 
 	address_1=models.CharField("Address Line 1",max_length=100)
 	address_2=models.CharField("Address Line 2", max_length=100, blank=True, null=True)

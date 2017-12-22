@@ -72,6 +72,7 @@
     <style type="text/css">
       body{
         background-color: #f2f5f7;
+        /*background-color: #d42426;*/
       }
     </style>
 
@@ -88,10 +89,12 @@
   					<h4>
               <ul class="nav pull-right">
                 <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-street-view"></i> Welcome, {{request.user.first_name}} {{request.user.last_name}} <b class="caret"></b></a>
-                  <ul class="dropdown-menu" style="background-color: #f2f5f7;">
+                  <!-- <ul class="dropdown-menu" style="background-color: #f2f5f7;"> -->
+                  <ul class="dropdown-menu">
                     <li><a href="{% url 'password_change' %}"><i class="fa fa-user" style="color:#034a63"></i>  Change Password</a></li>
-                    <li><a href="{% url 'user:tenant_settings' %}"><i class="fa fa-gear" style="color:#034a63"></i>  Settings</a></li>
-                    <li><a href="/help/support"><i class="fa fa-wrench" style="color:#034a63"></i>  Contact Support</a></li>
+                    <li><a href="{% url 'user:tenant_settings' %}"><i class="fa fa-building" style="color:#034a63"></i>  Company Settings</a></li>
+                    <li><a href="#"><i class="fa fa-gear" style="color:#034a63"></i>  Personal Settings</a></li>
+                    <li><a href="#"><i class="fa fa-wrench" style="color:#034a63"></i>  Contact Support</a></li>
                     <!-- <li class="divider"></li>
                     <li><a href="/auth/logout"><i class="icon-off"></i> Logout</a></li> -->
                   </ul>

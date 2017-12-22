@@ -28,18 +28,44 @@ def tenant_settings(request):
 	return render (request, 'tenant/settings_details.html')
 
 @login_required
+@api_view(['GET','POST'],)
 def tenant_settings_data(request):
 	response_data={}
 	this_tenant=request.user.tenant
-	response_data['name']=this_tenant.name
-	response_data['gst']=this_tenant.gst
-	response_data['dl_1']=this_tenant.dl_1
-	response_data['dl_2']=this_tenant.dl_2
-	response_data['address_1']=this_tenant.address_1
-	response_data['address_2']=this_tenant.address_2
-	response_data['state']=this_tenant.state
-	response_data['city']=this_tenant.city
-	response_data['pin']=this_tenant.pin
+	if request.method == 'GET':
+		response_data['name']=this_tenant.name
+		response_data['gst']=this_tenant.gst
+		response_data['pan']=this_tenant.pan
+		# response_data['pan']=this_tenant.pan
+		response_data['dl_1']=this_tenant.dl_1
+		response_data['dl_2']=this_tenant.dl_2
+		response_data['address_1']=this_tenant.address_1
+		response_data['address_2']=this_tenant.address_2
+		response_data['state']=this_tenant.state
+		response_data['city']=this_tenant.city
+		response_data['pin']=this_tenant.pin
+		response_data['distributor_sales_policy']=this_tenant.distributor_sales_policy
+
+	elif request.method == 'POST':
+		gst = request.data.get('gst')
+		pan = request.data.get('pan')
+		dl_1 = request.data.get('dl_1')
+		dl_2 = request.data.get('dl_2')
+		# address_1 = request.data.get('address_1')
+		# address_2 = request.data.get('address_2')
+		# address_2 = request.data.get('address_2')
+		# pin = request.data.get('pin')
+		try:
+			distributor_sales_policy = json.loads(request.data.get('distributor_sales_policy'))
+		except:
+			distributor_sales_policy = []
+		
+		this_tenant.gst = gst
+		this_tenant.pan = pan
+		this_tenant.dl_1 = dl_1
+		this_tenant.dl_2 = dl_2
+		this_tenant.distributor_sales_policy = distributor_sales_policy
+		this_tenant.save()
 
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
