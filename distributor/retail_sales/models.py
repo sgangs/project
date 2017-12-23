@@ -64,7 +64,7 @@ class retail_invoice(models.Model):
 		if not self.id:
 			tenant=self.tenant.key
 			today_string = self.date.strftime('%y%m%d')
-			if (self.date.month >4):
+			if (self.date.month >3):
 				this_year_string = today_string[:2]
 				this_year_int = int(this_year_string)
 				next_year_int = this_year_int+1

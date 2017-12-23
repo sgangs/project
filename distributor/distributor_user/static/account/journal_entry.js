@@ -36,7 +36,6 @@ function load_account(){
         // handle a successful response
         success : function(jsondata) {
             account_lists=jsondata
-            console.log(account_lists)
             $.each(account_lists, function(){
                 $('#account').append($('<option>',{
                     'data-id': this.id,
@@ -141,7 +140,7 @@ function new_data(){
     if (groupname == '' || groupname =='undefined' || typeof(groupname) == 'undefined' || date == '' || typeof(date) == 'undefined'
         || date =='undefined'){
         proceed = false;
-        console.log("here");
+        // console.log("here");
         swal({
             title: "Oops..",
             text: "Please select a journal group and enter date.",
@@ -155,7 +154,7 @@ function new_data(){
         var accountid=$(this).find('td:nth-child(3) :selected').data('id');
         if (isNaN(accountid) || accountid<=0 || accountid=='undefined' || typeof(accountid) == 'undefined' ){
             proceed=false;
-            console.log("here");
+            // console.log("here");
             swal({
                 title: "Oops..",
                 text: "Please select an account.",
@@ -171,7 +170,7 @@ function new_data(){
             total_debit+=value
             if (isNaN(value) || value<=0){
                 proceed=false;
-                console.log("here");
+                // console.log("here");
                 swal({
                     title: "Oops..",
                     text: "Debit must be a positive number.",
@@ -212,11 +211,16 @@ function new_data(){
         };
         items.push(item);
     });
-    console.log(items);
+    // console.log(items);
+    total_debit = parseFloat(total_debit.toFixed(2))
+    total_credit = parseFloat(total_credit.toFixed(2))
     
-    if (total_debit != total_credit){
+    if (parseFloat(total_debit) != total_credit){
         proceed=false;
         console.log("here");
+        console.log(total_debit);
+        console.log(total_credit);
+
         swal({
             title: "Oops..",
             text: "Total debit value must be equal to total creidt value.",
@@ -226,8 +230,6 @@ function new_data(){
         });
     }
     if (total_debit == 0 || total_credit == 0){
-        console.log(total_debit);
-        console.log(total_credit);
         proceed=false;
         console.log("here");
         swal({
@@ -238,7 +240,7 @@ function new_data(){
             timer:2500,
         });
     }
-    console.log(proceed);
+    
     if (proceed){
         (function() {
             $.ajax({

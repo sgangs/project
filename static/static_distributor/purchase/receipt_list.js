@@ -61,7 +61,7 @@ function load_receipts(page_no){
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
                 "<td hidden='true'>"+this_id+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.receipt_id+"</a></td>"+
                 "<td>"+this.supplier_invoice+"</td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+$.trim(this.payable_by)+"</td>"+
@@ -111,7 +111,8 @@ function load_unpaid_receipts(page_no) {
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
                 "<td hidden='true'>"+this_id+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
+                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.receipt_id+"</a></td>"+
                 "<td>"+this.supplier_invoice+"</td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+$.trim(this.payable_by)+"</td>"+
@@ -230,7 +231,8 @@ function filter_data(page_no) {
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
                 "<td hidden='true'>"+this_id+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
+                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.receipt_id+"</a></td>"+
                 "<td>"+this.supplier_invoice+"</td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+$.trim(this.payable_by)+"</td>"+

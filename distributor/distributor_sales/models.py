@@ -27,6 +27,7 @@ class sales_invoice(models.Model):
 	customer_city=models.CharField(max_length=50, blank=True, null=True)
 	customer_pin=models.CharField(max_length=8, blank=True, null=True)
 	customer_gst=models.CharField(max_length=20, blank=True, null=True)
+	customer_pan=models.CharField(max_length=20, blank=True, null=True)
 	dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
 	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	
@@ -77,6 +78,37 @@ class sales_invoice(models.Model):
 				last_invoice_number=int(last_invoice_id[6:])
 				next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
 			self.invoice_id=int(today_string + next_invoice_number)
+
+		# if not self.id:
+		# 	tenant=self.tenant.key
+		# 	today_date = datetime.strptime(self.date,'%Y-%m-%d')
+		# 	today_string = today_date.strftime('%y%m%d')
+		# 	if (today_date.month >3):
+		# 		this_year_string = today_string[:2]
+		# 		this_year_int = int(this_year_string)
+		# 		next_year_int = this_year_int+1
+		# 		next_year_string = str(next_year_int)
+		# 		today_string = this_year_string + next_year_string
+		# 	else:
+		# 		next_year_string = today_string[:2]
+		# 		next_year_int = int(next_year_string)
+		# 		this_year_int = next_year_int-1
+		# 		this_year_string = str(this_year_int)
+		# 		today_string = this_year_string + next_year_string
+			
+		# 	next_invoice_number = 1
+		# 	last_invoice=type(self).objects.filter(tenant=self.tenant).\
+		# 				filter(invoice_id__contains='20'+today_string).order_by('invoice_id').last()
+		# 	if last_invoice:
+		# 		last_invoice_id=str(last_invoice.invoice_id)
+		# 		last_invoice_number=int(last_invoice_id[6:])
+		# 		next_invoice_number = last_invoice_number + 1
+		# 	if (next_invoice_number < 10):
+		# 		self.invoice_id = int( '20'+today_string + '00' + str(next_invoice_number))
+		# 	elif (next_invoice_number < 100):
+		# 		self.invoice_id = int( '20'+today_string + '0' + str(next_invoice_number))
+		# 	else:
+		# 		self.invoice_id = int( '20'+today_string + str(next_invoice_number))
 			
 		super(sales_invoice, self).save(*args, **kwargs)
 
@@ -179,6 +211,7 @@ class sales_return(models.Model):
 	customer_city=models.CharField(max_length=50, blank=True, null=True)
 	customer_pin=models.CharField(max_length=8, blank=True, null=True)
 	customer_gst=models.CharField(max_length=20, blank=True, null=True)
+	customer_pan=models.CharField(max_length=20, blank=True, null=True)
 	dl_1=models.CharField("Drug License 1",max_length=10, blank=True, null=True)
 	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	

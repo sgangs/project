@@ -143,6 +143,9 @@ def sales_invoice_save(request):
 					customer_city=customer.city
 					customer_pin=customer.pin
 					customer_gst=customer.gst
+					customer_pan=customer.pan
+
+					print(customer_pan)
 					
 					ware_address=warehouse.address_1+", "+warehouse.address_2
 					ware_state=warehouse.state
@@ -161,6 +164,7 @@ def sales_invoice_save(request):
 					new_invoice.customer_city=customer_city
 					new_invoice.customer_pin=customer_pin
 					new_invoice.customer_gst=customer_gst
+					new_invoice.customer_pan=customer_pan
 					new_invoice.dl_1=customer.dl_1
 					new_invoice.dl_2=customer.dl_2
 
@@ -354,18 +358,6 @@ def sales_invoice_save(request):
 								new_inventory_ledger_sales(product, warehouse, 2, date, v['quantity'],\
 										v['pur_rate'], actual_sales_price,  new_invoice.invoice_id, this_tenant)
 								
-								# new_inventory_ledger=inventory_ledger()
-								# new_inventory_ledger.product=product
-								# new_inventory_ledger.warehouse=warehouse
-								# new_inventory_ledger.transaction_type=2
-								# new_inventory_ledger.date=date
-								# new_inventory_ledger.quantity=v['quantity']
-								# new_inventory_ledger.actual_sales_price=actual_sales_price
-								# new_inventory_ledger.purchase_price=v['pur_rate']
-								# new_inventory_ledger.transaction_bill_id=new_invoice.invoice_id
-								# new_inventory_ledger.tenant=this_tenant
-								# new_inventory_ledger.save()
-							
 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 							warehouse_valuation_change.valuation-=total_purchase_price
 							warehouse_valuation_change.save()
@@ -419,20 +411,6 @@ def sales_invoice_save(request):
 							except:
 								pass
 
-							# new_tax_transaction=tax_transaction()
-							# new_tax_transaction.transaction_type=2
-							# new_tax_transaction.tax_type="IGST"
-							# new_tax_transaction.tax_percent=k
-							# new_tax_transaction.tax_value=v
-							# new_tax_transaction.transaction_bill_id=new_invoice.id
-							# new_tax_transaction.transaction_bill_no=new_invoice.invoice_id
-							# new_tax_transaction.date=date
-							# new_tax_transaction.tenant=this_tenant
-							# if customer_gst:
-							# 	new_tax_transaction.is_registered = True
-							# else:
-							# 	new_tax_transaction.is_registered = False
-							# new_tax_transaction.save()
 
 					if (final_save == True):
 						remarks = "Sales Invoice No: "+str(new_invoice.invoice_id)
@@ -469,18 +447,6 @@ def sales_invoice_save(request):
 
 
 						if maintain_inventory:
-							#COGS Journal Entry
-							# if (total_purchase_price<1):
-								# raise IntegrityError
-							# journal=new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
-							# account= Account.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
-							# new_journal_entry(this_tenant, journal, total_purchase_price, account, 1, date)
-							# account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
-							# new_journal_entry(this_tenant, journal, total_purchase_price, account, 2, date)
-							# debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-							# credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-							# if (debit != credit):
-							# 	raise IntegrityError
 							inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 							acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 							inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
@@ -711,9 +677,11 @@ def invoice_details(request, pk):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
 		invoice=sales_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date',\
-		'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_city',\
+		'customer_name','customer_address','customer_city','customer_pin', 'customer_pan','customer_gst','warehouse_address','warehouse_city',\
 		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff',\
 		'total','amount_paid', 'dl_1', 'dl_2').get(id=pk)
+		if invoice['customer_pan'] == None:
+			invoice['customer_pan'] = ''
 		
 		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id',\
 			'product_hsn','unit','unit_multi','quantity','quantity_returned','sales_price',\
@@ -726,7 +694,6 @@ def invoice_details(request, pk):
 		invoice['tenant_name']=this_tenant.name
 		invoice['tenant_email']=this_tenant.email
 		invoice['tenant_phone']=str(this_tenant.phone)
-		# print(str(this_tenant.phone))
 		invoice['tenant_dl1']=this_tenant.dl_1
 		invoice['tenant_dl2']=this_tenant.dl_2
 		

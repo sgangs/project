@@ -1163,16 +1163,11 @@ def all_invoices(request):
 			invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
 				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
 			
-			filter_summary=list(invoices.values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).\
+			if (page_no == 1 or page_no == str(1)):
+				filter_summary = list(invoices.values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).\
 							annotate(value = Sum('total')))
 			
-			# page_no=1
-			# paginator = Paginator(invoices, 3)
-			# receipts_paginated=paginator.page(page_no)
-			# for item in receipts_paginated:
-			# 	print(item)
-		
-
+			
 		elif (calltype == 'apply_filter'):
 			start = request.GET.get('start')
 			end = request.GET.get('end')
@@ -1225,16 +1220,15 @@ def all_invoices(request):
 			#Update code to check this only if page_no is str(1)
 
 			#Send data details as in how much has been sent by what payment mode 
-			
-			filter_summary=list(invoices.values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).\
+			if (page_no == 1 or page_no == str(1)):
+				filter_summary = list(invoices.values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).\
 							annotate(value = Sum('total')))
-			filter_data['payment details']=filter_summary
+				filter_data['payment details']=filter_summary
 			# filter_data['total_pending'] = filter_summary['pending']
 			# filter_data['total_value'] = filter_summary['total_sum']
-			# print(filter_summary)
 		
 		if page_no:
-			response_data =  paginate_data(page_no, 10, list(invoices))
+			response_data =  paginate_data(page_no, 20, list(invoices))
 			response_data.update(filter_data)
 		else:
 			response_data['object']=list(invoices)

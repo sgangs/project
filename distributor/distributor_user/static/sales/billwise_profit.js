@@ -72,7 +72,7 @@ function load_receipts(page_no){
         dateChanged= true;
     }
     $.ajax({
-        url : "/sales/billsummary-profit/data/", 
+        url : "data/", 
         type: "GET",
         // data:{ calltype:"all_receipt"},
         data:{ page_no: page_no,
@@ -81,7 +81,7 @@ function load_receipts(page_no){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            $("#payment_table .data").remove();
+            $("#profit_table .data").remove();
             
             $.each(jsondata['object'], function(){
                 
@@ -113,33 +113,33 @@ function load_receipts(page_no){
     });
 }
 
-load_customer()
+// load_customer()
 
-function load_customer(){
-    $.ajax({
-        url : "/master/customer/getdata/", 
-        type: "GET",
-        dataType: 'json',
-        // handle a successful response
-        success : function(jsondata) {
-            $.each(jsondata, function(){
-                $('#customer').append($('<option>',{
-                    'data-id': this.id,
-                    'text': this.name + ": "+ this.key
-                }));
-                $('#customer_filter').append($('<option>',{
-                    'data-id': this.id,
-                    'text': this.name + ": "+ this.key
-                }));
-            });
-            $('#customer_filter').selectpicker('refresh');
-        },
-        // handle a non-successful response
-        error : function() {
-            swal("Oops...", "No customer data exist.", "error");
-        }
-    });
-}
+// function load_customer(){
+//     $.ajax({
+//         url : "/master/customer/getdata/", 
+//         type: "GET",
+//         dataType: 'json',
+//         // handle a successful response
+//         success : function(jsondata) {
+//             $.each(jsondata, function(){
+//                 $('#customer').append($('<option>',{
+//                     'data-id': this.id,
+//                     'text': this.name + ": "+ this.key
+//                 }));
+//                 $('#customer_filter').append($('<option>',{
+//                     'data-id': this.id,
+//                     'text': this.name + ": "+ this.key
+//                 }));
+//             });
+//             $('#customer_filter').selectpicker('refresh');
+//         },
+//         // handle a non-successful response
+//         error : function() {
+//             swal("Oops...", "No customer data exist.", "error");
+//         }
+//     });
+// }
 
 
 $('.apply_filter').click(function(e){
@@ -148,19 +148,19 @@ $('.apply_filter').click(function(e){
 
 
 function filter_data(page_no) {
-    var customers=[];
-    $.each($(".customer_filter option:selected"), function(){
-        customerid=$(this).data('id');
-        // if (customerid == 'undefined' || typeof(customerid) == undefined){
-        if ($.trim(customerid).length>0){
-            var customer={
-                customerid: customerid
-            };
-            customers.push(customer);
-        }        
-    });
+    // var customers=[];
+    // $.each($(".customer_filter option:selected"), function(){
+    //     customerid=$(this).data('id');
+    //     // if (customerid == 'undefined' || typeof(customerid) == undefined){
+    //     if ($.trim(customerid).length>0){
+    //         var customer={
+    //             customerid: customerid
+    //         };
+    //         customers.push(customer);
+    //     }        
+    // });
     
-    invoice_no=$('.invoice_no').val();
+    // invoice_no=$('.invoice_no').val();
     
     // console.log(dateChanged)
     if (!dateChanged){
@@ -168,19 +168,18 @@ function filter_data(page_no) {
         enddate = enddate.split("-").reverse().join("-")
         dateChanged= true;
     } 
-    console.log(invoice_no);
+    // console.log(invoice_no);
 
     $.ajax({
-        url : "/sales/collectionlist/", 
+        url : "data/", 
         type: "GET",
         data:{ calltype:"apply_filter",
             start: startdate,
             end: enddate,
-            productid: productid,
-            invoice_no: invoice_no,
-            cheque_rtgs: cheque_rtgs,
-            customers: JSON.stringify(customers),
-            page_no: page_no,
+            // productid: productid,
+            // invoice_no: invoice_no,
+            // customers: JSON.stringify(customers),
+            // page_no: page_no,
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',
         // handle a successful response
@@ -196,6 +195,7 @@ function filter_data(page_no) {
                 invoice_date=invoice_date.split("-").reverse().join("-");
 
                 profit = parseFloat(this.subtotal) - parseFloat(this.purchase);
+                profit_percent = (profit/parseFloat(this.subtotal))*100
                 
                 $('#profit_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'></td>"+
@@ -204,8 +204,9 @@ function filter_data(page_no) {
                 "<td>"+invoice_date+"</td>"+
                 "<td>"+this.customer_name+"</td>"+
                 "<td>"+this.subtotal+"</td>"+
-                "<td>"+this.purchase+"</td>"+
-                "<td>"+profit+"</td>"+
+                "<td>"+parseFloat(this.purchase).toFixed(2)+"</td>"+
+                "<td>"+profit.toFixed(2)+"</td>"+
+                "<td>"+profit_percent.toFixed(2)+"%</td>"+
                 "<td>"+this.total+"</td>"+
                 "</tr>");
             })

@@ -122,20 +122,17 @@ function load_data(){
                     ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
                     +'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']+'<font size="2">');
 
-                // Add Customer PAN later
+                
                 $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
-                    +'<br>'+'<br>'+'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']);
-
-
+                    +'<br>PAN:'+$.trim(jsondata['customer_pan'])+'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']);
             }
             else{
                 $('.customer').append('<font size="2">'+jsondata['customer_name']+
                     ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']+'<font size="2">');
 
-                // Add Customer PAN later
-                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
-                    +'<br>'+'<br>');
 
+                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
+                    +'<br>PAN:'+$.trim(jsondata['customer_pan']));
             }
             
             if ((jsondata['tenant_dl1']!=''&& jsondata['tenant_dl1'] !=null) || (jsondata['tenant_dl2']!=''&& jsondata['tenant_dl2']!=null) ){
@@ -160,6 +157,7 @@ function load_data(){
                 $('.warehouse_template2').append(jsondata['warehouse_address']+
                     ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<br>PAN:'+jsondata['tenant_pan']);
             }
+            
             // tenant_name_upper = jsondata['tenant_name'].toUpperCase();
             tenant_name_lower = jsondata['tenant_name'].toLowerCase();
             tenant_name_title = title_case(tenant_name_lower);
@@ -196,8 +194,8 @@ function load_data(){
             $('.round_template2').append(jsondata['roundoff']);
             $('.payable_template2').append(jsondata['total']);
 
-            var num_to_str_upper = number2text(payable_total);
-            var num_to_str_lower = num_to_str_upper.toLowerCase();
+            // var num_to_str_upper = number2text(payable_total);
+            var num_to_str_lower = number2text(payable_total).toLowerCase();
             var num_to_str = title_case(num_to_str_lower);
            $('.total_words_template2').append(num_to_str);
 

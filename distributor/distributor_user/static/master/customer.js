@@ -63,7 +63,7 @@ function load_customers(){
 
 
 
-var name ='', key='', address_1 ='', address_2='', state='', city='', phone='', cst='', tin='', gst='', details='', zone='', 
+var name ='', key='', address_1 ='', address_2='', state='', city='', phone='', cst='', tin='', gst='', pan='', details='', zone='', 
     number_valid=true; phone_data='', number_update_valid=true;
 
 var telInput = $('.phone'), errorMsg = $("#error-msg"), validMsg = $("#valid-msg");
@@ -124,6 +124,7 @@ function new_data(){
     cst=$('.cst').val()
     tin=$('.tin').val()
     gst=$('.gst').val()
+    pan=$('.pan').val()
     dl1=$('.dl1').val()
     dl2=$('.dl2').val()
     details=$('.details').val()
@@ -152,6 +153,7 @@ function new_data(){
                     cst:cst,
                     tin:tin,
                     gst:gst,
+                    pan:pan,
                     dl1:dl1,
                     dl2:dl2,
                     details:details,
@@ -207,6 +209,7 @@ $("#customer").on("click", ".link", function(){
             $('.cst_data').val(jsondata['cst'])
             $('.tin_data').val(jsondata['tin'])
             $('.gst_data').val(jsondata['gst'])
+            $('.pan_data').val(jsondata['pan'])
             $('.dl1_data').val(jsondata['dl_1'])
             $('.dl2_data').val(jsondata['dl_2'])
             $('.remarks').val(jsondata['details'])
@@ -290,6 +293,7 @@ function update_data(){
     cst_data=$('.cst_data').val()
     tin_data=$('.tin_data').val()
     gst_data=$('.gst_data').val()
+    pan_data=$('.pan_data').val()
     dl1_data=$('.dl1_data').val()
     dl2_data=$('.dl2_data').val()
     details_data=$('.details_data').val()
@@ -317,6 +321,7 @@ function update_data(){
                     cst:cst_data,
                     tin:tin_data,
                     gst:gst_data,
+                    pan:pan_data,
                     dl1: dl1_data,
                     dl2:dl2_data,
                     details:details_data,

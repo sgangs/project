@@ -71,7 +71,8 @@ function load_invoices(page_no){
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.invoice_id+"</a></td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+$.trim(this.payable_by)+"</td>"+
                 "<td>"+this.customer_name+"</td>"+
@@ -80,6 +81,8 @@ function load_invoices(page_no){
                 "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
                         "</i> Download Excel Format</button></a></td>"+
                 "</tr>");
+
+                // $('.receipt_table').find('tr:eq('+count+')').find('.new_link').href = url;
             })
             apply_navbutton(jsondata, page_no)
         },
@@ -123,7 +126,8 @@ function load_unpaid_invoices(page_no) {
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.invoice_id+"</a></td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+$.trim(this.payable_by)+"</td>"+
                 "<td>"+this.customer_name+"</td>"+
@@ -144,12 +148,12 @@ function load_unpaid_invoices(page_no) {
 };
 
 
-$("#receipt_table").on("click", ".link", function(){
+/*$("#receipt_table").on("click", ".link", function(){
     // console.log('here');
     get_url=$(this).closest('tr').find('td:nth-child(1)').html();
     console.log(get_url)
     location.href = get_url;
-});
+});*/
 
 load_metadata()
 
@@ -447,7 +451,8 @@ function filter_data(page_no) {
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.invoice_id+"</a></td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+$.trim(this.payable_by)+"</td>"+
                 "<td>"+this.customer_name+"</td>"+
@@ -769,7 +774,8 @@ $('.finalizebtn').click(function(){
         html: true,
     }, function(isConfirm){
         if (isConfirm){
-            setTimeout(function(){reconfirm_status("Finalize")},600)         
+            setTimeout(function(){reconfirm_status("Finalize")},600)     
+            // setTimeout(function(){post_data("Finalize")},600)    
         }
     })    
 });
@@ -789,7 +795,8 @@ $('.deletebtn').click(function(){
         html: true,
     }, function(isConfirm){
         if (isConfirm){
-            setTimeout(function(){reconfirm_status("Delete")},600)            
+            setTimeout(function(){reconfirm_status("Delete")},600)
+            // setTimeout(function(){post_data("Delete")},600)            
         }
     })
 });
@@ -861,7 +868,7 @@ function post_data(calltype){
             },
             // handle a non-successful response
             error : function() {
-                swal("Oops...", "There were errors in saving data.", "error");
+                swal("Oops...", "There were errors in saving data. Check if accounting period exist.", "error");
             }
         });
     }

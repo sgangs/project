@@ -10,12 +10,12 @@ class CustomerSerializers (serializers.ModelSerializer):
 	zone=serializers.StringRelatedField()
 	class Meta:
 		model = Customer
-		fields = ('id','name','key', 'address_1','address_2','state','city','pin','phone_no','cst','tin','gst','dl_1','dl_2','details','zone')
+		fields = ('id','name','key', 'address_1','address_2','state','city','pin','phone_no','tin','gst','pan', 'dl_1','dl_2','details','zone')
 
 class VendorSerializers (serializers.ModelSerializer):
 	class Meta:
-		model = Customer
-		fields = ('id','name','key', 'address_1','address_2','state','city','pin','phone_no', 'cst','tin','gst','details')
+		model = Vendor
+		fields = ('id','name','key', 'address_1','address_2','state','city','pin','phone_no', 'tin','gst', 'pan', 'details')
 
 
 class TaxSerializers (serializers.ModelSerializer):

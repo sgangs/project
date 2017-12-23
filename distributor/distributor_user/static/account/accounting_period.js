@@ -10,25 +10,24 @@ function load_accounts(){
         // handle a successful response
         success : function(jsondata) {
             $.each(jsondata, function(){
-                    $('#period').append("<tr class='data' align='center'>"+
-                    "<td hidden='true'>"+this.id+"</td>"+
-                    "<td>"+this.start+"</td>"+
-                    "<td>"+this.end+"</td>"+
-                    "<td class='capitalize'>"+this.finalized+"</td>"+
-                    "<td class='capitalize'>"+this.current_period+"</td>"+
-                    "</tr>");
-                })
+                start_date = this.start.split("-").reverse().join("-")
+                end_date = this.end.split("-").reverse().join("-")
+                $('#period').append("<tr class='data' align='center'>"+
+                "<td hidden='true'>"+this.id+"</td>"+
+                "<td>"+start_date+"</td>"+
+                "<td>"+end_date+"</td>"+
+                "<td class='capitalize'>"+this.finalized+"</td>"+
+                "<td class='capitalize'>"+this.current_period+"</td>"+
+                "</tr>");
+            })
             $('.capitalize').css('textTransform', 'capitalize');
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No account exist.", "error");
+            swal("Oops...", "There were erros in retriving data. Kindly try after sometimes or contact support. ", "error");
         }
     });
 }
-
-
-// var name ='', key='', details ='';
 
 
 $('.submit').click(function(e) {

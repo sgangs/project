@@ -52,26 +52,7 @@
 </div>
 
 <div class="prev_next">
-<ul class='add_nav'>
-    <!-- {# {% if students.has_previous %}
-        <a class="prev btn btn-info" href="?page={{1}}">First</a>
-        <a class="prev btn btn-info" href="?page={{students.previous_page_number}}">Prev</a>
-    {% endif %}
-    
-    
-    {% for pg in page_range %}
-    	{% if students.number == pg %}
-        	<a href="?page={{pg}}" class="btn btn-default">{{pg}}</a>
-		{% else %}
-        	<a href="?page={{pg}}" class="btn">{{pg}}</a>
-		{% endif %}
-	{% endfor %}
-    {% if students.has_next %}
-        <a class="next btn btn-info" href="?page={{students.next_page_number}}">Next</a>
-        <a class="next btn btn-info" href="?page={{num_page}}">Last</a>
-    {% endif %} #} -->
-    <span class="clear_both"></span>
-</ul>
+	<div class='add_nav'></div>
 </div>
 
 <!-- Modal -->
@@ -85,15 +66,12 @@
 		    <form action="" method="post">
 		    	<div class="form-group invoicediv">
 					<label class="control-label">Filter by Sales Invoice No</label>
-					<input type="text" class="form-control invoice_id">
+					<input type="text" class="form-control invoice_id" disabled placeholder="This option shall be shortly enabled.">
 				</div>
 				<div class="form-group datediv">
 					<label class="control-label">Filter By Date Range</label>
 					<input type="text" class="form-control date_range">
 				</div>
-				<!-- <div class="form-group datediv">
-					<label class="control-label"><sup><i class="fa fa-diamond" style="color:brown;"> Coming Soon</i></sup> Filter By Payment Mode</label>
-				</div> -->
 				<div class="form-group">
 					<label class="control-label">Filter by Payment Mode</label>
 					<select class="form-control selectpicker payment_mode" id="payment_mode" data-live-search="true">

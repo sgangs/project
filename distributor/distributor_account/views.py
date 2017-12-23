@@ -485,10 +485,8 @@ def journal_entry_data(request):
 					trn_type=item['trn_type']
 					accountid=item['accountid']
 					account=Account.objects.for_tenant(this_tenant).get(id=accountid)
-					value=item['value']
-					# new_journal_entry(this_tenant, journal, value, account, trn_type, date)
-					# new_journal_entry(this_tenant, journal, value, account, trn_type)
-
+					value=Decimal(item['value']).quantize(Decimal("0.01"))
+					
 					entry=journal_entry()
 					entry.tenant=this_tenant
 					entry.journal=journal
@@ -549,14 +547,15 @@ def account_period_data(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
-		# if (calltype == 'one_period'):
-		# 	vendorid = request.GET.get('vendorid')
-		# 	vendor=Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
-		# 	serializer = AccountingPeriodSerializers(vendor)
-		# else:
 		periods=accounting_period.objects.for_tenant(this_tenant).all()
 		serializer = AccountingPeriodSerializers(periods, many=True)
 		return Response(serializer.data)
+
+	elif request.method == 'POST':
+		response_data = {}
+		#Create new accoutning period. Add new accounting year for each acocunt.
+		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
 
 
 @api_view(['GET'],)

@@ -69,9 +69,9 @@ def customer_view(request):
 			city=request.data.get('city')
 			pin=request.data.get('pin')
 			phone_no=request.data.get('phone')
-			cst=request.data.get('cst')
 			tin=request.data.get('tin')
 			gst=request.data.get('gst')
+			pan=request.data.get('pan')
 			dl1=request.data.get('dl1')
 			dl2=request.data.get('dl2')
 			details=request.data.get('details')
@@ -87,9 +87,9 @@ def customer_view(request):
 			new_customer.city=city
 			new_customer.pin=pin
 			new_customer.phone_no=phone_no
-			new_customer.cst=cst
 			new_customer.tin=tin
 			new_customer.gst=gst
+			new_customer.pan=pan
 			new_customer.dl_2=dl2
 			new_customer.dl_1=dl1
 			new_customer.details=details
@@ -109,9 +109,9 @@ def customer_view(request):
 			city=request.data.get('city')
 			pin=request.data.get('pin')
 			phone_no=request.data.get('phone')
-			cst=request.data.get('cst')
 			tin=request.data.get('tin')
 			gst=request.data.get('gst')
+			pan=request.data.get('pan')
 			dl1=request.data.get('dl1')
 			dl2=request.data.get('dl2')
 			details=request.data.get('details')
@@ -127,9 +127,9 @@ def customer_view(request):
 			old_customer.city=city
 			old_customer.pin=pin
 			old_customer.phone_no=phone_no
-			old_customer.cst=cst
 			old_customer.tin=tin
 			old_customer.gst=gst
+			old_customer.pan=pan
 			old_customer.dl_2=dl2
 			old_customer.dl_1=dl1
 			old_customer.details=details
@@ -167,7 +167,6 @@ def vendor_view(request):
 			city=request.data.get('city')
 			pin=request.data.get('pin')
 			phone_no=request.data.get('phone')
-			cst=request.data.get('cst')
 			tin=request.data.get('tin')
 			gst=request.data.get('gst')
 			details=request.data.get('details')
@@ -186,7 +185,6 @@ def vendor_view(request):
 					new_vendor.city=city
 					new_vendor.pin=pin
 					new_vendor.phone_no=phone_no
-					new_vendor.cst=cst
 					new_vendor.tin=tin
 					new_vendor.gst=gst
 					new_vendor.details=details
@@ -210,7 +208,6 @@ def vendor_view(request):
 			city=request.data.get('city')
 			pin=request.data.get('pin')
 			phone_no=request.data.get('phone')
-			cst=request.data.get('cst')
 			tin=request.data.get('tin')
 			gst=request.data.get('gst')
 			details=request.data.get('details')
@@ -223,7 +220,6 @@ def vendor_view(request):
 			old_vendor.city=city
 			old_vendor.pin=pin
 			old_vendor.phone_no=phone_no
-			old_vendor.cst=cst
 			old_vendor.tin=tin
 			old_vendor.gst=gst
 			old_vendor.details=details

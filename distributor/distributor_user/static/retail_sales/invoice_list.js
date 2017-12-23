@@ -4,7 +4,7 @@ var page_no=0, all_invoices = true, filter_applied=false;;
 
 $('.apply_reset').click(function(){
     filter_applied=false;
-    // $('select').val([]).selectpicker('refresh');
+    $('select').val([]).selectpicker('refresh');
     $('.payment_summary').hide();
     $('.invoice_no').val('');
     date_update();
@@ -13,7 +13,7 @@ $('.apply_reset').click(function(){
 });
 
 
-load_invoices()
+load_invoices(1)
 
 function apply_navbutton(jsondata, page_no){
     $('.navbtn').remove()
@@ -35,11 +35,12 @@ function apply_navbutton(jsondata, page_no){
 //     page_no+=1;
 // });
 
-function load_invoices(){
+function load_invoices(page_no){
     $.ajax({
         url : "listall/", 
         type: "GET",
-        data:{ calltype:"all_invoices"},
+        data:{ calltype:"all_invoices",
+    		page_no: page_no,},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
@@ -54,7 +55,8 @@ function load_invoices(){
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.invoice_id+"</a></td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+this.cgsttotal+"</td>"+
                 "<td>"+this.sgsttotal+"</td>"+
@@ -64,7 +66,7 @@ function load_invoices(){
                 "</tr>");
             })
 
-            // apply_navbutton(jsondata, page_no)
+            apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
         error : function() {
@@ -236,7 +238,7 @@ function filter_data(page_no) {
             end: enddate,
             invoice_no: invoice_no,
             payment_mode: payment_mode,
-            // page_no: page_no,
+            page_no: page_no,
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',
         // handle a successful response
@@ -251,7 +253,8 @@ function filter_data(page_no) {
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 "<td hidden='true'>"+url+"</td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.invoice_id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.invoice_id+"</a></td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+this.cgsttotal+"</td>"+
                 "<td>"+this.sgsttotal+"</td>"+
@@ -260,17 +263,17 @@ function filter_data(page_no) {
                 "<td class='delete'>Click here to delete</td>"+
                 "</tr>");
             })
-            $("#summary_table .data").remove();
-            $.each(jsondata['payment details'], function(){
-                $('#summary_table').append("<tr class='data' align='center'>"+
-                "<td>"+this.payment_mode_name+"</td>"+
-                "<td>"+this.value+"</td>"+
-                "</tr>");
-            })
-            // apply_navbutton(jsondata, page_no);
-            // $('.amount_invoiced').html('Rs.'+jsondata['total_value'])
-            // $('.amount_pending').html('Rs.'+jsondata['total_pending'])
-        },
+            if (page_no == 1){
+            	$("#summary_table .data").remove();
+                $.each(jsondata['payment details'], function(){
+	                $('#summary_table').append("<tr class='data' align='center'>"+
+	                "<td>"+this.payment_mode_name+"</td>"+
+	                "<td>"+this.value+"</td>"+
+	                "</tr>");
+	            })
+	        }
+            apply_navbutton(jsondata, page_no);
+		},
         // handle a non-successful response
         error : function() {
             swal("Oops...", "No sales invoice exist.", "error");
