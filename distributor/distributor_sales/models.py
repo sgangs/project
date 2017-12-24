@@ -17,7 +17,7 @@ class TenantManager(models.Manager):
 
 class sales_invoice(models.Model):
 	id=models.BigAutoField(primary_key=True)
-	invoice_id = models.PositiveIntegerField(db_index=True)
+	invoice_id = models.BigIntegerField(db_index=True)
 	date=models.DateField(default=dt.date.today)
 	customer=models.ForeignKey(Customer,blank=True, null=True,\
 						related_name='salesInvoice_sales_master_customer', on_delete=models.SET_NULL)
@@ -97,13 +97,17 @@ class sales_invoice(models.Model):
 					this_year_int = next_year_int-1
 					this_year_string = str(this_year_int)
 					today_string = this_year_string + next_year_string
+
 				
+				mon = '{:02d}'.format(today_date.month)
+				today_string+= mon
+
 				next_invoice_number = 1
 				last_invoice=type(self).objects.filter(tenant=self.tenant).\
 							filter(invoice_id__contains='20'+today_string).order_by('invoice_id').last()
 				if last_invoice:
 					last_invoice_id=str(last_invoice.invoice_id)
-					last_invoice_number=int(last_invoice_id[6:])
+					last_invoice_number=int(last_invoice_id[8:])
 					next_invoice_number = last_invoice_number + 1
 				if (next_invoice_number < 10):
 					self.invoice_id = int( '20'+today_string + '00' + str(next_invoice_number))
