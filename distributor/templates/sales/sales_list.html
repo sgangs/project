@@ -186,6 +186,7 @@
 				<button title="Click to Finalize Invoices" class="btn btn-warning btn-xs finalizebtn" style="background-color: #aa66cc; border-color: #aa66cc;"><i class="fa fa-check"></i></button>
 				<button type="submit" title="Click to Cancel Invoices" class="btn btn-warning btn-xs cancelbtn" style="background-color: coral; border-color: coral;"><i class="fa fa-close"></i></button>
 				<button title="Click to Delete Invoices" class="btn btn-danger btn-xs deletebtn"><i class="fa fa-minus"></i></button>
+				<button title="Click to Finalize Invoices" class="btn btn-info btn-xs hintbtn text-right"><i class="fa fa-exclamation-circle"></i> Hints</button>
 			</div>
 
 	    </div>
@@ -333,7 +334,52 @@
 	</div>
 </div>
 
-
+<!-- Modal -->
+<div class="modal fade transparent_back" id="hint" tabindex="-1" role="dialog" aria-labelledby="hintLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel" style="color:white;">Hints on Invoice Status</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label class="control-label" style="color:white;">Open</label>
+							<p style="color:white;">These are invoices, which are generated but not finalized. You can edit open invoices, but you cannot accept payment against open invoices. This modal shows the list of open invoices.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label class="control-label" style="color:white;">Finalize</label>
+							<p style="color:white;">Once you finalize an invoice, the invoice data gets permanently stored. You can see the corresponding ledger in accounts and the movement shall reflect in your accounting, inventory and receivables.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label class="control-label" style="color:white;">Delete</label>
+							<p style="color:white;">Once you delete an invoice, all invoices data gets deleted and you will not be able to view the invoice in future. It can happen that next invoices will end up using this invoice number.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+			    	<div class="col-xs-10">
+				    	<div class="form-group">
+							<label class="control-label" style="color:white;">Cancel</label>
+							<p style="color:white;">Once you cancel an invoice, the invoice data gets permanently deleted, but the invoice metadata remains. You can always check your list of canceled invoices.</p>
+						</div>
+					</div>
+				</div>
+			</form>    
+	   	</div>		    
+	    </div>
+	</div>
+</div>
 
 <!-- Sweetalert JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
@@ -368,6 +414,9 @@ $('.invoice_summary').attr('data-target',"#summary")
 $('.finalizeselectbtn').attr('data-toggle',"modal")
 $('.finalizeselectbtn').attr('data-target',"#finalize")
 
+$('.hintbtn').attr('data-toggle',"modal")
+$('.hintbtn').attr('data-target',"#hint")
+
 $('.date_payment').datepicker({
 	autoclose: true,
 	// endDate: moment(),
@@ -381,17 +430,29 @@ $(".date_payment").datepicker("setDate", new Date());
 
 <style type="text/css">
 	.modal-dialog {
-	width: 80%;
-	height: 80%;
-	margin: auto;
-	padding: 5%;
-}
+		width: 80%;
+		height: 80%;
+		margin: auto;
+		padding: 5%;
+	}
 
-.modal-content {
-	height: auto;
-	min-height: 80%;
-	border-radius: 0;
-}
+	.modal-content {
+		height: auto;
+		min-height: 80%;
+		border-radius: 0;
+	}
+
+	.transparent_back .modal-content {
+		background: rgba(140, 140, 145, 0.85);
+		border: 0;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+	}
+</style>
+
+<style type="text/css">
+	
+
 </style>
 
 {% endblock %}
