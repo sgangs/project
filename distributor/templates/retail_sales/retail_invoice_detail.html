@@ -75,6 +75,7 @@
             <th class="text-center" id='not_pos_print'><h5>Unit</h5><br><h5>SGST %</h5></th>
             <th class="text-center" id='not_pos_print'><h5>Unit Rate</h5><br><h5>SGST Amt.</h5></th>
             <th class="text-center" id='not_pos_print'><h5>--</h5><br><h5>Total</h5></th>
+            <th class="text-center" id='not_pos_print'></th>
         </tr>
         <!-- <tr class="text-center" id='pos_print'> 
             <th class="text-center" colspan="5"><h5>Item</h5></th>
@@ -133,6 +134,7 @@
             </tr> -->
         </table>
         <!-- <svg class='text-center barcode'></svg> -->
+        <p class="text-center"> </p>
     </div>
 </div>
 <br>
@@ -194,6 +196,10 @@
     @media screen {
         #only_print{
             display: none;
+        }
+        table tr td:last-child {
+            border: none;
+        }
     }
 </style>
 

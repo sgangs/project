@@ -21,20 +21,20 @@
             <div class="col-md-12">
             	<!-- <div class="row"> -->
         			<div class="col-xs-4 text-left"  id='pos_print'>
-        				<address class='customer'>
-        				<strong><font size="2">Customer:</font></strong>
+        				<font size="1"><address class='customer'>
+        				<strong><font size="1">Customer:</font></strong>
         					<br>
-        				</address>
+        				</address></font>
         			</div>
                     <div class="col-xs-4 text-center" id='pos_print'>
                         <h3 class='invoiceid'><font size="3">Tax Invoice: </font></h3>
                         <h3 class='date'><font size="3">Date: </font></h3>
                     </div>
                     <div class="col-xs-4 text-right" id='not_pos_print'>
-        				<address class='warehouse'>
-            			<strong><font size="2">Sold By:</font></strong>
+        				<font size="1"><address class='warehouse'>
+            			<strong><font size="1">Sold By:</font></strong>
             				<br>
-        				</address>
+        				</address></font>
         			</div>
         		<!-- </div> -->
         		
@@ -137,7 +137,7 @@
                         <h4><small><b class='from_template2'>From: </b></small></h4>
                       </div>
                       <div class="panel-body">
-                        <p class='warehouse_template2'></p>
+                        <p class='warehouse_template2'><small></small></p>
                       </div>
                     </div>
             </div>
@@ -152,12 +152,12 @@
                       </div>
                     </div>
             </div>
-          </div> <!-- / end client details section -->
+          </div> 
 
         <table class="table table-bordered details text-center">
             <thead>
               <tr>
-                <th class="text-center product_name_header" colspan="2"><font size="1">Item</font></th>
+                <th class="text-center product_name_header" colspan="2" style="width: 45%"><font size="1">Item</font></th>
                 <th class="text-center"><font size="1">HSN</font></th>
                 <th class="text-center"><font size="1">Qty</font></th>
                 <th class="text-center"><font size="1">Rate</font></th>
@@ -209,9 +209,6 @@
                 <br>
 
               </div>
-              <!-- <div class="panel-footer">
-                  <h5 class='total_words_template2'>Total Payable In Words: </h5>
-              </div> -->
             </div>
           </div>
         </div>
@@ -219,9 +216,6 @@
         <div class="row">
           <div class="col-xs-12">
             <div class="panel panel-danger">
-              <!-- <div class="panel-heading">
-                <h5 class='total_words_template2'>Total Payable In Words: </h5>
-              </div> -->
               <div class="panel-body">
                 <div class="col-xs-12 sales_tnc_body">
                     <h4><small><b>Our Sales Terms and Conditions </b></small></h4>
@@ -241,11 +235,131 @@
             </div>
           </div>
         </div>
-        
+    </div>
+
+    <div class="print template2bnw" hidden>
+        <div class="row">
+            <div class="col-xs-12 text-right">Original/Duplicate/Triplicate</div>
+            <div class="col-xs-6">
+              <h4 class='tenant_name add_shadow'> </h4>
+              <h4><small class='date_template2 add_shadow'>Date #</small></h4>
+            </div>
+            <div class="col-xs-6 text-right">
+              <h4 class="add_shadow">TAX INVOICE</h4>
+              <h4><small class='invoiceid_template2 add_shadow'>Invoice #</small></h4>
+            </div>
+        </div>
+
+          <div class="row">
+            <div class="col-xs-6">
+              <!-- <div class="panel panel-danger"> -->
+                      <!-- <div class="panel-heading"> -->
+                        <h4><small><b class='from_template2'>From: </b></small></h4>
+                      <!-- </div> -->
+                      <!-- <div class="panel-body"> -->
+                        <p class='warehouse_template2'><small></small></p>
+                      <!-- </div> -->
+                    <!-- </div> -->
+            </div>
+            <div class="col-xs-6 text-right">
+              <!-- <div class="panel panel-danger"> -->
+                      <!-- <div class="panel-heading"> -->
+                        <h4><small><b class='to_template2'>To : </b></small></h4>
+                      <!-- </div> -->
+                      <!-- <div class="panel-body"> -->
+                        <p class='customer_template2'>
+                        </p>
+                      <!-- </div> -->
+                    <!-- </div> -->
+            </div>
+          </div> 
+
+        <table class="table table-bordered details text-center" cellpadding="0">
+            <thead>
+              <tr>
+                <th class="text-center product_name_header" colspan="2" style="width: 35%">Item</font></th>
+                <th class="text-center"><font size="1">HSN</font></th>
+                <th class="text-center"><font size="1">Qty</font></th>
+                <th class="text-center"><font size="1">Rate</font></th>
+                <th class="text-center"><font size="1">MRP</font></th>
+                <th class="text-center"><font size="1">Disc-1</font></th>
+                <th class="text-center"><font size="1">Disc-2</font></th>
+                <th class="text-center"><font size="1">Taxable Total</font></th>
+                <th class="text-center"><font size="1">CGST %</font></th>
+                <th class="text-center"><font size="1">CGST Amt</font></th>
+                <th class="text-center"><font size="1">SGST %</font></th>
+                <th class="text-center"><font size="1">SGST Amt</font></th>
+                <th class="text-center is_igst" id='not_pos_print'><font size="1">IGST%</font></th>
+                <th class="text-center is_igst" id='not_pos_print'><font size="1">IGST Amt</font></th>
+                <th class="text-center"><font size="1">Total</font></th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div class="row" style="border-style: ridge;">
+          <div class="col-xs-12">
+            <!-- <div class="panel panel-info"> -->
+              <!-- <div class="panel-heading"> -->
+                <div class="col-xs-4">
+                    <p><small class='subtotal_template2'>Subtotal: </small></p>
+                </div>
+                <div class="col-xs-4">
+                    <p><small class='cgsttotal_template2'>CGST Total: </small></p>
+                </div>
+                <div class="col-xs-4">
+                    <p><small class='sgsttotal_template2'>SGST Total: </small></p>
+                </div>
+                <div class="col-xs-4">
+                    <p><small class='total_template2'>Total: </small></p>
+                </div>
+                <div class="col-xs-4">
+                    <p><small class='round_template2'>Round-Off: </small></p>
+                </div>
+                <div class="col-xs-4">
+                    <p><small class='payable_template2'>Total Payable: </small></p>
+                </div>
+                <div class="col-xs-12">
+                    <h5 class='total_words_template2'>Total Payable In Words: </h5>
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+
+              <!-- </div> -->
+            <!-- </div> -->
+          </div>
+        </div>
+
+        <div class="row" style="border-style: ridge;">
+          <div class="col-xs-12">
+            <!-- <div class="panel panel-danger"> -->
+              <!-- <div class="panel-body"> -->
+                <div class="col-xs-12 sales_tnc_body">
+                    <h4><small><b>Our Sales Terms and Conditions </b></small></h4>
+                </div>
+                <div class="col-xs-6 text-left">
+                    <h4><small><b>Contact Details </b></small></h4>
+                    <p><small class='phone'>Phone No: </small></p>
+                    <p><small class="email">Email Address: </small></p>
+                </div>
+                <div class="col-xs-6 text-right">
+                    <h4><small><b class="behalf_template2">On Behalf Of </b></small></h4>
+                    <br>
+                    <br>
+                    <p>Authorized Signatory </p>
+                </div>
+              <!-- </div> -->
+            <!-- </div> -->
+          </div>
+        </div>
     </div>
 
 <button type="button" class="btn btn-primary printout hidden-print btn-sm">Print Out - Base Template</button>
 <button type="button" class="btn btn-primary printTemplate2 hidden-print btn-sm">Print Out - Template Hapiness Reloaded</button>
+<button type="button" class="btn btn-primary printTemplate2BnW hidden-print btn-sm">Print Out - Template Simple BnW</button>
 <!-- <button type="button" class="btn btn-primary posprintout" id="not_print">Take POS Print Out</button>
  -->
 <!-- Sweetalert JS -->
@@ -256,7 +370,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'sales/invoicedetail.js' %}"></script>
+<script src="{% static 'sales/invoicedetail_templates.js' %}"></script>
 
 <style type="text/css">
 	.boderless td, .boderless th{
@@ -273,6 +387,9 @@
     @media screen {
         #only_print{
             display: none;
+    }
+    table {
+        border-collapse: collapse;
     }
 </style>
 

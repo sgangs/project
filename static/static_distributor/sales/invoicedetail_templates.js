@@ -292,11 +292,13 @@ $('.printTemplate2').click(function(){
      // window.print();
     if (igst_total == 0 || isNaN(igst_total)){
         $('.is_igst').addClass('hidden-print');
-        $(".product_name_header").css('width' ,'25%')
+        // $(".product_name_header").css('width' ,'25%')
 
     }
 
     $(".base_template").attr('hidden', true);
+
+    $(".template2bnw").attr('hidden', true);
 
     $(".template2").attr('hidden', false);
 
@@ -325,6 +327,52 @@ $('.printTemplate2').click(function(){
     $(".base_template").attr('hidden', false);
 
     $(".template2").attr('hidden', true);
+
+    $(".template2bnw").attr('hidden', true);
+
+});
+
+$('.printTemplate2BnW').click(function(){
+     // window.print();
+    if (igst_total == 0 || isNaN(igst_total)){
+        $('.is_igst').addClass('hidden-print');
+        // $(".product_name_header").css('width' ,'25%')
+
+    }
+
+    $(".base_template").attr('hidden', true);
+
+    $(".template2").attr('hidden', true);
+
+    $(".template2bnw").attr('hidden', false);
+
+    $(".print_style").
+        // text("@media print {#print{display: block;}#not_print{display: none;}} @page{size: landscape; margin: 0mm;}");
+        text("@page {size: A4; @bottom-right { content: counter(page); } }"+
+        
+        ".template2{ box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5); box-sizing: border-box; }"+
+
+        "@media print { .page-break { display: block; page-break-before: always; } size: A4 portrait; }"+
+
+        // "@media print { .add_shadow { -webkit-filter: drop-shadow(4px 4px 1px #ccc); text-shadow: 4px 4px 1px #ccc; } }"+
+
+        "@media print {"+
+        ".details { border: solid #000000 !important; border-width: 0.5px 0 0 0.5px !important; }"+
+        ".details th, .details td { border: solid #000000 !important; border-width: 0 0.5px 0.5px 0 !important; }} "+
+
+        "@media print{ body { margin: 0; padding: 0; }"+
+
+        ".template2 { box-shadow: none; margin: 0; width: auto; height: auto; } .enable-print { display: block; } }"+
+
+        "@media print{ div{ page-break-inside: avoid; } }");
+
+    window.print();
+
+    $(".base_template").attr('hidden', false);
+
+    $(".template2").attr('hidden', true);
+
+    $(".template2bnw").attr('hidden', true);
 
 });
 

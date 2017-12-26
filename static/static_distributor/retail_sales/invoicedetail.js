@@ -55,7 +55,8 @@ function load_data(){
                     "<td>"+this.quantity+"<br>"+this.cgst_value+"</td>"+
                     "<td>"+this.unit+"<br>"+this.sgst_percent+"</td>"+
                     "<td>"+this.sales_price+"<br>"+this.sgst_value+"</td>"+
-                    "<td>--<br>"+this.line_total+"</td></tr>"
+                    "<td>--<br>"+this.line_total+"</td>"+
+                    "<td></td></tr>"
                 );
 
                 // $('.details_pos').append("<tr class='data text-center'>"+
