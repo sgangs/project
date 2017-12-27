@@ -625,8 +625,11 @@ def trial_balance_data(request):
 @login_required
 def account_journal_entries(request, pk_detail):
 	extension="base.html"
-	account=Account.objects.for_tenant(request.user.tenant).get(id=pk_detail)
-	entries=journal_entry.objects.filter(account=account).select_related('journal').all()
+	this_tenant = request.user.tenant
+	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+	account=Account.objects.for_tenant(this_tenant).get(id=pk_detail)
+	journals = Journal.objects.for_tenant(this_tenant).filter(date__range = [period.start, period.end])
+	entries=journal_entry.objects.filter(account=account, journal__in = journals).select_related('journal').order_by('journal__date').all()
 	return render(request, 'account/accountwisejournal.html',{'account':account, 'entries':entries, 'extension':extension})
 
 @login_required

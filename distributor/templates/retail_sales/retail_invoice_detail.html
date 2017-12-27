@@ -18,22 +18,16 @@
 <div class="row">
         <div class="col-md-12">
         	<div class="col-xs-6 receipt-title" id='pos_print'>
-    			<h4 class='invoiceid'>Tax Invoice: <br></h4>
+    			<h4><small class='invoiceid'>Tax Invoice: <br></small></h4>
             <hr>    
     		</div>
     		<div class="col-xs-6 text-right"  id='pos_print'>
-    			<h4 class='date'>Date: <br></h4>
+    			<h4><small class='date'>Date: <br></small></h4>
     		<hr>
     		</div>
     		<div class="row">
-    			<!-- <div class="col-xs-6 text-left"  id='pos_print'>
-    				<address class='customer'>
-    				<strong>Customer:</strong>
-    					<br>
-    				</address>
-    			</div> -->
     			<div class="col-xs-12 text-center">
-    				<address class='warehouse'>        			
+    				<small><address class='warehouse'></small>        			
     			</div>
     		</div>
     		
@@ -69,32 +63,22 @@
 <table class="table table-striped table-bordered details_pos text-center">
 	<thead>
     	<tr class="text-center" id='pos_print'> 
-        	<th class="text-center"><h5>Item</h5><br><h5>Disc. Amt.</h5></th>
-            <th class="text-center"><h5>HSN</h5><br><h5>CGST %</h5></th>
-            <th class="text-center"><h5>Qty</h5><br><h5>CGST Amt.</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Unit</h5><br><h5>SGST %</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Unit Rate</h5><br><h5>SGST Amt.</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>--</h5><br><h5>Total</h5></th>
-            <th class="text-center" id='not_pos_print'></th>
-        </tr>
-        <!-- <tr class="text-center" id='pos_print'> 
-            <th class="text-center" colspan="5"><h5>Item</h5></th>
+        	<th class="text-center" colspan="8"><font size='1'>Item</font></th>
         </tr>
         <tr class="text-center" id='pos_print'> 
-            <th class="text-center"><h5>HSN</h5><br><h5>CGST %</h5></th>
-            <th class="text-center"><h5>Qty</h5><br><h5>CGST Amt.</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Unit</h5><br><h5>SGST %</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Unit Rate</h5><br><h5>SGST Amt.</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Disc. Amt.</h5><br><h5>Total</h5></th>
-        </tr> -->
-	</thead>
+            <th class="text-center"><font size='1'>HSN</font></th>
+            <th class="text-center"><font size='1'>Qty</font></th>
+            <th class="text-center"><font size='1'>Unit</font></th>
+            <th class="text-center" id='not_pos_print'><font size='1'>Rate</font></th>
+            <th class="text-center" id='not_pos_print'><font size='1'>Dcnt</font></th>
+            <th class="text-center" id='not_pos_print'><font size='1'>GST%</font></th>
+            <th class="text-center" id='not_pos_print' colspan="2"><font size='1'>Total</font></th>
+        </tr>
+    </thead>
 	<tbody>
 	</tbody>
 </table>
 </div>
-
-<br>
-
 
 <div class=" total_div row col-xs-12">
 	<div class="total_detail">
@@ -112,29 +96,24 @@
 <div class=" total_div_pos" hidden>
     <div class="total_detail_pos">
         <table class="table metadata boderless" >
-            <tr>
-                <td>Subtotal</td>
-                <td class='subtotal_receipt'>Rs. </td>
+            <tr class='text-center'>
+                <td><small class='subtotal_receipt'>Subtotal Rs. </small>
+                <br><small class='cgsttotal_receipt'>CGST Rs. </small>
+                <br><small class='sgsttotal_receipt'>SGST Rs. </small>
+                <br><br><b class='total_receipt'>Total Rs.</b></td>
             </tr>
-            <tr>
-                <td>CGST</td>
-                <td class='cgsttotal_receipt'>Rs. </td>
+            <!-- <tr class='text-center'>
+                <td><small class='cgsttotal_receipt'>CGST Rs. </small></td>
             </tr>
-            <tr>
-                <td>SGST</td>
-                <td class='sgsttotal_receipt'>Rs. </td>
-            </tr>
-            <tr>
-                <td>Total</td>
-                <td class='total_receipt'>Rs. </td>
-            </tr>
-            <!-- <tr>
-                <td class='barcode_invoice'></td>
-                <td><svg class='barcode'></svg></td>
+            <tr class='text-center'>
+                <td><small class='sgsttotal_receipt'>SGST Rs. </small></td>
             </tr> -->
+            <tr class='text-center'>
+                <td></td>
+            </tr>
         </table>
-        <!-- <svg class='text-center barcode'></svg> -->
-        <p class="text-center"> </p>
+        <!-- <p class="text-center">**********THANK YOU. VISIT AGAIN.**********</p> -->
+        <p class="text-center">   </p>
     </div>
 </div>
 <br>
@@ -166,7 +145,7 @@
 
 {% load static from staticfiles %}
 
-<script src="{% static 'retail_sales/invoicedetail.js' %}"></script>
+<script src="{% static 'retail_sales/invoicedetail_newformat.js' %}"></script>
 
 <style type="text/css">
 	.boderless td, .boderless th{

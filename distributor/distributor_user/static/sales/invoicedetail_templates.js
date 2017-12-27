@@ -204,7 +204,9 @@ function load_data(){
                 $('.sales_tnc_body').append("<p>"+this+"</p>");
             })
 
-
+           // var len_items = jsondata['line_items'].length;
+           // var len_policy = jsondata['tenant_tnc'].length;
+           // var total_len = len_items + len_policy;
             $.each(jsondata['line_items'], function(){
                 igst_total+=this.igst_value;
                 var d1_val=0.00, d2_val=0.00;
@@ -252,6 +254,28 @@ function load_data(){
                     "</tr>");
             });
 
+            // if (total_len < 12){
+            //     for (i = 0; i < (12 - total_len); i++) {
+            //         $('.table_bnw').append("<tr class='data text-center blank_rows'>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td></td>"+
+            //         "<td class='is_igst'></td>"+
+            //         "<td class='is_igst'></td>"+
+            //         "</tr>");
+            //     }
+            // }
         },
         // handle a non-successful response
         error : function() {
@@ -359,6 +383,10 @@ $('.printTemplate2BnW').click(function(){
         "@media print {"+
         ".details { border: solid #000000 !important; border-width: 0.5px 0 0 0.5px !important; }"+
         ".details th, .details td { border: solid #000000 !important; border-width: 0 0.5px 0.5px 0 !important; }} "+
+
+        "@media print {"+
+        ".blank_rows { border: solid #ffffff !important; border-width: 0.5px 0 0 0.5px !important; }"+
+        ".blank_rows th, .blank_rows td { border: solid #ffffff !important; border-width: 0 0.5px 0.5px 0 !important; }} "+
 
         "@media print{ body { margin: 0; padding: 0; }"+
 

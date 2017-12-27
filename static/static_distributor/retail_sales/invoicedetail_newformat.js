@@ -29,8 +29,7 @@ function load_data(){
             $('.total_receipt').append(jsondata['total']);
 
             $.each(jsondata['line_items'], function(){
-                // free_total=parseFloat(this.free_with_tax)+parseFloat(this.free_without_tax)
-                pur_rate=parseFloat(this.quantity)*parseFloat(this.purchase_price)
+                var total_gst=parseFloat(this.cgst_percent) + parseFloat(this.sgst_percent);
                 $('.details').append("<tr class='data text-center'>"+
                     "<td id='not_pos_print'>"+this.product_name+"</td>"+
                     "<td id='not_pos_print'>"+$.trim(this.product_hsn)+"</td>"+
@@ -49,14 +48,32 @@ function load_data(){
                     "<td id='not_pos_print'>"+this.line_total+"</td>"+
                     "</tr>");
 
-                $('.details_pos').append("<tr class='data text-center'>"+
-                    "<td>"+this.product_name+"<br>"+$.trim(this.discount_amount)+"</td>"+
-                    "<td>"+$.trim(this.product_hsn)+"<br>"+this.cgst_percent+"</td>"+
-                    "<td>"+this.quantity+"<br>"+this.cgst_value+"</td>"+
-                    "<td>"+this.unit+"<br>"+this.sgst_percent+"</td>"+
-                    "<td>"+this.sales_price+"<br>"+this.sgst_value+"</td>"+
-                    "<td>--<br>"+this.line_total+"</td>"+
-                    "<td></td></tr>"
+                // $('.details_pos').append("<tr class='data text-center'>"+
+                //     "<td>"+this.product_name+"<br>"+$.trim(this.discount_amount)+"</td>"+
+                //     "<td>"+$.trim(this.product_hsn)+"<br>"+this.cgst_percent+"</td>"+
+                //     "<td>"+this.quantity+"<br>"+this.cgst_value+"</td>"+
+                //     "<td>"+this.unit+"<br>"+this.sgst_percent+"</td>"+
+                //     "<td>"+this.sales_price+"<br>"+this.sgst_value+"</td>"+
+                //     "<td>--<br>"+this.line_total+"</td>"+
+                //     "<td></td></tr>"
+                // );
+
+                $('.details_pos').append("<tr class='data text-center prod_name_row'>"+
+                    "<td colspan='8'><font size='1'>"+this.product_name+"</font></td>"+
+                    // "<td></td></tr>"
+                    "</tr>"
+                );
+                $('.details_pos').append("<tr class='data text-center prod_details_row'>"+
+                    // "<td>"+this.product_name+"<br>"+$.trim(this.discount_amount)+"</td>"+
+                    "<td class='first_col'><font size='1'>"+$.trim(this.product_hsn)+"</font></td>"+
+                    "<td class='middle_col'><font size='1'>"+this.quantity+"</font></td>"+
+                    "<td class='middle_col'><font size='1'>"+this.unit+"</font></td>"+
+                    "<td class='middle_col'><font size='1'>"+this.sales_price+"</font></td>"+
+                    "<td class='middle_col'><font size='1'>"+$.trim(this.discount_amount)+"</font></td>"+
+                    "<td class='middle_col'><font size='1'>"+total_gst+"</font></td>"+
+                    "<td class='middle_col'><font size='1'>"+this.line_total+"</font></td>"+
+                    "<td class='last_col'></td></tr>"
+                    // "</tr>"
                 );
 
                 // $('.details_pos').append("<tr class='data text-center'>"+
@@ -105,6 +122,7 @@ $('.posprintout').click(function(){
 
      $('#a4_detail_div').attr('hidden', true);
      $('#pos_detail_div').attr('hidden', false);
+
      // console.log('here')
 
 
@@ -119,7 +137,26 @@ $('.posprintout').click(function(){
      $(".print_style").
         // text("@media print {.table.details tr td, table.details tr th { page-break-inside:avoid; page-break-after:auto;"+
         //     "position: relative; }"+
-            text("@media print {.#print{display: block;}#not_print{display: none;}} @page{size: 3in "+y_inch+"in; margin: 0mm;}");
+            text("@media print {.#print{display: block;}#not_print{display: none;}} @page{size: 3in "+y_inch+"in; margin: 0mm;}"+
+                    // "@media print {"+
+                    ".details_pos { border: solid #000000 !important; border-width: 0.2px 0 0 0.2px !important; }"+
+                    ".details_pos th { border: solid #000000 !important; border-width: 0 0.2px 0.2px 0 !important; } "+
+                    ".details_pos  td { border-bottom:0.2px solid black !important; } "+
+                    ".details_pos .prod_details_row td { border-top:0  !important; } "+
+                    ".details_pos .first_col { border-left:0.2px solid black !important; } "+
+                    ".details_pos .first_col { border-right:0 !important; } "+
+                    ".details_pos .last_col { border-right:0.2px solid black !important; } "+
+                    ".details_pos .last_col { border-left:0 !important; } "+
+                    ".details_pos .middle_col { border-right:0 !important; } "+
+                    ".details_pos .middle_col { border-left:0 !important; } "+
+                    ".details_pos .last_col { border-right:0.2px solid black !important; } "+
+                    ".details_pos .prod_name_row td { border-top:0.2px solid black !important; } "+
+                    ".details_pos .prod_name_row td { border-left:0.2px solid black !important; } "+
+                    ".details_pos .prod_name_row td { border-right:0.2px solid black !important; } "+
+                    ".details_pos .prod_name_row td { border-bottom:0  !important; }"+
+                    ".boderless td { border:0  !important; } "+
+                    ".boderless { border-collapse: collapse  !important; }} "
+                );
 
     window.print();
     $('.total_div_pos').attr('hidden', true);
