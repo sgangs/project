@@ -201,7 +201,7 @@ function load_data(){
 
            $.each(jsondata['tenant_tnc'], function(){
                 
-                $('.sales_tnc_body').append("<p>"+this+"</p>");
+                $('.sales_tnc_body').append("<p style='margin: 0''>"+this+"</p>");
             })
 
            // var len_items = jsondata['line_items'].length;
