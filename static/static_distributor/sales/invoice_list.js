@@ -331,8 +331,7 @@ function encodeQueryData(data) {
 
 
 $('.download').click(function(e){
-    // filter_data(1, 'download');
-    // url='/sales/invoicelist/listall/'+get_id+'/'
+    
     if (!dateChanged){
         startdate = startdate.split("-").reverse().join("-")
         enddate = enddate.split("-").reverse().join("-")
@@ -351,10 +350,22 @@ $('.download').click(function(e){
         }        
     });
 
+    var groups=[];
+    $.each($(".group_filter option:selected"), function(){
+        groupid=$(this).data('id');
+        // if (customerid == 'undefined' || typeof(customerid) == undefined){
+        if ($.trim(groupid).length>0){
+            var group={
+                groupid: groupid
+            };
+            groups.push(group);
+        }        
+    });
+
     payment_status=$(".payment_status").find(':selected').data('id');
 
     var data = { 'customers': JSON.stringify(customers), 'start': startdate, 'end': enddate, 'payment_status': payment_status, 
-            'calltype': 'apply_filter', 'returntype':'download' };
+            groups: JSON.stringify(groups), 'calltype': 'apply_filter', 'returntype':'download' };
     var querystring = encodeQueryData(data);
     var download_url='/sales/invoicelist/listall/?'+querystring
     location.href = download_url;

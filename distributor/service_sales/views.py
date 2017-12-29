@@ -601,21 +601,3 @@ def user_service_data(request):
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
-
-
-
-# def user_service_data(request):
-# 	from django.db.models import Count
-# 	from django.contrib.postgres.fields.jsonb import KeyTransform
-	
-# 	this_tenant=request.user.tenant
-# 	if request.method == 'GET':
-# 		line_items = invoice_line_item.objects.for_tenant(this_tenant).filter(user_details__has_key = "7").\
-# 						select_related('service_invoice').\
-# 						values('service_name', 'unit', 'quantity', 'quantity_returned',\
-# 							'line_before_tax', 'user_details', 'service_invoice__invoice_id', 'service_invoice__date').\
-# 						order_by('service_invoice__invoice_id', 'service_name',)
-	
-# 	# jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
-# 	# return HttpResponse(jsondata)
-# 	return render(request, 'service_sales/user_wise_pdf.html',{'items':line_items, 'extension':'base.html', 'user_id':'7'})
