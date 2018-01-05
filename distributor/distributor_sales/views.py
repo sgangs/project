@@ -145,8 +145,6 @@ def sales_invoice_save(request):
 					customer_gst=customer.gst
 					customer_pan=customer.pan
 
-					print(customer_pan)
-					
 					ware_address=warehouse.address_1+", "+warehouse.address_2
 					ware_state=warehouse.state
 					ware_city=warehouse.city
@@ -198,7 +196,6 @@ def sales_invoice_save(request):
 					
 					products_cost=0
 					
-					vat_paid={}
 					cgst_paid={}
 					sgst_paid={}
 					igst_paid={}
@@ -450,7 +447,7 @@ def sales_invoice_save(request):
 							inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 							acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 							inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
-												get(account_inventory=inventory_acct, accounting_period = acct_period)
+									get(account_inventory=inventory_acct, accounting_period = acct_period)
 							inventory_acct_year.current_debit-=total_purchase_price
 							inventory_acct_year.save()
 
@@ -700,6 +697,7 @@ def invoice_details(request, pk):
 		jsondata = json.dumps(invoice, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
+
 @api_view(['GET', 'POST'],)
 def edit_invoice_details(request):
 	this_tenant=request.user.tenant
@@ -877,7 +875,6 @@ def sales_invoice_edit(request):
 						for item in all_line_items:
 							productid=item.product
 							multiplier=item.unit_multi
-							# print(multiplier)
 							try:
 								original_tentative_sales_price=item.tentative_sales_price
 								tentative_sales_price=original_tentative_sales_price/multiplier
@@ -1563,8 +1560,8 @@ def finalize_open_invoices(request):
 # 					igsttotal=Decimal(request.data.get('igsttotal'))
 # 					total=Decimal(request.data.get('total'))
 # 					sum_total = subtotal+cgsttotal+sgsttotal
-# 					if (abs(sum_total - total) <0.90 ):
-# 						total = sum_total
+# 					#if (abs(sum_total - total) <0.90 ):
+# 					#	total = sum_total
 					
 # 					bill_data = json.loads(request.data.get('bill_details'))
 
@@ -1603,7 +1600,6 @@ def finalize_open_invoices(request):
 					
 # 			# 		products_cost=0
 					
-# 			# 		vat_paid={}
 # 					cgst_paid={}
 # 					sgst_paid={}
 # 					igst_paid={}
@@ -1760,6 +1756,40 @@ def finalize_open_invoices(request):
 # 						LineItem.line_total=line_total
 # 						LineItem.tenant=this_tenant
 # 						LineItem.save()
+						
+	     #         		if maintain_inventory:						
+						# 	#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
+						# 	for k,v in price_list.items():
+								#Change ledger type
+						# 		new_inventory_ledger_sales(product, warehouse, 2, date, v['quantity'],\
+						# 				v['pur_rate'], actual_sales_price,  new_invoice.invoice_id, this_tenant)
+								
+						# 	warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=invoice.warehouse)
+						# 	warehouse_valuation_change.valuation+=total_purchase_price
+						# 	warehouse_valuation_change.save()
+						# if (is_igst):
+						# 	if (igst_p in igst_paid):
+						# 		igst_paid[igst_p][0]+=igst_v
+						# 		igst_paid[igst_p][1]=total
+						# 		igst_paid[igst_p][2]+=line_taxable_total
+						# 	else:
+						# 		igst_paid[igst_p]=[igst_v, total, line_taxable_total]
+						# else:
+						# 	if (cgst_p in cgst_paid):
+						# 		cgst_paid[cgst_p][0]+=cgst_v
+						# 		cgst_paid[cgst_p][1]=total
+						# 		cgst_paid[cgst_p][2]+=line_taxable_total
+						# 	else:
+						# 		cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
+						# 	if (sgst_p in sgst_paid):
+						# 		sgst_paid[sgst_p][0]+=sgst_v
+						# 		sgst_paid[sgst_p][1]=total
+						# 		sgst_paid[sgst_p][2]+=line_taxable_total
+						# 	else:
+						# 		sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
+					
+
+
 
 # 						if maintain_inventory:						
 # 							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).\
@@ -1846,6 +1876,7 @@ def finalize_open_invoices(request):
 # 					if (debit != credit):
 # 						raise IntegrityError
 
+
 # 					if maintain_inventory:						
 # 						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 # 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
@@ -1868,19 +1899,6 @@ def finalize_open_invoices(request):
 # 						new_entry_inv.tenant=this_tenant
 # 						new_entry_inv.save()
 
-# 						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Cost of Goods Sold")
-# 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
-# 						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
-# 											get(account_inventory=inventory_acct, accounting_period = acct_period)
-# 						inventory_acct_year.current_debit-=total_purchase_price
-# 						inventory_acct_year.save()
-
-# 						# new_journal_inv=journal_inventory()
-# 						# new_journal_inv.date=date
-# 						# new_journal_inv.transaction_bill_id=new_invoice.id
-# 						# new_journal_inv.trn_type=6
-# 						# new_journal_inv.tenant=this_tenant
-# 						# new_journal_inv.save()
 # 						new_entry_inv=journal_entry_inventory()
 # 						new_entry_inv.transaction_type=2
 # 						new_entry_inv.journal=new_journal_inv
@@ -2094,8 +2112,7 @@ def product_segment_sales_report_data(request):
 	elif (calltype == 'brand'):
 		lines = line_items.values('product__brand__name').annotate(total_sales=Sum('line_tax'))
 
-	print(lines)
-
+	
 	response_data['object']=list(lines)
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
