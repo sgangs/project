@@ -5,6 +5,13 @@ var pk;
 
 discount_types=['Nil','%','Val' ]
 
+function round_off(value){
+    value=parseInt(value*1000)/1000
+    value=parseFloat(value.toFixed(2))
+    return value
+}
+
+
 
 $('.get_invoice').click(function(){
     invoice_id=$('.sales_inv_no').val()
@@ -13,7 +20,7 @@ $('.get_invoice').click(function(){
         url : "data/", 
         type: "GET",
         data:{invoice_id: invoice_id,
-            calltype: "Sales Return"},
+            calltype: "return"},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
@@ -84,7 +91,7 @@ $('.get_invoice').click(function(){
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No sales invoice exist.", "error");
+            swal("Oops...", "No finalized sales invoice exist. Sales return can be generated only for finalized invoices.", "error");
         }
     });
 })
@@ -232,8 +239,8 @@ function get_qty_avl(el){
         if ((quantity)>quantity_avl ){
             swal({
                 title: "Oops",
-                text: "Total Invoiced Quantity cannot be greater than actual sales quantity. <br>"+
-                        " Actual Sales quantity: "+quantity_avl+" "+unit+".",
+                text: "Total  return quantity cannot be greater than available sales quantity. <br>"+
+                        "Available sales quantity: "+quantity_avl+" "+unit+".",
                 type: "warning",
                 showCancelButton: false,
                 closeOnConfirm: true,
@@ -283,9 +290,6 @@ function get_total(){
             igst_percent=0;
         }
         
-        // vat_input=parseInt(vat_type_reverse[$(a[i]).find('td:nth-child(18)').html()]);
-        // vat_percent=parseFloat($(a[i]).find('td:nth-child(19)').html());
-        
         if(isNaN(sales_rate)){
             sales_rate=0;
         }
@@ -293,12 +297,14 @@ function get_total(){
             quantity=0;
         }
         
-        var this_total=quantity*sales_rate
+        var this_total=round_off(quantity*sales_rate)        
         
-        
-        cgst_total=(this_total*cgst_percent)/100;
-        sgst_total=(this_total*sgst_percent)/100;
-        igst_total=(this_total*igst_percent)/100;
+        cgst_total=round_off((this_total*cgst_percent)/100);
+        sgst_total=round_off((this_total*sgst_percent)/100);
+        igst_total=round_off((this_total*igst_percent)/100);
+        // cgst_total=(this_total*cgst_percent)/100;
+        // sgst_total=(this_total*sgst_percent)/100;
+        // igst_total=(this_total*igst_percent)/100;
         $(a[i]).find('td:nth-child(12) ').html(cgst_total.toFixed(2))
         $(a[i]).find('td:nth-child(14) ').html(sgst_total.toFixed(2))
         $(a[i]).find('td:nth-child(16) ').html(igst_total.toFixed(2))
@@ -311,7 +317,9 @@ function get_total(){
         subtotal=subtotal+this_total
         tax_total=tax_total+cgst_total+sgst_total+igst_total
     }
-    total=subtotal+tax_total
+    subtotal = round_off(subtotal)
+    tax_total = round_off(tax_total)
+    total=round_off(subtotal+tax_total);
     
     $('.subtotal_receipt').html(subtotal.toFixed(2))
     $('.taxtotal_receipt').html(tax_total.toFixed(2))
@@ -360,9 +368,6 @@ function new_data(){
         var quantity_avl = parseFloat($(this).find('td:nth-child(5) input').val());
         var quantity = parseFloat($(this).find('td:nth-child(6) input').val());
         
-        console.log(quantity_avl)
-        console.log(quantity)
-        
         if (quantity == '' || quantity =='undefined'){
             proceed=false;
             swal("Oops...", "Please enter a quantity ", "error");
@@ -370,7 +375,7 @@ function new_data(){
         }
         
         if (quantity > quantity_avl){
-            swal("Oops...", "Sales return quantoty is more than original quantity. ", "error");
+            swal("Oops...", "Sales return quantity is more than original quantity. ", "error");
             proceed=false;
         }
 
@@ -426,7 +431,6 @@ function new_data(){
         };
         items.push(item);
     });
-    console.log(cgsttotal);
     console.log(items);
     
     if (proceed){
@@ -451,9 +455,9 @@ function new_data(){
                     var show_success=true
                     if (show_success){
                         swal("Hooray", "New sales return generated", "success");
-                        // var url='/sales/invoice/detailview/'+jsondata+'/'
-                        // location.href = url;
-                        // setTimeout(location.reload(true),1000);
+                        var url='/sales/invoice/detailview/'+jsondata+'/'
+                        location.href = url;
+                        setTimeout(location.reload(true),1000);
                     }
                     //console.log(jsondata);
                 },

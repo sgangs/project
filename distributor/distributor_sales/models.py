@@ -60,6 +60,8 @@ class sales_invoice(models.Model):
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
+	total_purchase_price=models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+
 #	def get_absolute_url(self):
 #		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
 
@@ -239,6 +241,8 @@ class sales_return(models.Model):
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
+	total_purchase_price=models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+
 #	def get_absolute_url(self):
 #		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
 
@@ -280,8 +284,8 @@ class return_line_item(models.Model):
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
 	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
-	vat_type=models.CharField(max_length =15)
-	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
+	# vat_type=models.CharField(max_length =15)
+	# tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=8, decimal_places=2, default=1)
@@ -309,7 +313,6 @@ class return_line_item(models.Model):
 	line_tax=models.DecimalField(max_digits=12, decimal_places=2)
 	line_total=models.DecimalField(max_digits=12, decimal_places=2)
 
-	
 	tenant=models.ForeignKey(Tenant,related_name='returnLineItem_sales_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)

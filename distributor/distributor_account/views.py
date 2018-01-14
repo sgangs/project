@@ -255,8 +255,13 @@ def download_tax_report(request, fromdate, todate, report_type):
 		
 		for item in response_data:
 			if (item['tax_type'] == 'CGST'):
-				writer.writerow([item['customer_gst'], item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\
+				try:
+					writer.writerow([item['customer_gst'], item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\
 						item['customer_state']+'-'+state_dict[item['customer_state']], 'N', 'Regular', '',\
+						Decimal(item['tax_percent']*2), item['line_wo_tax'], ''])
+				except:
+					writer.writerow([item['customer_gst'], item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\
+						'', 'N', 'Regular', '',\
 						Decimal(item['tax_percent']*2), item['line_wo_tax'], ''])
 			else:
 				writer.writerow([item['customer_gst'], item['transaction_bill_no'], item['date'].strftime('%d-%b-%y'), item['bill_value'],\

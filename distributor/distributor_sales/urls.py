@@ -16,8 +16,12 @@ urlpatterns = [
     url(r'^invoicelist/purchasedetails/$', views.invoice_purchase_wise_details, name='invoice_purchase_wise_details'),
     
     url(r'^invoice/salesedit/$', views.sales_edit_view, name='sales_edit_view'),
-    url(r'^invoice/salesedit/data/$', views.edit_invoice_details, name='edit_invoice_details'),
+    url(r'^invoice/salesedit/data/$', views.update_invoice_details, name='update_invoice_details'),
     url(r'^invoice/salesedit/save/$', views.sales_invoice_edit, name='sales_invoice_edit'),
+
+    url(r'^invoice/return/$', views.sales_return_view, name='sales_return_view'),
+    url(r'^invoice/return/data/$', views.update_invoice_details, name='update_invoice_details'),
+    url(r'^invoice/return/save/$', views.sales_invoice_edit, name='sales_invoice_edit'),
     
     url(r'^invoice/openinvoice/listall/$', views.open_invoice_list, name='open_invoice_list'),
     url(r'^invoice/openinvoice/save/$', views.finalize_open_invoices, name='finalize_open_invoices'),

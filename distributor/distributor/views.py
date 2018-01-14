@@ -84,6 +84,7 @@ def RegisterView(request):
                     new_tenant.trial_to=now_time+date_first.timedelta(days=30)
                     new_tenant.save()
                     new_user.tenant=new_tenant
+                    new_user.user_type=["master"]
                     new_user.save()
                     #Do this after user's first login maybe.
                     warehouse=Warehouse()

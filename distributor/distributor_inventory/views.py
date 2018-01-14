@@ -24,8 +24,11 @@ from rest_framework.response import Response
 
 
 from reportlab.pdfgen import canvas
-from reportlab.graphics.barcode import code128
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
+from reportlab.graphics.barcode import code128
+from reportlab.platypus import Image, SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 
 from distributor_master.models import Unit, Product, Warehouse
@@ -521,30 +524,58 @@ def import_opening_inventory(request):
 
 @login_required
 def write_pdf_view(request, pk_detail):
-	response = HttpResponse(content_type='application/pdf')
-	response['Content-Disposition'] = 'attachment;; filename="barcode.pdf"'	
-	this_tenant=request.user.tenant
 	try:
-		barcode=Product.objects.for_tenant(this_tenant).get(id=pk_detail).barcode
+		this_tenant=request.user.tenant
+		product = Product.objects.for_tenant(this_tenant).get(id=pk_detail) 
+		barcode = product.barcode
+		name = product.name
+		
+		if (len(name) > 30):
+			name_text = name[:25]+"..."
+		else:
+			name_text = name
+
+		response = HttpResponse(content_type='application/pdf')
+		response['Content-Disposition'] = 'attachment;; filename="Barcode"'+name_text+'"48.pdf"'	
+		
+
 		buffer = BytesIO()
+		# size = potrait(A4)
+		
+		lWidth, lHeight = A4
 		p = canvas.Canvas(buffer)
+
+		p.setPageSize((lWidth, lHeight))
+
+		styles = getSampleStyleSheet()
+
+		# name_text = Paragraph(name, style=styles["Normal"])
 		
 		# Start writing the PDF here
 		# p.drawString(100, 100, 'Hello world.')
 		if barcode:
 			barcode = code128.Code128(barcode,barHeight=15*mm,barWidth = 0.25*mm, humanReadable=True)
-			y=5
+			# y=5
+			# for i in range(12):
+			# 	x=5
+			# 	for j in range(4):
+			# 		barcode.drawOn(p,x*mm,y*mm)
+			# 		x=x+52.5
+			# 	y=y+24.75
+			
+			y=15
 			for i in range(12):
-				x=5
+				x=4
 				for j in range(4):
 					barcode.drawOn(p,x*mm,y*mm)
-					x=x+52.5
-				y=y+24.75
-				
-			
+					# name_text.drawOn(p,x*mm,(y+14)*mm)
+					p.setFont("Helvetica", 6)
+					p.drawString((x+7)*mm,(y-5)*mm,name_text)
+					x=x+53
+				y=y+24
 
 			# End writing
-			p.showPage()
+			# p.showPage()
 			p.save()
 
 			pdf = buffer.getvalue()
@@ -556,7 +587,8 @@ def write_pdf_view(request, pk_detail):
 			messages.add_message(request, messages.WARNING, "Barcode for the product doesn't exist")
 			return redirect('master:product_data')
 
-	except:
+	except Exception as err:
+		print(err)
 		messages.add_message(request, messages.WARNING, "Barcode for the product doesn't exist")
 		return redirect('master:product_data')
 
