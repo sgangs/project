@@ -56,7 +56,8 @@ function convert_number(number)
     } 
 
 
-    var ones = Array("", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX","SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "THIRTEEN","FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN","NINETEEN"); 
+    var ones = Array("", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX","SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "THIRTEEN",
+        "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN","NINETEEN"); 
     var tens = Array("", "", "TWENTY", "THIRTY", "FOURTY", "FIFTY", "SIXTY","SEVENTY", "EIGHTY", "NINETY"); 
 
     if (tn>0 || one>0) 
@@ -91,12 +92,32 @@ function title_case(str) {
   return str.replace(/\b\S/g, function(t) { return t.toUpperCase() });
 }
 
+var states = null;
+
+load_states()
+
+function load_states(){
+    $.ajax({
+        url : "/master/getstatelist/", 
+        type: "GET",
+        // data: { calltype:"all_vendor"},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            states=jsondata;
+            load_data();
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "There were some issues in getting states data.", "error");
+        }
+    });
+}
 
 discount_types=['Nil','%','Val' ]
 
-load_data()
-
 function load_data(){
+    // console.log(states[10]);
     $.ajax({
         url : "/sales/invoice/detail/"+pk+"/", 
         type: "GET",
@@ -110,52 +131,69 @@ function load_data(){
             // Fill Template 1
 
             $('.invoiceid').append('<font size="3">'+jsondata['invoice_id']+'</font>');
+            
+            // $("#barcode").JsBarcode(jsondata['invoice_id'],{
+            //     width:1,
+            //     height:40, 
+            //     displayValue: false
+            // });
+            
             date=jsondata['date']
             date=date.split("-").reverse().join("-")
             $('.date').append('<font size="3">'+date+'</font');
             
             $('.date_template2').append(date);
             $('.invoiceid_template2').append(jsondata['invoice_id']);
+
+            console.log(jsondata['customer_pin']);
             
             if ((jsondata['dl_1']!=''&& jsondata['dl_1'] !=null) || (jsondata['dl_2']!=''&& jsondata['dl_2']!=null) ){
-                $('.customer').append('<font size="2">'+jsondata['customer_name']+
-                    ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
+                $('.customer').append('<font size="2">'+jsondata['customer_name']
+                    +',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+" "+states[jsondata['customer_state']]+" "
+                    +jsondata['customer_pin']+'<br>GST:'+jsondata['customer_gst']
                     +'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']+'<font size="2">');
 
                 
-                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
+                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+" "+states[jsondata['customer_state']]
+                    +" "+jsondata['customer_pin']+'<br>GST:'+jsondata['customer_gst']
                     +'<br>PAN:'+$.trim(jsondata['customer_pan'])+'<br>DL No:'+jsondata['dl_1']+'/'+jsondata['dl_2']);
             }
             else{
-                $('.customer').append('<font size="2">'+jsondata['customer_name']+
-                    ',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']+'<font size="2">');
+                $('.customer').append('<font size="2">'+jsondata['customer_name']
+                    +',<br>'+jsondata['customer_address']+',<br>'+jsondata['customer_city']+" "+states[jsondata['customer_state']]+" "
+                    +jsondata['customer_pin']+'<br>GST:'+jsondata['customer_gst']+'<font size="2">');
 
 
-                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+'<br>GST:'+jsondata['customer_gst']
+                $('.customer_template2').append(jsondata['customer_address']+',<br>'+jsondata['customer_city']+" "+states[jsondata['customer_state']]+" "
+                    +jsondata['customer_pin']+'<br>GST:'+jsondata['customer_gst']
                     +'<br>PAN:'+$.trim(jsondata['customer_pan']));
             }
             
             if ((jsondata['tenant_dl1']!=''&& jsondata['tenant_dl1'] !=null) || (jsondata['tenant_dl2']!=''&& jsondata['tenant_dl2']!=null) ){
-                $('.warehouse').append('<font size="2">'+jsondata['tenant_name']+'<br>'+jsondata['warehouse_address']+
-                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<br>DL No:'+jsondata['tenant_dl1']+'/'
+                $('.warehouse').append('<font size="2">'+jsondata['tenant_name']+'<br>'+jsondata['warehouse_address']
+                    +',<br>'+jsondata['warehouse_city']+" "+states[jsondata['warehouse_state']]+" "
+                    +jsondata['warehouse_pin']+'<br>GST:'+jsondata['tenant_gst']+'<br>DL No:'+jsondata['tenant_dl1']+'/'
                     +jsondata['tenant_dl2']+'<font size="2">');
 
                 $(".tenant_name").html(jsondata['tenant_name'].toUpperCase());
 
-                $('.warehouse_template2').append(jsondata['warehouse_address']+
-                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<br>PAN:'+jsondata['tenant_pan']+
+                $('.warehouse_template2').append(jsondata['warehouse_address']
+                    +',<br>'+jsondata['warehouse_city']+" "+states[jsondata['warehouse_state']]+" "
+                    +jsondata['warehouse_pin']+'<br>GST:'+jsondata['tenant_gst']+'<br>PAN:'+jsondata['tenant_pan']+
                     '<br>DL No:'+jsondata['tenant_dl1']+'/'+jsondata['tenant_dl2']);
 
             }
             else{
-                $('.warehouse').append('<font size="2">'+jsondata['tenant_name']+'<br>'+jsondata['warehouse_address']+
-                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<font size="2">');
+                $('.warehouse').append('<font size="2">'+jsondata['tenant_name']+'<br>'+jsondata['warehouse_address']
+                    +',<br>'+jsondata['warehouse_city']+" "+states[jsondata['warehouse_state']]+" "
+                    +jsondata['warehouse_pin']+'<br>GST:'+jsondata['tenant_gst']+'<font size="2">');
 
                 $(".tenant_name").html(jsondata['tenant_name'].toUpperCase());
                 // 
 
-                $('.warehouse_template2').append(jsondata['warehouse_address']+
-                    ',<br>'+jsondata['warehouse_city']+'<br>GST:'+jsondata['tenant_gst']+'<br>PAN:'+jsondata['tenant_pan']);
+                $('.warehouse_template2').append(jsondata['warehouse_address']
+                    +',<br>'+jsondata['warehouse_city']+" "+states[jsondata['warehouse_state']]+" "
+                    +jsondata['warehouse_pin']+'<br>GST:'+jsondata['tenant_gst']+'<br>PAN:'+jsondata['tenant_pan']);
             }
             
             // tenant_name_upper = jsondata['tenant_name'].toUpperCase();
@@ -244,10 +282,10 @@ function load_data(){
                     "<td id='not_pos_print'><font size='1'>"+this.discount2_value+"</font></td>"+
                     "<td id='not_pos_print'><font size='1'>"+this.line_tax+"</font></td>"+
                     // "<td id='not_pos_print'>"+this.tax_percent+"</td>"+
-                    "<td><font size='1'>"+parseFloat(this.cgst_percent)+"</font></td>"+
-                    "<td><font size='1'>"+parseFloat(this.cgst_value)+"</font></td>"+
-                    "<td><font size='1'>"+parseFloat(this.sgst_percent)+"</font></td>"+
-                    "<td><font size='1'>"+parseFloat(this.sgst_value)+"</font></td>"+
+                    "<td class='is_csgst'><font size='1'>"+parseFloat(this.cgst_percent)+"</font></td>"+
+                    "<td class='is_csgst'><font size='1'>"+parseFloat(this.cgst_value)+"</font></td>"+
+                    "<td class='is_csgst'><font size='1'>"+parseFloat(this.sgst_percent)+"</font></td>"+
+                    "<td class='is_csgst'><font size='1'>"+parseFloat(this.sgst_value)+"</font></td>"+
                     "<td class='is_igst'><font size='1'>"+parseFloat(this.igst_percent)+"</font></td>"+
                     "<td class='is_igst'><font size='1'>"+parseFloat(this.igst_value)+"</font></td>"+
                     "<td><font size='1'>"+this.line_total+"</font></td>"+
@@ -290,6 +328,9 @@ $('.printout').click(function(){
         $('.is_igst').addClass('hidden-print');
 
     }
+    else{
+        $('.is_csgst').addClass('hidden-print');
+    }
 
     // $(".base_template").attr('hidden', false);
 
@@ -318,6 +359,9 @@ $('.printTemplate2').click(function(){
         $('.is_igst').addClass('hidden-print');
         // $(".product_name_header").css('width' ,'25%')
 
+    }
+    else{
+        $('.is_csgst').addClass('hidden-print');
     }
 
     $(".base_template").attr('hidden', true);
@@ -361,7 +405,9 @@ $('.printTemplate2BnW').click(function(){
     if (igst_total == 0 || isNaN(igst_total)){
         $('.is_igst').addClass('hidden-print');
         // $(".product_name_header").css('width' ,'25%')
-
+    }
+    else{
+        $('.is_csgst').addClass('hidden-print');
     }
 
     $(".base_template").attr('hidden', true);

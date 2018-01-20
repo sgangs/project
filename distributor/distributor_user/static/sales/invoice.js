@@ -1,7 +1,7 @@
 $(function(){
 vat_type=["No VAT", "On MRP", "On actual"];
 vat_type_reverse={"No VAT":0, "On MRP":1, "On actual":2};
-var vat_input, vat_percent, unit_data, default_unit, unit_multi={}, unit_names={}, maintain_inventory, tsp, mrp;
+var vat_input, vat_percent, unit_data, default_unit, unit_multi={}, unit_names={}, maintain_inventory, tsp, mrp, is_igst = false;
 
 
 function round_off(value){
@@ -18,6 +18,11 @@ $(document).on('keydown.autocomplete', '.name', function() {
         minLength: 3,
         timeout: 200,
         select: function( event, ui ) {
+            var item_cgst = parseFloat(ui['item']['cgst']);
+            var item_sgst = parseFloat(ui['item']['sgst']);
+
+            var item_igst = item_cgst + item_sgst;
+
             maintain_inventory=ui['item']['inventory']
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
             default_unit=ui['item']['unit']
@@ -25,9 +30,16 @@ $(document).on('keydown.autocomplete', '.name', function() {
             $(el).closest('tr').find('td:nth-child(7)').html(unit_multi[ui['item']['unit_id']]);
             // $(el).closest('tr').find('td:nth-child(18) ').html(vat_type[ui['item']['vat_type']]);
             // vat_percent=ui['item']['tax']
-            $(el).closest('tr').find('td:nth-child(16) input').val(ui['item']['cgst']);
-            $(el).closest('tr').find('td:nth-child(18) input').val(ui['item']['sgst']);
-            $(el).closest('tr').find('td:nth-child(20) input').val(ui['item']['igst']);
+            if (is_igst){
+                $(el).closest('tr').find('td:nth-child(16) input').val(0);
+                $(el).closest('tr').find('td:nth-child(18) input').val(0);
+                $(el).closest('tr').find('td:nth-child(20) input').val(item_igst);
+            }
+            else{
+                $(el).closest('tr').find('td:nth-child(16) input').val(item_cgst);
+                $(el).closest('tr').find('td:nth-child(18) input').val(item_sgst);
+                $(el).closest('tr').find('td:nth-child(20) input').val(0);
+            }
             $('.unit').selectpicker('refresh');
             if (maintain_inventory){
                 $(el).closest('tr').addClass("updating");
@@ -321,6 +333,24 @@ $(".details").on("change", ".discount_type2", function(){
 //     get_total();
 // });
 
+$('.is_igst').on('switchChange.bootstrapSwitch', function(event, state) {
+    is_igst = state; // true | false
+    console.log(is_igst);
+    if (is_igst) {
+        $('.tax_type_label').html("Change if C/SGST");
+        $(".details .data").remove();
+        add_row();
+        get_total();
+    }
+    else{
+        $('.tax_type_label').html("Change if IGST");
+        $(".details .data").remove();
+        add_row();
+        get_total();
+    }
+  //Based on state change, hide necessary columns and delete all rows.
+});
+
 $(".details").on("keyup", ".cgstp", function(){
     get_total();
     this.title=this.value;
@@ -472,9 +502,6 @@ function get_total(){
             igst_percent=0;
         }
         
-        // vat_input=parseInt(vat_type_reverse[$(a[i]).find('td:nth-child(18)').html()]);
-        // vat_percent=parseFloat($(a[i]).find('td:nth-child(19)').html());
-        
         if(isNaN(sales_rate)){
             sales_rate=0;
         }
@@ -558,6 +585,11 @@ function get_total(){
 };
 
 $('.addmore').click(function(){
+    add_row();
+});
+
+
+function add_row(){
     count=$('.details tr').length;
     var data='<tr class="data">'+
     '<td hidden><input class="id"></td>'+
@@ -587,12 +619,12 @@ $('.addmore').click(function(){
     '<td colspan="1" class="total">0.00</td>'+
     // '<td colspan="1" class="vt"></td>'+
     // '<td colspan="1" class="vp"></td>'+
-    '<td colspan="1" class="cgstp"><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="cgstv"></td>'+
-    '<td colspan="1" class="sgstp"><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="sgstv"></td>'+
-    '<td colspan="1" class="igstp"><input class="form-control dv2"></td>'+
-    '<td colspan="1" class="igstv"></td>'+
+    '<td colspan="1" class="csgst"><input class="form-control cgstp"></td>'+
+    '<td colspan="1" class="cgstv csgst"></td>'+
+    '<td colspan="1" class="csgst"><input class="form-control sgstp"></td>'+
+    '<td colspan="1" class="sgstv csgst"></td>'+
+    '<td colspan="1" class="igst"><input class="form-control igstp"></td>'+
+    '<td colspan="1" class="igstv igst"></td>'+
     '<td colspan="1" class="tv">0.00</td></tr>'
     $('.details').append(data);
 
@@ -607,7 +639,16 @@ $('.addmore').click(function(){
         }));
     });
     $('.unit').selectpicker('refresh');
-})
+
+    if (is_igst){
+        $('.csgst').attr('hidden', true);
+        $('.igst').attr('hidden', false);    
+    }
+    else{
+        $('.igst').attr('hidden', true);
+        $('.csgst').attr('hidden', false);
+    }
+}
 
 
 
@@ -670,6 +711,9 @@ function reconfirm() {
 function new_data(is_final){
     var items=[];
     var proceed=true;
+    
+    var is_igst = $('.is_igst').is(':checked');
+
     customerid=$('.customer').find(':selected').data('id');
     warehouseid=$('.warehouse').find(':selected').data('id');
     date=$('.date').val()
@@ -807,7 +851,7 @@ function new_data(is_final){
     // console.log(cgsttotal);
     cgsttotal = round_off(cgsttotal);
     sgsttotal = round_off(sgsttotal);
-    igsttotal = round_off(igsttotal); 
+    igsttotal = round_off(igsttotal);
     
     if (proceed){
         (function() {
@@ -821,7 +865,8 @@ function new_data(is_final){
                     grand_discount_type: grand_discount_type,
                     grand_discount_value: grand_discount_value,
                     subtotal: subtotal,
-                    round_value: round_value, 
+                    round_value: round_value,
+                    is_igst: is_igst, 
                     // taxtotal: taxtotal,
                     cgsttotal: cgsttotal,
                     sgsttotal: sgsttotal,
@@ -857,6 +902,8 @@ function new_data(is_final){
         // swal("Oops...", "Please note that vendor and warehouse details must be filled."+
         //     "Also please check the highlightd rows", "error");
     }
+
+
 }
 
 });

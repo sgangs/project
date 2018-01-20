@@ -102,12 +102,18 @@
 					</select>
 				</div>
 				<div class="form-group namediv">
+					<label for="classname" class="control-label">Open payment</label>
+					<div>
+						<button type="button" class="btn btn-primary btn-xs open_pay_list register_enable" disabled>Click to view open payments</button>
+					</div>
+				</div>
+				<div class="form-group namediv current_pay">
 					<label for="classname" class="control-label">Select Payment Mode</label>
 					<select class="form-control selectpicker mode" id="mode" data-live-search="true">
 						<option disabled selected hidden style='display: none' value>Select Payment Mode</option>				
 					</select>
 				</div>
-				<div class="form-group modediv">
+				<div class="form-group datediv current_pay">
 					<label for="classname" class="control-label">Payment Date</label>
 					<input class="form-control date_payment">
 				</div>
@@ -126,12 +132,39 @@
 							</tr>
 						</thead>
 					</table>
+				</div>
+				<div class="form-group payfinaldiv pay_finalize" hidden>
+					<table class="table table-striped table-bordered table-hover payment_finalize_table" id="payment_finalize_table">
+				      	<thead class="thead-inverse header-background">
+				        	<tr>
+					            <th class="text-center" hidden>Payment ID</th>
+					            <th class="text-center" hidden>Invoice ID</th>
+					            <th class="text-center">Invoice No.</th>
+					            <th class="text-center">Invoice Value</th>
+					            <!-- <th class="text-center">Amount Already Paid</th> -->
+					            <th class="text-center">Amount Pending</th>
+					            <th class="text-center">Mode</th>
+					            <th class="text-center">Clearance Date</th>
+					            <th class="text-center" title="Select if this payment shall be finalized">Select</th>
+					            <th class="text-center">Current Payment</th>
+					            <th class="text-center">Cheque/NEFT/RTGS No.</th>
+					            <th class="text-center" hidden>Original Payment value</th>
+					            <th class="text-center" hidden>Original Amount Pending</th>
+							</tr>
+						</thead>
+					</table>
 				</div>				
 			</form>    
 	   	</div>
 		    <div class="modal-footer">
-		    	<button type="button" class="btn btn-warning btn-xs register" disabled>Finalize Payment</button>
-		    	<button type="button" class="btn btn-primary btn-xs generate_payment" disabled style="display: none;">Generate Payment for Future Clearance</button>
+		    	<div class="current_pay">
+			    	<button type="button" class="btn btn-danger btn-xs register register_enable" disabled>Finalize Payment</button>
+			    	<button type="button" class="btn btn-primary btn-xs generate_payment register_enable" disabled>Generate Payment for Future Clearance</button>
+		    	</div>
+		    	<div class="payfinaldiv" hidden>
+			    	<button type="button" class="btn btn-danger btn-xs finalize_pay register_enable" disabled>Finalize Payment</button>
+			    	<button type="button" class="btn btn-warning btn-xs delete_pay register_enable" disabled>Delete Payment</button>
+			    </div>
 		    </div>
 	    </div>
 	</div>

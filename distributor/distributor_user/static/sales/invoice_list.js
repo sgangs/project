@@ -524,6 +524,13 @@ function load_payment(){
 
 $('.customer').change(function() {
     customerid=parseInt($(".customer").find(':selected').data('id'));
+    // Hide fields related to finalization of previous pay and delete related items
+    $('.payfinaldiv').attr('hidden',true);
+    $("#payment_finalize_table .payment_data").remove();
+    
+    // Unhide first time paymernt fields and disable buttons
+    $('.current_pay').attr('hidden',false);
+    $('.register_enable').attr('disabled',true);
     if (customerid != 'undefined'){
         (function() {
             $.ajax({
@@ -538,7 +545,9 @@ $('.customer').change(function() {
                     if (jsondata.object.length>0){
                     
                         $('.detaildiv').attr('hidden',false);
-                        $('.register').attr('disabled',false);
+                        $('.register_enable').attr('disabled',false);
+                        $('.payfinaldiv').attr('hidden',true);
+
                         $.each(jsondata.object, function(){
                             pending=parseFloat(this.total) - parseFloat(this.amount_paid)
                             $('#payment_table').append("<tr class='payment_data' align='center'>"+
@@ -563,6 +572,75 @@ $('.customer').change(function() {
     }
 });
 
+$('.open_pay_list').click(function(e) {
+    customerid=parseInt($(".customer").find(':selected').data('id'));
+    $("#payment_table .payment_data").remove();
+    if (customerid != 'undefined'){
+        (function() {
+            $.ajax({
+                url : "/sales/collectionlist/", 
+                type: "GET",
+                data:{ customerid: customerid,
+                    calltype:"customer_open"},
+                dataType: 'json',               
+                        // handle a successful response
+                success : function(jsondata) {
+                    $("#payment_finalize_table .payment_data").remove();
+                    // Hide fields related to first time payment
+                    $('.detaildiv').attr('hidden',true);
+                    $('.current_pay').attr('hidden',true);
+                    
+                    if (jsondata.object.length>0){                    
+                        $('.payfinaldiv').attr('hidden',false);    
+                        $.each(jsondata.object, function(){
+                            count=$('#payment_finalize_table tr').length;
+                            pending=parseFloat(this.sales_invoice.total) - parseFloat(this.sales_invoice.amount_paid)
+                            $('#payment_finalize_table').append("<tr class='payment_data' align='center'>"+
+                            "<td hidden='true'>"+this.id+"</td>"+
+                            "<td hidden='true'>"+this.sales_invoice.id+"</td>"+
+                            "<td>"+this.sales_invoice.invoice_id+"</td>"+
+                            "<td>"+this.sales_invoice.total+"</td>"+
+                            // "<td>"+this.amount_paid+"</td>"+
+                            "<td>"+pending.toFixed(2)+"</td>"+
+                            "<td>"+this.payment_mode_name+"</td>"+
+                            "<td><input class='form-control this_payment_date'></td>"+
+                            "<td><input type='checkbox'></td>"+
+                            "<td><input type = 'number' class='form-control update_payment_value' value="+this.amount_received+"></td>"+
+                            "<td><input type = 'text' class='form-control cheque_rtgs' value="+this.cheque_rtgs_number+"></td>"+
+                            "<td hidden>"+this.amount_received+"</td>"+
+                            "<td hidden>"+pending.toFixed(2)+"</td>"+
+                            "</tr>");
+
+                            $('.this_payment_date').datepicker({
+                                autoclose: true,
+                                // endDate: moment(),
+                                // endDate: '0d',
+                                todayHighlight: true,
+                                format: 'dd/mm/yyyy',    
+                            });
+                            $(".this_payment_date").datepicker("setDate", new Date(this.paid_on));
+                            $(this).find('td:nth-child(7) input').removeClass("this_payment_date")
+                        });
+
+                    }
+                    else{
+                        swal({
+                          title: "Hmmm..",
+                          text: "No open payment found against this customer.",
+                          type: "info",
+                          timer: 3000
+                       });
+                    }
+                },
+                        // handle a non-successful response
+                error : function() {
+                    swal("Oops..", "There were some error in getting payment data.", "error");
+                }
+            });
+        }());
+    }
+});
+
 
 $('.register').click(function(e) {
     var total_payment_check=0
@@ -578,27 +656,57 @@ $('.register').click(function(e) {
 
     swal({
         title: "Are you sure?",
-        text: "<p>Are you sure you want to register payment details?</p><p>Total Payments to be recorded: <b>Rs."
+        text: "<p>Are you sure you want to finalize payment details?</p><p>Total Payments to be recorded: <b>Rs."
                 +total_payment_check+"</b></p><p> Total number of invoices against which payment is made: <b>"+count+"</b></p>",
         type: "warning",
         showCancelButton: true,
-      // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, register payment details!",
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, finalize payment details!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: true,
     }, function(isConfirm){
         if (isConfirm){
-            setTimeout(function(){new_data()},600)            
+            setTimeout(function(){new_data('final')},600)            
         }
     })
 });
 
-function reconfirm(){
+$('.generate_payment').click(function(e) {
+    var total_payment_check=0
+    var count = 0
+    $("#payment_table tr.payment_data").each(function() {
+        var is_paid = $(this).find('td:nth-child(5) input').is(":checked");
+        if (is_paid){
+            var amount = parseFloat($(this).find('td:nth-child(6) input').val());
+            total_payment_check+=amount
+            count++
+        }
+    });
 
-}
+    swal({
+        title: "Are you sure?",
+        text: "<p>Are you sure you want to generate payment for future clerance?</p><p>Total Payments to be recorded: <b>Rs."
+                +total_payment_check+"</b></p><p> Total number of invoices against which payment is made: <b>"+count+"</b></p>",
+        type: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#428bca",
+        confirmButtonText: "Yes, generate payment for future clearance!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){new_data('not_final')},600)            
+        }
+    })
+});
+
+// function reconfirm(){
+
+// }
     
-function new_data(){
+function new_data(payment_type){
     var items=[];
     total_payment=0;
     var bill_count=0;
@@ -662,7 +770,6 @@ function new_data(){
                 $(this).closest('tr').addClass("has-error");    
             }
             else if (amount>Math.ceil(amount_pending)){
-                console.log("here");
                 proceed=false;
                 swal({
                     title: "Oops..",
@@ -708,8 +815,9 @@ function new_data(){
                     modeid:modeid,
                     date:date.split("/").reverse().join("-"),
                     total_payment: total_payment,
+                    payment_type: payment_type,
                     payment_details: JSON.stringify(items),
-                    calltype: "save",
+                    calltype: "first_time",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 // contentType: "application/json",
@@ -731,6 +839,212 @@ function new_data(){
     }
 }
 
+$("#payment_finalize_table").on("blur", ".update_payment_value", function(){
+    update_pending()
+});
+
+function update_pending(){
+    for (var a = document.querySelectorAll('table.payment_finalize_table tbody tr'), i = 0; a[i]; ++i) {
+        var original_amount_pending = parseFloat($(a[i]).find('td:nth-child(12)').html());
+        var original_amount = parseFloat($(a[i]).find('td:nth-child(11)').html());
+        var amount_pending = original_amount_pending + original_amount
+        var current_payment = parseFloat($(a[i]).find('td:nth-child(9) input').val());
+        var revised_pending = amount_pending - current_payment; 
+        $(a[i]).find('td:nth-child(5) ').html(revised_pending.toFixed(2))
+        
+    }
+    
+};
+
+$('.finalize_pay').click(function(e) {
+    var total_payment_check=0
+    var count = 0
+    $("#payment_finalize_table tr.payment_data").each(function() {
+        var is_update = $(this).find('td:nth-child(8) input').is(":checked");
+        if (is_update){
+            var amount = parseFloat($(this).find('td:nth-child(9) input').val());
+            total_payment_check+=amount
+            count++
+        }
+    });
+    swal({
+        title: "Are you sure?",
+        text: "<p>Are you sure you want to finalize payment details?</p><p>Total Payments to be recorded: <b>Rs."
+                +total_payment_check+"</b></p><p> Total number of payments being finalized: <b>"+count+"</b></p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, finalize payment details!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){update_payment('finalize')},600)            
+        }
+    })
+});
+
+
+$('.delete_pay').click(function(e) {
+    var total_payment_check=0
+    var count = 0
+    $("#payment_finalize_table tr.payment_data").each(function() {
+        var is_update = $(this).find('td:nth-child(8) input').is(":checked");
+        if (is_update){
+            var amount = parseFloat($(this).find('td:nth-child(9) input').val());
+            total_payment_check+=amount
+            count++
+        }
+    });
+    swal({
+        title: "Are you sure?",
+        text: "<p>Are you sure you want to delete payment details?</p><p>Total Payments to be deleted: <b>Rs."
+                +total_payment_check+"</b></p><p> Total number of payments being deleted: <b>"+count+"</b></p>",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#f0ad4e",
+        confirmButtonText: "Yes, delete payment details!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){update_payment('delete')},600)            
+        }
+    })
+});
+
+
+function update_payment(payment_type){
+    var items=[];
+    var total_payment=0;
+    var bill_count=0;
+    var proceed=true;
+    customerid=$('.customer').find(':selected').data('id');
+    //we need to consider payment mode as well.
+    
+    if (customerid == '' || customerid =='undefined'){
+        proceed = false;
+        swal({
+            title: "Oops..",
+            text: "Please select a customer.",
+            type: "error",
+            allowOutsideClick: true,
+            timer:2500,
+        });
+    }
+
+    $("#payment_finalize_table tr.payment_data").each(function() {
+        var date;
+        var this_proceed = true;
+        var payment_pk = $(this).find('td:nth-child(1)').html();
+        var invoice_pk = $(this).find('td:nth-child(2)').html();
+        var original_amount_pending = parseFloat($(this).find('td:nth-child(12)').html());
+        var original_amount = parseFloat($(this).find('td:nth-child(11)').html());
+        var amount_pending = original_amount_pending + original_amount
+        date = $(this).find('td:nth-child(7) input').val();
+        var is_finalize = $(this).find('td:nth-child(8) input').is(":checked");
+        if (is_finalize){
+            bill_count+=1;
+            var amount = parseFloat($(this).find('td:nth-child(9) input').val());
+            var cheque_rtgs_number = $(this).find('td:nth-child(10) input').val()
+            total_payment+=amount
+            
+            if (date == '' || date =='undefined'){
+                this_proceed = false;
+                proceed = false;
+                $(this).closest('tr').addClass("has-error");
+                swal({
+                    title: "Oops..",
+                    text: "Please enter the payment collection date.",
+                    type: "error",
+                    allowOutsideClick: true,
+                    timer:2500,
+                });   
+            }
+
+            if (isNaN(amount) || amount<=0){
+                this_proceed = false;
+                proceed=false;
+                swal({
+                    title: "Oops..",
+                    text: "Amount must be a positive number.",
+                    type: "error",
+                    allowOutsideClick: true,
+                    timer:2500,
+                });
+                $(this).closest('tr').addClass("has-error");    
+            }
+            else if (amount>Math.ceil(amount_pending)){
+                this_proceed = false;
+                proceed=false;
+                swal({
+                    title: "Oops..",
+                    text: "Amount must not be greater than amount pending.",
+                    type: "error",
+                    allowOutsideClick: true,
+                    timer:2500,
+                });
+                $(this).closest('tr').addClass("has-error");    
+            }
+            if (this_proceed){
+                $(this).closest('tr').removeClass("has-error");   
+                var item = {
+                    payment_pk : payment_pk,
+                    invoice_pk : invoice_pk,
+                    payment_date : date.split("/").reverse().join("-"),
+                    amount: amount,
+                    cheque_rtgs_number: cheque_rtgs_number,
+                };
+                items.push(item);
+            }
+        }
+    });
+
+    if (isNaN(total_payment)){
+        proceed=false;
+    }
+    if (bill_count <1 || total_payment == 0){
+        proceed=false;
+        swal({
+            title: "Oops..",
+            text: "Select atleast one bill against which payment is made. Additionally total payment must not be zero.",
+            type: "error",
+            allowOutsideClick: true,
+            timer:2500,
+        });
+    }
+
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "/sales/invoice/paymentsave/" , 
+                type: "POST",
+                data:{customerid: customerid,
+                    total_payment: total_payment,
+                    payment_type: payment_type,
+                    payment_details: JSON.stringify(items),
+                    calltype: "update_payment",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // contentType: "application/json",
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "Payment details updated.", "success");
+                        setTimeout(location.reload(true),1000);
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }
+}
 
 $('.customerfinalize').change(function() {
     customerid=parseInt($(".customerfinalize").find(':selected').data('id'));
@@ -851,7 +1165,6 @@ function reconfirm_status(calltype){
 }
     
 function post_data(calltype){
-    console.log(calltype);
     items=[];
     $("tr.finalize_data").each(function() {
         var invoice_id = $(this).find('td:nth-child(1)').html();

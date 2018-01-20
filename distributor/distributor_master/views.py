@@ -12,7 +12,7 @@ import json
 #from datetime import datetime
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import IntegrityError, transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
 
 from rest_framework.decorators import api_view
@@ -674,12 +674,13 @@ def import_product(request):
 			f = request.FILES['file']
 			data['name'] = f.name
 			data['size'] = f.size / 1024
+			print(data['size'])
 			if 'xls' not in f.name and 'xlsx' not in f.name:
 				data['error'] = 2
 				data['info'] = 'file type must be excel!'
 				messages.add_message(request, messages.WARNING, 'File type must be excel.')
 				return redirect('master:import_product')
-			elif 0 == f.size:
+			elif data['size'] < 5:
 				data['error'] = 3
 				data['info'] = 'file content is empty!'
 				messages.add_message(request, messages.WARNING, 'File content is empty.')
@@ -690,7 +691,7 @@ def import_product(request):
 				if (rows):
 					str1 = ' ,'.join(str(e) for e in rows)
 					messages.add_message(request, messages.WARNING, 'There was error in the following rows: .'+str1\
-							+". Either the compulsory parameters are empty or the SKU/Barcodes are not unique.")
+							+". Either the compulsory parameters are empty or the SKU/Barcodes are not unique. Please recheck the same.")
 					messages.add_message(request, messages.INFO, 'The rest of the data have been uploaded successfully.')	
 				else:
 					messages.add_message(request, messages.SUCCESS, 'Data uploaded successfully.')

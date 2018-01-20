@@ -14,5 +14,5 @@ class CollectionSerializers (serializers.ModelSerializer):
 	sales_invoice = InvoiceSerializers()
 	class Meta:
 		model = sales_payment
-		fields = ('payment_mode_name','payment_mode','sales_invoice','amount_received', 'cheque_rtgs_number','paid_on','remarks')
+		fields = ('id', 'payment_mode_name','payment_mode','sales_invoice','amount_received', 'cheque_rtgs_number','paid_on','remarks')
 

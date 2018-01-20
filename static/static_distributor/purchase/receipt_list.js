@@ -48,8 +48,8 @@ function load_receipts(page_no){
             // console.log(jsondata);
             $("#receipt_table .data").remove();
             $('.all').hide();
-            $('.unpaid').show();
-            $('.overdue').show();
+            $('.unpaid').hide();
+            $('.overdue').hide();
             $('#filter').modal('hide');
             all_receipts=true, unpaid_receipts = false; overdue_receipts = false;
             $.each(jsondata['object'], function(){
@@ -467,16 +467,28 @@ function load_payment(){
 }
 
 $('.register').click(function(e) {
+    var total_payment_check=0
+    var count = 0
+    $("#payment_table tr.payment_data").each(function() {
+        var is_paid = $(this).find('td:nth-child(7) input').is(":checked");
+        if (is_paid){
+            var amount = parseFloat($(this).find('td:nth-child(8) input').val());
+            total_payment_check+=amount
+            count++
+        }
+    });
     swal({
         title: "Are you sure?",
-        text: "Are you sure you want to register payment details?",
+        // text: "Are you sure you want to register payment details?",
+        text: "<p>Are you sure you want to register payment details?</p><p>Total Payments to be recorded: <b>Rs."
+                +total_payment_check+"</b></p><p> Total number of invoices against which payment is made: <b>"+count+"</b></p>",
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
         confirmButtonText: "Yes, add register payment details!",
         closeOnConfirm: true,
         closeOnCancel: true,
-        html: false
+        html: true,
     }, function(isConfirm){
         if (isConfirm){
             setTimeout(function(){new_data()},600)            

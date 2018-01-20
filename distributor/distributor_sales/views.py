@@ -105,7 +105,7 @@ def sales_invoice_save(request):
 					final_save = False
 					if (is_final == 'true' or is_final == True):
 						final_save = True
-					is_igst = False
+					is_igst = request.data.get('is_igst')
 					
 					# grand_discount_type=request.POST.get('grand_discount_type')
 					# try:
@@ -193,7 +193,7 @@ def sales_invoice_save(request):
 					new_invoice.duedate = duedate
 					new_invoice.amount_paid = 0
 					new_invoice.save()
-					
+
 					products_cost=0
 					
 					cgst_paid={}
@@ -679,12 +679,14 @@ def invoices_metadata(request):
 def invoice_details(request, pk):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
-		invoice=sales_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date',\
+		invoice=sales_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date', 'customer_state','warehouse_state',\
 		'customer_name','customer_address','customer_city','customer_pin', 'customer_pan','customer_gst','warehouse_address','warehouse_city',\
 		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff',\
 		'total','amount_paid', 'dl_1', 'dl_2').get(id=pk)
 		if invoice['customer_pan'] == None:
 			invoice['customer_pan'] = ''
+		if invoice['customer_pin'] == None:
+			invoice['customer_pin'] = ''
 		
 		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id',\
 			'product_hsn','unit','unit_multi','quantity','quantity_returned','sales_price',\
@@ -725,8 +727,7 @@ def update_invoice_details(request):
 				'line_total', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
 
 			invoice['line_items']=line_items
-			# print("here")
-
+		
 		else:
 
 			invoice=sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date','customer_name',\
@@ -777,58 +778,130 @@ def payment_register(request):
 		modeid = request.data.get('modeid')
 		date = request.data.get('date')
 		payment_details = json.loads(request.data.get('payment_details'))
-		mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
+		payment_type = request.data.get('payment_type')
+		calltype = request.data.get('calltype')
 		invoiceids=""
 		cheque_rtgs_all=""
 		payment_pk={}
 		cheque_rtgs_checker = []
-		total_amount_received=0
-		with transaction.atomic():
-			try:
-				for item in payment_details:
-					invoice_id=item['invoice_pk']
-					amount_received=Decimal(item['amount'])
-					total_amount_received+=amount_received
-					cheque_rtgs_number=item['cheque_rtgs_number']
-			
-					invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
-					invoice.amount_paid+=amount_received
-					if (round(invoice.total - invoice.amount_paid) == 0):
-						invoice.final_payment_date=date
-					elif (round(invoice.total - invoice.amount_paid) < 0):
-						raise IntegrityError
-					invoice.save()
-					customer = invoice.customer
-
-					new_sales_payment = sales_payment()
-					new_sales_payment.payment_mode=mode
-					new_sales_payment.payment_mode_name=mode.name
-					new_sales_payment.sales_invoice=invoice
-					new_sales_payment.amount_received=amount_received
-					new_sales_payment.cheque_rtgs_number=cheque_rtgs_number
-					new_sales_payment.paid_on=date
-					# new_purchase_payment.remarks=remarks
-					new_sales_payment.tenant=this_tenant
-					new_sales_payment.save()
-					total_amount_collected+= amount_received
-					invoiceids+= str(invoice.invoice_id)+", "
-					if not cheque_rtgs_number in cheque_rtgs_checker:
-						cheque_rtgs_checker.append(cheque_rtgs_number)
-						cheque_rtgs_all+= cheque_rtgs_number+", "
-					payment_pk[str(invoice.invoice_id)]=new_sales_payment.id
+		if (calltype == "first_time"):
+			with transaction.atomic():
+				try:
+					mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
+					for item in payment_details:
+						invoice_id=item['invoice_pk']
+						amount_received=Decimal(item['amount'])
+						cheque_rtgs_number=item['cheque_rtgs_number']
 				
-				payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
-				if len(cheque_rtgs_all)>0:
-					invoiceids+= "Cheque No:  "+cheque_rtgs_all
-				# raise IntegrityError
-				journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
-					,trn_id=new_sales_payment.id, trn_type=5, other_data=payment_json)
-				account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
-				new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date, customer.name, customer.id)
-				new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
+						invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
+						invoice.amount_paid+=amount_received
+						if (round(invoice.total - invoice.amount_paid) == 0):
+							if (payment_type == 'not_final'):
+								pass
+							else:
+								invoice.final_payment_date=date
+						elif (round(invoice.total - invoice.amount_paid) < 0):
+							raise IntegrityError
+						invoice.save()
+						customer = invoice.customer
 
-			except:
-				transaction.rollback()
+						new_sales_payment = sales_payment()
+						new_sales_payment.payment_mode=mode
+						new_sales_payment.payment_mode_name=mode.name
+						new_sales_payment.sales_invoice=invoice
+						new_sales_payment.amount_received=amount_received
+						new_sales_payment.cheque_rtgs_number=cheque_rtgs_number
+						new_sales_payment.paid_on=date
+						# new_purchase_payment.remarks=remarks
+						if (payment_type == 'not_final'):
+							new_sales_payment.is_finalized = False
+						else:	
+							new_sales_payment.is_finalized = True
+						new_sales_payment.tenant=this_tenant
+						new_sales_payment.save()
+						total_amount_collected+= amount_received
+						invoiceids+= str(invoice.invoice_id)+", "
+						if not cheque_rtgs_number in cheque_rtgs_checker:
+							cheque_rtgs_checker.append(cheque_rtgs_number)
+							cheque_rtgs_all+= cheque_rtgs_number+", "
+						payment_pk[str(invoice.invoice_id)]=new_sales_payment.id
+					
+					if not (payment_type == 'not_final'):
+						payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+						if len(cheque_rtgs_all)>0:
+							invoiceids+= "Cheque No:  "+cheque_rtgs_all
+						# raise IntegrityError
+						journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
+							,trn_id=new_sales_payment.id, trn_type=5, other_data=payment_json)
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
+						new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date, customer.name, customer.id)
+						new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
+
+				except:
+					transaction.rollback()
+
+		elif (calltype == 'update_payment'):
+			with transaction.atomic():
+				try:
+					if (payment_type == 'finalize'):
+						for item in payment_details:
+							payment_id = item['payment_pk']
+							invoice_id = item['invoice_pk']
+							new_amount_received = Decimal(item['amount'])
+							date = item['payment_date']
+							cheque_rtgs_number=item['cheque_rtgs_number']
+
+							old_sales_payment = sales_payment.objects.get(id = payment_id)
+							old_amount_received = old_sales_payment.amount_received
+							mode = old_sales_payment.payment_mode
+
+							invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
+							total_already_paid = invoice.amount_paid
+							invoice.amount_paid = total_already_paid - old_amount_received + new_amount_received
+							if (round(invoice.total - invoice.amount_paid) == 0):
+								invoice.final_payment_date=date
+							elif (round(invoice.total - invoice.amount_paid) < 0):
+								raise IntegrityError
+							invoice.save()
+							customer = invoice.customer
+
+							old_sales_payment.amount_received=new_amount_received
+							old_sales_payment.cheque_rtgs_number=cheque_rtgs_number
+							old_sales_payment.paid_on=date
+							old_sales_payment.is_finalized = True
+							old_sales_payment.save()
+							
+							total_amount_collected+= new_amount_received
+
+							invoiceids+= str(invoice.invoice_id)+", "
+							if not cheque_rtgs_number in cheque_rtgs_checker:
+								cheque_rtgs_checker.append(cheque_rtgs_number)
+								cheque_rtgs_all+= cheque_rtgs_number+", "
+								payment_pk[str(invoice.invoice_id)]=old_sales_payment.id
+						payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+						if len(cheque_rtgs_all)>0:
+							invoiceids+= "Cheque No:  "+cheque_rtgs_all
+						journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
+								,trn_id=old_sales_payment.id, trn_type=5, other_data=payment_json)
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
+						new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date, customer.name, customer.id)
+						new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
+					elif (payment_type == 'delete'):
+						for item in payment_details:
+							payment_id = item['payment_pk']
+							invoice_id = item['invoice_pk']
+							
+							old_sales_payment = sales_payment.objects.get(id = payment_id)
+							old_amount_received = old_sales_payment.amount_received
+							
+							invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
+							total_already_paid = invoice.amount_paid
+							invoice.amount_paid = total_already_paid - old_amount_received
+							invoice.save()
+							
+							old_sales_payment.delete()
+				except:
+					transaction.rollback()	
 
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
@@ -1116,11 +1189,6 @@ def sales_invoice_edit(request):
 							else:
 								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
 					
-					# print("CGST Paid")
-					# print (cgst_paid)
-					# print("SGST Paid")
-					# print(sgst_paid)	
-
 					is_customer_gst = True if customer_gst else False
 					if (is_igst):
 						for k,v in igst_paid.items():
@@ -1130,17 +1198,11 @@ def sales_invoice_edit(request):
 					else:
 						for k,v in cgst_paid.items():
 							if v[2]>0:
-								# print("CGST")
-								# print(v[1])
-								# print(v[2])
 								new_tax_transaction_register("CGST",2, k, v[0],v[1], v[2], old_invoice.id,\
 									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
 						for k,v in sgst_paid.items():
 							if v[2]>0:
-								# print("SGST")
-								# print(v[1])
-								# print(v[2])
 								new_tax_transaction_register("SGST",2, k, v[0],v[1], v[2], old_invoice.id,\
 									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
@@ -1260,16 +1322,20 @@ def collection_list(request):
 
 			if cheque_rtgs:
 				payments=payments.filter(cheque_rtgs_number=cheque_rtgs)
-				print(payments)
 			
 			# if productid:
 			# 	product=Product.objects.for_tenant(this_tenant).get(id=productid)
 			# 	invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
 			# 			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
-		
+
+		elif (calltype == 'customer_open'):
+			customer = request.GET.get('customerid')
+			payments = sales_payment.objects.for_tenant(this_tenant).filter(is_finalized = False, sales_invoice__customer = customer).\
+						order_by('-paid_on', '-sales_invoice')
 		else:
 			response_data={}
-			payments=sales_payment.objects.for_tenant(this_tenant).order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
+			payments=sales_payment.objects.for_tenant(this_tenant).filter(is_finalized = True)\
+					.order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
 		
 		if (page_no):
 			payments_paginated=paginate_data(page_no, 10, list(payments))
@@ -1278,7 +1344,8 @@ def collection_list(request):
 			response_data['end'] = payments_paginated['end']
 			response_data['start'] = payments_paginated['start']
 		else:
-			response_data['object'] = payments
+			serializer = CollectionSerializers(payments, many=True)
+			response_data['object'] = serializer.data
 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
@@ -1354,7 +1421,6 @@ def open_invoice_list(request):
 def finalize_open_invoices(request):
 	this_tenant=request.user.tenant
 	invoices_pk=json.loads(request.POST.get('invoices_list'))
-	# print(invoices_pk)
 	calltype=request.POST.get('calltype')
 	response_data = {}
 	with transaction.atomic():

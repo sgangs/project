@@ -35,14 +35,39 @@
 			<option disabled selected hidden style='display: none' value>Select Customer</option>				
 		</select>		 
 	</div>
-	<div class="form-group col-xs-3">
+	<div class="form-group col-xs-2">
 		<label class="control-label">Invoice Date</label>				 
 		<input class="form-control date">
 	</div>
-	<div class="form-group col-xs-3" hidden>
-		<label class="control-label">Register Payment Against This Invoice</label>
-		<p><button type="button" class="btn btn-primary pay_register btn-xs">Register Payment Against This Invoice</button></p>
+	<div class="form-group col-xs-2">
+		<label class="control-label tax_type_label">Change if IGST</label>
+		<div><input class="form-control is_igst" type="checkbox"></div>
 	</div>
+	<div class="form-group col-xs-2" hidden>
+		<label class="control-label">Register Payment</label>
+		<p><button type="button" class="btn btn-primary pay_register btn-xs">Register Payment</button></p>
+	</div>
+	<div class="form-group col-xs-2" hidden>
+		<label class="control-label">Select if IGST</label>
+		<div>
+			<div class="pretty p-icon p-curve p-toggle p-pulse p-plain p-bigger">
+		        <input type="checkbox" />
+		        <!-- <div class="state p-danger-o">
+		            <i class="icon fa fa-check-square-o"></i>
+		            <label> Current: C/SGST</label>
+		        </div> -->
+		        <div class="state p-danger-o p-on">
+		            <i class="icon fa fa-check-square-o"></i>
+		            <label>IGST Selected</label>
+		        </div>
+		        <div class="state p-success-o p-off">
+		            <i class="icon fa fa-circle-o"></i>
+		            <label>C/SGST Selected</label>
+		        </div>
+		    </div>
+		
+	    </div>
+    </div>
 		
 </div>
 
@@ -53,7 +78,7 @@
     	<tr>
         	<th hidden></th>
         	<th colspan="1"></th>
-        	<th colspan="3">Item</th>
+        	<th colspan="3" style="width: 15%">Item</th>
             <th colspan="1">Qty</th>
             <th colspan="1" hidden></th>
             <!-- <th colspan="1"><h5>Free w/o tax</h5></th>
@@ -68,12 +93,12 @@
             <th colspan="1">Disc. Type-2</th>
             <th colspan="1">Disc. Value-2</th>
             <th colspan="1">Taxable Total</th>
-            <th colspan="1">CGST %</th>
-            <th colspan="1">CGST Amt</th>
-            <th colspan="1">SGST %</th>
-            <th colspan="1">SGST Amt</th>
-            <th colspan="1">IGST %</th>
-            <th colspan="1">IGST Amt</th>
+            <th colspan="1" class="csgst" style="width: 5%">CGST %</th>
+            <th colspan="1" class="csgst" style="width: 5%">CGST Amt</th>
+            <th colspan="1" class="csgst" style="width: 5%">SGST %</th>
+            <th colspan="1" class="csgst" style="width: 5%">SGST Amt</th>
+            <th colspan="1" class="igst" hidden style="width: 6%">IGST %</th>
+            <th colspan="1" class="igst" hidden>IGST Amt</th>
             <th colspan="1">Total</th>
         </tr>
 	</thead>
@@ -109,12 +134,12 @@
 			</td>
             <td colspan="1"><input class="form-control dv2"></td>
             <td colspan="1" class="total">0.00</td>
-            <td colspan="1"><input class="form-control cgstp"></td>
-            <td colspan="1" class="cgstv"></td>
-            <td colspan="1"><input class="form-control sgstp"></td>
-            <td colspan="1" class="sgstv"></td>
-            <td colspan="1"><input class="form-control igstp"></td>
-            <td colspan="1" class="igstv"></td>
+            <td colspan="1" class="csgst"><input class="form-control cgstp"></td>
+            <td colspan="1" class="cgstv csgst"></td>
+            <td colspan="1" class="csgst"><input class="form-control sgstp"></td>
+            <td colspan="1" class="sgstv csgst"></td>
+            <td colspan="1" hidden class ="igst"><input class="form-control igstp"></td>
+            <td colspan="1" class="igstv igst" hidden></td>
             <td colspan="1" class="tv">0.00</td>
 		</tr>
 	</tbody>
@@ -262,6 +287,13 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 
+<!-- Bootstrap Switch -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
+
+<!-- Preety Checkbox -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/pretty-checkbox/3.0.0/pretty-checkbox.min.css" rel="stylesheet" />
+
 <!-- Moment.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
 
@@ -282,6 +314,18 @@
 
 <script>
 	csrf_token='{{csrf_token}}';
+
+	$(".is_igst").bootstrapSwitch({
+		size: 'small',
+		onColor: 'warning',
+		offColor: 'success',
+		onText: 'IGST',
+		offText: 'C/SGST',
+		// handleWidth: 20,
+		labelWidth: 15,
+		animate: true,
+		// labelText: 'Tax-type'
+	});
 
 	$('.date').datepicker({
 	    autoclose: true,
