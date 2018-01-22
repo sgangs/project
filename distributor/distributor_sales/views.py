@@ -106,6 +106,11 @@ def sales_invoice_save(request):
 					if (is_final == 'true' or is_final == True):
 						final_save = True
 					is_igst = request.data.get('is_igst')
+
+					if (is_igst == 'true'):
+						is_igst = True
+					else:
+						is_igst = False
 					
 					# grand_discount_type=request.POST.get('grand_discount_type')
 					# try:
@@ -716,8 +721,8 @@ def update_invoice_details(request):
 			calltype = None
 		invoice_id = request.GET.get('invoice_id')
 		if (calltype == 'return'):
-			invoice=sales_invoice.objects.for_tenant(this_tenant).filter(is_final=True).values('id','invoice_id','date','customer_name',\
-				'customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address',\
+			invoice=sales_invoice.objects.for_tenant(this_tenant).filter(is_final=True).values('id','invoice_id','date','customer',\
+				'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address',\
 				'warehouse_city','warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal',\
 				'cgsttotal','sgsttotal','igsttotal', 'roundoff','total','amount_paid').get(invoice_id=invoice_id)
 
@@ -921,6 +926,10 @@ def sales_invoice_edit(request):
 				try:
 					final_save = False
 					is_igst = False
+					if (is_igst == 'true'):
+						is_igst = True
+					else:
+						is_igst = False
 					invoice_id = request.data.get('invoiceid')
 					# date=request.data.get('date')
 
@@ -1301,12 +1310,10 @@ def collection_list(request):
 			start=request.GET.get('start')
 			end=request.GET.get('end')
 			invoice_no=request.GET.get('invoice_no')
+			# mode=request.GET.get('mode')
 			# productid=request.GET.get('productid')
 			cheque_rtgs=request.GET.get('cheque_rtgs')
-			# invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
-			# 			select_related('invoiceLineItem_salesInvoice').\
-			# 			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
-
+			
 			payments = sales_payment.objects.for_tenant(this_tenant).filter(paid_on__range=[start,end]).\
 						order_by('-paid_on', 'cheque_rtgs_number','-sales_invoice')
 			if (len(customers)>0):
@@ -1634,17 +1641,26 @@ def sales_return_view(request):
 	return render(request,'sales/sales_return.html', {'extension': 'base.html'})
 
 #Check before allowing it
-@api_view(['POST'],)
+@api_view(['GET', 'POST'])
 def sales_return_save(request):
+	if request.method == 'GET':
+		adjustment_inv_no = request.GET.get('adjustment_inv_no')
+		customer_id = request.GET.get('customer_id')
+		try:
+			invoice_no = sales_invoice.objects.get(invoice_id = adjustment_inv_no, customer = customer_id)
+			response_data = invoice_no.total - invoice_no.amount_paid
+		except:
+		  response_data = "Invoice doesn't exist."
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
 	if request.method == 'POST':
 		calltype = request.data.get('calltype')
 		response_data = {}
 		this_tenant=request.user.tenant
 		if (calltype == 'save'):
-			try:
-				with transaction.atomic():
-					is_igst = False
-
+			with transaction.atomic():
+				try:
+				# with transaction.atomic():
 					invoice_id = request.data.get('invoiceid')
 					date=request.data.get('date')
 					
@@ -1653,20 +1669,53 @@ def sales_return_save(request):
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
 					igsttotal=Decimal(request.data.get('igsttotal'))
 					total=Decimal(request.data.get('total'))
+
+					adjustment_same_inv = request.data.get('adjustment_same_inv')
+					adjustment_inv_no = request.data.get('adjustment_inv_no')
 					
-					# sum_total = subtotal+cgsttotal+sgsttotal
-					#if (abs(sum_total - total) <0.90 ):
-					#	total = sum_total
 					bill_data = json.loads(request.data.get('bill_details'))
 					invoice = sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
 
+					if (adjustment_same_inv == 'true' or adjustment_same_inv == True):
+						available_total = invoice.total - invoice.amount_paid
+						if (total > available_total):
+							raise IntegrityError
+						elif (total == available_total):
+							invoice.amount_paid = invoice.amount_paid + total
+							invoice.final_payment_date=date
+							invoice.save()
+						else:
+							invoice.amount_paid = invoice.amount_paid + total
+							invoice.save() 
+					else:
+						adjustment_invoice = sales_invoice.objects.get(invoice_id = adjustment_inv_no)
+						available_total = adjustment_invoice.total - adjustment_invoice.amount_paid
+						if (total > available_total):
+							raise IntegrityError
+						elif (total == available_total):
+							adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
+							adjustment_invoice.final_payment_date=date
+							adjustment_invoice.save()
+						else:
+							adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
+							adjustment_invoice.save()
+
 					customer_gst = invoice.customer.gst
 					customer_state = invoice.customer.state
+
+					if (invoice.warehouse_state == invoice.customer.state):
+						is_igst = False
+					else:
+						is_igst = True
 					
 					new_invoice=sales_return()
 					new_invoice.tenant=this_tenant
 					new_invoice.invoice=invoice
 
+					if (customer_gst):
+						new_invoice.return_type = 1
+					else:
+						new_invoice.return_type = 2
 					new_invoice.date = date
 					
 					new_invoice.customer=invoice.customer
@@ -1859,7 +1908,7 @@ def sales_return_save(request):
 								new_inventory_ledger_sales(product, warehouse, 2, date, v['quantity'],\
 										v['pur_rate'], actual_sales_price,  new_invoice.invoice_id, this_tenant)
 								
-							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=invoice.warehouse)
+							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=new_invoice.warehouse)
 							warehouse_valuation_change.valuation+=total_purchase_price
 							warehouse_valuation_change.save()
 						if (is_igst):
@@ -1936,7 +1985,7 @@ def sales_return_save(request):
 						new_account.credit_amount=total
 						new_account.tenant=this_tenant
 						new_account.save()
-
+					
 					if (debit != credit):
 						raise IntegrityError
 
@@ -1979,15 +2028,16 @@ def sales_return_save(request):
 						new_entry_inv.tenant=this_tenant
 						new_entry_inv.save()
 
-					response_data=new_invoice.id
+					# response_data=new_invoice.id
 
 					response_data['invoice_id']=new_invoice.id
 
-			except Exception as err:
-				response_data  = err.args 
-				transaction.rollback()
-				# except:
-				# 	transaction.rollback()
+				except Exception as err:
+					print(err)
+					response_data  = err.args 
+					transaction.rollback()
+					# except:
+					# 	transaction.rollback()
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+	<title>Register for Tech Assisto</title>
+
+	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+
+	<!--     Fonts and icons     -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+
+	<!-- CSS Files -->
+    <!-- <link href="../assets/css/bootstrap.min.css" rel="stylesheet" /> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- <link href="../assets/css/material-kit.css" rel="stylesheet"/> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-kit/1.1.0/css/material-kit.min.css">
+
+</head>
+
+<body class="signup-page">
+	<nav class="navbar navbar-transparent navbar-absolute">
+    	<div class="container">
+        	<!-- Brand and toggle get grouped for better mobile display -->
+        	<div class="navbar-header">
+        		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example">
+            		<span class="icon-bar"></span>
+		            <span class="icon-bar"></span>
+		            <span class="icon-bar"></span>
+        		</button>
+        	</div>
+
+        	<div class="collapse navbar-collapse" id="navigation-example">
+        		<ul class="nav navbar-nav navbar-right">
+					<li>
+    					<a href="#" target="_blank" style="color: #88CAEA;">
+    						Alread Registered? Click to Login
+    					</a>
+    				</li>
+    				<li>
+		                <a href="#" target="_blank" class="btn btn-simple btn-white btn-just-icon">
+							<i class="fa fa-twitter" style="color: #88CAEA;"></i>
+						</a>
+		            </li>
+		            <li>
+		                <a href="#" target="_blank" class="btn btn-simple btn-white btn-just-icon">
+							<i class="fa fa-facebook-square" style="color: #88CAEA;"></i>
+						</a>
+		            </li>
+					<li>
+		                <a href="#" target="_blank" class="btn btn-simple btn-white btn-just-icon">
+							<i class="fa fa-linkedin" style="color: #88CAEA;"></i>
+						</a>
+		            </li>
+        		</ul>
+        	</div>
+    	</div>
+    </nav>
+
+    <div class="wrapper">
+    	<div class="header header-filter">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-4 col-md-offset-4 col-sm-6 col-sm-offset-3" style="opacity: 0.85;">
+						<div class="card card-signup">
+							<form class="form" method="" action="">
+								<div class="header header-info text-center">
+									<h4 style="color: #b6e0ef">Sign Up</h4>
+									<div class="social-line">
+										<label class='personal_type' style="color: #b6e0ef">Personal Details</label>
+										<label class='business_type' hidden>Business Details</label>
+									</div>
+								</div>
+								<div class="content personal_register" hidden>
+
+									<div class="input-group has-warning first_name_div">
+										<span class="input-group-addon">
+											<i class="material-icons">face</i>
+										</span>
+										<input type="text" class="form-control first_name_input" placeholder="First Name...">
+									</div>
+
+									<div class="input-group has-warning last_name_div">
+										<span class="input-group-addon">
+											<i class="material-icons">perm_identity</i>
+											<!-- <i class="material-icons">face</i> -->
+										</span>
+										<input type="text" class="form-control last_name_input" placeholder="Last Name...">
+									</div>
+
+									<div class="input-group has-warning email_div">
+										<span class="input-group-addon">
+											<i class="material-icons">email</i>
+										</span>
+										<input type="email" class="form-control email_input" placeholder="Personal Email...">
+									</div>
+
+									<div class="input-group has-warning per_contact_div">
+										<span class="input-group-addon">
+											<i class="material-icons">phone</i>
+										</span>
+										<input type="text" class="form-control per_contact_input" placeholder="Personal Contact No...">
+									</div>
+
+									<div class="input-group has-warning username_div">
+										<span class="input-group-addon">
+											<i class="material-icons">verified_user</i>
+										</span>
+										<input type="text" placeholder="Username..." class="form-control username_input" />
+									</div>
+
+									<div class="input-group has-warning password1_div">
+										<span class="input-group-addon">
+											<i class="material-icons">lock_outline</i>
+										</span>
+										<input type="password" placeholder="Password..." class="form-control password1_input" />
+									</div>
+
+									<div class="input-group has-warning password2_div">
+										<span class="input-group-addon">
+											<i class="material-icons">lock</i>
+										</span>
+										<input type="password" placeholder="Repeat Password..." class="form-control password2_input" />
+									</div>
+
+								</div>
+
+								<div class="content business_register">
+
+									<div class="input-group  has-warning business_name_div">
+										<span class="input-group-addon">
+											<i class="material-icons">business</i>
+										</span>
+										<input type="text" class="form-control business_name_input" placeholder="Business Name...">
+									</div>
+
+									<div class="input-group has-warning business_type_div">
+										<span class="input-group-addon">
+											<i class="material-icons">business_center</i>
+											<!-- <i class="material-icons">face</i> -->
+										</span>
+										<select class="form-control business_type_input">
+											<option disabled selected> Select Business Type</option>
+											<option value="1">Distributor</option>
+											<option value="2">Retailer</option>
+											<option value="2">Both Distribution &amp Retail</option>
+										</select>
+									</div>
+
+									<div class="input-group has-warning pan_div">
+										<span class="input-group-addon">
+											<i class="material-icons">credit_card</i>
+										</span>
+										<input type="text" class="form-control pan_input" placeholder="PAN Number...">
+									</div>
+
+									<div class="input-group has-warning gst_div">
+										<span class="input-group-addon">
+											<i class="material-icons">credit_card</i>
+										</span>
+										<input type="text" class="form-control gst_input" placeholder="GST Number...">
+									</div>
+
+									<div class="checkbox has-warning inventory_div">
+										<label>
+											<input type="checkbox" name="optionsCheckboxes" class="inventory_input">
+											Select to maintain inventory
+										</label>
+									</div>
+
+									<div class="input-group has-warning line1_div">
+										<span class="input-group-addon">
+											<i class="material-icons">home</i>
+										</span>
+										<input type="text" class="form-control line1_input" placeholder="Address Line 1...">
+									</div>
+
+									<div class="input-group has-warning line2_div">
+										<span class="input-group-addon">
+											<i class="material-icons">home</i>
+										</span>
+										<input type="text" class="form-control line2_div" placeholder="Address Line 2...">
+									</div>
+
+									<div class="input-group has-warning state_div">
+										<span class="input-group-addon">
+											<i class="material-icons">add_location</i>
+											<!-- <i class="material-icons">face</i> -->
+										</span>
+										<select class="form-control state_input">
+											<option disabled selected> State</option>
+										</select>
+									</div>
+
+									<div class="input-group has-warning city_div">
+										<span class="input-group-addon">
+											<i class="material-icons">location_city</i>
+										</span>
+										<input type="text" class="form-control city_input" placeholder="City...">
+									</div>
+
+									<div class="input-group has-warning pin_div">
+										<span class="input-group-addon">
+											<i class="material-icons">fiber_pin</i>
+										</span>
+										<input type="text" class="form-control pin_input" placeholder="Pincode...">
+									</div>
+
+									<div class="input-group has-warning business_email_div">
+										<span class="input-group-addon">
+											<i class="material-icons">email</i>
+										</span>
+										<input type="email" class="form-control business_email_input" placeholder="Official Email...">
+									</div>
+
+									<div class="input-group has-warning business_phone_div">
+										<span class="input-group-addon">
+											<i class="material-icons">phone</i>
+										</span>
+										<input type="phone" class="form-control business_phone_input" placeholder="Official Contact No...">
+									</div>
+
+									<div class="input-group has-warning id_div">
+										<span class="input-group-addon">
+											<i class="material-icons">perm_identity</i>
+										</span>
+										<input type="text" class="form-control id_input" placeholder="Unique ID/Short name of business">
+									</div>
+
+								</div>
+
+
+								<div class="footer text-center">
+									<a href="#pablo" class="btn btn-simple btn-info btn-lg">Get Started</a>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<footer class="footer">
+		        <div class="container">
+		            <nav class="pull-left">
+						<ul>
+							<li>
+								<a href="https://www.techassisto.com/#about" style="color: #226484">
+								   About Us
+								</a>
+							</li>
+							<li>
+								<a href="https://www.techassisto.com/#services" style="color: #226484">
+								   Why Us
+								</a>
+							</li>
+							<li>
+								<a href="https://www.techassisto.com/#contact" style="color: #226484">
+									Contact Us
+								</a>
+							</li>
+						</ul>
+		            </nav>
+		            <div class="copyright pull-right" style="color: #226484">
+		                &copy; 2018, made with <i class="fa fa-heart heart" style="color: #226484"></i> for Assistians</a>
+		            </div>
+		        </div>
+		    </footer>
+
+		</div>
+
+    </div>
+
+</body>
+	{% load static from staticfiles %}
+	<style>
+		.wrapper{
+		    /*width: 100%;*/
+		    /*height: 300px;*/
+		    background-image: url( "{% static 'img/register_bg.png' %}");
+		    background-size: cover;
+		    background-position: top center;
+		}
+	</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/0.5.9/js/material.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/material-kit/1.1.0/js/material-kit.min.js"></script>
+
+</html>

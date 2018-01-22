@@ -57,8 +57,8 @@
         <label class="control-label">Sales Invoice No</label>                
         <input class="form-control sales_inv_no">
     </div>
-    <div class="form-group col-xs-3">
-        <label class="control-label">Click here to get invoice data</label>
+    <div class="form-group col-xs-2">
+        <label class="control-label">Click to get invoice data</label>
         <p><button type="button" class="btn btn-primary btn-sm get_invoice">Get data</button></p>
     </div>
 
@@ -68,100 +68,126 @@
             <option disabled selected hidden style='display: none' value>Select Customer</option>               
         </select>        
     </div> -->
-    <div class="form-group col-xs-3 col-xs-offset-3">
+    <div class="form-group col-xs-2">
         <label class="control-label">Sales Return Date</label>
         <input class="form-control date">
-    </div>  
+    </div>
+    <div class="form-group col-xs-2">
+        <label class="control-label">Adjustment Against</label>
+        <div class="pretty  p-default p-toggle p-curve p-plain">
+            <input type="checkbox" class='adjustment_same_inv' checked>
+            <div class="state p-on">
+                <i class="fa fa-check-square-o" style="color: #15a537;"> Against Current Invoice</i>
+            </div>
+            <div class="state p-off">
+                <i class="fa fa-times" style="color: #d62a2a;""> Not Against Current Invoice</i>
+            </div>
+        </div>
+    </div>
+    <div class="form-group col-xs-3 adjustment_inv_div" hidden>
+        <label class="control-label">Adjust Against Invoice No</label>
+        <input class="form-control adjustment_inv_no" disabled>
+    </div>
+    <div class="form-group col-xs-2" hidden>
+        <label class="original_due">0.00</label>
+    </div>
+    <div class="form-group col-xs-2" hidden>
+        <label class="adjustment_due">0.00</label>
+    </div>
         
 </div>
 
-
-
 <br>
 <br>
-
-
 
 <div id='print' class="print">
 
-<div class="" id='pos_print'>	
-<table class="table table-striped table-bordered details text-center">
-	<thead>
-    	<tr class="text-center" id='pos_print'> 
-        	<th class="text-center"></th>
-            <th class="text-center" hidden>ID</th>
-            <th class="text-center" hidden><h5>ID</h5></th>
-            <th class="text-center" style="width: 15%"><h5>Item</h5></th>
-            <th class="text-center"><h5>Qty (Sold)</h5></th>
-            <th class="text-center"><h5>Qty (Return)</h5></th>
-            <!-- <th class="text-center hidden-print"><h5>Free w/o tax</h5></th>
-            <th class="text-center hidden-print"><h5>Free with tax</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>Unit</h5></th>
-            <!-- <th class="text-center visible-print-block"><h5>Free</h5></th> -->
-            <th class="text-center" id='not_pos_print' hidden><h5>Sales Price(Discounted)</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>Sales Price(Return)</h5></th>
-            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Type-1</h5></th> -->
-            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Value-1</h5></th> -->
-            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Type-2</h5></th> -->
-            <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Value-2</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>Taxable Total (Return)</h5></th>
-            <!-- <th class="text-center" id='not_pos_print'><h5>VAT Type</h5></th> -->
-            <!-- <th class="text-center" id='not_pos_print'><h5>VAT %</h5></th> -->
-            <th class="text-center" id='not_pos_print'><h5>CGST %</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>CGST</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>SGST %</h5></th>
-            <th class="text-center" id='not_pos_print'><h5>SGST</h5></th>
-            <th class="text-center is_igst" id='not_pos_print'><h5>IGST %</h5></th>
-            <th class="text-center is_igst" id='not_pos_print'><h5>IGST</h5></th>
-            <th class="text-center"><h5>Total (Return)</h5></th>
-        </tr>
-	</thead>
-	<tbody>
-	</tbody>
-</table>
-</div>
+    <div class="" id='pos_print'>	
+    <table class="table table-striped table-bordered details text-center">
+    	<thead>
+        	<tr class="text-center" id='pos_print'> 
+            	<th class="text-center"></th>
+                <th class="text-center" hidden>ID</th>
+                <th class="text-center" hidden><h5>ID</h5></th>
+                <th class="text-center" style="width: 15%"><h5>Item</h5></th>
+                <th class="text-center"><h5>Qty (Sold)</h5></th>
+                <th class="text-center"><h5>Qty (Return)</h5></th>
+                <!-- <th class="text-center hidden-print"><h5>Free w/o tax</h5></th>
+                <th class="text-center hidden-print"><h5>Free with tax</h5></th> -->
+                <th class="text-center" id='not_pos_print'><h5>Unit</h5></th>
+                <!-- <th class="text-center visible-print-block"><h5>Free</h5></th> -->
+                <th class="text-center" id='not_pos_print' hidden><h5>Sales Price(Discounted)</h5></th>
+                <th class="text-center" id='not_pos_print'><h5>Sales Price(Return)</h5></th>
+                <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Type-1</h5></th> -->
+                <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Value-1</h5></th> -->
+                <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Type-2</h5></th> -->
+                <!-- <th class="text-center" id='not_pos_print'><h5>Disc. Value-2</h5></th> -->
+                <th class="text-center" id='not_pos_print'><h5>Taxable Total (Return)</h5></th>
+                <!-- <th class="text-center" id='not_pos_print'><h5>VAT Type</h5></th> -->
+                <!-- <th class="text-center" id='not_pos_print'><h5>VAT %</h5></th> -->
+                <th class="text-center" id='not_pos_print'><h5>CGST %</h5></th>
+                <th class="text-center" id='not_pos_print'><h5>CGST</h5></th>
+                <th class="text-center" id='not_pos_print'><h5>SGST %</h5></th>
+                <th class="text-center" id='not_pos_print'><h5>SGST</h5></th>
+                <th class="text-center is_igst" id='not_pos_print'><h5>IGST %</h5></th>
+                <th class="text-center is_igst" id='not_pos_print'><h5>IGST</h5></th>
+                <th class="text-center"><h5>Total (Return)</h5></th>
+            </tr>
+    	</thead>
+    	<tbody>
+    	</tbody>
+    </table>
+    </div>
 
-<br>
+    <br>
 
 
-<div class="row text-right">
-	<!-- <div class="col-xs-6" id='not_pos_print'>
-		<table class="table metadata boderless">
-			<tr class='text-left'>
-				<td colspan="1" class='text-left'>Payment Due date</td>
-				<td colspan="1" class='text-left'></td>
-				<td colspan="1" class=" text-left duedate"></td>
+    <div class="row text-right billdata">
+    	<!-- <div class="col-xs-6" id='not_pos_print'>
+    		<table class="table metadata boderless">
+    			<tr class='text-left'>
+    				<td colspan="1" class='text-left'>Payment Due date</td>
+    				<td colspan="1" class='text-left'></td>
+    				<td colspan="1" class=" text-left duedate"></td>
 
-			</tr>						
-		</table>
-	</div> -->
-	<div class="col-xs-4 col-xs-offset-8"  id='pos_print'>
-		<table class="table metadata boderless" >
-			<tr>
-				<td>Subtotal (Return)</td>
-				<td>Rs.</td>
-		        <td class='subtotal_receipt'></td>
-			</tr>
-			<tr>
-				<td>Tax Total (Return)</td>
-				<td>Rs.</td>
-		        <td class='taxtotal_receipt'></td>
-			</tr>
-			<tr>
-				<td>Total (Return)</td>
-				<td>Rs.</td>
-		        <td class='total_receipt'></td>
-			</tr>
-		</table>
-	</div>
-</div>
-<br>
+    			</tr>						
+    		</table>
+    	</div> -->
+    	<div class="col-xs-4 col-xs-offset-8"  id='pos_print'>
+    		<table class="table metadata boderless" >
+    			<tr>
+    				<td>Subtotal (Return)</td>
+    				<td>Rs.</td>
+    		        <td class='subtotal_receipt'>0.00</td>
+    			</tr>
+    			<tr>
+    				<td>Tax Total (Return)</td>
+    				<td>Rs.</td>
+    		        <td class='taxtotal_receipt'>0.00</td>
+    			</tr>
+                <tr>
+                    <td>Round Off</td>
+                    <td>Rs.</td>
+                    <td><input type="number" class="form-control round" min="-0.99" max="0.99" step="0.01" value="0.00"></td>
+                </tr>
+    			<tr>
+    				<td>Total (Return)</td>
+    				<td>Rs.</td>
+    		        <td class='total_receipt'>0.00</td>
+    			</tr>
+    		</table>
+    	</div>
+    </div>
+    <br>
 </div>
 
 
 <button type="button" class="btn btn-primary submit">Submit</button>
 <!-- <button type="button" class="btn btn-primary posprintout" id="not_print">Take POS Print Out</button>
  -->
+
+ <!-- Google Material Icon-->
+ <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <!-- Sweetalert JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
@@ -173,6 +199,8 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
 
+<!-- Preety Checkbox -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/pretty-checkbox/3.0.0/pretty-checkbox.min.css" rel="stylesheet" />
 
 {% load static from staticfiles %}
 

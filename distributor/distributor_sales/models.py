@@ -55,6 +55,8 @@ class sales_invoice(models.Model):
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
 	payable_by=models.DateField(blank=True, null=True)
 	final_payment_date=models.DateField(blank=True, null=True)
+	#for adding additional discount if total is not changed, update amount due/amount paid
+	
 	# purchase_order=models.ForeignKey(purchase_order, blank=True, null=True related_name='purchaseReceipt_purchaseOrder')
 	tenant=models.ForeignKey(Tenant,related_name='salesInvoice_sales_user_tenant')
 	objects = TenantManager()

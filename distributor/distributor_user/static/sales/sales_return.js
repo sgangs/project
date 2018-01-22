@@ -1,7 +1,7 @@
 
 $(function(){
 
-var pk;
+var pk, adjustment_same_inv = true, customer_id, current_invoice_id, adjust_invoice_error =false, adjustment_inv_no;
 
 discount_types=['Nil','%','Val' ]
 
@@ -15,7 +15,6 @@ function round_off(value){
 
 $('.get_invoice').click(function(){
     invoice_id=$('.sales_inv_no').val()
-    console.log("here")
     $.ajax({
         url : "data/", 
         type: "GET",
@@ -24,6 +23,9 @@ $('.get_invoice').click(function(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            customer_id = jsondata['customer'];
+            current_invoice_id = jsondata['invoice_id'];
+            $('.adjustment_inv_no').attr('disabled', false);
             // load_data(jsondata)
             $('.invoice_meta').attr('hidden', false);
             $('.details .data').remove()
@@ -38,9 +40,13 @@ $('.get_invoice').click(function(){
             $('.customer').html("<strong>Customer: </strong>"+jsondata['customer_name']);
             $('.warehouse').html("<strong>Delivery From: </strong>"+jsondata['warehouse_address']+',<br>'
                                     +jsondata['warehouse_city']);
-            $('.subtotal_receipt').html(jsondata['subtotal']);
-            $('.taxtotal_receipt').html(taxtotal.toFixed(2));
-            $('.total_receipt').html(jsondata['total']);
+            // $('.subtotal_receipt').html(jsondata['subtotal']);
+            // $('.taxtotal_receipt').html(taxtotal.toFixed(2));
+            // $('.total_receipt').html(jsondata['total']);
+            billtotal = parseFloat(jsondata['total']);
+            billpaid = parseFloat(jsondata['amount_paid']);
+            due = billtotal - billpaid;
+            $('.original_due').html(due);
             
             $.each(jsondata['line_items'], function(){
                 igst_total+=this.igst_value;
@@ -71,19 +77,19 @@ $('.get_invoice').click(function(){
                     "<td hidden>"+this.product_id+"</td>"+
                     "<td>"+this.product_name+"</td>"+
                     "<td><input class='form-control qty_avl' value="+(this.quantity - this.quantity_returned)+" disabled></td>"+
-                    "<td><input class='form-control qty' value="+(this.quantity - this.quantity_returned)+"></td>"+
+                    "<td><input class='form-control qty'></td>"+
                     "<td id='not_pos_print'>"+this.unit+"</td>"+
                     "<td id='not_pos_print' hidden><input class='form-control sp' value="+sales_rate.toFixed(2)+" disabled></td>"+
                     "<td id='not_pos_print'><input class='form-control sr' value="+sales_rate+"></td>"+
                     
-                    "<td id='not_pos_print'>"+this.line_tax+"</td>"+
+                    "<td id='not_pos_print'></td>"+
                     "<td><input class='form-control cgstp' value="+this.cgst_percent+"></td>"+
-                    "<td>"+this.cgst_value+"</td>"+
+                    "<td></td>"+
                     "<td><input class='form-control sgstp' value="+this.sgst_percent+"></td>"+
-                    "<td>"+this.sgst_value+"</td>"+
+                    "<td></td>"+
                     "<td class='is_igst'><input class='form-control igstp' value="+this.igst_percent+"></td>"+
-                    "<td class='is_igst'>"+this.igst_value+"</td>"+
-                    "<td>"+this.line_total+"</td>"+
+                    "<td class='is_igst'></td>"+
+                    "<td></td>"+
                     "</tr>");
                 $('.dt').selectpicker('refresh');
                 $('.dt2').selectpicker('refresh');
@@ -229,6 +235,78 @@ $(".details").on("keydown", ".igstp", function(){
     get_total();
 });
 
+$(".adjustment_same_inv").change(function() {
+    adjustment_same_inv = this.checked
+    if(this.checked) {
+        $('.adjustment_inv_div').removeClass("has-error");
+        $('.adjustment_inv_no').val('');
+        $('.adjustment_inv_div').attr('hidden', true);
+    }
+    else{
+        $('.adjustment_inv_div').attr('hidden', false);
+        adjust_invoice_error = false;
+    }
+})
+
+$(".adjustment_inv_no").blur(function() {
+    adjustment_inv_no = $(".adjustment_inv_no").val();
+    if (current_invoice_id == adjustment_inv_no){
+        swal("Ehh...", "Adjustment must not be against current invoice. If you want to adjust against current invoice, please select the same"
+                +" under 'Adjustment Against' settings.", "info");
+        adjust_invoice_error = true;
+    }
+    else{
+        $.ajax({
+            url : "due-amount/", 
+            type: "GET",
+            data:{adjustment_inv_no: adjustment_inv_no,
+                customer_id: customer_id,
+                calltype: "due_amount"},
+            dataType: 'json',
+            // handle a successful response
+            success : function(jsondata) {
+                if (jsondata == "Invoice doesn't exist."){
+                    $('.adjustment_inv_div').addClass("has-error");
+                    adjust_invoice_error = true;
+                    swal("Oops...", "No invoice with this invoice no for current customer found. Kindly retry.", "warning");
+                }
+                else{
+                    adjust_invoice_error = false;
+                    $('.adjustment_due').html(jsondata);
+                    $('.adjustment_inv_div').removeClass("has-error");
+                }
+            },
+            // handle a non-successful response
+            error : function() {
+                adjust_invoice_error = true;
+                $('.adjustment_inv_div').addClass("has-error");
+                swal("Oops...", "THere were some error. Please try again.", "error");
+            }
+        });
+    }
+})
+
+$(".billdata").on("keyup", ".round", function(){
+    round_manual();
+});
+$(".billdata").on("keydown", ".round", function(){
+    round_manual();
+});
+
+function round_manual(argument) {
+    subtotal = parseFloat($('.subtotal_receipt').html());
+    console.log(subtotal);
+    taxtotal = parseFloat($('.taxtotal_receipt').html());
+    console.log(taxtotal);
+    round_value = parseFloat($('.round').val());
+    if (isNaN(round_value)){
+        round_value = 0;
+        // $('.round').val("0.00");
+    }
+    total = round_off(subtotal + taxtotal + round_value);
+    console.log(total);
+    $('.total_receipt').html(total.toFixed(2));
+}
 
 function get_qty_avl(el){
     var quantity =  parseFloat($(el).closest('tr').find('td:nth-child(6) input').val());
@@ -268,7 +346,6 @@ function get_total(){
     for (var a = document.querySelectorAll('table.details tbody tr'), i = 0; a[i]; ++i) {
         // get all cells with input field
         cells = a[i].querySelectorAll('input:last-child');
-        console.log(cells)
         var quantity=parseFloat($(cells[1]).val());
         var qty_avl=parseFloat($(a[i]).find('td:nth-child(5)').html());
         // var free_tax_qty=parseFloat($(cells[4]).val());
@@ -354,7 +431,7 @@ function new_data(){
     
     subtotal=parseFloat($('.subtotal_receipt').html());
     var cgsttotal=0, sgsttotal=0, igsttotal=0;
-    total=parseFloat($('.total_receipt').html());
+    total = parseFloat($('.total_receipt').html());
     
     if (invoiceid == '' || typeof(invoiceid) =='undefined' || $.trim(date) == '' || typeof(date) =='undefined'){
         proceed = false;
@@ -431,7 +508,28 @@ function new_data(){
         };
         items.push(item);
     });
-    console.log(items);
+
+    adjustment_same_inv;
+    
+    if (adjustment_same_inv){
+        available_total = ($('.original_due').html());
+        if (total>available_total){
+            proceed = false;
+            swal("Ehh...", "Sales Return amount exceeds receivable amount against current invoice.", "error");
+        }
+    }
+    else{
+        console.log('here');
+        available_total =  $('.adjustment_due').html();
+        if (total>available_total){
+            proceed = false;
+            swal("Ehh...", "Sales Return amount exceeds receivable amount against selected invoice.", "error");
+        }
+    }
+
+    if (adjust_invoice_error){
+        proceed = false;
+    }
     
     if (proceed){
         (function() {
@@ -445,6 +543,8 @@ function new_data(){
                     sgsttotal: sgsttotal,
                     igsttotal: igsttotal,
                     total: total,
+                    adjustment_same_inv: adjustment_same_inv,
+                    adjustment_inv_no: adjustment_inv_no,
                     bill_details: JSON.stringify(items),
                     calltype: "save",
                     csrfmiddlewaretoken: csrf_token},

@@ -10,6 +10,7 @@ from django.contrib.auth.views import login, password_reset
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect
 from django.utils.timezone import localtime, now
+from django.views.decorators.cache import cache_control
 from django.views.generic import TemplateView
 
 from django.core.mail import EmailMessage, EmailMultiAlternatives
@@ -18,6 +19,7 @@ from django.utils.html import strip_tags
 from django.template import Context
 from django.template.loader import get_template
 from django.conf import settings
+
 
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
@@ -41,6 +43,11 @@ from .forms import revisedPasswordResetForm
 #landing page
 class HomeView(TemplateView):
     template_name = "index.html"
+
+#landing page
+@cache_control(private=True)
+def base_landing_page(request):
+    return render (request, 'index.html')
 
 #Redirect authenticated users to landing page
 def custom_login(request):
@@ -71,8 +78,29 @@ def RegisterView(request):
         if userform.is_valid() and customerform.is_valid():
             #Create new tenant
             new_tenant=customerform.save(commit=False)
+            #business_name = request.data.get('business_name')
+            #business_type = request.data.get('business_type')
+            #pan_no = request.data.get('pan_no')
+            #gst_no = request.data.get('gst_no')
+            #is_inventory = request.data.get('is_inventory')
+            #address_1 = request.data.get('address_1')
+            #address_2 = request.data.get('address_2')
+            #state = request.data.get('state')
+            #city = request.data.get('city')
+            #pin = request.data.get('pin')
+            #official_mail = request.data.get('official_mail')
+            #official_contact = request.data.get('official_contact')
+            #business_id = request.data.get('business_id')
+            
             #Create new user
             new_user=userform.save(commit=False)
+            #first_name = request.data.get('first_name')
+            #last_name = request.data.get('last_name')
+            #personal_mail = request.data.get('personal_mail')
+            #personal_contact = request.data.get('personal_contact')
+            #username = request.data.get('username')
+            #password = request.data.get('password')
+            #repeat_password = request.data.get('repeat_password')
             #Validate Password
             new_user.set_password(userform.cleaned_data['password'])
             with transaction.atomic():
@@ -267,6 +295,7 @@ def RegisterView(request):
         userform = UserRegistrationForm()
 
     return render(request,'registration.html', {'userform': userform, 'customerform': customerform})
+    # return render(request,'signup-page.html', {'userform': userform, 'customerform': customerform})
 
 
 #Add one more level of authentication for forgot password. Then send the mail.

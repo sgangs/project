@@ -12,7 +12,9 @@ from .forms import revisedPasswordResetForm
 
 urlpatterns = [
     #url(r'^admin/', admin.site.urls),
-    url(r'^$', views.HomeView.as_view()),
+    # url(r'^$', views.HomeView.as_view()),
+    url(r'^$', views.base_landing_page, name='base_landing_page'),
+    # url(r'^landing/$', ),
     url(r'^register/$', views.RegisterView, name='register'),
     # url(r'^registration-success/$', views.Registration),
 

@@ -20,8 +20,9 @@ urlpatterns = [
     url(r'^invoice/salesedit/save/$', views.sales_invoice_edit, name='sales_invoice_edit'),
 
     url(r'^invoice/return/$', views.sales_return_view, name='sales_return_view'),
-    url(r'^invoice/return/data/$', views.update_invoice_details, name='update_invoice_details'),
-    url(r'^invoice/return/save/$', views.sales_invoice_edit, name='sales_invoice_edit'),
+    url(r'^invoice/return/data/$', views.update_invoice_details, name='update_return_details'),
+    url(r'^invoice/return/due-amount/$', views.sales_return_save, name='sales_return_due_amount'),
+    url(r'^invoice/return/save/$', views.sales_return_save, name='sales_return_save'),
     
     url(r'^invoice/openinvoice/listall/$', views.open_invoice_list, name='open_invoice_list'),
     url(r'^invoice/openinvoice/save/$', views.finalize_open_invoices, name='finalize_open_invoices'),
