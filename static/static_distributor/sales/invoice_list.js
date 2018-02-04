@@ -470,6 +470,7 @@ function filter_data(page_no) {
                 "<td>"+this.customer_name+"</td>"+
                 "<td>"+this.total+"</td>"+
                 "<td>"+this.amount_paid+"</td>"+
+                "<td>"+this.return_value+"</td>"+
                 "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
                         "</i> Download Excel Format</button></a></td>"+
                 "</tr>");

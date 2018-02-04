@@ -403,10 +403,16 @@ def all_invoices(request):
 		page_no = request.GET.get('page_no')
 		response_data={}
 		filter_data={}
+		print(calltype)
 		if (calltype == 'all_invoices'):
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
 				'date','customer_name','total', 'amount_paid', 'payable_by', 'return_value').order_by('-date', '-invoice_id')[:300]
-		
+
+		elif (calltype== 'customer_pending'):
+			customerid = request.GET.get('customerid')
+			invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid, is_final=True, final_payment_date__isnull=True,).\
+			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')[:300]
+
 		elif (calltype == 'apply_filter'):
 
 			customers=json.loads(request.GET.get('customers'))

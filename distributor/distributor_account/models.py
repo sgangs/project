@@ -195,7 +195,7 @@ class Journal(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	date=models.DateField(default=datetime.now)
 	group=models.ForeignKey(journal_group,related_name='journal_journalGroup')
-	remarks=models.CharField(max_length=80, blank=True, null=True)
+	remarks=models.CharField(max_length=140, blank=True, null=True)
 	transaction_bill_id=models.BigIntegerField(db_index=True, blank=True, null=True)
 	trn_type=models.PositiveSmallIntegerField(db_index=True,blank=True, null=True)
 	other_data = JSONField(blank=True, null=True)
