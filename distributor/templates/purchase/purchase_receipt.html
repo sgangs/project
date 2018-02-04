@@ -64,7 +64,7 @@
 			<option disabled selected hidden style='display: none' value>Select Vendor</option>				
 		</select>		 
 	</div>
-	<div class="form-group col-xs-3">
+	<div class="form-group col-xs-2">
 		<label class="control-label">Supplier/ Invoice No</label>
 		<input class="form-control invoice">		 
 	</div>
@@ -74,10 +74,14 @@
 			<option disabled selected hidden style='display: none' value>Select Warehouse</option>				
 		</select>		 
 	</div>
-	<div class="form-group col-xs-3">
+	<div class="form-group col-xs-2">
 		<label class="control-label">Invoice Date</label>				 
 		<input class="form-control date">
-	</div>	
+	</div>
+	<div class="form-group col-xs-2">
+		<label class="control-label tax_type_label">Change if IGST</label>
+		<div><input class="form-control is_igst" type="checkbox"></div>
+	</div>
 </div>
 
 
@@ -101,17 +105,12 @@
             <th colspan="1">Disc. Type-2</th>
             <th colspan="1">Disc. Value-2</th>
             <th colspan="1">Taxable Total</th>
-            <th colspan="1">CGST %</th>
-            <th colspan="1">CGST Val</th>
-            <th colspan="1">SGST %</th>
-            <th colspan="1">SGST Val</th>
-            <th colspan="1" hidden>IGST %</th>
-            <th colspan="1" hidden>IGST Val</th>
-            <!-- <th colspan="1"><h5>VAT Type</h5></th>
-            <th colspan="1"><h5>VAT %</h5></th> -->
-            <!-- <th colspan="1"><h5>CGST %</h5></th>
-            <th colspan="1"><h5>SGST %</h5></th>
-            <th colspan="1"><h5>IGST %</h5></th> -->
+            <th colspan="1" class="csgst">CGST %</th>
+            <th colspan="1" class="csgst">CGST Val</th>
+            <th colspan="1" class="csgst">SGST %</th>
+            <th colspan="1" class="csgst">SGST Val</th>
+            <th colspan="1" hidden class="igst">IGST %</th>
+            <th colspan="1" hidden class="igst">IGST Val</th>
             <th colspan="1"><h5>Total</h5></th>
         </tr>
 	</thead>
@@ -148,12 +147,12 @@
             <td colspan="1" class="total">0.00</td>
             <!-- <td colspan="1" class="vt"></td>
             <td colspan="1" class="vp"></td> -->
-            <td colspan="1"><input class="form-control cgstp"></td>
-            <td colspan="1" class="cgstv">0.00</td>
-            <td colspan="1"><input class="form-control sgstp"></td>
-            <td colspan="1" class="sgstv">0.00</td>
-            <td colspan="1" hidden><input class="form-control igstp"></td>
-            <td colspan="1" class="igstv" hidden>0.00</td>
+            <td colspan="1" class="csgst"><input class="form-control cgstp"></td>
+            <td colspan="1" class="cgstv csgst">0.00</td>
+            <td colspan="1" class="csgst"><input class="form-control sgstp"></td>
+            <td colspan="1" class="sgstv csgst">0.00</td>
+            <td colspan="1" hidden class="igst"><input class="form-control igstp"></td>
+            <td colspan="1" class="igstv igst" hidden>0.00</td>
             <td colspan="1" class="tv">0.00</td>
 		</tr>
 	</tbody>
@@ -235,17 +234,17 @@
 				<td>Rs.</td>
 		        <td class='grand_discount'>0.00</td>
 			</tr> -->
-			<tr hidden>
+			<tr>
 				<td>Tax Total</td>
 				<td>Rs.</td>
 		        <td class='taxtotal_receipt'>0.00</td>
 			</tr>
-			<tr>
+			<tr hidden>
 				<td>CGST Total</td>
 				<td>Rs.</td>
 		        <td class='cgsttotal_receipt'>0.00</td>
 			</tr>
-			<tr>
+			<tr hidden>
 				<td>SGST Total</td>
 				<td>Rs.</td>
 		        <td class='sgsttotal_receipt'>0.00</td>
@@ -271,6 +270,10 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 
+<!-- Bootstrap Switch -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
+
 <!-- Moment.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.25/moment.min.js"></script>
 
@@ -291,6 +294,17 @@
 <script>
 	csrf_token='{{csrf_token}}';
 	var calledfrom = 'receipt'
+	$(".is_igst").bootstrapSwitch({
+		size: 'small',
+		onColor: 'warning',
+		offColor: 'success',
+		onText: 'IGST',
+		offText: 'C/SGST',
+		// handleWidth: 20,
+		labelWidth: 15,
+		animate: true,
+		// labelText: 'Tax-type'
+	});
 	$('.date').datepicker({
 	    autoclose: true,
 	    // endDate: moment(),

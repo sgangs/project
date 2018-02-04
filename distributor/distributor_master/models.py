@@ -315,6 +315,8 @@ class AbstractCustomer(models.Model):
 	details=models.TextField(blank=True, null=True)
 	is_active=models.BooleanField(default=True)
 	updated = models.DateTimeField(blank=True, null=True)
+	opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	#vat_license_no=models.PositiveSmallIntegerField(blank=True, null=True)
 
 	class Meta:

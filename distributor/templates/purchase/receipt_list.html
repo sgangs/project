@@ -57,6 +57,7 @@
 <br>
 <p>
 	<button type="submit" class="btn btn-primary btn-xs purpay"><i class="fa fa-rupee"></i> Purchase Payment</button>
+	<button type="submit" class="btn btn-info btn-xs openingbalance"><i class="fa fa-folder-open-o"></i> Opening Balance</button>
 </p>
 <div></div>
 <br>
@@ -85,7 +86,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="payment" tabindex="-1" role="dialog" aria-labelledby="paymentLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document">
+	<div class="modal-dialog large_modal" role="document">
 	    <div class="modal-content">
 		    <div class="modal-header">
 		    	<h4 class="modal-title" id="myModalLabel">Purchase Receipt Payment</h4>
@@ -136,7 +137,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="filter" tabindex="-1" role="dialog" aria-labelledby="filterLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document">
+	<div class="modal-dialog large_modal" role="document">
 	    <div class="modal-content">
 		    <div class="modal-header">
 		    	<h4 class="modal-title" id="myModalLabel">Filter By</h4>
@@ -172,7 +173,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="summary" tabindex="-1" role="dialog" aria-labelledby="summaryLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document">
+	<div class="modal-dialog large_modal" role="document">
 	    <div class="modal-content">
 		    <div class="modal-header">
 		    	<h4 class="modal-title" id="myModalLabel">Purchase Summary</h4>
@@ -200,6 +201,100 @@
 	    </div>
 	</div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="openBalanceOption" tabindex="-1" role="dialog" aria-labelledby="openBalanceOptionLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Opening Balance</h4>
+		    </div>
+	    <div class="modal-body">
+		    <button type="submit" class="btn btn-primary btn-xs updateOpening"><i class="fa fa-refresh"></i> Update Opening Balance</button>
+		    <button type="submit" class="btn btn-primary btn-xs paymentOpening"><i class="fa fa-credit-card"></i> Payment Againdt Opening Balance</button>  
+	   	</div>
+		    
+	    </div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="openBalance" tabindex="-1" role="dialog" aria-labelledby="openBalanceLabel" aria-hidden="true">
+	<div class="modal-dialog large_modal" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Update Opening Balance</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div class="form-group vendordiv">
+					<label for="classname" class="control-label">Select Vendor</label>
+					<select class="form-control selectpicker vendor_opening" id="vendor_opening" data-live-search="true" title="Select Vendor">
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="classname" class="control-label">Opening (Credit) Balance</label>
+					<input class="form-control open_balance" type="number">
+				</div>
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary update_opening" disabled>Register Opening Balance</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="openBalancePayment" tabindex="-1" role="dialog" aria-labelledby="openBalancePaymentLabel" aria-hidden="true">
+	<div class="modal-dialog large_modal" role="document">
+	    <div class="modal-content">
+		    <div class="modal-header">
+		    	<h4 class="modal-title" id="myModalLabel">Payment Against Opening Balance</h4>
+		    </div>
+	    <div class="modal-body">
+		    <form action="" method="post">
+		    	<div class="form-group vendordiv">
+					<label for="classname" class="control-label">Select Vendor</label>
+					<select class="form-control selectpicker vendor_opening_pay" id="vendor_opening_pay" data-live-search="true" title = "Select Vendor">
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="classname" class="control-label">Opening (Credit) Balance</label>
+					<input class="form-control open_balance_pay" type="number" disabled>
+				</div>
+				<div class="form-group">
+					<label for="classname" class="control-label">Opening Balance Already Paid</label>
+					<input class="form-control open_balance_paid_pay" type="number" disabled>
+				</div>
+				<div class="form-group">
+					<label for="classname" class="control-label">Current Payment</label>
+					<input class="form-control current_open_balance_pay" type="number">
+				</div>
+				<div class="form-group">
+					<label for="classname" class="control-label">Payment Date</label>
+					<input class="form-control open_balance_pay_date">
+				</div>
+				<div class="form-group">
+					<label for="classname" class="control-label">Payment Mode</label>
+					<select class="form-control selectpicker vendor_opening_pay_mode" id="vendor_opening_pay_mode" data-live-search="true" title="Select Payment Mode">
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="classname" class="control-label">Cheque/RTGS Number</label>
+					<input class="form-control open_balance_pay_chqeue">
+				</div>
+
+			</form>    
+	   	</div>
+		    <div class="modal-footer">
+		    	<button type="button" class="btn btn-primary opening_pay_register" disabled>Register Payment</button>
+		    </div>
+	    </div>
+	</div>
+</div>
+
+
 
 
 <div class="prev_next">
@@ -237,6 +332,16 @@ $('.filterbtn').attr('data-target',"#filter")
 $('.invoice_summary').attr('data-toggle',"modal")
 $('.invoice_summary').attr('data-target',"#summary")
 
+// $('.updateOpening').attr('data-toggle',"modal")
+// $('.updateOpening').attr('data-target',"#openBalance")
+
+$('.openingbalance').attr('data-toggle',"modal")
+$('.openingbalance').attr('data-target',"#openBalanceOption")
+
+// $('.paymentOpening').attr('data-toggle',"modal")
+// $('.paymentOpening').attr('data-target',"#openBalancePayment")
+
+
 $('.date_payment').datepicker({
 	    autoclose: true,
 	    // endDate: moment(),
@@ -246,20 +351,31 @@ $('.date_payment').datepicker({
 });
 $(".date_payment").datepicker("setDate", new Date());
 
+$('.open_balance_pay_date').datepicker({
+	    autoclose: true,
+	    // endDate: moment(),
+	    // endDate: '0d',
+	     todayHighlight: true,
+	    format: 'dd/mm/yyyy',    
+});
+
+$(".open_balance_pay_date").datepicker("setDate", new Date());
+
 </script>
 
 <style type="text/css">
-	.modal-dialog {
-	width: 80%;
-	height: 80%;
-	margin: auto;
-	padding: 5%;
-}
+	.modal { overflow: auto !important; }
+	.large_modal {
+			width: 80%;
+			height: 80%;
+			margin: auto;
+			padding: 5%;
+	}
 
-.modal-content {
-	height: auto;
-	min-height: 80%;
-	border-radius: 0;
+	.modal-content {
+		height: auto;
+		min-height: 80%;
+		border-radius: 0;
 }
 </style>
 

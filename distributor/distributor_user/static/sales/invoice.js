@@ -20,7 +20,6 @@ $(document).on('keydown.autocomplete', '.name', function() {
         select: function( event, ui ) {
             var item_cgst = parseFloat(ui['item']['cgst']);
             var item_sgst = parseFloat(ui['item']['sgst']);
-
             var item_igst = item_cgst + item_sgst;
 
             maintain_inventory=ui['item']['inventory']
@@ -335,7 +334,6 @@ $(".details").on("change", ".discount_type2", function(){
 
 $('.is_igst').on('switchChange.bootstrapSwitch', function(event, state) {
     is_igst = state; // true | false
-    console.log(is_igst);
     if (is_igst) {
         $('.tax_type_label').html("Change if C/SGST");
         $(".details .data").remove();

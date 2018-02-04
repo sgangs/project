@@ -1,6 +1,8 @@
 $(function(){
 
-load_returns()
+transaction_types = ['', 'Debit', 'Credit']
+
+load_journals()
 
 // $('.all').click(function(){
 //     load_invoices();
@@ -11,51 +13,48 @@ load_returns()
 //     load_invoices();
 // });
 
-function load_returns(){
+function load_journals(){
+    account_pk = pk;
     $.ajax({
-        url : "data/", 
+        url : "/account/journallist/account-list/", 
         type: "GET",
-        data:{ calltype:"all_return"},
+        data:{ calltype:"all_journal",
+            account_pk: account_pk},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata)
-            $("#receipt_table .data").remove();
+            $("#journal_table .data").remove();
             $.each(jsondata['object'], function(){
-                console.log(this.date)
-                date=this.date
-                // date=date.split("-").reverse().join("-")
-                $('#receipt_table').append("<tr class='data' align='center'>"+
-                // "<td hidden='true'>"+url+"</td>"+
-                "<td hidden='true'></td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.return_id+"</td>"+
-                "<td>"+date+"</td>"+
-                "<td>"+this.invoice__invoice_id+"</td>"+
-                "<td>"+this.return_invoice__invoice_id+"</td>"+
-                "<td>"+this.customer_name+"</td>"+
-                "<td>"+this.total+"</td>"+
-                "</tr>");
+                date=this.journal__date;
+                date=date.split("-").reverse().join("-")
+                if (this.transaction_type == 1){
+                    $('#journal_table').append("<tr class='data' align='center'>"+
+                    "<td hidden='true'>"+this.id+"</td>"+
+                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+date+"</td>"+
+                    "<td align='left'>"+transaction_types[this.transaction_type]+"</td>"+
+                    "<td>"+this.journal__remarks+"</td>"+
+                    "<td>"+this.value+"</td>"+
+                    "<td></td>"+
+                    "</tr>");
+                }
+                else{
+                    $('#journal_table').append("<tr class='data' align='center'>"+
+                    "<td hidden='true'>"+this.id+"</td>"+
+                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+date+"</td>"+
+                    "<td align='right'>"+transaction_types[this.transaction_type]+"</td>"+
+                    "<td>"+this.journal__remarks+"</td>"+
+                    "<td></td>"+
+                    "<td>"+this.value+"</td>"+
+                    "</tr>");
+                }
             })
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No sales return exist.", "error");
+            swal("Oops...", "Could not fetch journal data. Kindly try after some time.", "error");
         }
     });
 }
-
-// Taking care of navigation
-
-function navigation(){
-    if (all_invoices == true){
-        load_invoices
-    }
-    else if (unpaid_invoices == true){
-        
-    }
-}
-
-
 
 // $('.apply_filter').click(function(e) {
 //     var customers=[];

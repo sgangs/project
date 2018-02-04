@@ -21,6 +21,8 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from distributor_user.models import Tenant
+
+from distributor_account.models import Tenant
 from distributor_inventory.models import warehouse_valuation
 from distributor.variable_list import state_list
 
@@ -136,7 +138,7 @@ def customer_view(request):
 			# if (zone_id):
 			# 	old_customer.zone=zone_selected
 			# # old_customer.tenant=this_tenant
-			old_customer.save()			
+			old_customer.save()		
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
@@ -223,7 +225,8 @@ def vendor_view(request):
 			old_vendor.tin=tin
 			old_vendor.gst=gst
 			old_vendor.details=details
-			old_vendor.save()			
+			old_vendor.save()
+		
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 

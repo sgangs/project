@@ -71,9 +71,10 @@
 									<div class="social-line">
 										<label class='personal_type' style="color: #b6e0ef">Personal Details</label>
 										<label class='business_type' hidden>Business Details</label>
+										<label class='business_contacts' hidden>Business Contacts</label>
 									</div>
 								</div>
-								<div class="content personal_register" hidden>
+								<div class="content personal_register">
 
 									<div class="input-group has-warning first_name_div">
 										<span class="input-group-addon">
@@ -127,7 +128,7 @@
 
 								</div>
 
-								<div class="content business_register">
+								<div class="content business_register" hidden>
 
 									<div class="input-group  has-warning business_name_div">
 										<span class="input-group-addon">
@@ -170,6 +171,17 @@
 										</label>
 									</div>
 
+									<div class="input-group has-warning id_div">
+										<span class="input-group-addon">
+											<i class="material-icons">perm_identity</i>
+										</span>
+										<input type="text" class="form-control id_input" placeholder="Unique ID/Short name of business">
+									</div>
+
+								</div>
+
+								<div class="content business_contacts" hidden>
+
 									<div class="input-group has-warning line1_div">
 										<span class="input-group-addon">
 											<i class="material-icons">home</i>
@@ -187,7 +199,6 @@
 									<div class="input-group has-warning state_div">
 										<span class="input-group-addon">
 											<i class="material-icons">add_location</i>
-											<!-- <i class="material-icons">face</i> -->
 										</span>
 										<select class="form-control state_input">
 											<option disabled selected> State</option>
@@ -220,13 +231,6 @@
 											<i class="material-icons">phone</i>
 										</span>
 										<input type="phone" class="form-control business_phone_input" placeholder="Official Contact No...">
-									</div>
-
-									<div class="input-group has-warning id_div">
-										<span class="input-group-addon">
-											<i class="material-icons">perm_identity</i>
-										</span>
-										<input type="text" class="form-control id_input" placeholder="Unique ID/Short name of business">
 									</div>
 
 								</div>

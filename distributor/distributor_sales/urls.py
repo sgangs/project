@@ -23,6 +23,10 @@ urlpatterns = [
     url(r'^invoice/return/data/$', views.update_invoice_details, name='update_return_details'),
     url(r'^invoice/return/due-amount/$', views.sales_return_save, name='sales_return_due_amount'),
     url(r'^invoice/return/save/$', views.sales_return_save, name='sales_return_save'),
+
+    url(r'^returnlist/$', views.return_list, name='return_list'),
+    url(r'^returnlist/data/$', views.all_sales_return, name='all_sales_return'),
+
     
     url(r'^invoice/openinvoice/listall/$', views.open_invoice_list, name='open_invoice_list'),
     url(r'^invoice/openinvoice/save/$', views.finalize_open_invoices, name='finalize_open_invoices'),

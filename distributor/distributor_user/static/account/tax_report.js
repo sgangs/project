@@ -1,6 +1,6 @@
 $(function(){
 
-var transactions=['Purchase','Sales', 'Purchase Debit','Sales Credit','Retail Sales'], dateChanged=false;
+var transactions=['Purchase','Sales', 'Sales Credit Return', 'Purchase Debit Return','Retail Sales'], dateChanged=false;
 
 
 var end = moment();

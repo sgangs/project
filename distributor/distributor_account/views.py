@@ -601,10 +601,10 @@ def trial_balance_view(request):
 	period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
 	start=period.start
 	end=period.end
-	try:
-		response_data=get_trial_balance(request, start, end)
-	except:
-		response_data=[]
+	# try:
+	response_data=get_trial_balance(request, start, end)
+	# except:
+		# response_data=[]
 	jsondata = json.dumps(response_data)
 	return render(request, 'account/trial_balance.html', {'accounts':jsondata, "start":start, "date":date, 'extension':extension})
 	# return render(request, 'account/trial_balance.html')
@@ -636,6 +636,25 @@ def account_journal_entries(request, pk_detail):
 	journals = Journal.objects.for_tenant(this_tenant).filter(date__range = [period.start, period.end])
 	entries=journal_entry.objects.filter(account=account, journal__in = journals).select_related('journal').order_by('journal__date').all()
 	return render(request, 'account/accountwisejournal.html',{'account':account, 'entries':entries, 'extension':extension})
+
+@login_required
+def account_journal_entries_view(request, pk_detail):
+	extension="base.html"
+	return render(request, 'account/account_journal.html',{'extension':extension, 'pk':pk_detail})
+
+@api_view(['GET'],)
+def account_journal_entries_data(request):
+	this_tenant = request.user.tenant
+	calltype = request.GET.get('calltype')
+	account_pk = request.GET.get('account_pk')
+	response_data = {}
+	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+	journals = Journal.objects.for_tenant(this_tenant).filter(date__range = [period.start, period.end])
+	entries = journal_entry.objects.filter(account=account_pk, journal__in = journals).select_related('journal')\
+		.values('id','transaction_type', 'value', 'journal__date', 'journal__remarks').order_by('journal__date')
+	response_data['object'] = list(entries)
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
 
 @login_required
 def customer_pending(request):

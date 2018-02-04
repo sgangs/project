@@ -33,14 +33,15 @@ urlpatterns = [
     # url(r'^debitnotereturn/$', views.debit_note_return_view, name='debit_note_return_view'),
     url(r'^return/noninventory/$', views.debit_note_new_noninventory, name='debit_note_return_view'),
     
-    url(r'^purchase_graph/$', views.purchase_crossfilter, name='purchase_crossfilter'),
-    url(r'^purchase_graph/data/$', views.receipts_crossfilter, name='receipts_crossfilter'),
+    # url(r'^purchase_graph/$', views.purchase_crossfilter, name='purchase_crossfilter'),
+    # url(r'^purchase_graph/data/$', views.receipts_crossfilter, name='receipts_crossfilter'),
 
     url(r'^hsnreport/$', views.get_hsn_report, name='get_hsn_report'),
     # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),
 
     url(r'^vendor-ledger/$', views.vendor_ledger, name='vendor_ledger'),
     url(r'^vendor-ledger/data/$', views.vendor_ledger_data, name='vendor_ledger_data'),
+    url(r'^vendor/opening-balance/$', views.vendor_opening_balance, name='vendor_opening_balance'),
 
     url(r'^order/$', views.purchase_order_new, name='purchase_order_new'),
     url(r'^order/save/$', views.purchase_order_save, name='purchase_order_save'),

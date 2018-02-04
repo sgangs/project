@@ -51,6 +51,7 @@ class sales_invoice(models.Model):
 	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	roundoff=models.DecimalField(max_digits=3, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)  #This includes round off
+	return_value=models.DecimalField(max_digits=12, decimal_places=2, default=0)  #This is the return value
 	# itemwise_discount_total=models.DecimalField(max_digits=12, decimal_places=2)
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
 	payable_by=models.DateField(blank=True, null=True)
@@ -212,7 +213,10 @@ class sales_return(models.Model):
 	return_type = models.PositiveSmallIntegerField(default=1)
 	invoice = models.ForeignKey(sales_invoice,blank=True, null=True,\
 						related_name='salesReturn_salesInvoice', on_delete=models.SET_NULL)
-	return_id = models.PositiveIntegerField(db_index=True)
+	#Return_invoice is the adjustment invoice
+	return_invoice = models.ForeignKey(sales_invoice,blank=True, null=True,\
+						related_name='salesReturn_returnInvoice', on_delete=models.SET_NULL)
+	return_id = models.BigIntegerField(db_index=True)
 	date=models.DateField(default=dt.date.today)
 	customer=models.ForeignKey(Customer,blank=True, null=True,\
 						related_name='salesReturn_sales_master_customer', on_delete=models.SET_NULL)
@@ -252,30 +256,59 @@ class sales_return(models.Model):
 	#the save method is overriden to give unique invoice ids, slug and customer_name
 	def save(self, *args, **kwargs):
 		if not self.id:
-			tenant=self.tenant.key
-			today=dt.date.today()
-			today_string=today.strftime('%y%m%d')
-			next_return_number='001'
-			last_return=type(self).objects.filter(tenant=self.tenant).\
-						filter(return_id__contains=today_string).order_by('return_id').last()
-			if last_return:
-				last_return_id=str(last_return.return_id)
-				last_return_number=int(last_return_id[6:])
-				next_return_number='{0:03d}'.format(last_return_number + 1)
-			self.return_id=int(today_string + next_return_number)
+		# 	tenant=self.tenant.key
+		# 	today=dt.date.today()
+		# 	today_string=today.strftime('%y%m%d')
+		# 	next_return_number='001'
+		# 	last_return=type(self).objects.filter(tenant=self.tenant).\
+		# 				filter(return_id__contains=today_string).order_by('return_id').last()
+		# 	if last_return:
+		# 		last_return_id=str(last_return.return_id)
+		# 		last_return_number=int(last_return_id[6:])
+		# 		next_return_number='{0:03d}'.format(last_return_number + 1)
+		# 	self.return_id=int(today_string + next_return_number)
 			
-		super(sales_return, self).save(*args, **kwargs)
+		# super(sales_return, self).save(*args, **kwargs)
+			tenant=self.tenant.key
+			today_date = datetime.strptime(self.date,'%Y-%m-%d')
+			today_string = today_date.strftime('%y%m%d')
+			if (today_date.month >3):
+				this_year_string = today_string[:2]
+				this_year_int = int(this_year_string)
+				next_year_int = this_year_int+1
+				next_year_string = str(next_year_int)
+				today_string = this_year_string + next_year_string
+			else:
+				next_year_string = today_string[:2]
+				next_year_int = int(next_year_string)
+				this_year_int = next_year_int-1
+				this_year_string = str(this_year_int)
+				today_string = this_year_string + next_year_string
 
-	# class Meta:
-	# 	ordering = ('date',)
+			mon = '{:02d}'.format(today_date.month)
+			today_string+= mon
+
+			next_invoice_number = 1
+			last_invoice=type(self).objects.filter(tenant=self.tenant).\
+					filter(return_id__contains='25'+today_string).order_by('return_id').last()
+			
+			if last_invoice:
+				last_invoice_id=str(last_invoice.invoice_id)
+				last_invoice_number=int(last_invoice_id[8:])
+				next_invoice_number = last_invoice_number + 1
+			if (next_invoice_number < 10):
+				self.return_id = int( '25'+today_string + '00' + str(next_invoice_number))
+			elif (next_invoice_number < 100):
+				self.return_id = int( '25'+today_string + '0' + str(next_invoice_number))
+			else:
+				self.return_id = int( '25'+today_string + str(next_invoice_number))
+		super(sales_return, self).save(*args, **kwargs)
 
 	def __str__(self):
 		# return  '%s %s %s' % (self.receipt_id, self.vendor, self.date)
 		return  '%s %s' % (self.return_id, self.date)
 
-	# def get_absolute_url(self):
-		# return reverse('purchase:invoice_detail', kwargs={'detail':self.slug})
-
+	
 
 #This model is for line items of a purchase invoice
 class return_line_item(models.Model):

@@ -95,6 +95,7 @@ class purchase_receipt(models.Model):
 
 #This model is for line items of a purchase invoice
 class receipt_line_item(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	purchase_receipt=models.ForeignKey(purchase_receipt, related_name='receiptLineItem_purchaseReceipt',)
 	product=models.ForeignKey(Product,blank=True, null=True, related_name='receiptLineItem_purchase_master_product',\
 						on_delete=models.SET_NULL)
@@ -147,6 +148,7 @@ class receipt_line_item(models.Model):
 
 #This stores all the individual payments made againt the invoice(s), like a ledger
 class purchase_payment(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	payment_mode=models.ForeignKey(payment_mode,blank=True, null=True, related_name='purchasePayment_purchase_accounts_paymentMode',\
 								on_delete=models.SET_NULL)
 	payment_mode_name=models.CharField('Payment Mode Name', max_length=20)
@@ -157,6 +159,22 @@ class purchase_payment(models.Model):
 	remarks=models.CharField(max_length=200, blank=True, null=True)
 	# final_payment_delay=models.PositiveSmallIntegerField(blank=True, null=True)
 	tenant=models.ForeignKey(Tenant,related_name='purchasePayment_purchase_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+
+#This stores all the individual payments made againt the vendor for reasons other than invoices.
+class other_payment(models.Model):
+	id = models.BigAutoField(primary_key=True)
+	payment_mode_id = models.BigIntegerField(db_index=True)
+	payment_mode_name = models.CharField('Payment Mode Name', max_length=20)
+	vendorid = models.BigIntegerField(db_index=True)
+	payment_reason_details = models.CharField(max_length=200)
+	# payment_reason_type: 1 - for payment against opening value 2 for advance adjustment 5 for others
+	payment_reason_type = models.PositiveSmallIntegerField(db_index=True)
+	amount_paid = models.DecimalField(max_digits=12, decimal_places=2)
+	cheque_rtgs_number = models.CharField(max_length=30, blank=True, null=True)
+	paid_on = models.DateField(db_index=True, blank=True, null=True)
+	tenant = models.ForeignKey(Tenant,related_name='otherPayment_purchase_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 
@@ -339,6 +357,7 @@ class purchase_order(models.Model):
 
 #This model is for line items of a purchase invoice
 class order_line_item(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	purchase_order=models.ForeignKey(purchase_order, related_name='orderLineItem_purchaseOrder',)
 	product=models.ForeignKey(Product,blank=True, null=True, related_name='orderLineItem_purchase_master_product',\
 						on_delete=models.SET_NULL)

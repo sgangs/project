@@ -185,6 +185,10 @@ class journal_group(models.Model):
 #9 - Normal Journal Entry
 #10 - Service Sales
 #11 - Service Credit Note
+#12 - Opening Payment Vendor
+#13 - Other Payment Vendor
+#12 - Opening Payment Customer
+#13 - Other Payment Customer
 
 #This is a list of journal entry
 class Journal(models.Model):
@@ -307,28 +311,28 @@ class payment_mode(models.Model):
 
 
 
-inventory_type_choices=(('O','Opening'),
-			('C','Closing'))
-#This model is for opening & closing inventory
-class inventory_value(models.Model):
-	id=models.BigAutoField(primary_key=True)
-	inventory_type=models.CharField('Inventory type', max_length=1,choices=inventory_type_choices)
-	accounting_period=models.ForeignKey(accounting_period, related_name='inventoryValue_accountingPeriod')
-	tenant=models.ForeignKey(Tenant, related_name='inventoryValue_account_user_tenant')
-	objects = TenantManager()
-	updated = models.DateTimeField(auto_now=True)
+# inventory_type_choices=(('O','Opening'),
+# 			('C','Closing'))
+# #This model is for opening & closing inventory
+# class inventory_value(models.Model):
+# 	id=models.BigAutoField(primary_key=True)
+# 	inventory_type=models.CharField('Inventory type', max_length=1,choices=inventory_type_choices)
+# 	accounting_period=models.ForeignKey(accounting_period, related_name='inventoryValue_accountingPeriod')
+# 	tenant=models.ForeignKey(Tenant, related_name='inventoryValue_account_user_tenant')
+# 	objects = TenantManager()
+# 	updated = models.DateTimeField(auto_now=True)
 
-	class Meta:
-		unique_together = (("inventory_type","accounting_period", "tenant"))
+# 	class Meta:
+# 		unique_together = (("inventory_type","accounting_period", "tenant"))
 		
-	def __str__(self):
-		return self.inventory_type
+# 	def __str__(self):
+# 		return self.inventory_type
 
 #Tax trn type: 
 #1 for purchase,
 #2 for sales, 
-#3 for sales credit note
-#4 for purchase debit note
+#3 for sales credit note/sales return
+#4 for purchase debit note/purchase return
 #5 for retail sales
 #6 for retail sales credit note
 #7 for service sales

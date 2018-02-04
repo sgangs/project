@@ -294,8 +294,8 @@ def RegisterView(request):
         customerform = CustomerRegistrationForm()
         userform = UserRegistrationForm()
 
-    return render(request,'registration.html', {'userform': userform, 'customerform': customerform})
-    # return render(request,'signup-page.html', {'userform': userform, 'customerform': customerform})
+    # return render(request,'registration.html', {'userform': userform, 'customerform': customerform})
+    return render(request,'signup-page.html', {'userform': userform, 'customerform': customerform})
 
 
 #Add one more level of authentication for forgot password. Then send the mail.

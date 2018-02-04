@@ -28,7 +28,7 @@
 	            <th class="text-center">Return Invoice No.</th>
 	            <th class="text-center">Return Date</th>
 	            <th class="text-center">Original Invoice No.</th>
-	            <th class="text-center">Original Invoice Date</th>
+	            <th class="text-center">Adjustment Invoice No.</th>
 	            <th class="text-center">Customer</th>
 	            <th class="text-center">Total Return Amount</th>
 	            <!-- <th class="text-center">Total Amount Paid</th> -->
@@ -79,20 +79,20 @@
 					</select>
 				</div>
 				<div class="form-group invoicediv">
-					<label for="classname" class="control-label">Filter by Sales Invoice No</label>
-					<input type="text" class="form-control invoice_id">
+					<label for="classname" class="control-label">Filter by Return Invoice No</label>
+					<input type="text" class="form-control return_id">
 				</div>
 				<div class="form-group datediv">
 					<label for="classname" class="control-label">Filter By Date Range</label>
 					<input type="text" class="form-control date_range">
 				</div>
-				<div class="form-group vendordiv">
-					<label for="classname" class="control-label">Filter by Invoice Type</label>
-					<select class="form-control selectpicker customer_filter" id="type_filter">
-						<option disabled selected hidden style='display: none' value>Select Invoice Type</option>
-						<option data-id="1">B2B Registered</option>
-						<option data-id="2">B2B Unregistered</option>
-					</select>
+				<div class="form-group invoicediv">
+					<label for="classname" class="control-label">Filter by Original Invoice No</label>
+					<input type="text" class="form-control original_id">
+				</div>
+				<div class="form-group invoicediv">
+					<label for="classname" class="control-label">Filter by Adjustment Invoice No</label>
+					<input type="text" class="form-control adjustment_id">
 				</div>
 			</form>    
 	   	</div>

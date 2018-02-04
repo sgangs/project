@@ -13,25 +13,25 @@ load_returns()
 
 function load_returns(){
     $.ajax({
-        url : "listall/", 
+        url : "data/", 
         type: "GET",
-        data:{ calltype:"all_returns"},
+        data:{ calltype:"all_return"},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            console.log(jsondata)
             $("#receipt_table .data").remove();
-            $.each(jsondata, function(){
-                // var url='/sales/invoice/detailview/'+this.id+'/'
-                // var download_url='/sales/invoice/excel/'+this.id+'/'
+            $.each(jsondata['object'], function(){
+                console.log(this.date)
                 date=this.date
-                date=date.split("-").reverse().join("-")
+                // date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
                 // "<td hidden='true'>"+url+"</td>"+
                 "<td hidden='true'></td>"+
                 "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.return_id+"</td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+this.invoice__invoice_id+"</td>"+
-                "<td>"+this.invoice__date+"</td>"+
+                "<td>"+this.return_invoice__invoice_id+"</td>"+
                 "<td>"+this.customer_name+"</td>"+
                 "<td>"+this.total+"</td>"+
                 "</tr>");
@@ -39,7 +39,7 @@ function load_returns(){
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No sales invoice exist.", "error");
+            swal("Oops...", "No sales return exist.", "error");
         }
     });
 }

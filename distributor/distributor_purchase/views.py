@@ -202,8 +202,14 @@ def purchase_receipt_save(request):
 					vendor_id = request.data.get('vendor')
 					warehouse_id=request.data.get('warehouse')
 					date=request.data.get('date')
-					
-					is_igst = False
+
+					is_igst=request.data.get('is_igst')
+
+					if (is_igst == 'true' or is_igst == True):
+						is_igst = True
+					else:
+						is_igst = False
+					# is_igst = False
 					# grand_discount_type=request.data.get('grand_discount_type')
 					# try:
 					# 	grand_discount_value=Decimal(request.data.get('grand_discount_value'))
@@ -238,12 +244,14 @@ def purchase_receipt_save(request):
 					else:
 						vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
 						warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
+					
+					vendor.current_balance+= total
+					vendor.save
 
 					
 					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate,\
 							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, 0, from_purchase_order, order_id, inventory_type=True)
 					
-					vat_paid={}
 					cgst_paid={}
 					sgst_paid={}
 					igst_paid={}
@@ -283,10 +291,16 @@ def purchase_receipt_save(request):
 						discount_type_2=data['disc_type_2']
 						discount_value_2=Decimal(data['disc_2'])
 
-						cgst_p=Decimal(data['cgst_p'])
-						cgst_v=Decimal(data['cgst_v'])
-						sgst_p=Decimal(data['sgst_p'])
-						sgst_v=Decimal(data['sgst_v'])
+						try:
+							cgst_p=Decimal(data['cgst_p'])
+							cgst_v=Decimal(data['cgst_v'])
+							sgst_p=Decimal(data['sgst_p'])
+							sgst_v=Decimal(data['sgst_v'])
+						except:
+							cgst_p=0
+							cgst_v=0
+							sgst_p=0
+							sgst_v=0
 						try:
 							igst_p=Decimal(data['igst_p'])
 							igst_v=Decimal(data['igst_v'])
@@ -500,8 +514,6 @@ def purchase_receipt_save(request):
 								new_tax_transaction_register("SGST",1, k, v[0],v[1],v[2], new_receipt.id,\
 											new_receipt.supplier_invoice, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
 
-					# if this_tenant.maintain_inventory:
-						#Journal Entry for tenants with inventory
 					remarks="Purchase Receipt No: "+str(new_receipt.supplier_invoice)
 					journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=1)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Purchase")
@@ -613,7 +625,9 @@ def purchase_receipt_noninventory_save(request):
 					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 
-					
+					vendor.current_balance+= total
+					vendor.save()
+
 					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate, subtotal, \
 						cgsttotal, sgsttotal, igsttotal, round_value, total, 0, from_purchase_order, order_id=None, inventory_type=False)
 					
@@ -848,7 +862,6 @@ def receipts_metadata(request):
 	return HttpResponse(jsondata)
 
 
-
 @login_required
 def receipt_list(request):
 	return render(request,'purchase/receipt_list.html', {'extension': 'base.html'})
@@ -930,6 +943,8 @@ def payment_register(request):
 						cheque_rtgs_all+= str(cheque_rtgs_number)+", "
 					payment_pk[str(receipt.supplier_invoice)]=new_purchase_payment.id
 
+				vendor.current_balance-= total_payment
+				vendor.save()
 
 				payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
 
@@ -987,6 +1002,9 @@ def delete_purchase(request):
 					purchase_date = old_receipt.date
 					total_purchase_price = 0
 					inventory_type=old_receipt.inventory_type
+					vendor = old_receipt.vendor
+					vendor.current_balance-= old_receipt.total
+					vendor.save()
 					if (amount_paid == 0):
 						all_line_items=receipt_line_item.objects.for_tenant(this_tenant).filter(purchase_receipt=old_receipt)
 						if (inventory_type):
@@ -1154,7 +1172,6 @@ def delete_purchase(request):
 		return HttpResponse(jsondata)
 
 
-@login_required
 @api_view(['GET','POST'],)
 def debit_note_save(request):
 	if request.method == 'POST':
@@ -1359,7 +1376,6 @@ def debit_note_save(request):
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
-
 
 
 @api_view(['GET', 'POST'],)
@@ -1708,6 +1724,113 @@ def vendor_ledger_data(request):
 	response_data['object'] = entries
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+@api_view(['GET', 'POST'],)
+def vendor_opening_balance(request):
+	this_tenant=request.user.tenant
+	response_data = {}
+	if request.method == 'POST':
+		calltype = request.data.get('calltype')
+		if (calltype == 'update_opening_balance'):
+			try:
+				with transaction.atomic():
+				# try:
+					vendorid = request.data.get('vendorid')
+					opening_balance = Decimal(request.data.get('opening_balance'))
+						
+					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
+					if (vendor.opening_balance ==0 or vendor.opening_balance is None or vendor.opening_balance==''):
+						vendor.opening_balance = opening_balance
+						vendor.current_balance+=opening_balance
+						vendor.save()
+					else:
+						raise IntegrityError (('Opening Balance is already registered against this vendor. This cannot be changed.'))
+					# update accounts payable opening
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+					acct_period=accounting_period.objects.for_tenant(this_tenant).get(is_first_year=True)
+					account_journal_year = account_year.objects.get(account=account, accounting_period = acct_period)
+					account_journal_year.opening_credit+=opening_balance
+					account_journal_year.current_credit+=opening_balance
+					account_journal_year.save()
+			
+			except Exception as err:
+				response_data  = err.args 
+				transaction.rollback()
+
+		elif (calltype == 'opening_balance_payment'):
+			payment_pk={}
+			try:
+				with transaction.atomic():
+				# try:
+					vendorid = request.data.get('vendorid')
+					amount_paid = Decimal(request.data.get('amount_paid'))
+					modeid = request.data.get('modeid')
+					date = request.data.get('date')
+					cheque_rtgs_number=request.data.get('cheque_rtgs_number')
+						
+					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
+					vendor_name = vendor.name
+					opening_balance = vendor.opening_balance
+
+					mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
+
+					if (amount_paid > opening_balance):
+						raise IntegrityError (('Amount paid cannot be more than opening balance.'))
+
+					if (amount_paid <=0):
+						raise IntegrityError (('Amount paid must be a positive number.'))						
+					
+					
+					new_payment = other_payment()
+					new_payment.payment_mode_id = modeid
+					new_payment.payment_mode_name = mode.name
+					new_payment.vendorid = vendorid
+					new_payment.paid_on = date
+					new_payment.payment_reason_details = "Opening Payment Clearance"
+					new_payment.payment_reason_type = 1
+					new_payment.amount_paid = amount_paid
+					new_payment.cheque_rtgs_number = cheque_rtgs_number
+					new_payment.tenant = this_tenant
+					new_payment.save()
+
+					payment_pk["Opening_"+str(vendorid)]=new_payment.id
+
+					vendor.current_balance-= amount_paid
+					vendor.save()
+
+					payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+					remarks_payment = "Opening Payment Clearance against Vendor: "+vendor_name
+					if (cheque_rtgs_number):
+						remarks_payment+= ",Cheque No:  "+cheque_rtgs_number
+
+					journal=new_journal(this_tenant,date,group_name="General",\
+						remarks=remarks_payment, trn_id=new_payment.id, trn_type=12, other_data=payment_json)
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+					new_journal_entry(this_tenant, journal, amount_paid, account, 1, date, vendor.name, vendor.id)
+					new_journal_entry(this_tenant, journal, amount_paid, mode.payment_account, 2, date)
+			
+			except Exception as err:
+				response_data  = err.args 
+				transaction.rollback()
+		
+		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+	else:
+		calltype = request.GET.get('calltype')
+		if (calltype == 'vendor_opening_details'):
+			vendorid = request.GET.get('vendorid')
+			vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
+			opening_balance = vendor.opening_balance
+			total_payment = other_payment.objects.for_tenant(this_tenant).filter(vendorid = vendorid, payment_reason_type = 1).\
+				aggregate(Sum('amount_paid'))
+
+			response_data['opening_balance'] = opening_balance
+			response_data['opening_balance_paid'] = total_payment['amount_paid__sum']
+
+		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
+			# print(total_payment)
+
 
 @api_view(['GET'],)
 def debit_note_new_noninventory(request):

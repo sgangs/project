@@ -40,6 +40,8 @@ urlpatterns = [
     url(r'^gst-purchase-report/getdata/$', views.get_gst_purchase, name='get_gst_purchase'),
     url(r'^gst-purchase-report/$', views.new_gst_purchase, name='new_gst_purchase'),
     url(r'^journallist/account/(?P<pk_detail>[-\S]+)/$', views.account_journal_entries, name='account_journal_entries'),
+    # url(r'^journallist/account/(?P<pk_detail>[-\S]+)/$', views.account_journal_entries_view, name='account_journal'),
+    url(r'^journallist/account-list/$', views.account_journal_entries_data, name='account_journal'),
     url(r'^journalview/(?P<pk_detail>[-\S]+)/$', views.journal_detail, name='journal_detail'),
     
     url(r'^gst-payment/$', views.gst_payment, name='gst_payment'),

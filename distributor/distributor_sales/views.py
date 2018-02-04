@@ -86,7 +86,7 @@ def new_sales_invoice(request):
 
 
 # @login_required
-@api_view(['POST'],)
+@api_view(['GET','POST'],)
 def sales_invoice_save(request):
 	if request.method == 'POST':
 		calltype = request.data.get('calltype')
@@ -95,7 +95,7 @@ def sales_invoice_save(request):
 		if (calltype == 'save'):
 			try:
 				with transaction.atomic():
-				
+				# try:	
 					customer_id = request.data.get('customer')
 					warehouse_id=request.data.get('warehouse')
 					date=request.data.get('date')
@@ -105,39 +105,25 @@ def sales_invoice_save(request):
 					final_save = False
 					if (is_final == 'true' or is_final == True):
 						final_save = True
+					
 					is_igst = request.data.get('is_igst')
-
+					is_igst = False
 					if (is_igst == 'true'):
 						is_igst = True
-					else:
-						is_igst = False
 					
-					# grand_discount_type=request.POST.get('grand_discount_type')
-					# try:
-					# 	grand_discount_value=Decimal(request.POST.get('grand_discount_value'))
-					# except:
-					grand_discount_value=0
-					
+					grand_discount_value=0					
 					subtotal=Decimal(request.data.get('subtotal'))
 					cgsttotal=Decimal(request.data.get('cgsttotal'))
 					sgsttotal=Decimal(request.data.get('sgsttotal'))
 					igsttotal=Decimal(request.data.get('igsttotal'))
 					total=Decimal(request.data.get('total'))
 					round_value=Decimal(request.data.get('round_value'))
-					# sum_total = subtotal+cgsttotal+sgsttotal
-					
-					# if (abs(sum_total - total) <0.90 ):
-						# total = sum_total
 					duedate=request.data.get('duedate')
-
 					
 					bill_data = json.loads(request.data.get('bill_details'))
 
 					customer = Customer.objects.for_tenant(this_tenant).get(id=customer_id)
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
-					
-					# new_invoice=new_sales_invoice(this_tenant, customer, warehouse, date, duedate,\
-					# 		grand_discount_type, grand_discount_value, subtotal, taxtotal, total, 0)
 					
 					customer_name=customer.name
 					try:
@@ -145,61 +131,13 @@ def sales_invoice_save(request):
 					except:
 						customer_address=''
 					customer_state=customer.state
-					customer_city=customer.city
-					customer_pin=customer.pin
 					customer_gst=customer.gst
-					customer_pan=customer.pan
-
+					
 					ware_address=warehouse.address_1+", "+warehouse.address_2
-					ware_state=warehouse.state
-					ware_city=warehouse.city
-					ware_pin=warehouse.pin
+					amount_paid = 0
 					
-					new_invoice=sales_invoice()
-					new_invoice.tenant=this_tenant
-
-					new_invoice.date = date
-					
-					new_invoice.customer=customer
-					new_invoice.customer_name=customer_name
-					new_invoice.customer_address=customer_address
-					new_invoice.customer_state=customer_state
-					new_invoice.customer_city=customer_city
-					new_invoice.customer_pin=customer_pin
-					new_invoice.customer_gst=customer_gst
-					new_invoice.customer_pan=customer_pan
-					new_invoice.dl_1=customer.dl_1
-					new_invoice.dl_2=customer.dl_2
-
-					new_invoice.warehouse=warehouse
-					new_invoice.warehouse_address=ware_address
-					new_invoice.warehouse_state=ware_state
-					new_invoice.warehouse_city=ware_city
-					new_invoice.warehouse_pin=ware_pin
-
-					new_invoice.is_final=final_save
-
-
-					if (customer.gst):
-						new_invoice.gst_type=1
-					else:
-						if (subtotal<small_large_limt):
-							new_invoice.gst_type=3
-						else:
-							new_invoice.gst_type=2				
-					# new_invoice.grand_discount_type=grand_discount_type
-					# new_invoice.grand_discount_value=grand_discount_value
-					new_invoice.subtotal=subtotal
-					new_invoice.cgsttotal=cgsttotal
-					new_invoice.sgsttotal=sgsttotal
-					new_invoice.igsttotal=igsttotal
-					new_invoice.roundoff = round_value
-					new_invoice.total = total
-					new_invoice.duedate = duedate
-					new_invoice.amount_paid = 0
-					new_invoice.save()
-
-					products_cost=0
+					new_invoice = new_sales_invoice_save(this_tenant, date, customer, customer_name, customer_address, customer_state, warehouse,\
+						final_save, small_large_limt, subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, duedate, amount_paid)
 					
 					cgst_paid={}
 					sgst_paid={}
@@ -222,6 +160,7 @@ def sales_invoice_save(request):
 						price_list={}
 						price_list_dict={}
 						price_list_list=[]
+						price_list_json={}
 
 						try:
 							batch=data['batch']
@@ -274,6 +213,7 @@ def sales_invoice_save(request):
 
 						original_quantity=int(data['quantity'])
 						quantity=original_quantity*multiplier
+						#Check if in inventory and create a json
 						if maintain_inventory:
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
 									product=productid, warehouse=warehouse, \
@@ -287,7 +227,6 @@ def sales_invoice_save(request):
 								original_available=item.quantity_available
 								if (quantity_updated>=original_available):
 									item.quantity_available=0
-									products_cost+=item.purchase_price*original_available
 									item.save()
 									inventory_data={'date':item.purchase_date, 'quantity':original_available, \
 													'pur_rate':item.purchase_price}
@@ -300,7 +239,6 @@ def sales_invoice_save(request):
 									
 								else:
 									item.quantity_available-=quantity_updated
-									products_cost+=item.purchase_price*quantity_updated
 									item.save()
 									inventory_data={'date':item.purchase_date, 'quantity':quantity_updated,\
 													'pur_rate':item.purchase_price}
@@ -316,43 +254,10 @@ def sales_invoice_save(request):
 							price_list_dict['detail']=price_list_list
 							price_list_json = json.dumps(price_list_dict,  cls=DjangoJSONEncoder)
 
-						LineItem = invoice_line_item()
-						LineItem.sales_invoice = new_invoice
-						LineItem.product= product
-						LineItem.product_name= product.name
-						LineItem.product_sku=product.sku
-						LineItem.product_hsn=product.hsn_code
-						LineItem.date = date
-						LineItem.cgst_percent=cgst_p
-						LineItem.cgst_value=cgst_v
-						LineItem.sgst_percent=sgst_p
-						LineItem.sgst_value=sgst_v
-						LineItem.igst_percent=igst_p
-						LineItem.igst_value=igst_v
-
-						LineItem.unit=unit.symbol
-						LineItem.unit_multi=unit.multiplier
-						LineItem.quantity=original_quantity
-						if (product.has_batch):
-							LineItem.batch=batch
-							LineItem.manufacturing_date=manufacturing_date
-							LineItem.expiry_date=expiry_date
-						if (product.has_instance):
-							LineItem.serial_no=serial_no
-						
-						LineItem.sales_price=original_actual_sales_price
-						LineItem.tentative_sales_price=original_tentative_sales_price
-						if maintain_inventory:
-							LineItem.other_data=price_list_json
-						LineItem.mrp=original_mrp
-						LineItem.discount_type=discount_type
-						LineItem.discount_value=discount_value
-						LineItem.discount2_type=discount_type_2
-						LineItem.discount2_value=discount_value_2
-						LineItem.line_tax=line_taxable_total
-						LineItem.line_total=line_total
-						LineItem.tenant=this_tenant
-						LineItem.save()
+						LineItem = new_line_item(new_invoice, product, date, cgst_p, cgst_v, sgst_p, sgst_v, igst_p, igst_v, unit.symbol,\
+								unit.multiplier, original_quantity, original_actual_sales_price, original_tentative_sales_price, maintain_inventory,\
+								price_list_json, original_mrp, discount_type, discount_value, discount_type_2, discount_value_2,\
+								line_taxable_total, line_total, this_tenant)
 
 						if maintain_inventory:						
 							#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
@@ -360,10 +265,6 @@ def sales_invoice_save(request):
 								new_inventory_ledger_sales(product, warehouse, 2, date, v['quantity'],\
 										v['pur_rate'], actual_sales_price,  new_invoice.invoice_id, this_tenant)
 								
-							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-							warehouse_valuation_change.valuation-=total_purchase_price
-							warehouse_valuation_change.save()
-						
 						if (is_igst):
 							if (igst_p in igst_paid):
 								igst_paid[igst_p][0]+=igst_v
@@ -389,36 +290,16 @@ def sales_invoice_save(request):
 						#This is used to store total purchase price per invoice.
 						new_invoice.total_purchase_price = total_purchase_price
 						new_invoice.save()
+						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+						warehouse_valuation_change.valuation-=total_purchase_price
+						warehouse_valuation_change.save()
 
 					#create tax transactions.
 					#tax_transaction(cgst_paid, sgst_paid, igst_paid, 2, new_invoice.id, new_invoice.invoice_id, date, this_tenant, customer_gst)
 					is_customer_gst = True if customer_gst else False
-					if (is_igst):
-						for k,v in igst_paid.items():
-							try:
-								if v[2]>0:
-									new_tax_transaction_register("IGST",2, k, v[0],v[1],v[2], new_invoice.id,\
-										new_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
-							except:
-								pass
-					else:
-						for k,v in cgst_paid.items():
-							try:
-								if v[2]>0:
-									new_tax_transaction_register("CGST",2, k, v[0],v[1],v[2], new_invoice.id, \
-										new_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
-							except:
-								pass
-
-						for k,v in sgst_paid.items():
-							try:
-								if v[2]>0:
-									new_tax_transaction_register("SGST",2, k, v[0],v[1],v[2], new_invoice.id,\
-										new_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
-							except:
-								pass
-
-
+					sales_tax_transaction(is_igst, igst_paid, cgst_paid, sgst_paid, new_invoice, date, this_tenant,\
+						is_customer_gst, customer_gst, customer_state)
+					
 					if (final_save == True):
 						remarks = "Sales Invoice No: "+str(new_invoice.invoice_id)
 						journal = new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
@@ -524,17 +405,8 @@ def all_invoices(request):
 		filter_data={}
 		if (calltype == 'all_invoices'):
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
-				'date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')[:300]
+				'date','customer_name','total', 'amount_paid', 'payable_by', 'return_value').order_by('-date', '-invoice_id')[:300]
 		
-		elif (calltype == 'unpaid_invoices'):
-			invoices=sales_invoice.objects.for_tenant(this_tenant).all().filter(final_payment_date__isnull=True)\
-			.values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')[:300]
-		
-		elif (calltype== 'customer_pending'):
-			customerid = request.GET.get('customerid')
-			invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid, is_final=True, final_payment_date__isnull=True,).\
-				values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')[:300]
-
 		elif (calltype == 'apply_filter'):
 
 			customers=json.loads(request.GET.get('customers'))
@@ -551,18 +423,18 @@ def all_invoices(request):
 			if (start and end):
 				if (payment_status == 'unpaid'):
 					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], final_payment_date__isnull=True).all().\
-							select_related('invoiceLineItem_salesInvoice').\
-							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+							select_related('invoiceLineItem_salesInvoice').values('id','invoice_id','date','customer_name','total', \
+								'amount_paid', 'payable_by', 'return_value').order_by('-date', '-invoice_id')
 
 				elif (payment_status == 'paid'):
 					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end], final_payment_date__isnull=False).all().\
-							select_related('invoiceLineItem_salesInvoice').\
-							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+							select_related('invoiceLineItem_salesInvoice').values('id','invoice_id','date','customer_name','total',\
+								'amount_paid', 'payable_by', 'return_value').order_by('-date', '-invoice_id')
 
 				else:
 					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
-							select_related('invoiceLineItem_salesInvoice').\
-							values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+							select_related('invoiceLineItem_salesInvoice').values('id','invoice_id','date','customer_name','total',\
+								'amount_paid', 'payable_by','return_value').order_by('-date', '-invoice_id')
 			if (len(customers)>0):
 				customers_list=[]
 				for item in customers:
@@ -607,8 +479,8 @@ def all_invoices(request):
 					invoices=invoices.filter(is_final=True)
 			if productid:
 				product=Product.objects.for_tenant(this_tenant).get(id=productid)
-				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).\
-						values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by').order_by('-date', '-invoice_id')
+				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).values('id','invoice_id','date','customer_name','total',\
+					'amount_paid', 'payable_by', 'return_value').order_by('-date', '-invoice_id')
 
 			if (returntype == 'download'):
 				invoices = invoices.order_by('customer_name', 'customer', '-date', '-invoice_id')
@@ -627,6 +499,64 @@ def all_invoices(request):
 			filter_summary=invoices.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
 			filter_data['total_pending'] = filter_summary['pending']
 			filter_data['total_value'] = filter_summary['total_sum']
+		
+		if page_no:
+			response_data =  paginate_data(page_no, 10, list(invoices))
+			response_data.update(filter_data)
+		else:
+			response_data['object']=list(invoices)
+			response_data.update(filter_data)
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@login_required
+def return_list(request):
+	return render(request,'sales/return_list.html', {'extension': 'base.html'})
+
+@api_view(['GET'],)
+def all_sales_return(request):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		page_no = request.GET.get('page_no')
+		response_data={}
+		filter_data={}
+		if (calltype == 'all_return'):
+			invoices=sales_return.objects.for_tenant(this_tenant).all().select_related('salesReturn_salesInvoice', 'salesReturn_returnInvoice').\
+				values('id','return_id', 'invoice__invoice_id', 'return_invoice__invoice_id','date','customer_name','total').\
+				order_by('-date', '-invoice_id')[:300]
+		
+		if (calltype == 'apply_filter'):
+			customers=json.loads(request.GET.get('customers'))
+			groups=json.loads(request.GET.get('groups'))
+			start=request.GET.get('start')
+			end=request.GET.get('end')
+			return_no=request.GET.get('return_no')
+			productid=request.GET.get('productid')
+			# returntype=request.GET.get('returntype')
+			
+			if (start and end):
+				invoices=sales_return.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all().\
+					select_related('invoiceLineItem_salesInvoice').values('id','invoice_id','date','customer_name','total', \
+						'amount_paid', 'payable_by', 'return_value').order_by('-date', '-invoice_id')
+
+			if (len(customers)>0):
+				customers_list=[]
+				for item in customers:
+					customers_list.append(item['customerid'])
+				invoices=invoices.filter(customer__in=customers_list).all()
+			
+			if (len(groups)>0):
+				groups_list=[]
+				for item in groups:
+					groups_list.append(item['groupid'])
+
+				products = products.filter(group__in = groups_list)
+				invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
+
+			
+			if invoice_no:
+				invoices=invoices.filter(invoice_id__icontains=invoice_no)
 		
 		if page_no:
 			response_data =  paginate_data(page_no, 10, list(invoices))
@@ -687,7 +617,7 @@ def invoice_details(request, pk):
 		invoice=sales_invoice.objects.for_tenant(this_tenant).values('id','invoice_id','date', 'customer_state','warehouse_state',\
 		'customer_name','customer_address','customer_city','customer_pin', 'customer_pan','customer_gst','warehouse_address','warehouse_city',\
 		'warehouse_pin','payable_by','grand_discount_type','grand_discount','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff',\
-		'total','amount_paid', 'dl_1', 'dl_2').get(id=pk)
+		'total','amount_paid', 'dl_1', 'dl_2', 'return_value').get(id=pk)
 		if invoice['customer_pan'] == None:
 			invoice['customer_pan'] = ''
 		if invoice['customer_pin'] == None:
@@ -724,7 +654,7 @@ def update_invoice_details(request):
 			invoice=sales_invoice.objects.for_tenant(this_tenant).filter(is_final=True).values('id','invoice_id','date','customer',\
 				'customer_name','customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address',\
 				'warehouse_city','warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal',\
-				'cgsttotal','sgsttotal','igsttotal', 'roundoff','total','amount_paid').get(invoice_id=invoice_id)
+				'cgsttotal','sgsttotal','igsttotal', 'roundoff','total','amount_paid', 'return_value').get(invoice_id=invoice_id)
 
 			line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id',\
 				'product_hsn','unit','unit_multi','quantity','quantity_returned','sales_price',\
@@ -738,7 +668,7 @@ def update_invoice_details(request):
 			invoice=sales_invoice.objects.for_tenant(this_tenant).filter(is_final=False).values('id','invoice_id','date','customer_name',\
 				'customer_address','customer_city','customer_pin','customer_gst','warehouse_address','warehouse_address',\
 				'warehouse_city','warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal',\
-				'cgsttotal','sgsttotal','igsttotal', 'roundoff','total','amount_paid').get(invoice_id=invoice_id)
+				'cgsttotal','sgsttotal','igsttotal', 'roundoff','total','amount_paid', 'return_value').get(invoice_id=invoice_id)
 
 
 			line_items=invoice_line_item.objects.filter(sales_invoice=invoice['id']).all()
@@ -1035,6 +965,7 @@ def sales_invoice_edit(request):
 						price_list={}
 						price_list_dict={}
 						price_list_list=[]
+						price_list_json={}
 
 						try:
 							batch=data['batch']
@@ -1069,7 +1000,7 @@ def sales_invoice_edit(request):
 						igst_total+=igst_v
 
 
-						product=Product.objects.for_tenant(this_tenant).select_related('tax').get(id=productid)
+						product=Product.objects.for_tenant(this_tenant).get(id=productid)
 								
 						# unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
 						
@@ -1088,6 +1019,7 @@ def sales_invoice_edit(request):
 
 						original_quantity=int(data['quantity'])
 						quantity=original_quantity*multiplier
+						
 						if maintain_inventory:
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
 									product=productid, warehouse=warehouse, \
@@ -1129,53 +1061,16 @@ def sales_invoice_edit(request):
 							price_list_dict['detail']=price_list_list
 							price_list_json = json.dumps(price_list_dict,  cls=DjangoJSONEncoder)
 
-						LineItem = invoice_line_item()
-						LineItem.sales_invoice = old_invoice
-						LineItem.product= product
-						LineItem.product_name= product.name
-						LineItem.product_sku=product.sku
-						LineItem.product_hsn=product.hsn_code
-						LineItem.date = date
-						LineItem.cgst_percent=cgst_p
-						LineItem.cgst_value=cgst_v
-						LineItem.sgst_percent=sgst_p
-						LineItem.sgst_value=sgst_v
-						LineItem.igst_percent=igst_p
-						LineItem.igst_value=igst_v
-
-						LineItem.unit=unit_symbol
-						LineItem.unit_multi=multiplier
-						LineItem.quantity=original_quantity
-						if (product.has_batch):
-							LineItem.batch=batch
-							LineItem.manufacturing_date=manufacturing_date
-							LineItem.expiry_date=expiry_date
-						if (product.has_instance):
-							LineItem.serial_no=serial_no
+						LineItem = new_line_item(old_invoice, product, date, cgst_p, cgst_v, sgst_p, sgst_v, igst_p, igst_v, unit_symbol, multiplier,\
+							original_quantity,original_actual_sales_price,original_tentative_sales_price, maintain_inventory, \
+							price_list_json, original_mrp, discount_type, discount_value, discount_type_2, discount_value_2, \
+							line_taxable_total, line_total, this_tenant)
 						
-						LineItem.sales_price=original_actual_sales_price
-						LineItem.tentative_sales_price=original_tentative_sales_price
-						if maintain_inventory:
-							LineItem.other_data=price_list_json
-						LineItem.mrp=original_mrp
-						LineItem.discount_type=discount_type
-						LineItem.discount_value=discount_value
-						LineItem.discount2_type=discount_type_2
-						LineItem.discount2_value=discount_value_2
-						LineItem.line_tax=line_taxable_total
-						LineItem.line_total=line_total
-						LineItem.tenant=this_tenant
-						LineItem.save()
-
 						if maintain_inventory:						
 							for k,v in price_list.items():
 								new_inventory_ledger_sales(product, warehouse, 2, date, v['quantity'],\
 										v['pur_rate'], actual_sales_price,  old_invoice.invoice_id, this_tenant)
 							
-							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-							warehouse_valuation_change.valuation-=total_purchase_price
-							warehouse_valuation_change.save()
-
 						if (is_igst):
 							if (igst_p in igst_paid):
 								igst_paid[igst_p][0]+=igst_v
@@ -1199,22 +1094,17 @@ def sales_invoice_edit(request):
 								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
 					
 					is_customer_gst = True if customer_gst else False
-					if (is_igst):
-						for k,v in igst_paid.items():
-							if v[2]>0:
-								new_tax_transaction_register("IGST",2, k, v[0],v[1], v[2], old_invoice.id,\
-									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
-					else:
-						for k,v in cgst_paid.items():
-							if v[2]>0:
-								new_tax_transaction_register("CGST",2, k, v[0],v[1], v[2], old_invoice.id,\
-									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
 
-						for k,v in sgst_paid.items():
-							if v[2]>0:
-								new_tax_transaction_register("SGST",2, k, v[0],v[1], v[2], old_invoice.id,\
-									old_invoice.invoice_id, date, this_tenant, is_customer_gst, customer_gst, customer_state)
-
+					sales_tax_transaction(is_igst, igst_paid, cgst_paid, sgst_paid, old_invoice, date, this_tenant,\
+							is_customer_gst, customer_gst, customer_state)
+					
+					if maintain_inventory:
+						new_invoice.total_purchase_price = total_purchase_price
+						new_invoice.save()
+						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+						warehouse_valuation_change.valuation-=total_purchase_price
+						warehouse_valuation_change.save()
+					
 					#One more journal entry for COGS needs to be done
 					if (final_save):
 						remarks="Sales Invoice No: "+str(old_invoice.invoice_id)
@@ -1276,12 +1166,6 @@ def sales_invoice_edit(request):
 							inventory_acct_year.current_debit+=total_purchase_price
 							inventory_acct_year.save()
 
-							# new_journal_inv=journal_inventory()
-							# new_journal_inv.date=date
-							# new_journal_inv.transaction_bill_id=old_invoice.id
-							# new_journal_inv.trn_type=4
-							# new_journal_inv.tenant=this_tenant
-							# new_journal_inv.save()
 							new_entry_inv=journal_entry_inventory()
 							new_entry_inv.transaction_type=1
 							new_entry_inv.journal=new_journal_inv
@@ -1676,29 +1560,51 @@ def sales_return_save(request):
 					bill_data = json.loads(request.data.get('bill_details'))
 					invoice = sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
 
+					# if (adjustment_same_inv == 'true' or adjustment_same_inv == True):
+					# 	available_total = invoice.total - invoice.amount_paid
+					# 	adjustment_invoice = invoice
+					# 	if (total > available_total):
+					# 		raise IntegrityError
+					# 	elif (total == available_total):
+					# 		invoice.amount_paid = invoice.amount_paid + total
+					# 		invoice.return_value = invoice.return_value + total
+					# 		invoice.final_payment_date=date
+					# 		invoice.save()
+					# 	else:
+					# 		invoice.amount_paid = invoice.amount_paid + total
+					# 		invoice.return_value = invoice.return_value + total
+					# 		invoice.save() 
+					# else:
+					# 	adjustment_invoice = sales_invoice.objects.get(invoice_id = adjustment_inv_no)
+					# 	available_total = adjustment_invoice.total - adjustment_invoice.amount_paid
+					# 	if (total > available_total):
+					# 		raise IntegrityError
+					# 	elif (total == available_total):
+					# 		adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
+					# 		adjustment_invoice.return_value = adjustment_invoice.return_value + total
+					# 		adjustment_invoice.final_payment_date=date
+					# 		adjustment_invoice.save()
+					# 	else:
+					# 		adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
+					# 		adjustment_invoice.return_value = adjustment_invoice.return_value + total
+					# 		adjustment_invoice.save()
+
 					if (adjustment_same_inv == 'true' or adjustment_same_inv == True):
-						available_total = invoice.total - invoice.amount_paid
-						if (total > available_total):
-							raise IntegrityError
-						elif (total == available_total):
-							invoice.amount_paid = invoice.amount_paid + total
-							invoice.final_payment_date=date
-							invoice.save()
-						else:
-							invoice.amount_paid = invoice.amount_paid + total
-							invoice.save() 
+						adjustment_invoice = invoice
 					else:
 						adjustment_invoice = sales_invoice.objects.get(invoice_id = adjustment_inv_no)
-						available_total = adjustment_invoice.total - adjustment_invoice.amount_paid
-						if (total > available_total):
-							raise IntegrityError
-						elif (total == available_total):
-							adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
-							adjustment_invoice.final_payment_date=date
-							adjustment_invoice.save()
-						else:
-							adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
-							adjustment_invoice.save()
+					available_total = adjustment_invoice.total - adjustment_invoice.amount_paid
+					if (total > available_total):
+						raise IntegrityError
+					elif (total == available_total):
+						adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
+						adjustment_invoice.return_value = adjustment_invoice.return_value + total
+						adjustment_invoice.final_payment_date=date
+						adjustment_invoice.save()
+					else:
+						adjustment_invoice.amount_paid = adjustment_invoice.amount_paid + total
+						adjustment_invoice.return_value = adjustment_invoice.return_value + total
+						adjustment_invoice.save()
 
 					customer_gst = invoice.customer.gst
 					customer_state = invoice.customer.state
@@ -1738,6 +1644,7 @@ def sales_return_save(request):
 					new_invoice.igsttotal=igsttotal
 					new_invoice.total = total
 			# 		new_invoice.amount_paid = 0
+					new_invoice.return_invoice = adjustment_invoice 
 					new_invoice.save()
 					
 			# 		products_cost=0

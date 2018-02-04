@@ -29,21 +29,30 @@ def get_trial_balance(request, start, end):
     response_data=[]
     debit=0
     credit=0
-    for item in account_list:
+    # print(start)
+    acct_period =(accounting_period.objects.for_tenant(this_tenant).get(start=start))
+    for item in account_list:     
         this_debit=True
         this_credit=True
         item_debit=0
         item_credit=0
-        journals=journal_entry.objects.for_tenant(this_tenant).\
-            filter(journal__date__range=(start,end), account=item)
-        journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
-        journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
-        if (journal_debit['value__sum'] == None):
+        journal_debit={}
+        journal_credit={}
+        
+        this_account_year = account_year.objects.for_tenant(this_tenant).get(account = item, accounting_period = acct_period)
+        journal_debit['value__sum'] = this_account_year.current_debit
+        journal_credit['value__sum'] = this_account_year.current_credit
+        # journals=journal_entry.objects.for_tenant(this_tenant).\
+        #     filter(journal__date__range=(start,end), account=item)
+        # journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
+        # journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
+        if (journal_debit['value__sum'] == None or journal_debit['value__sum'] == 0):
             journal_debit['value__sum'] = 0
             this_debit=False
-        if (journal_credit['value__sum'] == None):
+        if (journal_credit['value__sum'] == None or journal_credit['value__sum'] == 0):
             journal_credit['value__sum'] = 0
             this_credit=False
+
         if (this_debit or this_credit):
             if (item.account_type in ('ca','nca','rec','direxp','taxexp','indexp')):
                 debit+=journal_debit['value__sum']-journal_credit['value__sum']
@@ -87,10 +96,11 @@ def get_profit_loss(request, start, end, period, sent='p-l'):
         #     filter(journal__date__range=(start,end), account=item)
         # journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
         # journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
-        account_year_data=account_year.objects.for_tenant(request.user.tenant).\
+        this_account_year=account_year.objects.for_tenant(request.user.tenant).\
             get(account=item, accounting_period = period)
-        journal_debit['value__sum']=account_year_data.current_debit
-        journal_credit['value__sum']=account_year_data.current_credit
+        journal_debit['value__sum']=this_account_year.current_debit
+        journal_credit['value__sum']=this_account_year.current_credit
+        
         # if (journal_debit['value__sum'] == None):
         if (journal_debit['value__sum'] == 0):
             journal_debit['value__sum'] = 0
@@ -157,6 +167,7 @@ def get_profit_loss(request, start, end, period, sent='p-l'):
 
 #This function is used to provide profit loss details
 def get_balance_sheet(request, start, end, period):
+    this_tenant = request.user.tenant
     account_list=Account.objects.for_tenant(request.user.tenant).filter(account_type__in=('ca','rec','nca',\
                     'cl','pay', 'ncl', 'equ'))
     response_data=[]
@@ -168,18 +179,26 @@ def get_balance_sheet(request, start, end, period):
     total_liability=0
     drawings=0
     profit=0
+    journal_debit={}
+    journal_credit={}
+    acct_period =(accounting_period.objects.for_tenant(this_tenant).get(start=start))
     for item in account_list:
         total=0
         this_debit=True
         this_credit=True
-        journals=journal_entry.objects.for_tenant(request.user.tenant).\
-            filter(journal__date__range=(start,end), account=item)
-        journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
-        journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
-        if (journal_debit['value__sum'] == None):
+
+        this_account_year = account_year.objects.for_tenant(this_tenant).get(account = item, accounting_period = acct_period)
+        journal_debit['value__sum'] = this_account_year.current_debit
+        journal_credit['value__sum'] = this_account_year.current_credit
+        
+        # journals=journal_entry.objects.for_tenant(request.user.tenant).\
+        #     filter(journal__date__range=(start,end), account=item)
+        # journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
+        # journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
+        if (journal_debit['value__sum'] == None or journal_debit['value__sum'] == 0):
             journal_debit['value__sum'] = 0
             this_debit = False
-        if (journal_credit['value__sum'] == None):
+        if (journal_credit['value__sum'] == None or journal_credit['value__sum'] == 0):
             journal_credit['value__sum'] = 0
             this_credit = False
         if (item.account_type in ('ca','rec','ncsa')):
