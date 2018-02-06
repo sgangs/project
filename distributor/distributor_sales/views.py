@@ -1105,8 +1105,8 @@ def sales_invoice_edit(request):
 							is_customer_gst, customer_gst, customer_state)
 					
 					if maintain_inventory:
-						new_invoice.total_purchase_price = total_purchase_price
-						new_invoice.save()
+						old_invoice.total_purchase_price = total_purchase_price
+						old_invoice.save()
 						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
 						warehouse_valuation_change.valuation-=total_purchase_price
 						warehouse_valuation_change.save()

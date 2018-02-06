@@ -414,10 +414,7 @@ def sales_invoice_save(request):
 								new_inventory_ledger.tenant=this_tenant
 								new_inventory_ledger.save()
 							
-							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-							warehouse_valuation_change.valuation-=total_purchase_price
-							warehouse_valuation_change.save()
-
+						
 						# if (cgst_p in sgst_paid):
 						# 	cgst_paid[cgst_p]+=cgst_v
 						# else:
@@ -486,6 +483,11 @@ def sales_invoice_save(request):
 							raise IntegrityError (('Credit and Debit not matching'))
 
 					if maintain_inventory:
+						new_invoice.total_purchase_price = total_purchase_price
+						new_invoice.save()
+						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+						warehouse_valuation_change.valuation-=total_purchase_price
+						warehouse_valuation_change.save()
 						
 						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
@@ -957,10 +959,6 @@ def sales_invoice_edit(request):
 									new_inventory_ledger.transaction_bill_id=old_invoice.invoice_id
 									new_inventory_ledger.tenant=this_tenant
 									new_inventory_ledger.save()
-								
-								warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-								warehouse_valuation_change.valuation-=total_purchase_price
-								warehouse_valuation_change.save()
 
 							# if (cgst_p in sgst_paid):
 							# 	cgst_paid[cgst_p]+=cgst_v
@@ -1030,6 +1028,13 @@ def sales_invoice_edit(request):
 								raise IntegrityError (('Credit and Debit not matching'))
 
 						if maintain_inventory:
+
+							warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+							warehouse_valuation_change.valuation-=total_purchase_price
+							warehouse_valuation_change.save()
+
+							old_invoice.total_purchase_price = total_purchase_price
+							old_invoice.save()
 							
 							inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 							acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
@@ -1655,4 +1660,47 @@ def sales_summary_graph(request):
 	jsondata = json.dumps(sales_daily, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
+@api_view(['GET'],)
+def billsummary_profit(request):
+	extension="base.html"
+	return render (request, 'sales/billsummary_profit.html',{'extension':extension})
+
+@api_view(['GET'],)
+def billsummary_profit_data(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		start = request.GET.get('start')
+		end = request.GET.get('end')
+		calltype = request.GET.get('calltype')
+		filtertype = request.GET.get('filtertype')
+
+		if (calltype == 'product_wise'):
+			productid = request.GET.get('productid')
+			products = Product.objects.filter(id = productid)
+
+		elif (calltype == 'manufacturer_wise'):
+			manufacturerid = request.GET.get('manufacturerid')
+			manufacs = Manufacturer.objects.get(id = manufacturerid)
+			products = Product.objects.filter(manufaturer = manufacs)
+
+		if (filtertype == 'filter'):
+			pass
+		else:
+			invoices=list(sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).\
+					values('id','invoice_id', 'subtotal', 'date','customer', 'customer_name', 'total'))
+			
+			for invoice in invoices:
+				total_purchase = 0
+				lines = invoice_line_item.objects.filter(sales_invoice=invoice['id'])
+				for line in lines:
+					items = json.loads(line.other_data)['detail']
+					for i in items:
+						total_purchase+=Decimal(i['pur_rate'])*Decimal(i['quantity'])
+				invoice['purchase']=total_purchase
+	
+	response_data['object'] = invoices
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
 

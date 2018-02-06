@@ -55,6 +55,7 @@ class retail_invoice(models.Model):
 	tenant=models.ForeignKey(Tenant,related_name='retailInvoice_sales_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
+	total_purchase_price=models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
 #	def get_absolute_url(self):
 #		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
