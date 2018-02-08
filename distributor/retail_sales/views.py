@@ -1354,8 +1354,9 @@ def sales_return_save(request):
 						line_item = invoice_line_item.objects.for_tenant(this_tenant).get(id=line_item_id)
 
 						product=Product.objects.for_tenant(this_tenant).select_related('tax').get(id=productid)
-								
-						unit=line_item.unit
+						
+						unit_id = line_item.unit_id	
+						unit_name = line_item.unit
 						multiplier=line_item.unit_multi
 						
 						original_actual_sales_price=Decimal(data['return_price'])
@@ -1432,7 +1433,7 @@ def sales_return_save(request):
 						LineItem.cgst_value=cgst_v
 						LineItem.sgst_percent=sgst_p
 						LineItem.sgst_value=sgst_v
-						
+						LineItem.unit_id = unit_id
 						LineItem.unit=unit_name
 						LineItem.unit_multi=multiplier
 						LineItem.quantity=original_quantity
@@ -1704,3 +1705,30 @@ def billsummary_profit_data(request):
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
+@api_view(['GET'],)
+def retail_dashboard(request):
+	extension="base.html"
+	return render (request, 'retail_sales/retail_dashboard.html',{'extension':extension})
+
+
+@api_view(['GET'],)
+def retail_dashboard_data(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		end=date_first.date.today()
+		start=end-date_first.timedelta(days=30)
+		# calltype = request.GET.get('calltype')
+
+		invoices = retail_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).\
+					only('id','subtotal')
+		total_invoices = len(invoices)
+		sum_total = invoices.aggregate(Sum('subtotal'))
+		line_items = invoice_line_item.objects.filter(retail_invoice__in = invoices).count()
+
+		response_data['total_sales'] = sum_total["subtotal__sum"]
+		response_data['avg_trn'] = Decimal(sum_total["subtotal__sum"])/(total_invoices)
+		response_data['avg_items_trn'] = line_items/total_invoices
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

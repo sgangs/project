@@ -33,11 +33,11 @@ function load_accounts(){
 $('.submit').click(function(e) {
     swal({
         title: "Are you sure?",
-        text: "Are you sure to add a new tax structure?",
+        text: "Are you sure to add a new accounting period?",
         type: "warning",
         showCancelButton: true,
-      // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, add new tax structure!",
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, add new accounting period!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
@@ -50,48 +50,25 @@ $('.submit').click(function(e) {
     
 function new_data(){
     var proceed=true;
-    var name=$('.name').val()
-    if (name == '' || name =='undefined'){
+    var start=$('.start_new').val()
+    if (start == '' || start =='undefined' || start == undefined){
         proceed = false;
-        swal("Oops...", "Please enter account name", "error");
+        swal("Oops...", "Please enter a start date", "error");
     }
-    var key=$('.key').val()
-    if (key == '' || key =='undefined'){
+    var end = $('.end_new').val()
+    if (end == '' || end =='undefined' || end == undefined){
         proceed = false;
-        swal("Oops...", "Please enter account key", "error");
+        swal("Oops...", "Please enter a end date", "error");
     }
-    var ledger = $('.ledger').find(':selected').data('id');
-    if (ledger == '' || ledger =='undefined'){
-        proceed = false;
-        swal("Oops...", "Please select a ledger group", "error");
-    }
-    var account_type = $('.type').find(':selected').data('id');
-    if (account_type == '' || account_type =='undefined'){
-        proceed = false;
-        swal("Oops...", "Please select the type of account", "error");
-    }
-    var remarks=$('.remarks').val()
-
-    var opendebit=$('.opendebit').val()
-    var opencredit=$('.opencredit').val()
-    var debit=$('.debit').val()
-    var credit=$('.credit').val() 
     
     if (proceed){
         (function() {
             $.ajax({
                 url : "data/" , 
                 type: "POST",
-                data:{name: name,
-                    key: key,
-                    ledger: ledger,
-                    account_type: account_type,
-                    remarks: remarks,
-                    opendebit: opendebit,
-                    opencredit: opencredit,
-                    debit:debit,
-                    credit:credit,
-                    calltype: "newtax",
+                data:{start: start.split("/").reverse().join("-"),
+                    end: end.split("/").reverse().join("-"),
+                    calltype: "new_period",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 // contentType: "application/json",
@@ -99,8 +76,8 @@ function new_data(){
                 success : function(jsondata) {
                     var show_success=true
                     if (show_success){
-                        swal("Hooray", "New account added", "success");
-                        setTimeout(location.reload(true),1000);
+                        swal("Hooray", "New accounting period added", "success");
+                        setTimeout(location.reload(true),2500);
                     }
                     //console.log(jsondata);
                 },

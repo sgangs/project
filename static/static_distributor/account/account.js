@@ -20,11 +20,43 @@ function load_accounts(){
                     "<td>"+this.debit+"</td>"+
                     "<td>"+this.credit+"</td>"+
                     "</tr>");
-                })
+
+                $('#account_opening_update').append($('<option>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+                $('#account_opening_update').selectpicker('refresh');
+            })
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No account exist.", "error");
+            swal("Oops...", "Could note fetch account list. Kindly try later.", "error");
+        }
+    });
+}
+
+load_account_year()
+
+function load_account_year(){
+    $.ajax({
+        url : "/account/accountperiod/data/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                start_date = this.start.split("-").reverse().join("-")
+                end_date = this.end.split("-").reverse().join("-")
+                $('#year_opening_update').append($('<option>',{
+                    'data-id': this.id,
+                    'text': start_date + " to " + end_date
+                }));
+                $('#year_opening_update').selectpicker('refresh');
+            })
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "Could note fetch account period list. Kindly try later.", "error");
         }
     });
 }
@@ -63,7 +95,6 @@ function load_acct_type(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
             $.each(jsondata, function(){
                 $('#type').append($('<option/>',{
                     'data-id': this[0],
@@ -84,7 +115,6 @@ function load_acct_type(){
 
 $("#account").on("click", ".link", function(){
     url=$(this).closest('tr').find('td:nth-child(2)').html();
-    console.log(url)
     window.location = url;
 });
 
@@ -92,11 +122,11 @@ $("#account").on("click", ".link", function(){
 $('.submit').click(function(e) {
     swal({
         title: "Are you sure?",
-        text: "Are you sure to add a new tax structure?",
+        text: "Are you sure to add a new account?",
         type: "warning",
         showCancelButton: true,
       // confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, add new tax structure!",
+        confirmButtonText: "Yes, add new account!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
@@ -133,8 +163,6 @@ function new_data(){
 
     var opendebit=$('.opendebit').val()
     var opencredit=$('.opencredit').val()
-    var debit=$('.debit').val()
-    var credit=$('.credit').val() 
     
     if (proceed){
         (function() {
@@ -148,9 +176,7 @@ function new_data(){
                     remarks: remarks,
                     opendebit: opendebit,
                     opencredit: opencredit,
-                    debit:debit,
-                    credit:credit,
-                    calltype: "newtax",
+                    calltype: "newaccount",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 // contentType: "application/json",
@@ -164,6 +190,69 @@ function new_data(){
                     //console.log(jsondata);
                 },
                 // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }
+}
+
+$('.register_update_opening').click(function(e) {
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure to update opening balance for selected accountd?",
+        type: "warning",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, add update opening balance!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){update_opening()},600)
+        }
+    })
+});
+    
+function update_opening(){
+    var proceed = true;
+
+    var account_id = $('.account_opening_update').find(':selected').data('id');
+    if (account_id == '' || account_id =='undefined' || account_id == undefined){
+        proceed = false;
+        swal("Oops...", "Please select an account.", "error");
+    }
+    var period_id = $('.year_opening_update').find(':selected').data('id');
+    if (period_id == '' || period_id =='undefined' || period_id == undefined){
+        proceed = false;
+        swal("Oops...", "Please select an accounting year", "error");
+    }
+    
+    var opendebit=$('.opendebit_update').val()
+    var opencredit=$('.opencredit_update').val()
+        
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "data/" , 
+                type: "POST",
+                data:{account_id: account_id,
+                    period_id: period_id,
+                    opendebit: opendebit,
+                    opencredit: opencredit,
+                    calltype: "update_opening",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "Opening balance Updated", "success");
+                        setTimeout(location.reload(true),1000);
+                    }
+                },
                 error : function() {
                     swal("Oops...", "Recheck your inputs. There were some errors!", "error");
                 }

@@ -52,19 +52,19 @@ class ledger_group(models.Model):
 		return self.name
 
 
-#This is a ledger group. here will be a general ledger. User can add ledger groups thereafter.
-class accounting_group(models.Model):
-	id=models.BigAutoField(primary_key=True)
-	name=models.CharField(max_length=20)
-	tenant=models.ForeignKey(Tenant, related_name='accountingGroup_account_user_tenant')
-	objects = TenantManager()
-	updated = models.DateTimeField(auto_now=True)
+# #This is a ledger group. here will be a general ledger. User can add ledger groups thereafter.
+# class accounting_group(models.Model):
+# 	id=models.BigAutoField(primary_key=True)
+# 	name=models.CharField(max_length=20)
+# 	tenant=models.ForeignKey(Tenant, related_name='accountingGroup_account_user_tenant')
+# 	objects = TenantManager()
+# 	updated = models.DateTimeField(auto_now=True)
 
-	class Meta:
-		unique_together = (("name", "tenant"))
+# 	class Meta:
+# 		unique_together = (("name", "tenant"))
 		
-	def __str__(self):
-		return self.name
+# 	def __str__(self):
+# 		return self.name
 
 
 
@@ -72,13 +72,10 @@ class accounting_group(models.Model):
 class Account(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	ledger_group=models.ForeignKey(ledger_group, related_name='account_ledgerGroup', blank=True, null=True)
-	accounting_group=models.ForeignKey(accounting_group, related_name='account_accountingGroup', blank=True, null=True)
+	# accounting_group=models.ForeignKey(accounting_group, related_name='account_accountingGroup', blank=True, null=True)
 	name=models.CharField(db_index=True, max_length =60)
 	remarks=models.TextField(blank=True, null=True)
 	account_type=models.CharField('Account type', max_length=30,choices=account_type_general)
-	# current_debit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	# current_credit=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	# slug=models.SlugField(max_length=40)
 	key=models.CharField(db_index=True, max_length=15)
 	is_contra=models.BooleanField(default=False)
 	tenant=models.ForeignKey(Tenant, related_name='account_account_user_tenant')

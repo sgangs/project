@@ -43,19 +43,18 @@ class retail_invoice(models.Model):
 	payment_mode_id=models.BigIntegerField(db_index=True, null=True, blank=True)
 	payment_mode_name=models.CharField(max_length=20, null=True, blank=True)
 	
-	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
+	subtotal = models.DecimalField(max_digits=12, decimal_places=2)
 	# taxtotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	cgsttotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	sgsttotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	# igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	total=models.DecimalField(max_digits=12, decimal_places=2)
-	roundoff=models.DecimalField(max_digits=5, decimal_places=2, default=0)
-	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
-	# final_payment_date=models.DateField(blank=True, null=True)
-	tenant=models.ForeignKey(Tenant,related_name='retailInvoice_sales_user_tenant')
+	total = models.DecimalField(max_digits=12, decimal_places=2)
+	roundoff = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+	amount_paid = models.DecimalField(max_digits=12, decimal_places=2)
+	tenant = models.ForeignKey(Tenant,related_name='retailInvoice_sales_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
-	total_purchase_price=models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+	total_purchase_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
 #	def get_absolute_url(self):
 #		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
@@ -255,6 +254,7 @@ class return_line_item(models.Model):
 	product_sku=models.CharField(max_length =50)
 	product_hsn=models.CharField(max_length=20, blank=True, null=True)
 	
+	unit_id = models.BigIntegerField(blank=True, null=True)
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 

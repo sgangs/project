@@ -39,5 +39,8 @@ urlpatterns = [
     url(r'^salessummarygraph/$', views.sales_summary_graph, name='sales_last_three_days'),
     # url(r'^invoice/paymentsave/$', views.payment_register, name='payment_register'),
     # url(r'^salestotalvalue/$', views.sales_total_values, name='sales_total_values'),
-    # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
+    # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),  
+
+    url(r'^retail-dashboard/$', views.retail_dashboard, name='retail_dashboard'),
+    url(r'^retail-dashboard/data/$', views.retail_dashboard_data, name='retail_dashboard_data'),
 ]

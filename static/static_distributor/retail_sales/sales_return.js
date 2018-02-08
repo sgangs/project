@@ -180,7 +180,6 @@ function get_total(){
     for (var a = document.querySelectorAll('table.details tbody tr'), i = 0; a[i]; ++i) {
         // get all cells with input field
         cells = a[i].querySelectorAll('input:last-child');
-        console.log(cells);
         var quantity=parseFloat($(cells[1]).val());
         var qty_avl=parseFloat($(a[i]).find('td:nth-child(5)').html());
         // var free_tax_qty=parseFloat($(cells[4]).val());
@@ -210,31 +209,30 @@ function get_total(){
         
         var this_total=quantity*sales_rate
 
-        is_tax=$(a[i]).find('td:nth-child(16)').html()
+        // is_tax=$(a[i]).find('td:nth-child(16)').html()
 
+        is_tax = false;
         
-        console.log(i+": "+is_tax)
-        
-        if (is_tax == 'true' || is_tax == true) {
-            console.log('here')
-            total_tax_per=cgst_percent+sgst_percent
-            total_tax_divider=(100+total_tax_per)/100
-            tax_total=this_total-this_total/total_tax_divider
-            cgst_total=tax_total/2;
-            sgst_total=tax_total/2;
-            this_final_total=this_total
-            total+=this_final_total
-            subtotal+=this_final_total-tax_total
-            this_total = this_total - tax_total
-        }
-        else{
-            cgst_total=(this_total*cgst_percent)/100;
-            sgst_total=(this_total*sgst_percent)/100;
-            tax_total = cgst_total+sgst_total
-            this_final_total=this_total+cgst_total+sgst_total
-            total+=this_final_total
-            subtotal+=this_final_total-tax_total
-        }
+        // if (is_tax == 'true' || is_tax == true) {
+        //     console.log('here')
+        //     total_tax_per=cgst_percent+sgst_percent
+        //     total_tax_divider=(100+total_tax_per)/100
+        //     tax_total=this_total-this_total/total_tax_divider
+        //     cgst_total=tax_total/2;
+        //     sgst_total=tax_total/2;
+        //     this_final_total=this_total
+        //     total+=this_final_total
+        //     subtotal+=this_final_total-tax_total
+        //     this_total = this_total - tax_total
+        // }
+        // else{
+        cgst_total=(this_total*cgst_percent)/100;
+        sgst_total=(this_total*sgst_percent)/100;
+        tax_total = cgst_total+sgst_total
+        this_final_total=this_total+cgst_total+sgst_total
+        total+=this_final_total
+        subtotal+=this_final_total-tax_total
+        // }
         
         
         // cgst_total=(this_total*cgst_percent)/100;

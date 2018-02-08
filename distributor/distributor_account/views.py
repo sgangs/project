@@ -3,7 +3,7 @@ import re
 import csv
 
 import datetime as date_first
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
@@ -63,7 +63,6 @@ def payment_mode_view(request):
 					new_mode.tenant=this_tenant
 					new_mode.save()				
 			except Exception as err:
-				print(err)
 				# response_data  = err.args 
 				transaction.rollback()
 						
@@ -364,8 +363,6 @@ def account_details_view(request):
 	response_data = []
 	type_dict={p:q for (p,q) in account_type_general}
 	if request.method == 'GET':
-		# accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["igstin","igstout","igstpay", \
-		# 	 "sgstin","sgstout", "sgstpay", "cgstin","cgstout", "cgstpay"])
 		accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["vatin","vatout","vatpay", "pur_return", "sales_return"])
 		for item in accounts:
 			this_account_year=account_year.objects.get(account=item, accounting_period=current_year)
@@ -374,52 +371,73 @@ def account_details_view(request):
 		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 	if request.method == 'POST':
-		name=request.POST.get('name')
-		key=request.POST.get('key')
-		ledgerid=request.POST.get('ledger')
-		account_type=request.POST.get('account_type')
-		remarks=request.POST.get('remarks')
-		try:
-			opendebit=Decimal(request.POST.get('opendebit'))
-		except:
-			opendebit=0.00
-		try:
-			opencredit=Decimal(request.POST.get('opencredit'))
-		except:
-			opencredit=0.00
-		try:
-			debit=Decimal(request.POST.get('debit'))
-		except:
-			debit=0.00
-		try:
-			credit=Decimal(request.POST.get('credit'))
-		except:
-			credit=0.00
-		try:
-			ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledgerid)
-		except:
-			ledger = None
-		with transaction.atomic():
+		calltype = request.data.get('calltype')
+		if (calltype == "newaccount"):
+			name = request.data.get('name')
+			key = request.data.get('key')
+			ledgerid = request.data.get('ledger')
+			account_type = request.data.get('account_type')
+			remarks = request.data.get('remarks')
 			try:
-				new_account=Account()
-				new_account.name=name
-				new_account.ledger_group=ledger
-				new_account.remarks=remarks
-				new_account.account_type=account_type
-				new_account.key=key
-				new_account.tenant=this_tenant
-				new_account.save()
-				new_account_year=account_year()
-				new_account_year.account=new_account
-				new_account_year.opening_debit=opendebit
-				new_account_year.opening_credit=opencredit
-				new_account_year.current_credit=credit
-				new_account_year.current_debit=debit
-				new_account_year.accounting_period=current_year
-				new_account_year.tenant=this_tenant
-				new_account_year.save()
+				opendebit=Decimal(request.POST.get('opendebit'))
 			except:
-				transaction.rollback()
+				opendebit=0.00
+			try:
+				opencredit=Decimal(request.POST.get('opencredit'))
+			except:
+				opencredit=0.00
+			try:
+				ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledgerid)
+			except:
+				ledger = None
+			with transaction.atomic():
+				try:
+					new_account=Account()
+					new_account.name=name
+					new_account.ledger_group=ledger
+					new_account.remarks=remarks
+					new_account.account_type=account_type
+					new_account.key=key
+					new_account.tenant=this_tenant
+					new_account.save()
+					new_account_year=account_year()
+					new_account_year.account=new_account
+					new_account_year.opening_debit=opendebit
+					new_account_year.opening_credit=opencredit
+					new_account_year.current_debit=opendebit
+					new_account_year.current_credit=opencredit
+					new_account_year.accounting_period=current_year
+					new_account_year.tenant=this_tenant
+					new_account_year.save()
+				except:
+					transaction.rollback()
+		elif (calltype == "update_opening"):
+			accountid = request.data.get('account_id')
+			periodid = request.data.get('period_id')
+			try:
+				opendebit = Decimal(request.POST.get('opendebit'))
+			except:
+				opendebit = Decimal(0.00)
+			try:
+				opencredit = Decimal(request.POST.get('opencredit'))
+			except:
+				opencredit = Decimal(0.00)
+			account_year_selected = account_year.objects.for_tenant(this_tenant).get(account = accountid, accounting_period = periodid)
+			old_debit = account_year_selected.opening_debit
+			old_credit = account_year_selected.opening_credit
+			debit_add = opendebit - old_debit 
+			credit_add = opencredit - old_credit
+			account_year_selected.opening_debit = opendebit
+			account_year_selected.opening_credit = opencredit
+			account_year_selected.current_debit+= debit_add
+			account_year_selected.current_credit+= credit_add
+			account_year_selected.save()
+
+		# elif (calltype == "delete_account"):
+		# 	accountid = request.data.get('account_id')
+		# 	account_years = account_year.objects.for_tenant(this_tenant).filter(account = accountid)
+			
+
 		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 		
@@ -431,43 +449,43 @@ def account_data(request):
 	if request.method == 'POST':
 		calltype = request.POST.get('calltype')
 		response_data = {}
-		if (calltype == 'newaccount'):
-			name=request.POST.get('name')
-			ledger_groupid=request.POST.get('ledger_group')
-			remarks=request.POST.get('remarks')
-			account_type=request.POST.get('account_type')
-			key=request.POST.get('key')
+		# if (calltype == 'newaccount'):
+		# 	name=request.POST.get('name')
+		# 	ledger_groupid=request.POST.get('ledger_group')
+		# 	remarks=request.POST.get('remarks')
+		# 	account_type=request.POST.get('account_type')
+		# 	key=request.POST.get('key')
 
-			current_debit=request.POST.get('current_debit')
-			current_credit=request.POST.get('current_credit')
-			opening_debit=request.POST.get('opening_debit')
-			opening_credit=request.POST.get('opening_credit')
+		# 	current_debit=request.POST.get('current_debit')
+		# 	current_credit=request.POST.get('current_credit')
+		# 	opening_debit=request.POST.get('opening_debit')
+		# 	opening_credit=request.POST.get('opening_credit')
 
-			ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledger_groupid)
-			current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+		# 	ledger=ledger_group.objects.for_tenant(this_tenant).get(id=ledger_groupid)
+		# 	current_year=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
 
-			with transaction.atomic():
-				try:
-					new_account=Account()
-					new_account.name=name
-					new_account.ledger_group=ledger
-					new_account.remarks=remarks
-					new_account.account_type=account_type
-					new_account.key=key
-					new_account.tenant=this_tenant
-					new_account.save()
+		# 	with transaction.atomic():
+		# 		try:
+		# 			new_account=Account()
+		# 			new_account.name=name
+		# 			new_account.ledger_group=ledger
+		# 			new_account.remarks=remarks
+		# 			new_account.account_type=account_type
+		# 			new_account.key=key
+		# 			new_account.tenant=this_tenant
+		# 			new_account.save()
 
-					new_account_year=account_year()
-					new_account_year.account=new_account
-					new_account_year.opening_debit=opening_debit
-					new_account_year.opening_credit=opening_credit
-					new_account_year.current_credit=current_credit
-					new_account_year.current_debit=current_debit
-					new_account_year.accounting_period=current_year
-					new_account_year.tenant=this_tenant
-					new_account_year.save()
-				except:
-					transaction.rollback()
+		# 			new_account_year=account_year()
+		# 			new_account_year.account=new_account
+		# 			new_account_year.opening_debit=opening_debit
+		# 			new_account_year.opening_credit=opening_credit
+		# 			new_account_year.current_credit=current_credit
+		# 			new_account_year.current_debit=current_debit
+		# 			new_account_year.accounting_period=current_year
+		# 			new_account_year.tenant=this_tenant
+		# 			new_account_year.save()
+		# 		except:
+		# 			transaction.rollback()
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 	return render (request, 'account/account.html',{'extension':extension})
@@ -526,22 +544,6 @@ def account_opening_view(request):
 	extension="base.html"
 	return render (request, 'account/opening_value.html',{'extension':extension})
 
-#pdate this view to get opening data based on accountid/all and accounting year as user input. Check where this api is getting called
-@api_view(['GET', 'POST'],)
-def account_opening_data(request):
-	this_tenant=request.user.tenant
-	response_data=[]
-	if request.method == 'GET':
-		accounts=Account.objects.for_tenant(this_tenant).all()
-		current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
-		for item in accounts:
-			item_detail=account_year.objects.for_tenant(this_tenant).get(account=item,accounting_period=current_period)	
-			response_data.append({'accountid':item.id,'detailid':item_detail.id, \
-                'name':item.name,'opening_debit':item_detail.opening_debit,'opening_credit':item_detail.opening_credit, \
-                'first_debit':item_detail.first_debit, 'first_credit':item_detail.first_credit})
-	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
-	return HttpResponse(jsondata)
-
 @login_required
 def account_period_view(request):
 	extension="base.html"
@@ -558,7 +560,72 @@ def account_period_data(request):
 
 	elif request.method == 'POST':
 		response_data = {}
-		#Create new accoutning period. Add new accounting year for each acocunt.
+		calltype = request.data.get('calltype')
+		if (calltype == 'new_period'):
+			start = request.data.get('start')
+			end = request.data.get('end')
+			#Create new accoutning period. Add new accounting year for each acocunt.
+			# try:
+			with transaction.atomic():
+				try:
+					new_accounting_period = accounting_period()
+					new_accounting_period.start = start
+					new_accounting_period.end = end
+					new_accounting_period.tenant = this_tenant
+					new_accounting_period.current_period = False
+					new_accounting_period.save()
+
+					start_datetime = datetime.strptime(start, '%Y-%m-%d')
+					previous_end = start_datetime - timedelta(days=1)
+					try:
+						previous_period = accounting_period.objects.for_tenant(this_tenant).get(end=previous_end)
+					except:
+						raise IntegrityError("Previous Accounting Period does not exist.")
+
+					accounts = Account.objects.for_tenant(this_tenant).all()
+					for account in accounts:
+						old_account_year = account_year.objects.for_tenant(this_tenant).get(account=account, accounting_period = previous_period)
+						new_account_year = account_year()
+						new_account_year.account = account
+						new_account_year.is_first_year = False
+						new_account_year.opening_debit = old_account_year.current_debit
+						new_account_year.opening_credit = old_account_year.current_credit
+						new_account_year.current_debit = old_account_year.current_debit
+						new_account_year.current_credit = old_account_year.current_credit
+						new_account_year.accounting_period = new_accounting_period
+						new_account_year.tenant = this_tenant
+						new_account_year.save()
+
+					inventory_accounts = account_inventory.objects.for_tenant(this_tenant).all()
+					for account in inventory_accounts:
+						old_account_year = account_year_inventory.objects.for_tenant(this_tenant)\
+							.get(account_inventory=account, accounting_period = previous_period)
+						new_account_year = account_year_inventory()
+						new_account_year.account_inventory = account
+						new_account_year.is_first_year = False
+						new_account_year.opening_debit = old_account_year.current_debit
+						new_account_year.opening_credit = old_account_year.current_credit
+						new_account_year.current_debit = old_account_year.current_debit
+						new_account_year.current_credit = old_account_year.current_credit
+						new_account_year.accounting_period = new_accounting_period
+						new_account_year.tenant = this_tenant
+						new_account_year.save()
+				except Exception as err:
+					transaction.rollback()
+
+		elif (calltype == 'change_current_period'):
+			new_current_period_id = request.data.get('new_current_period')
+			try:
+				previous_current_period = accounting_period.objects.for_tenant(this_tenant).get(current_period = True)
+				new_current_period = accounting_period.objects.for_tenant(this_tenant).get(id = new_current_period_id)
+				previous_current_period.current_period = False
+				previous_current_period.save()
+				new_current_period.current_period = True
+				new_current_period.save()
+			except Exception as err:
+				transaction.rollback()
+
+
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
@@ -713,11 +780,6 @@ def balance_sheet(request):
 	return render(request, 'account/profit_loss.html', {'accounts':jsondata, "start":start, "date":date, "call":'b-s', 'extension':extension})
 
 
-@login_required
-def update_opening_balance_view(request):
-	extension = 'base.html'
-	return render(request,'account/update_opening.html', {'extension': extension})
-
 
 @api_view(['GET'],)
 def get_account_account_year(request):
@@ -737,21 +799,3 @@ def get_account_account_year(request):
 		jsondata = json.dumps(acct_year, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
-
-@api_view(['POST'],)
-def update_opening_balance(request):
-	this_tenant=request.user.tenant
-	response_data={}
-	if request.method == 'POST':
-		accountid = request.data.get('accountid')
-		opening_debit = request.data.get('opening_debit')
-		opening_credit = request.data.get('opening_credit')
-		account=Account.objects.for_tenant(this_tenant).get(id=accountid)
-		first_year=accounting_period.objects.for_tenant(this_tenant).get(is_first_year=True)
-		acct_year = account_year.objects.for_tenant(this_tenant).get(accounting_period=first_year, account=account)
-		acct_year.opening_debit = opening_debit
-		acct_year.opening_credit = opening_credit
-		acct_year.save()
-
-		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
-		return HttpResponse(jsondata)

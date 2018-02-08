@@ -143,7 +143,6 @@ def RegisterView(request):
                     period.is_first_year=True
                     period.tenant=new_tenant
                     period.save()
-                    new_ledger=create_ledger_group(new_tenant, "Bank")
                     
                     create_journal_group(new_tenant,"General")                            
                     create_journal_group(new_tenant,"Sales")

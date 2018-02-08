@@ -29,8 +29,19 @@ def get_trial_balance(request, start, end):
     response_data=[]
     debit=0
     credit=0
+    opening_stock=0
     # print(start)
     acct_period =(accounting_period.objects.for_tenant(this_tenant).get(start=start))
+
+    inventory_acct=account_inventory.objects.for_tenant(request.user.tenant).get(name__exact="Inventory")
+    inventory_this_year=account_year_inventory.objects.for_tenant(request.user.tenant).\
+                        get(account_inventory=inventory_acct, accounting_period = acct_period)
+    opening_stock = inventory_this_year.opening_debit - inventory_this_year.opening_credit
+    # print(opening_stock)
+    if (opening_stock!=0):
+        response_data.append({'data_type':'journal','account':"Opening Stock",'account_type':'ca',\
+                                'debit':str(opening_stock),'credit':str("")})
+
     for item in account_list:     
         this_debit=True
         this_credit=True
@@ -71,6 +82,8 @@ def get_trial_balance(request, start, end):
                     item_credit=""
             response_data.append({'data_type':'journal','account':item.name,'account_type':item.account_type,\
                                 'debit':str(item_debit),'credit':str(item_credit)})
+
+    debit+=opening_stock
     response_data.append({'data_type':'value','debit':str(debit),'credit':str(credit)})
     return response_data
 

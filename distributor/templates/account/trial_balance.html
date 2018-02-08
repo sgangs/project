@@ -6,8 +6,6 @@
 </title>
 <!-- Datatable CSS-->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
-<!-- Datatable jQuery-->
-<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 {% load static from staticfiles %}
 	
 {% endblock %}
@@ -48,9 +46,7 @@
    //  	});
   	// });
     accounts=JSON.parse('{{accounts |escapejs}}');
-    console.log (accounts);
     for (i in accounts){
-      console.log("Inside If" + accounts[i]);
       if (accounts[i].data_type=='journal'){
         $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
         "<td >"+accounts[i].account_type+"</td>"+
@@ -62,7 +58,7 @@
       else{
         $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
         "<td><b>Total</b></td>"+
-        "<td></td>"+
+        "<td>"+accounts[i].account_type+"</td>"+
         "<td><b>"+parseFloat(accounts[i].debit)+"</b></td>"+
         "<td><b>"+parseFloat(accounts[i].credit)+"</b></td>"+
         "</tr>");

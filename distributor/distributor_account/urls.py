@@ -8,8 +8,6 @@ urlpatterns = [
     url(r'^payment-mode/$', views.payment_mode_data, name='payment_mode_data'),
     url(r'^account/data/$', views.account_details_view, name='account_details_view'),
     
-    url(r'^openingdata/$', views.account_opening_data, name='account_opening_data'),
-    url(r'^update-opening/$', views.update_opening_balance_view, name='update_opening_balance_view'),
     url(r'^account-accountyear/data/$', views.get_account_account_year, name='get_account_account_year'),
 
     

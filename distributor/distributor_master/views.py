@@ -395,6 +395,7 @@ def warehouse_view(request):
 def product_view(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
+		response_data = {}
 		calltype = request.GET.get('calltype')
 		if (calltype == 'one_product'):
 			productid = request.GET.get('productid')
@@ -415,10 +416,27 @@ def product_view(request):
 				products=products.filter(hsn_code = hsncode)
 			
 			serializer = ProductSerializers(products, many=True)
+		
 		else:
+			page_no = request.GET.get('page_no')
 			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
 					select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
-			serializer = ProductSerializers(products, many=True)
+			# serializer = ProductSerializers(products, many=True)
+
+			if page_no:
+
+				products_paginated=paginate_data(page_no, 10, list(products))
+				serializer = ProductSerializers(products_paginated['object'], many=True)
+				response_data['object']  = serializer.data
+				response_data['end'] = products_paginated['end']
+				response_data['start'] = products_paginated['start']
+			else:
+				serializer = ProductSerializers(products, many=True)
+				response_data['object'] = serializer.data
+			
+			jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+			return HttpResponse(jsondata)
+
 		return Response(serializer.data)
 	elif request.method == 'POST':
 		calltype = request.data.get('calltype')

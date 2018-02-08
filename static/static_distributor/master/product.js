@@ -12,20 +12,45 @@ $('.apply_reset').click(function(){
     // $('.invoice_summary').hide();
     $('.product_name').val('');
     $('.hsn_code').val('');
-    load_products();
+    $('#filter').modal('hide');
+    load_products(1);
 });
 
-load_products()
+function apply_navbutton(jsondata, page_no){
+    $('.navbtn').remove()
+    for (i =jsondata['start']+1; i<=jsondata['end']; i++){
+        if (i==page_no){
+                    // $('.add_nav').append("<a href='#' class='btn nav_btn btn-sm btn-default' data=1 style='margin-right:0.2%'>"+i+"</a>")
+            $('.add_nav').append("<button title='Your Current Page' class='btn btn-sm navbtn btn-info' "+
+                "value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+        else{
+            $('.add_nav').append("<button title='Go to page no: "+i+"' class='btn btn-sm navbtn btn-default'"+
+                " value="+i+" style='margin-right:0.2%'>"+i+"</button>")
+        }
+    }
+}
 
-function load_products(){
+$(".add_nav").on("click", ".navbtn", function(){
+    load_products($(this).val());
+});
+
+
+
+load_products(1)
+
+function load_products(page_no){
     $.ajax({
         url : "productdata/", 
         type: "GET",
+        data:{ calltype:"all_products",
+            page_no:page_no},
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $('.prev_next').attr('hidden', false);
             $("#product_table .data").remove();
-            $.each(jsondata, function(){
+            $.each(jsondata['object'], function(){
                 var url='/inventory/barcode/'+this.id+'/'
                 // console.log(url)
                 if ($.trim(this.rates).length>0){
@@ -63,6 +88,7 @@ function load_products(){
                     "</tr>");   
                 }
             })
+            apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
         error : function() {
@@ -692,6 +718,7 @@ $('.apply_filter').click(function(e){
 });
 
 function filter_data(page_no) {
+    $('.prev_next').attr('hidden', true);
     startswith=$('.product_name').val();
     hsncode=$('.hsn_code').val();
 
