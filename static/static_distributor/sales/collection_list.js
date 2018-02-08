@@ -175,8 +175,7 @@ function filter_data(page_no) {
         enddate = enddate.split("-").reverse().join("-")
         dateChanged= true;
     } 
-    console.log(invoice_no);
-
+    
     $.ajax({
         url : "/sales/collectionlist/", 
         type: "GET",

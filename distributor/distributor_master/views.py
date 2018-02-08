@@ -405,15 +405,29 @@ def product_view(request):
 		elif (calltype == 'product_filter'):
 			startswith = request.GET.get('startswith')
 			hsncode = request.GET.get('hsncode')
-			
-			products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
-					select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
-			
-			if startswith:
-				products=products.filter(name__istartswith = startswith)
+			skucode = request.GET.get('skucode')
+			barcode = request.GET.get('barcode')
+			specific_product = False
 
-			if hsncode:
-				products=products.filter(hsn_code = hsncode)
+			if (barcode or skucode):
+				specific_product = True
+
+			if (specific_product):
+				if skucode:
+					products = Product.objects.for_tenant(this_tenant).filter(is_active=True, sku = skucode).\
+						select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
+				elif barcode:
+					products = Product.objects.for_tenant(this_tenant).filter(is_active=True, barcode = barcode).\
+						select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
+			else:
+				products=Product.objects.for_tenant(this_tenant).filter(is_active=True).order_by( 'name','sku',).\
+						select_related('default_unit','brand','group').prefetch_related('productSalesRate_product')
+				
+				if startswith:
+					products=products.filter(name__istartswith = startswith)
+
+				if hsncode:
+					products=products.filter(hsn_code = hsncode)
 			
 			serializer = ProductSerializers(products, many=True)
 		
@@ -425,7 +439,7 @@ def product_view(request):
 
 			if page_no:
 
-				products_paginated=paginate_data(page_no, 10, list(products))
+				products_paginated=paginate_data(page_no, 50, list(products))
 				serializer = ProductSerializers(products_paginated['object'], many=True)
 				response_data['object']  = serializer.data
 				response_data['end'] = products_paginated['end']

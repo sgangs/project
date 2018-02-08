@@ -719,8 +719,10 @@ $('.apply_filter').click(function(e){
 
 function filter_data(page_no) {
     $('.prev_next').attr('hidden', true);
-    startswith=$('.product_name').val();
-    hsncode=$('.hsn_code').val();
+    startswith = $('.product_name').val();
+    hsncode = $('.hsn_code').val();
+    skucode = $('.sku_code_search').val();
+    barcode = $('.barcode_search').val();
 
     $.ajax({
         url : "productdata/", 
@@ -728,6 +730,8 @@ function filter_data(page_no) {
         data:{ calltype:"product_filter",
             startswith: startswith,
             hsncode: hsncode,
+            skucode: skucode,
+            barcode: barcode,
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',
         // handle a successful response

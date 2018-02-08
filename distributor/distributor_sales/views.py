@@ -1210,7 +1210,7 @@ def collection_list(request):
 				customers_list=[]
 				for item in customers:
 					customers_list.append(item['customerid'])
-					invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end],customer__in=customers_list)
+				invoices=sales_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end],customer__in=customers_list)
 				payments=payments.filter(sales_invoice__in=invoices).all()
 				
 			if invoice_no:

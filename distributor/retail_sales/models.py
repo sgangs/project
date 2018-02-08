@@ -56,10 +56,8 @@ class retail_invoice(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 	total_purchase_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
-#	def get_absolute_url(self):
-#		return reverse('purchaseinvoicedetail', kwargs={'detail':self.slug})
 
-	#the save method is overriden to give unique invoice ids, slug and customer_name
+	#the save method is overriden to give unique invoice ids
 	def save(self, *args, **kwargs):
 		if not self.id:
 			tenant=self.tenant.key

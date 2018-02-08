@@ -966,10 +966,57 @@ def payment_register(request):
 # @login_required
 @api_view(['GET'],)
 def payment_list(request):
+	this_tenant = request.user.tenant
+	response_data = {}
 	if request.method == 'GET':
-		payments=purchase_payment.objects.for_tenant(request.user.tenant).all()
-		serializer = PaymentSerializers(payments, many=True)		
-		return Response(serializer.data)
+		calltype = request.GET.get('calltype')
+		if (calltype == 'apply_filter'):
+			vendors = json.loads(request.GET.get('vendors'))
+			start = request.GET.get('start')
+			end = request.GET.get('end')
+			receipt_no = request.GET.get('receipt_no')
+			cheque_rtgs = request.GET.get('cheque_rtgs')
+			page_no = request.GET.get('page_no')
+			# modeid = request.GET.get('modeid')
+			if (receipt_no):
+				receipt = purchase_receipt.objects.for_tenant(this_tenant).get(supplier_invoice = receipt_no)
+				payments = purchase_payment.objects.for_tenant(this_tenant).filter(purchase_receipt=receipt,)\
+					.order_by('-paid_on', 'cheque_rtgs_number','-purchase_receipt')
+			else:
+				if (len(vendors)>0):
+					vendors_list=[]
+					for item in vendors:
+						vendors_list.append(item['vendorid'])
+					payments = purchase_payment.objects.for_tenant(this_tenant).select_related('purchase_receipt').filter(paid_on__range=[start,end],\
+						purchase_receipt__vendor__in=vendors_list).order_by('-paid_on', 'cheque_rtgs_number','-purchase_receipt')
+				else:
+					payments = purchase_payment.objects.for_tenant(this_tenant).filter(paid_on__range=[start,end],)\
+						.order_by('-paid_on', 'cheque_rtgs_number','-purchase_receipt')
+				
+				if cheque_rtgs:
+					payments=payments.filter(cheque_rtgs_number=cheque_rtgs).order_by('-paid_on', 'cheque_rtgs_number','-purchase_receipt')
+				# serializer = PaymentSerializers(payments, many=True)
+		else:
+			page_no = request.GET.get('page_no')
+			start = request.GET.get('start')
+			end = request.GET.get('end')
+
+			payments = purchase_payment.objects.for_tenant(this_tenant).filter(paid_on__range=[start,end],)\
+					.order_by('-paid_on', 'cheque_rtgs_number','-purchase_receipt')
+			# serializer = PaymentSerializers(payments, many=True)		
+
+		if (page_no):
+			payments_paginated=paginate_data(page_no, 10, list(payments))
+			serializer = PaymentSerializers(payments_paginated['object'], many=True)
+			response_data['object']  = serializer.data
+			response_data['end'] = payments_paginated['end']
+			response_data['start'] = payments_paginated['start']
+		else:
+			serializer = PaymentSerializers(payments, many=True)
+			response_data['object'] = serializer.data
+		
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)
 
 @login_required
 def payment_list_view(request):
