@@ -4,8 +4,9 @@ from datetime import datetime
 #from django.conf import settings
 from django.http import HttpResponse
 from django.db import IntegrityError, transaction
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate,login as login_auth
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import login, password_reset
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect
@@ -21,11 +22,7 @@ from django.template.loader import get_template
 from django.conf import settings
 
 
-from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
-from rest_framework.response import Response
 
 from distributor_user.forms import UserRegistrationForm,CustomerRegistrationForm
 from distributor_user.models import User, Tenant
@@ -36,6 +33,14 @@ from distributor_sales.sales_utils import sales_day_wise, sales_raised_value, sa
 from retail_sales.sales_utils import retail_sales_day_wise, top_retail_product_sales
 from distributor_account.account_support import get_income_expense
 from distributor.variable_list import state_list
+
+# from rest_framework import serializers as rest_framework_serializers  
+# from rest_framework.response import Response as rest_framework_Response
+
+# from rest_framework_jwt.settings import api_settings
+# from rest_framework_jwt.serializers import JSONWebTokenSerializer
+# from rest_framework_jwt.views import JSONWebTokenAPIView
+
 
 from .user_creation import *
 from .forms import revisedPasswordResetForm
@@ -55,7 +60,62 @@ def custom_login(request):
         # token, created = Token.objects.get_or_create(user=request.user)
         return redirect(landing)
     else:
+        # if (request.method == 'POST'):
+        #     username = request.POST['username']
+        #     password = request.POST['password']
+        #     user = authenticate(username=username, password=password)
+        #     tenant = user.tenant
+        #     tenant_due = tenant.paid_due
+        #     if not tenant_due:
+        #         tenant_due = tenant.trial_to
+        #         tenant_max_due = tenant_due
+        #     else:
+        #         tenant_max_due = tenant_due + date_first.timedelta(days=15)
+        #     today_date = datetime.today().date()
+        #     #If date is due (or within 2 days of due), send mail to user.
+        #     if (today_date>tenant_max_due):
+        #         return HttpResponse("Can't login")
+        #     else:
+        #         login_auth(request, user)
+        #         return redirect(landing)
+        # return render(request,'registration/login.html', {'form': AuthenticationForm})
         return login(request)
+
+
+# jwt_response_payload_handler = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER
+# class JSONWebTokenAPIViewModified(JSONWebTokenAPIView):
+#     def post(self, request, *args, **kwargs):
+#         self.serializer_class = JSONWebTokenSerializer
+#         serializer = self.get_serializer(data=request.data)
+
+#         if serializer.is_valid():
+#             user = serializer.object.get('user') or request.user
+#             token = serializer.object.get('token')
+#             # tenant = user.tenant
+#             # tenant_due = tenant.paid_due
+#             # if not tenant_due:
+#             #     tenant_due = tenant.trial_to
+#             #     tenant_max_due = tenant_due
+#             # else:
+#             #     tenant_max_due = tenant_due + date_first.timedelta(days=15)
+#             # today_date = datetime.today().date()
+#             # #If date is due (or within 2 days of due), send mail to user.
+#             # if (today_date>tenant_max_due):
+#             #     msg = ('Unable to log in with provided credentials. Payment expired.')
+#             #     raise rest_framework_serializers.ValidationError(msg)
+#             response_data = jwt_response_payload_handler(token, user, request)
+#             response = rest_framework_Response(response_data)
+#             if api_settings.JWT_AUTH_COOKIE:
+#                 expiration = (datetime.utcnow() +
+#                               api_settings.JWT_EXPIRATION_DELTA)
+#                 response.set_cookie(api_settings.JWT_AUTH_COOKIE,
+#                                     response.data['token'],
+#                                     expires=expiration,
+#                                     httponly=True)
+#             return response
+
+#         return rest_framework_Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# obtain_jwt_token_tenant_verified = JSONWebTokenAPIViewModified.as_view()
 
 #Add one more level of authentication for forgot password. Then send the mail.
 def custom_password_reset(request, from_email, subject_template_name, password_reset_form):
@@ -293,8 +353,8 @@ def RegisterView(request):
         customerform = CustomerRegistrationForm()
         userform = UserRegistrationForm()
 
-    # return render(request,'registration.html', {'userform': userform, 'customerform': customerform})
-    return render(request,'signup-page.html', {'userform': userform, 'customerform': customerform})
+    return render(request,'registration.html', {'userform': userform, 'customerform': customerform})
+    # return render(request,'signup-page.html', {'userform': userform, 'customerform': customerform})
 
 
 #Add one more level of authentication for forgot password. Then send the mail.

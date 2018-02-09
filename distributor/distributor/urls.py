@@ -39,8 +39,8 @@ urlpatterns = [
     url(r'^password-reset/complete/$', password_reset_complete, name='password_reset_complete'),
 
     #Get & refresh token - tried to make this url difficult to guess but easy to understand
-    # url(r'^getthetoken/', drfviews.obtain_auth_token),
-    url(r'^getthetoken/', obtain_jwt_token), 
+    url(r'^getthetoken/', obtain_jwt_token),
+    # url(r'^getthetoken/', views.obtain_jwt_token_tenant_verified), 
     url(r'^refreshthetoken/', refresh_jwt_token),
 
     url(r'^landing/$', views.landing, name='landing'),
