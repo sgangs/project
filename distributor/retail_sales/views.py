@@ -1732,3 +1732,20 @@ def retail_dashboard_data(request):
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def retail_daily_sales_data(request):
+	this_tenant=request.user.tenant
+	response_data={}
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		date = request.GET.get('date')
+		if (calltype == 'daily_payment_report'):
+			date = request.GET.get('date')
+			invoices = list(retail_invoice.objects.for_tenant(this_tenant).filter(date=date).\
+					values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).annotate(value = Sum('total')))
+		
+		response_data = invoices
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

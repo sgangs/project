@@ -1763,7 +1763,7 @@ def vendor_ledger_data(request):
 	start=request.GET.get('start')
 	end=request.GET.get('end')
 	vendorid=int(request.GET.get('vendorid'))
-	journal = Journal.objects.for_tenant(request.user.tenant).filter(date__range=[start,end], trn_type__in = [1,2,3],)
+	journal = Journal.objects.for_tenant(request.user.tenant).filter(date__range=[start,end], trn_type__in = [1,2,3,12,13],)
 	entries=list(journal_entry.objects.for_tenant(request.user.tenant).filter(related_data__id=vendorid, journal__in = journal)\
 			.prefetch_related('journal').\
 			values('related_data', 'transaction_type', 'journal__id', 'journal__date','transaction_type','journal__remarks', 'value',).\

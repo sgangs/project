@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^getcurrentinventory/$', views.inventory_man_wise, name='inventory_man_wise'),
     
     url(r'^openinginventory/$', views.opening_inventory, name='opening_inventory'),
+    url(r'^openinginventory/format/$', views.inventory_import_format, name='inventory_import_format'),
     url(r'^openinginventory/data/$', views.opening_inventory_data, name='opening_inventory_data'),
     url(r'^uploadopeninginventory/$', views.import_opening_inventory, name='import_opening_inventory'),
     

@@ -43,4 +43,6 @@ urlpatterns = [
 
     url(r'^retail-dashboard/$', views.retail_dashboard, name='retail_dashboard'),
     url(r'^retail-dashboard/data/$', views.retail_dashboard_data, name='retail_dashboard_data'),
+
+    url(r'^retail-daily-sales/data/$', views.retail_daily_sales_data, name='retail_daily_sales_data'),
 ]

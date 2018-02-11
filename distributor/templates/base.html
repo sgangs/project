@@ -203,7 +203,8 @@
             <li><a href="{% url 'purchase:receipt_list' %}">Receipt List</a></li>
             <li><a href="{% url 'purchase:payment_list_view' %}">Payment Report</a></li>
             <li><a href="#">Purchase Return</a></li>
-            <li><a href="#">Purchase Return Report</a></li>
+            <li><a href="#">Purchase Return List</a></li>
+            <li><a href="{% url 'purchase:vendor_ledger' %}">Vendor Ledger</a></li>
           </ul>
         </li>
       </ul>
@@ -231,6 +232,7 @@
             <li><a href="{% url 'sales:collection_list_view' %}">Collection List</a></li>
             <li><a href="#">Sales Return</a></li>
             <li><a href="#">Sales Return List</a></li>
+            <li><a href="{% url 'sales:customer_ledger' %}">Customer Ledger</a></li>
           </ul>
         </li>
       </ul>

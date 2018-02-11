@@ -517,9 +517,16 @@ def import_opening_inventory(request):
 			return HttpResponseBadRequest()
 	else:
 		form = UploadFileForm()
-	return render(request,'master/upload_product.html',{'form': form,})
+	return render(request,'inventory/upload_opening_inventory.html',{'form': form,})
 
-
+@api_view(['GET',])
+def inventory_import_format(request):
+	# if 'excel' in request.POST:
+	response = HttpResponse(content_type='application/vnd.ms-excel')
+	response['Content-Disposition'] = 'attachment; filename=Inventory_Import.xlsx'
+	xlsx_data = inventory_format()
+	response.write(xlsx_data)
+	return response
 
 
 @login_required

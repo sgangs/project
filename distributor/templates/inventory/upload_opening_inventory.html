@@ -14,6 +14,11 @@
 {% block content%}
 	<div>
 		<div><h2>Bulk Upload Opening Inventory List</h2></div>
+
+		<a href="{% url 'inventory:inventory_import_format' %}"><button type="submit" class="btn btn-primary btn-xs new"><i class="fa fa-download"></i> Download Excel Format</button></a>
+		<br>
+		<br>
+
 		{% if messages %}
 			<ul class="messages">
 			    {% for message in messages %}

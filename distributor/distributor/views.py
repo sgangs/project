@@ -120,7 +120,6 @@ def custom_login(request):
 #Add one more level of authentication for forgot password. Then send the mail.
 def custom_password_reset(request, from_email, subject_template_name, password_reset_form):
     form = revisedPasswordResetForm()
-    print("This is here")
     if request.method == 'POST':
         form = revisedPasswordResetForm(request.POST)
         if form.is_valid():
