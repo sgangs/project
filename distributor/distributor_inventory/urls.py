@@ -39,5 +39,8 @@ urlpatterns = [
 
 
     url(r'^barcode/(?P<pk_detail>[-\S]+)/$', views.write_pdf_view, name='write_pdf_view'),
-    # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),    
+    # url(r'^eventdetail/(?P<detail>[-\S]+)/$', views.classdetail, name='class_detail'),  
+    url(r'^productmovement/monthly/$', views.product_monthly_movement_chart, name='product_monthly_movement_chart'), 
+    url(r'^productmovement/monthly/data/$', views.product_movement_data, name='product_movement_data'),  
+    url(r'^productmovement/monthly/product/$', views.product_monthly_movement_product, name='product_monthly_movement_product'),  
 ]

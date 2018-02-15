@@ -71,22 +71,6 @@ class sales_invoice(models.Model):
 	#the save method is overriden to give unique invoice ids, slug and customer_name
 	def save(self, *args, **kwargs):
 		if not self.id:
-			# if self.tenant_id == 6:
-			# 	tenant=self.tenant.key
-			# 	# today=dt.date.today()
-			# 	today=dt.datetime.strptime(self.date, "%Y-%m-%d").date()
-			# 	today_string=today.strftime('%y%m%d')
-			# 	next_invoice_number='001'
-			# 	last_invoice=type(self).objects.filter(tenant=self.tenant).\
-			# 				filter(invoice_id__contains=today_string).order_by('invoice_id').last()
-			# 	if last_invoice:
-			# 		last_invoice_id=str(last_invoice.invoice_id)
-			# 		last_invoice_number=int(last_invoice_id[6:])
-			# 		next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
-			# 	self.invoice_id=int(today_string + next_invoice_number)
-
-		# if not self.id:
-			# else:
 			tenant=self.tenant.key
 			today_date = datetime.strptime(self.date,'%Y-%m-%d')
 			today_string = today_date.strftime('%y%m%d')

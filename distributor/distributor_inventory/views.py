@@ -1,8 +1,9 @@
 from io import BytesIO
+import calendar
 import django_excel as excel
+from datetime import timedelta, date
 from decimal import Decimal
 import xlrd
-import datetime as dt
 
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
@@ -35,7 +36,7 @@ from distributor_master.models import Unit, Product, Warehouse
 from distributor_user.models import Tenant
 from distributor_account.models import Account, tax_transaction, payment_mode, accounting_period,\
 									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory
-from distributor.global_utils import paginate_data, render_to_pdf
+from distributor.global_utils import paginate_data, render_to_pdf, daterange_list
 from .forms import *
 from .models import *
 from .serializers import *
@@ -803,3 +804,60 @@ def product_movement_consolidated_data(request):
 
 	jsondata = json.dumps(inventory_details, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def product_monthly_movement_chart(request):
+	extension="base.html"
+	return render (request, 'inventory/product_monthly_movement_chart.html',{'extension':extension})
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def product_monthly_movement_product(request):
+	this_tenant = request.user.tenant
+	manufacturer = request.GET.get('manufacturer')
+	response_data={}
+	products = list(Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer).values('id', 'name'))
+	response_data = products
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+@user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
+def product_movement_data(request):
+	this_tenant = request.user.tenant
+	response_data = {}
+	month = int(request.GET.get('month'))
+	year = int(request.GET.get('year'))
+	manufacturer = request.GET.get('manufacturer')
+	warehouse = request.GET.get('warehouse')
+	last_day = calendar.monthrange(year,month)[1]
+	# warehouse = request.GET.get('warehouse')
+	start = date(year, month, 1)
+	end = date(year, month, last_day)
+	products = Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer).values('id')
+	data = list(inventory_ledger.objects.for_tenant(this_tenant).filter(date__range=[start, end], product__in = products, warehouse = warehouse).\
+					select_related('product').values('product','product__name', 'date').order_by('product__name').annotate(\
+						sales_total=Sum(Case(When(transaction_type__in = [2,9], then = "quantity")))))
+	newdata = {}	
+	for entry in data:
+	    prod_id = str(entry['product'])
+	    entry_date = str(entry['date'])
+	    newdata[prod_id+"_"+entry_date] = entry
+	
+	# for product in products:
+	# 	for date in daterange_list(start, end):
+	# 		key = str(product['id'])+"_"+str(date)
+	# 		if key in newdata:
+	# 			response_data[key] = newdata[key]
+	# 				# print(newdata[key])
+	# 		else:
+	# 			response_data[key] = {'sales_total': Decimal('0'), 'product__name': product['name'], 'date': date, 'product': product['id']}
+
+	response_data = newdata
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+

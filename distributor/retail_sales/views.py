@@ -548,12 +548,18 @@ def sales_invoice_delete(request):
 			this_tenant=request.user.tenant
 			if (calltype == 'delete'):
 				# response_data = delete_inventory(request)
-				with transaction.atomic():
-					try:
+				try:
+					with transaction.atomic():
+					# try:
 						invoice_pk=request.GET.get('invoice_id')
 						old_invoice=retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_pk)
 		
 						all_line_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice=old_invoice)
+						item_returned = 0
+						for line_item in all_line_items:
+							 item_returned+=line_item.quantity_returned
+						if (item_returned > 0):
+							raise IntegrityError(('Invoice against which sales return is made cannot be deleted.')) 
 						
 						#Does this tenant maintain inventory?
 						maintain_inventory=this_tenant.maintain_inventory
@@ -641,9 +647,11 @@ def sales_invoice_delete(request):
 						old_invoice.delete()
 
 						response_data['success'] = True
-					except:
-						transaction.rollback()
-
+				
+				except Exception as err:
+					response_data['error']  = err.args 
+					transaction.rollback()
+			print(response_data)
 			jsondata = json.dumps(response_data)
 			return HttpResponse(jsondata)
 
@@ -1263,21 +1271,36 @@ def sales_return_save(request):
 		calltype = request.data.get('calltype')
 		response_data = {}
 		this_tenant=request.user.tenant
-		if (calltype == 'save'):
+		if (calltype == 'save' or calltype == 'mobilesave'):
 			with transaction.atomic():
 				try:
 					invoice_id = request.data.get('invoiceid')
+
+					#Change to return_date
 					date=request.data.get('date')
 					
-					subtotal=Decimal(request.data.get('subtotal'))
-					cgsttotal=Decimal(request.data.get('cgsttotal'))
-					sgsttotal=Decimal(request.data.get('sgsttotal'))
-					total=Decimal(request.data.get('total'))
+					#Change to subtotal_return
+					subtotal=Decimal(request.data.get('subtotal')).quantize(TWOPLACES)
+					#Change to cgsttotal_return
+					cgsttotal=Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
+					#Change to sgsttotal_return
+					sgsttotal=Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
+					#Change to total_return
+					total=Decimal(request.data.get('total')).quantize(TWOPLACES)
+
+					print(subtotal)
+					print(total)
+
+					# raise IntegrityError(('Try'))
+					
 					sum_total = subtotal+cgsttotal+sgsttotal
 					if (abs(sum_total - total) <0.90 ):
 						total = sum_total
-					
-					bill_data = json.loads(request.data.get('bill_details'))
+
+					if (calltype == 'save'):
+						bill_data = json.loads(request.data.get('bill_details'))
+					else:
+						bill_data = request.data.get('bill_details')	
 
 					invoice = retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
 					
@@ -1340,13 +1363,12 @@ def sales_return_save(request):
 						except:
 							serial_no=''
 
-						line_taxable_total=Decimal(data['taxable_total'])
-						line_total=Decimal(data['line_total'])
-
-						cgst_p=Decimal(data['cgst_p'])
-						cgst_v=Decimal(data['cgst_v'])
-						sgst_p=Decimal(data['sgst_p'])
-						sgst_v=Decimal(data['sgst_v'])
+						line_taxable_total=Decimal(data['taxable_total']).quantize(TWOPLACES)
+						line_total=Decimal(data['line_total']).quantize(TWOPLACES)
+						cgst_p=Decimal(data['cgst_p']).quantize(TWOPLACES)
+						cgst_v=Decimal(data['cgst_v']).quantize(TWOPLACES)
+						sgst_p=Decimal(data['sgst_p']).quantize(TWOPLACES)
+						sgst_v=Decimal(data['sgst_v']).quantize(TWOPLACES)
 						
 						cgst_total+=cgst_v
 						sgst_total+=sgst_v
@@ -1365,6 +1387,7 @@ def sales_return_save(request):
 						# tentative_sales_price=original_tentative_sales_price/multiplier
 						# mrp=original_mrp/multiplier
 
+						#Change to return_quantity
 						original_quantity=int(data['quantity'])
 						quantity=original_quantity*multiplier
 
@@ -1521,7 +1544,7 @@ def sales_return_save(request):
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
 
 
-					if maintain_inventory:						
+					if maintain_inventory:
 						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
@@ -1564,7 +1587,8 @@ def sales_return_save(request):
 						new_entry_inv.tenant=this_tenant
 						new_entry_inv.save()
 
-					response_data=new_invoice.id
+					response_data['pk']=new_invoice.id
+					response_data['id']=new_invoice.return_id
 				except:
 					transaction.rollback()
 

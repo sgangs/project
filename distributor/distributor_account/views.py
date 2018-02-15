@@ -588,10 +588,17 @@ def account_period_data(request):
 						new_account_year = account_year()
 						new_account_year.account = account
 						new_account_year.is_first_year = False
-						new_account_year.opening_debit = old_account_year.current_debit
-						new_account_year.opening_credit = old_account_year.current_credit
-						new_account_year.current_debit = old_account_year.current_debit
-						new_account_year.current_credit = old_account_year.current_credit
+						if (account.account_type in ['ca','rec','nca','cl','pay', 'ncl', 'equ']):
+							new_account_year.opening_debit = old_account_year.current_debit
+							new_account_year.opening_credit = old_account_year.current_credit
+							new_account_year.current_debit = old_account_year.current_debit
+							new_account_year.current_credit = old_account_year.current_credit
+						else:
+							new_account_year.opening_debit = 0
+							new_account_year.opening_credit = 0
+							new_account_year.current_debit = 0
+							new_account_year.current_credit = 0
+						
 						new_account_year.accounting_period = new_accounting_period
 						new_account_year.tenant = this_tenant
 						new_account_year.save()
@@ -718,7 +725,7 @@ def account_journal_entries_data(request):
 	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
 	journals = Journal.objects.for_tenant(this_tenant).filter(date__range = [period.start, period.end])
 	entries = journal_entry.objects.filter(account=account_pk, journal__in = journals).select_related('journal')\
-		.values('id','transaction_type', 'value', 'journal__date', 'journal__remarks').order_by('journal__date')
+		.values('id','transaction_type', 'value', 'journal__id', 'journal__date', 'journal__remarks').order_by('journal__date')
 	response_data['object'] = list(entries)
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

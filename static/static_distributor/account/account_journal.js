@@ -25,12 +25,14 @@ function load_journals(){
         success : function(jsondata) {
             $("#journal_table .data").remove();
             $.each(jsondata['object'], function(){
+                var url='/account/journalview/'+this.journal__id+'/'
                 date=this.journal__date;
                 date=date.split("-").reverse().join("-")
                 if (this.transaction_type == 1){
                     $('#journal_table').append("<tr class='data' align='center'>"+
-                    "<td hidden='true'>"+this.id+"</td>"+
-                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+date+"</td>"+
+                    "<td hidden = 'true'>"+this.id+"</td>"+
+                    // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+date+"</td>"+
+                    "<td><a href="+url+" class='new_link'>"+date+"</td>"+
                     "<td align='left'>"+transaction_types[this.transaction_type]+"</td>"+
                     "<td>"+this.journal__remarks+"</td>"+
                     "<td>"+this.value+"</td>"+
@@ -39,8 +41,9 @@ function load_journals(){
                 }
                 else{
                     $('#journal_table').append("<tr class='data' align='center'>"+
-                    "<td hidden='true'>"+this.id+"</td>"+
-                    "<td class='link' style='text-decoration: underline; cursor: pointer'>"+date+"</td>"+
+                    "<td hidden = 'true'>"+this.id+"</td>"+
+                    // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+date+"</td>"+
+                    "<td><a href="+url+" class='new_link'>"+date+"</td>"+
                     "<td align='right'>"+transaction_types[this.transaction_type]+"</td>"+
                     "<td>"+this.journal__remarks+"</td>"+
                     "<td></td>"+

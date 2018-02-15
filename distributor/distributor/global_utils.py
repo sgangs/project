@@ -1,3 +1,5 @@
+import datetime
+
 from io import BytesIO
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -56,3 +58,10 @@ def render_to_pdf(template_src, context_dict={}):
 	if not pdf.err:
 		return HttpResponse(result.getvalue(), content_type='application/pdf')
 	return None
+
+
+def daterange_list(start_date, end_date):
+	for n in range(int ((end_date - start_date).days)):
+		yield start_date + datetime.timedelta(n)
+
+

@@ -60,7 +60,39 @@ class retail_invoice(models.Model):
 	#the save method is overriden to give unique invoice ids
 	def save(self, *args, **kwargs):
 		if not self.id:
-			tenant=self.tenant.key
+			# tenant=self.tenant.key
+			# today_string = self.date.strftime('%y%m%d')
+			# if (self.date.month >3):
+			# 	this_year_string = today_string[:2]
+			# 	this_year_int = int(this_year_string)
+			# 	next_year_int = this_year_int+1
+			# 	next_year_string = str(next_year_int)
+			# 	today_string = this_year_string + next_year_string
+			# else:
+			# 	next_year_string = today_string[:2]
+			# 	next_year_int = int(next_year_string)
+			# 	this_year_int = next_year_int-1
+			# 	this_year_string = str(this_year_int)
+			# 	today_string = this_year_string + next_year_string
+			
+			# next_invoice_number = 1
+			# last_invoice=type(self).objects.filter(tenant=self.tenant).\
+			# 			filter(invoice_id__contains='20'+today_string).order_by('invoice_id').last()
+			# if last_invoice:
+			# 	last_invoice_id=str(last_invoice.invoice_id)
+			# 	last_invoice_number=int(last_invoice_id[6:])
+			# 	# next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
+			# 	next_invoice_number = last_invoice_number + 1
+			# # self.invoice_id=int(today_string + next_invoice_number)
+			# if (next_invoice_number < 10):
+			# 	self.invoice_id = int( '20'+today_string + '00' + str(next_invoice_number))
+			# elif (next_invoice_number < 100):
+			# 	self.invoice_id = int( '20'+today_string + '0' + str(next_invoice_number))
+			# else:
+			# 	self.invoice_id = int( '20'+today_string + str(next_invoice_number))
+
+			# tenant=self.tenant.key
+			# today_date = datetime.strptime(self.date,'%Y-%m-%d')
 			today_string = self.date.strftime('%y%m%d')
 			if (self.date.month >3):
 				this_year_string = today_string[:2]
@@ -74,24 +106,24 @@ class retail_invoice(models.Model):
 				this_year_int = next_year_int-1
 				this_year_string = str(this_year_int)
 				today_string = this_year_string + next_year_string
-			
+
+			mon = '{:02d}'.format(self.date.month)
+			today_string+= mon
+
 			next_invoice_number = 1
 			last_invoice=type(self).objects.filter(tenant=self.tenant).\
-						filter(invoice_id__contains='20'+today_string).order_by('invoice_id').last()
+					filter(invoice_id__contains='30'+today_string).order_by('invoice_id').last()
+			
 			if last_invoice:
 				last_invoice_id=str(last_invoice.invoice_id)
-				last_invoice_number=int(last_invoice_id[6:])
-				# next_invoice_number='{0:03d}'.format(last_invoice_number + 1)
+				last_invoice_number=int(last_invoice_id[8:])
 				next_invoice_number = last_invoice_number + 1
-			# self.invoice_id=int(today_string + next_invoice_number)
 			if (next_invoice_number < 10):
-				self.invoice_id = int( '20'+today_string + '00' + str(next_invoice_number))
+				self.invoice_id = int( '30'+today_string + '00' + str(next_invoice_number))
 			elif (next_invoice_number < 100):
-				self.invoice_id = int( '20'+today_string + '0' + str(next_invoice_number))
+				self.invoice_id = int( '30'+today_string + '0' + str(next_invoice_number))
 			else:
-				self.invoice_id = int( '20'+today_string + str(next_invoice_number))
-
-			# self.invoice_id = int( '20'+today_string + str(next_invoice_number))
+				self.invoice_id = int( '30'+today_string + str(next_invoice_number))
 			
 		super(retail_invoice, self).save(*args, **kwargs)
 
@@ -111,15 +143,10 @@ class invoice_line_item(models.Model):
 	retail_invoice=models.ForeignKey(retail_invoice, related_name='invoiceLineItem_retailInvoice')
 	product=models.ForeignKey(Product,blank=True, null=True, related_name='invoiceLineItem_retailSales_master_product', \
 							on_delete=models.SET_NULL)
-	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
 	product_hsn=models.CharField(db_index=True, max_length=20, blank=True, null=True)
 	
-	# vat_type=models.CharField(max_length =15)
-	# tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
-	# Add Unit ID (Not FK) for unit.
-	# unit=models.CharField(max_length=20)
 	unit_id = models.BigIntegerField(blank=True, null=True)
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
@@ -140,9 +167,6 @@ class invoice_line_item(models.Model):
 
 	# discount_type=models.PositiveSmallIntegerField(default=0)
 	discount_amount=models.DecimalField(max_digits=8, decimal_places=2, default=0)
-
-	# discount2_type=models.PositiveSmallIntegerField(default=0)
-	# discount2_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
 
 	cgst_percent=models.DecimalField(max_digits=4, decimal_places=2, default=0)
 	sgst_percent=models.DecimalField(max_digits=4, decimal_places=2, default=0)
@@ -181,7 +205,7 @@ class sales_return(models.Model):
 	id=models.BigAutoField(primary_key=True)
 	invoice=models.ForeignKey(retail_invoice,blank=True, null=True,\
 						related_name='retailSalesReturn_retailInvoice', on_delete=models.SET_NULL)
-	return_id = models.PositiveIntegerField(db_index=True)
+	return_id = models.BigIntegerField(db_index=True)
 	date=models.DateField(default=dt.date.today)
 	customer=models.ForeignKey(retail_customer,blank=True, null=True,\
 						related_name='retailSalesReturn_retailsales_master_retailCustomer', on_delete=models.SET_NULL)
@@ -216,17 +240,49 @@ class sales_return(models.Model):
 	#the save method is overriden to give unique invoice ids, slug and customer_name
 	def save(self, *args, **kwargs):
 		if not self.id:
-			tenant=self.tenant.key
-			today=dt.date.today()
-			today_string=today.strftime('%y%m%d')
-			next_return_number='001'
-			last_return=type(self).objects.filter(tenant=self.tenant).\
-						filter(return_id__contains=today_string).order_by('return_id').last()
-			if last_return:
-				last_return_id=str(last_return.return_id)
-				last_return_number=int(last_return_id[6:])
-				next_return_number='{0:03d}'.format(last_return_number + 1)
-			self.return_id=int(today_string + next_return_number)
+			# tenant=self.tenant.key
+			# today=dt.date.today()
+			# today_string=today.strftime('%y%m%d')
+			# next_return_number='001'
+			# last_return=type(self).objects.filter(tenant=self.tenant).\
+			# 			filter(return_id__contains=today_string).order_by('return_id').last()
+			# if last_return:
+			# 	last_return_id=str(last_return.return_id)
+			# 	last_return_number=int(last_return_id[6:])
+			# 	next_return_number='{0:03d}'.format(last_return_number + 1)
+			# self.return_id=int(today_string + next_return_number)
+			today_date = datetime.strptime(self.date,'%Y-%m-%d')
+			today_string = today_date.strftime('%y%m%d')
+			if (today_date.month >3):
+				this_year_string = today_string[:2]
+				this_year_int = int(this_year_string)
+				next_year_int = this_year_int+1
+				next_year_string = str(next_year_int)
+				today_string = this_year_string + next_year_string
+			else:
+				next_year_string = today_string[:2]
+				next_year_int = int(next_year_string)
+				this_year_int = next_year_int-1
+				this_year_string = str(this_year_int)
+				today_string = this_year_string + next_year_string
+
+			mon = '{:02d}'.format(today_date.month)
+			today_string+= mon
+
+			next_invoice_number = 1
+			last_invoice=type(self).objects.filter(tenant=self.tenant).\
+					filter(return_id__contains='35'+today_string).order_by('return_id').last()
+			
+			if last_invoice:
+				last_invoice_id=str(last_invoice.return_id)
+				last_invoice_number=int(last_invoice_id[8:])
+				next_invoice_number = last_invoice_number + 1
+			if (next_invoice_number < 10):
+				self.return_id = int( '35'+today_string + '00' + str(next_invoice_number))
+			elif (next_invoice_number < 100):
+				self.return_id = int( '35'+today_string + '0' + str(next_invoice_number))
+			else:
+				self.return_id = int( '35'+today_string + str(next_invoice_number))
 			
 		super(sales_return, self).save(*args, **kwargs)
 

@@ -282,6 +282,9 @@ def RegisterView(request):
 
                     create_accountChart(new_tenant,"Sales Return","Direct Revenue", "Parent Sales Return Accounts", "sales_return",\
                         period, ledgername=None, is_first_year=True, is_contra=True)
+
+                    create_accountChart(new_tenant,"Owner's Capital/Equity",\
+                        "Equity/Owner/Capital", "Owner's Capital/Equity Account", "owncap", period, ledgername=None, is_first_year=True)
                     
                     dimension=create_dimension(new_tenant, "Number", "For numbers")
                     create_unit(new_tenant, dimension, "Number", "No", 1)
