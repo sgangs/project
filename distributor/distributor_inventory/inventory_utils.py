@@ -9,6 +9,7 @@ from django.utils.translation import ugettext
 
 from .models import inventory_ledger, warehouse_valuation, Inventory, initial_inventory
 from distributor_master.models import Product, Warehouse
+from distributor_account.models import account_inventory,accounting_period, account_year_inventory
 
 def create_new_inventory_ledger(product, warehouse, transaction_type, date, quantity, purchase_price, mrp,
  						transaction_bill_id, tenant): 
@@ -39,7 +40,7 @@ def create_new_inventory_ledger(product, warehouse, transaction_type, date, quan
 #     return row
 
 
-def opening_inventory_upload_save(excel_data, this_tenant):
+def opening_inventory_upload_save(excel_data, this_tenant, check_type = 'name'):
 	row_no=[]
 	objects_opening = []
 	objects_inventory = []
@@ -52,27 +53,73 @@ def opening_inventory_upload_save(excel_data, this_tenant):
 	for i in range(2, num_rows):
 		row = sheet.row_values(i)
 		print(row)
-		if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "" or row[2] == None or row[2] == "") :
-			row_no.append(i)
+		if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "" or row[1] == 0 or row[1] == "0" or row[2] == None or row[2] == "") :
+			row_no.append(i+1)
 		else:
-			row[0]=Product.objects.for_tenant(this_tenant).get(name=row[0])
-			if (row[3] == None or row[3] == ""):
-				row[3] = 0
-			if (row[4] == None or row[4] == ""):
-				row[4] = 0
-			objects_opening.append(initial_inventory(product=row[0], quantity=row[1],purchase_price=row[2],\
-					tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
-			objects_inventory.append(Inventory(product=row[0], quantity_available=row[1], purchase_quantity=row[1],\
-					purchase_price=row[2],tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
-			total_valuation+=row[2]*row[1]
+			if (check_type == 'name'):
+				try:
+					row[0]=Product.objects.for_tenant(this_tenant).get(name=row[0])
+					if (row[3] == None or row[3] == ""):
+						row[3] = 0
+					if (row[4] == None or row[4] == ""):
+						row[4] = 0
+					objects_opening.append(initial_inventory(product=row[0], quantity=row[1],purchase_price=row[2],\
+							tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
+					objects_inventory.append(Inventory(product=row[0], quantity_available=row[1], purchase_quantity=row[1],\
+							purchase_price=row[2],tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
+					total_valuation+=row[2]*row[1]
+				except:
+					row_no.append(i+1)
+			elif (check_type == 'sku'):
+				try:
+					row[0]=Product.objects.for_tenant(this_tenant).get(sku=row[0])
+					if (row[3] == None or row[3] == ""):
+						row[3] = 0
+					if (row[4] == None or row[4] == ""):
+						row[4] = 0
+					objects_opening.append(initial_inventory(product=row[0], quantity=row[1],purchase_price=row[2],\
+							tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
+					objects_inventory.append(Inventory(product=row[0], quantity_available=row[1], purchase_quantity=row[1],\
+							purchase_price=row[2],tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
+					total_valuation+=row[2]*row[1]
+				except:
+					row_no.append(i+1)
+			# if (row[3] == None or row[3] == ""):
+			# 	row[3] = 0
+			# if (row[4] == None or row[4] == ""):
+			# 	row[4] = 0
+			# objects_opening.append(initial_inventory(product=row[0], quantity=row[1],purchase_price=row[2],\
+			# 		tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
+			# objects_inventory.append(Inventory(product=row[0], quantity_available=row[1], purchase_quantity=row[1],\
+			# 		purchase_price=row[2],tentative_sales_price=row[3], mrp=row[4], warehouse=warehouse, tenant=this_tenant))
+			# total_valuation+=row[2]*row[1]
 
 	with transaction.atomic():
 		try:
 			initial_inventory.objects.bulk_create(objects_opening)
 			Inventory.objects.bulk_create(objects_inventory)
+			total_valuation = Decimal(total_valuation)
 			warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-			warehouse_valuation_change.valuation+=Decimal(total_valuation)
+			warehouse_valuation_change.valuation+=total_valuation
 			warehouse_valuation_change.save()
+			inventory_acct = account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
+			current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+			inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
+				get(account_inventory=inventory_acct, accounting_period = current_period)
+			# try:
+			total_valuation = Decimal(total_valuation)
+			inventory_acct_year.first_debit+=total_valuation
+			# except:
+			# 	inventory_acct_year.first_debit=total_valuation
+			# try:
+			inventory_acct_year.opening_debit+=total_valuation
+			# except:
+			# 	inventory_acct_year.opening_debit=total_valuation
+			# try:
+			inventory_acct_year.current_debit+=total_valuation
+			# except:
+			# 	inventory_acct_year.current_debit=total_valuation
+			inventory_acct_year.save()
 		except:
 			transaction.rollback()
 		# print(row)

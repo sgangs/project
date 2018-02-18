@@ -403,7 +403,6 @@ def all_invoices(request):
 		page_no = request.GET.get('page_no')
 		response_data={}
 		filter_data={}
-		print(calltype)
 		if (calltype == 'all_invoices'):
 			invoices=sales_invoice.objects.for_tenant(this_tenant).all().values('id','invoice_id', \
 				'date','customer_name','total', 'amount_paid', 'payable_by', 'return_value').order_by('-date', '-invoice_id')[:300]
@@ -1612,9 +1611,11 @@ def sales_return_save(request):
 						adjustment_invoice.return_value = adjustment_invoice.return_value + total
 						adjustment_invoice.save()
 
-					customer_gst = invoice.customer.gst
-					customer_state = invoice.customer.state
-
+					customer = invoice.customer
+					customer_gst = customer.gst
+					customer_state = customer.state
+					customer_name = invoice.customer_name
+					
 					if (invoice.warehouse_state == invoice.customer.state):
 						is_igst = False
 					else:
@@ -1630,7 +1631,7 @@ def sales_return_save(request):
 						new_invoice.return_type = 2
 					new_invoice.date = date
 					
-					new_invoice.customer=invoice.customer
+					new_invoice.customer=customer
 					new_invoice.customer_name=invoice.customer_name
 					new_invoice.customer_address=invoice.customer_address
 					new_invoice.customer_state=customer_state
@@ -1662,8 +1663,6 @@ def sales_return_save(request):
 					cgst_total=0
 					sgst_total=0
 					igst_total=0
-
-					customer_gst=invoice.customer.gst
 
 					#Does this tenant maintain inventory?
 					maintain_inventory=this_tenant.maintain_inventory
@@ -1774,10 +1773,8 @@ def sales_return_save(request):
 									new_inventory_ledger.transaction_bill_id=new_invoice.return_id
 									new_inventory_ledger.tenant=this_tenant
 									new_inventory_ledger.save()
-
 						line_item.quantity_returned+=original_quantity
 						line_item.save()
-
 						LineItem = return_line_item()
 						LineItem.sales_return = new_invoice
 						LineItem.product= product
@@ -1883,7 +1880,7 @@ def sales_return_save(request):
 						new_journal_entry(this_tenant, journal, igst_total, account, 1, date)
 						
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
-					new_journal_entry(this_tenant, journal, total, account, 2, date)
+					new_journal_entry(this_tenant, journal, total, account, 2, date, customer_name, customer.id)
 					
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
@@ -1898,7 +1895,6 @@ def sales_return_save(request):
 						new_account.credit_amount=total
 						new_account.tenant=this_tenant
 						new_account.save()
-					
 					if (debit != credit):
 						raise IntegrityError
 
@@ -1946,7 +1942,6 @@ def sales_return_save(request):
 					response_data['invoice_id']=new_invoice.id
 
 				except Exception as err:
-					print(err)
 					response_data  = err.args 
 					transaction.rollback()
 					# except:

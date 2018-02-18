@@ -31,6 +31,43 @@ $('.apply_reset').click(function(){
     load_invoices(1);
 });
 
+// function speak_text(meassage){
+//     const artyom = new Artyom();
+//     function startOneCommandArtyom(){
+//         artyom.fatality();// use this to stop any of
+
+//         setTimeout(function(){// if you use artyom.fatality , wait 250 ms to initialize again.
+//             artyom.initialize({
+//                 lang:"en-GB",// A lot of languages are supported. Read the docs !
+//                 continuous:false,// recognize 1 command and stop listening !
+//                 listen:false, // Start recognizing
+//                 debug:false, // Show everything in the console
+//                 speed:1 // talk normally
+//             }).then(function(){
+//                 console.log("Ready to work !");
+//             });
+//         },250);
+//     }
+    
+//     artyom.say(meassage,{
+//         onStart:function(){
+//             // console.log("The text is being readed");
+//         },
+//         onEnd:function(){
+//             // console.log("Well, that was all. Try with a longer text !");
+//         }
+//     });
+// }
+
+// function create_speech_msg(meassage){
+//     var msg = new SpeechSynthesisUtterance(message);
+//     var voices = window.speechSynthesis.getVoices();
+//     msg.voice = voices[7];
+//     msg.rate = 0.8;
+//     return msg;
+// }
+
+
 function apply_navbutton(jsondata, page_no){
     $('.navbtn').remove()
     for (i =jsondata['start']+1; i<=jsondata['end']; i++){
@@ -655,7 +692,14 @@ $('.register').click(function(e) {
             count++
         }
     });
-
+    // speak_text("Are you sure you want to finalize payment details? Total Payments to be recorded is Rupees"
+    //             +total_payment_check+" and total number of invoices against which payment is made is "+count)
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to finalize payment details? Total Payments to be recorded is Rupees"
+    //             +total_payment_check+" and total number of invoices against which payment is made is "+count);
+    // var voices = window.speechSynthesis.getVoices();
+    // // console.log(voices);
+    // msg.voice = voices[52];
+    // window.speechSynthesis.speak(msg);
     swal({
         title: "Are you sure?",
         text: "<p>Are you sure you want to finalize payment details?</p><p>Total Payments to be recorded: <b>Rs."
@@ -685,7 +729,11 @@ $('.generate_payment').click(function(e) {
             count++
         }
     });
-
+    // speak_text("Are you sure you want to generate payment for future clerance? Total Payments to be recorded is Rupees"
+    //             +total_payment_check+" and total number of invoices against which payment is made is "+count)
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to generate payment for future clerance? Total Payments to be recorded is Rupees"
+    //             +total_payment_check+" and total number of invoices against which payment is made is "+count);
+    // window.speechSynthesis.speak(msg);
     swal({
         title: "Are you sure?",
         text: "<p>Are you sure you want to generate payment for future clerance?</p><p>Total Payments to be recorded: <b>Rs."
@@ -869,6 +917,11 @@ $('.finalize_pay').click(function(e) {
             count++
         }
     });
+    // speak_text("Are you sure you want to finalize payment details? Total Payments to be recorded is Rupees"
+    //             +total_payment_check+" and total number of payments being finalized is"+count)
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to finalize payment details? Total Payments to be recorded is Rupees"
+    //             +total_payment_check+" and total number of payments being finalized is"+count);
+    // window.speechSynthesis.speak(msg);
     swal({
         title: "Are you sure?",
         text: "<p>Are you sure you want to finalize payment details?</p><p>Total Payments to be recorded: <b>Rs."
@@ -899,6 +952,11 @@ $('.delete_pay').click(function(e) {
             count++
         }
     });
+    // speak_text("Are you sure you want to delete payment details? Total Payments to be deleted is Rupees"
+    //             +total_payment_check+" and total number of payments being deleted is"+count)
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to delete payment details? Total Payments to be deleted is Rupees"
+    //             +total_payment_check+" and total number of payments being deleted is"+count);
+    // window.speechSynthesis.speak(msg);
     swal({
         title: "Are you sure?",
         text: "<p>Are you sure you want to delete payment details?</p><p>Total Payments to be deleted: <b>Rs."
@@ -1086,9 +1144,12 @@ $('.customerfinalize').change(function() {
     }
 });
 
-
 $('.finalizebtn').click(function(){
     // post_data("Finalize");
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to finalize and save the invoice?"+
+    //     " Note that you cannot edit this invoice once finalized.");
+    // window.speechSynthesis.speak(msg);
+    // speak_text("Are you sure you want to finalize and save the invoice? Note that you cannot edit this invoice once finalized.");
     swal({
         title: "Are you sure?",
         text: "<p>Are you sure you want to finalize and save the invoice?</p><p>Note that you cannot edit this invoice once finalized.</p>",
@@ -1109,6 +1170,11 @@ $('.finalizebtn').click(function(){
 
 $('.deletebtn').click(function(){
     // post_data("Delete");
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to delete the invoice? Note that you cannot edit or view this invoice once deleted. "+
+    //     "No record of this invoice shall exist.");
+    // window.speechSynthesis.speak(msg);
+    // speak_text("Are you sure you want to delete the invoice? Note that you cannot edit or view this invoice once deleted. "+
+    //     "No record of this invoice shall exist.");
     swal({
         title: "Are you sure?",
         text: "<p>Are you sure you want to delete the invoice?</p><p>Note that you cannot edit or view this invoice once deleted. "+
@@ -1130,9 +1196,14 @@ $('.deletebtn').click(function(){
 
 $('.cancelbtn').click(function(){
     // post_data("Delete");
+    // speak_text("Are you sure you want to cancel the invoice? Note that you cannot edit this invoice once cancelled. "+
+    //     "You can see the list of canceled invoices. ");
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to cancel the invoice? Note that you cannot edit this invoice once cancelled. "+
+    //     "You can see the list of canceled invoices. ");
+    // window.speechSynthesis.speak(msg);
     swal({
         title: "Are you sure?",
-        text: "<p>Are you sure you want to cancel the invoice?</p><p>Note that you cannot edit this invoice once deleted. "+
+        text: "<p>Are you sure you want to cancel the invoice?</p><p>Note that you cannot edit this invoice once cancelled. "+
                 "You can see the list of canceled invoices. </p>",
         type: "warning",
         showCancelButton: true,

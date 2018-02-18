@@ -716,17 +716,50 @@ def account_journal_entries_view(request, pk_detail):
 	extension="base.html"
 	return render(request, 'account/account_journal.html',{'extension':extension, 'pk':pk_detail})
 
-@api_view(['GET'],)
+@api_view(['GET', 'POST'])
 def account_journal_entries_data(request):
 	this_tenant = request.user.tenant
-	calltype = request.GET.get('calltype')
-	account_pk = request.GET.get('account_pk')
 	response_data = {}
-	period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
-	journals = Journal.objects.for_tenant(this_tenant).filter(date__range = [period.start, period.end])
-	entries = journal_entry.objects.filter(account=account_pk, journal__in = journals).select_related('journal')\
-		.values('id','transaction_type', 'value', 'journal__id', 'journal__date', 'journal__remarks').order_by('journal__date')
-	response_data['object'] = list(entries)
+	if (request.method == 'GET'):
+		calltype = request.GET.get('calltype')
+		account_pk = request.GET.get('account_pk')
+		period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
+		journals = Journal.objects.for_tenant(this_tenant).filter(date__range = [period.start, period.end])
+		entries = journal_entry.objects.filter(account=account_pk, journal__in = journals).select_related('journal')\
+			.values('id','transaction_type', 'value', 'journal__id', 'journal__date', 'journal__remarks', 'journal__transaction_bill_id')\
+			.order_by('journal__date')
+		response_data['object'] = list(entries)
+	elif(request.method == 'POST'):
+		calltype = request.data.get('calltype')
+		items = json.loads(request.data.get('items')) 
+		# print(items)
+		for item in items:
+			journal_pk = item['journal_pk']
+			journal = Journal.objects.for_tenant(this_tenant).get(id = journal_pk)
+			transactions = journal_entry.objects.filter(journal = journal)
+			date = journal.date
+			period = accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
+			try:
+				with transaction.atomic():
+					for trn in transactions:
+						account = trn.account
+						trn_type = trn.transaction_type
+						trn_value = trn.value
+						account_year_selected = account_year.objects.for_tenant(this_tenant).get(account = account, accounting_period = period)
+						if (trn_type == 1):
+							account_year_selected.current_debit-=trn_value
+						else:
+							account_year_selected.current_credit-=trn_value
+				
+						account_year_selected.save()
+						# print(account_year_selected.current_credit)
+						# print(account_year_selected.current_debit)
+						transactions.delete()
+					journal.delete()
+			except Exception as err:
+				response_data = err
+				transaction.rollback()
+
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 

@@ -122,12 +122,37 @@
     <script src="{% static 'landing/sales_30days_chart.js' %}"></script>
     <script src="{% static 'landing/invoiced_payment_chart.js' %}"></script>
     <!-- <script src="{% static 'landing/monthly_sales_dimple.js' %}"></script> -->
+
+    <!-- Artyom is used to synthesize speech-->
+    <!-- <script src="{% static 'artyom.window.min.js' %}"></script> -->
+    
+    <!-- <script type="text/javascript">
+        first_name = "{{request.user.first_name}}" 
+        last_name = "{{request.user.last_name}}"
+        const artyom = new Artyom();
+        function startOneCommandArtyom(){
+            artyom.fatality();// use this to stop any of
+
+            setTimeout(function(){// if you use artyom.fatality , wait 250 ms to initialize again.
+                 artyom.initialize({
+                    lang:"en-GB",// A lot of languages are supported. Read the docs !
+                    continuous:false,// recognize 1 command and stop listening !
+                    listen:true, // Start recognizing
+                    debug:true, // Show everything in the console
+                    speed:1 // talk normally
+                }).then(function(){
+                    console.log("Ready to work !");
+                });
+            },250);
+        }
+        artyom.say("Hi, "+ first_name+" "+last_name+".",{});
+    </script> -->
     <style type="text/css">
         body{
         background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
         /*background-image: linear-gradient(120deg, #d42426 0%, #966465 100%);*/
         /*color:#034a63 !important;*/
         }
-    </style>
+    ]</style>
 {% endblock %}
 

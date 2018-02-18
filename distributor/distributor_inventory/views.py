@@ -497,6 +497,8 @@ def import_opening_inventory(request):
 			f = request.FILES['file']
 			data['name'] = f.name
 			data['size'] = f.size / 1024
+			form_data = form.cleaned_data
+			identify_type = form_data['Identify_your_product_with']
 			if 'xls' not in f.name and 'xlsx' not in f.name:
 				data['error'] = 2
 				data['info'] = 'file type must be excel!'
@@ -506,7 +508,7 @@ def import_opening_inventory(request):
 				data['info'] = 'file content is empty!'
 			# wb = xlrd.open_workbook(inventory)
 			else:
-				rows = opening_inventory_upload_save(f, this_tenant)
+				rows = opening_inventory_upload_save(f, this_tenant, identify_type)
 				if (rows):
 					str1 = ' ,'.join(str(e) for e in rows)
 					messages.add_message(request, messages.WARNING, 'There was error in the following rows: .'+str1)
@@ -515,7 +517,8 @@ def import_opening_inventory(request):
 					messages.add_message(request, messages.SUCCESS, 'Data uploaded successfully.')
 				return redirect('inventory:opening_inventory')
 		else:
-			return HttpResponseBadRequest()
+			messages.add_message(request, messages.WARNING, 'There was error ')
+			return render(request,'inventory/upload_opening_inventory.html',{'form': form,})
 	else:
 		form = UploadFileForm()
 	return render(request,'inventory/upload_opening_inventory.html',{'form': form,})

@@ -649,9 +649,39 @@ function add_row(){
 }
 
 
+// function speak_text(meassage){
+//     const artyom = new Artyom();
+//     function startOneCommandArtyom(){
+//         artyom.fatality();// use this to stop any of
+
+//         setTimeout(function(){// if you use artyom.fatality , wait 250 ms to initialize again.
+//             artyom.initialize({
+//                 lang:"en-GB",// A lot of languages are supported. Read the docs !
+//                 continuous:false,// recognize 1 command and stop listening !
+//                 listen:false, // Start recognizing
+//                 debug:false, // Show everything in the console
+//                 speed:1
+//             }).then(function(){
+//                 console.log("Ready to work !");
+//             });
+//         },250);
+//     }
+    
+//     artyom.say(meassage,{
+//         onStart:function(){
+//             // console.log("The text is being readed");
+//         },
+//         onEnd:function(){
+//             // console.log("Well, that was all. Try with a longer text !");
+//         }
+//     });
+// }
 
 
 $('.submit').click(function(e) {
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to generate a new invoice? Note that this invoice can be edited unless it's finalized."+
+    //     " However, you cannot accept payment until you finalize this invoice. ");
+    // window.speechSynthesis.speak(msg);
     swal({
         title: "Are you sure?",
         text: "Are you sure you want to generate a new sales invoice?",
@@ -670,9 +700,13 @@ $('.submit').click(function(e) {
 });
 
 $('.submit_final').click(function(e) {
+    // speak_text("Are you sure you want to create and finalize a new invoice? Note that you cannot edit this invoice once finalized.");
+    // var msg = new SpeechSynthesisUtterance("Are you sure you want to create and finalize a new invoice?"+
+    //         " Note that you cannot edit this invoice once finalized.");
+    // window.speechSynthesis.speak(msg);
     swal({
         title: "Are You Sure To Finalize?",
-        text: "Are you sure you want to finalize a new sales invoice?<p>Note that it cannot be edited</p>",
+        text: "Are you sure you want to create and finalize a new sales invoice?<p>Note that you cannot edit this invoice once finalized.</p>",
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
@@ -688,6 +722,7 @@ $('.submit_final').click(function(e) {
 });
 
 function reconfirm() {
+    // speak_text("Please reconfirm you want to finalize this invoice.");
     swal({
         title: "Please Reconfirm.",
         text: "<p>Are you sure you want to finalize a new sales invoice?</p><p>Note that it cannot be edited</p>",

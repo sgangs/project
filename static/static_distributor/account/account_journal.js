@@ -37,17 +37,23 @@ function load_journals(){
                     "<td>"+this.journal__remarks+"</td>"+
                     "<td>"+this.value+"</td>"+
                     "<td></td>"+
+                    "<td><input type='checkbox'></td>"+
+                    "<td hidden='true'>"+this.journal__transaction_bill_id+"</td>"+
+                    "<td hidden='true'>"+this.journal__id+"</td>"+
                     "</tr>");
                 }
                 else{
                     $('#journal_table').append("<tr class='data' align='center'>"+
-                    "<td hidden = 'true'>"+this.id+"</td>"+
+                    "<td hidden='true'>"+this.id+"</td>"+
                     // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+date+"</td>"+
                     "<td><a href="+url+" class='new_link'>"+date+"</td>"+
                     "<td align='right'>"+transaction_types[this.transaction_type]+"</td>"+
                     "<td>"+this.journal__remarks+"</td>"+
                     "<td></td>"+
                     "<td>"+this.value+"</td>"+
+                    "<td><input type='checkbox'></td>"+
+                    "<td hidden='true'>"+this.journal__transaction_bill_id+"</td>"+
+                    "<td hidden='true'>"+this.journal__id+"</td>"+
                     "</tr>");
                 }
             })
@@ -59,65 +65,84 @@ function load_journals(){
     });
 }
 
-// $('.apply_filter').click(function(e) {
-//     var customers=[];
-//     $.each($(".customer_filter option:selected"), function(){
-//         vendorid=$(this).data('id')
-//         var customer={
-//             customerid: customerid
-//         };
-//         customers.push(customer);
-//     });
-//     if (unpaid_receipts){
-//         sent_with='unpaid_receipts'
-//     }
-//     else if(all_receipts){
-//         sent_with='all_receipts'
-//     }
-//     else if(overdue_receipts){
-//         sent_with='overdue_receipts'
-//     }
-//     invoice_no=$('.invoice_no').val()
+$('.deletebtn').click(function(e) {
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure you want to delete the selected journals?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete the journals!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){delete_data()},600)            
+        }
+    })
+});
 
-//     $.ajax({
-//         url : "listall/", 
-//         type: "GET",
-//         data:{ calltype:"apply_filter",
-//             sent_with: sent_with,
-//             start: startdate,
-//             end: enddate,
-//             invoice_no: invoice_no,
-//             customers: JSON.stringify(customers),
-//             csrfmiddlewaretoken: csrf_token},
-//         dataType: 'json',
-//         // handle a successful response
-//         success : function(jsondata) {
-//             $("#receipt_table .data").remove();
-//             $('#filter').modal('hide');
-//             $.each(jsondata, function(){
-//                 var url='/purchase/receipt/detailview/'+this.id+'/'
-//                 date=this.date
-//                 date=date.split("-").reverse().join("-")
-//                 $('#receipt_table').append("<tr class='data' align='center'>"+
-//                 "<td hidden='true'>"+url+"</td>"+
-//                 "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
-//                 "<td>"+this.supplier_invoice+"</td>"+
-//                 "<td>"+date+"</td>"+
-//                 "<td>"+$.trim(this.payable_by)+"</td>"+
-//                 "<td>"+this.vendor_name+"</td>"+
-//                 "<td>"+this.total+"</td>"+
-//                 "<td>"+this.amount_paid+"</td>"+
-//                 "</tr>");
-//             })
-//         },
-//         // handle a non-successful response
-//         error : function() {
-//             swal("Oops...", "No purchase receipt exist.", "error");
-//         }
-//     });
+function delete_data(){
+    var items=[];
+    var proceed=true;    
+    
+    $("#journal_table tr.data").each(function() {
+        // console.log(proceed);
+        var is_selected = $(this).find('td:nth-child(7) input').is(":checked");
+        if (is_selected){
+            // console.log("here");
+            var entry_pk = $(this).find('td:nth-child(1)').html();
+            var trn_bill_no = $(this).find('td:nth-child(8)').html();
+            var journal_pk = $(this).find('td:nth-child(9)').html();
+            if (isNaN(trn_bill_no) || trn_bill_no == null || trn_bill_no == 'null' || trn_bill_no == undefined || trn_bill_no == 'undefined'){
+                $(this).closest('tr').removeClass("has-error");
+                var item = {
+                    entry_pk : entry_pk,
+                    journal_pk: journal_pk
+                };
+                items.push(item);
+            }
+            else{
+                proceed=false;
+                swal({
+                    title: "Oops..",
+                    text: "Journal entry made against sales/purchase/return/payment/collection cannot be deleted via this option."+
+                    " Kindly go to the respective sections to delete them.",
+                    type: "error",
+                    allowOutsideClick: true,
+                    timer:2500,
+                });
+                $(this).closest('tr').addClass("has-error");
+            }
+        }
+        
+    });
+    console.log(items)
+    if (proceed == true){
+        $.ajax({
+        url : "/account/journallist/account-list/", 
+        type: "POST",
+        data:{ calltype:"delete_entries",
+            items: JSON.stringify(items),
+            csrfmiddlewaretoken: csrf_token},
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            swal("Hooray", "Selected journals have been deleted/", "success");
+            setTimeout(location.reload(true),1000);
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "Could not delte the journal data. Kindly note that you cannot delete any"+
+                " journal data related to vendors/customers.", "error");
+        }
+    });
+    }
 
-// });
 
+    
+}
 
 
 });
