@@ -31,12 +31,13 @@ from .models import *
 from .excel_download import *
 
 # @login_required
-@api_view(['GET','POST'],)
+@api_view(['GET'],)
 def get_product(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
 		q = request.GET.get('term', '')
 		calltype=request.GET.get('calltype')
+		maintain_inventory = this_tenant.maintain_inventory
 		if (calltype == 'product_id'):
 			prod_id=request.GET.get('productid')
 			product = Product.objects.for_tenant(this_tenant).get(id=prod_id)
@@ -47,6 +48,7 @@ def get_product(request):
 			item_json['label'] = product.name
 			item_json['unit_id'] = product.default_unit.id
 			item_json['unit'] = product.default_unit.symbol
+			item_json['unit_multiplier'] = product.default_unit.multiplier
 			try:
 				item_json['cgst'] = item.cgst.percentage
 			except:
@@ -59,6 +61,7 @@ def get_product(request):
 				item_json['igst'] = item.igst.percentage
 			except:
 				item_json['igst'] = 0
+			item_json['inventory'] = maintain_inventory
 			response_data.append(item_json)
 			data = json.dumps(response_data)
 		else:
@@ -71,6 +74,8 @@ def get_product(request):
 				item_json['label'] = item.name
 				item_json['unit_id'] = item.default_unit.id
 				item_json['unit'] = item.default_unit.symbol
+				item_json['inventory'] = maintain_inventory
+				item_json['unit_multiplier'] = item.default_unit.multiplier
 				# item_json['vat_type'] = item.vat_type
 				try:
 					item_json['cgst'] = item.cgst.percentage
@@ -162,17 +167,28 @@ def get_product_data_barcode(request):
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
+# @api_view(['GET'],)
+# def get_product_inventory(request):
+# 	this_tenant=request.user.tenant
+# 	if request.method == "GET":
+# 		product_id = request.GET.get('product_id')
+# 		warehouse_id = request.GET.get('warehouse_id')
+# 		product_quantity=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
+# 					product=product_id, warehouse=warehouse_id).values('purchase_price', 'tentative_sales_price', 'mrp').\
+# 					annotate(available=Sum('quantity_available')))
+# 	jsondata = json.dumps(product_quantity,  cls=DjangoJSONEncoder)
+# 	return HttpResponse(jsondata)
+
 
 @api_view(['GET'],)
 def product_inventory_details(request):
 	this_tenant=request.user.tenant
-	if request.is_ajax():
+	if request.method == "GET":
 		product_id = request.GET.get('product_id')
 		warehouse_id = request.GET.get('warehouse_id')
 		product_quantity=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
 					product=product_id, warehouse=warehouse_id).values('purchase_price','tentative_sales_price','mrp').\
 					annotate(available=Sum('quantity_available')))
-	
 	jsondata = json.dumps(product_quantity,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
@@ -1022,9 +1038,9 @@ def payment_list(request):
 def payment_list_view(request):
 	return render(request,'purchase/payment_list.html', {'extension': 'base.html'})
 
-@login_required
-def debit_note_return_view(request):
-	return render(request,'purchase/debit_note_return.html', {'extension': 'base.html'})
+# @login_required
+# def debit_note_return_view(request):
+# 	return render(request,'purchase/debit_note_return.html', {'extension': 'base.html'})
 
 @api_view(['POST'],)
 def delete_purchase(request):
@@ -1216,212 +1232,6 @@ def delete_purchase(request):
 				transaction.rollback()
 		
 		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
-		return HttpResponse(jsondata)
-
-
-@api_view(['GET','POST'],)
-def debit_note_save(request):
-	if request.method == 'POST':
-		calltype = request.POST.get('calltype')
-		response_data = {}
-		this_tenant=request.user.tenant
-		if (calltype == 'save'):
-			with transaction.atomic():
-				try:
-					vendor_id = request.data.get('vendor')
-					warehouse_id=request.data.get('warehouse')
-					credit_note_no=request.data.get('credit_note_no')
-					date=request.data.get('date')
-					subtotal=Decimal(request.data.get('subtotal'))
-					taxtotal=Decimal(request.data.get('taxtotal'))
-					total=Decimal(request.data.get('total'))
-					bill_data = json.loads(request.data.get('bill_details'))
-
-					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
-					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
-
-					vendor_name=vendor.name
-					vendor_address=vendor.address_1+", "+vendor.address_2
-					vendor_state=vendor.state
-					vendor_city=vendor.city
-					vendor_pin=vendor.pin
-					
-					ware_address=warehouse.address_1+", "+warehouse.address_2
-					ware_state=warehouse.state
-					ware_city=warehouse.city
-					ware_pin=warehouse.pin
-					
-					new_debit_note=debit_note()
-					new_debit_note.tenant=this_tenant
-
-					new_debit_note.date = date
-					
-					new_debit_note.vendor=customer
-					new_debit_note.vendor_name=vendor_name
-					new_debit_note.vendor_address=vendor_address
-					new_debit_note.vendor_state=vendor_state
-					new_debit_note.vendor_city=vendor_city
-					new_debit_note.vendor_pin=vendor_pin
-
-					new_debit_note.warehouse=warehouse
-					new_debit_note.warehouse_address=ware_address
-					new_debit_note.warehouse_state=ware_state
-					new_debit_note.warehouse_city=ware_city
-					new_debit_note.warehouse_pin=ware_pin
-					
-					new_debit_note.subtotal=subtotal
-					new_debit_note.taxtotal=taxtotal
-					new_debit_note.total = total
-					new_invoice.save()
-					
-					# remarks="Debit Note No: "+str(new_debit_note.note_id)
-					# journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_debit_note.id, trn_type=3)
-					# # debit_note_account = request.data.get('debit_note_account')
-					# account= Account.objects.for_tenant(this_tenant).get(name__exact="Inventory")
-					# new_journal_entry(this_tenant, journal, taxtotal, account, 2, date)
-					# # This has to change.
-					# account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					# new_journal_entry(this_tenant, journal, total, account, 1, date)
-					
-					# debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
-					# credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
-					# if (debit != credit):
-					# 	raise IntegrityError (('Debit and credit value not matching.'))
-
-					products_cost=0
-
-					for data in bill_data:
-						productid=data['product_id']
-						unitid=data['unit_id']
-
-						if is_tax =='true':
-							is_tax=True
-						elif is_tax == 'false':
-							is_tax=False
-						
-						line_taxable_total=Decimal(data['taxable_total'])
-						line_total=Decimal(data['line_total'])
-						product=Product.objects.for_tenant(this_tenant).select_related('tax').get(id=productid)
-								
-						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
-						multiplier=unit.multiplier
-						
-						original_pr=Decimal(data['pr'])
-						original_tsp=Decimal(data['tsp'])
-						original_mrp=Decimal(data['mrp'])
-						pr=original_pr/multiplier
-						tsp=original_tsp/multiplier
-						mrp=original_mrp/multiplier
-
-						original_quantity=int(data['quantity'])
-						
-						quantity=original_quantity*multiplier
-						
-						product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
-								product=productid, warehouse=warehouse, purchase_price = original_pr,\
-								tentative_sales_price=original_tsp, mrp=original_mrp).order_by('purchase_date')
-						quantity_updated=quantity
-						total_purchase_price=0
-						
-						#If maintain inventory, add product back to database. Update the related journal. Also update the warehouse valuation.
-						#Modify the price list json to match purchase format.
-
-						i=0
-						for item in product_list:
-							i+=1
-							if (quantity_updated<1):
-								break
-							original_available=item.quantity_available
-							if (quantity_updated>=original_available):
-								item.quantity_available=0
-								products_cost+=item.purchase_price*original_available
-								item.save()
-								price_list[str(i)]={'date':item.purchase_date, \
-											'quantity':original_available, 'pur_rate':item.purchase_price}
-								total_purchase_price+=original_available*item.purchase_price
-								quantity_updated-=original_available
-								
-							else:
-								item.quantity_available-=quantity_updated
-								products_cost+=item.purchase_price*quantity_updated
-								item.save()
-								price_list[str(i)]={'date':item.purchase_date, \
-											'quantity':quantity_updated, 'pur_rate':item.purchase_price}
-								total_purchase_price+=quantity_updated*item.purchase_price
-								quantity_updated=0								
-						
-						if (quantity_updated>0):
-							raise IntegrityError
-						price_list_json = json.dumps(price_list,  cls=DjangoJSONEncoder)
-
-						LineItem = debit_note_line_item()
-						LineItem.debit_note = new_debit_note
-						LineItem.product= product
-						LineItem.product_name= product.name
-						LineItem.product_sku=product.sku
-						
-						LineItem.cgst_percent=cgst_p
-						LineItem.cgst_value=cgst_v
-						LineItem.sgst_percent=sgst_p
-						LineItem.sgst_value=sgst_v
-						LineItem.igst_percent=igst_p
-						LineItem.igst_value=igst_v
-
-						LineItem.unit=unit.symbol
-						LineItem.unit_multi=unit.multiplier
-						LineItem.quantity=original_quantity
-						
-						LineItem.purchase_price=original_pr
-						LineItem.tentative_sales_price=original_tsp
-						LineItem.mrp=original_mrp
-						LineItem.line_tax=line_taxable_total
-						LineItem.line_total=line_total
-						LineItem.tenant=this_tenant
-						LineItem.save()
-						
-
-						#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
-						#Adjust payment against the receipt. 
-						#Add journal entry for debit note, linking it to debit note and linking it to purchase payment.
-
-						#If maintain inventory
-						for k,v in price_list.items():
-							# new_inventory_ledger=inventory_ledger()
-							# new_inventory_ledger.product=product
-							# new_inventory_ledger.warehouse=warehouse
-							# new_inventory_ledger.transaction_type=5
-							# new_inventory_ledger.date=date
-							# new_inventory_ledger.quantity=v['quantity']
-							# new_inventory_ledger.purchase_price=v['pur_rate']
-							# new_inventory_ledger.transaction_bill_id=new_debit_note.note_id
-							# new_inventory_ledger.tenant=this_tenant
-							# new_inventory_ledger.save()
-
-							create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
-								purchase_price, mrp,new_receipt.receipt_id, this_tenant)
-						
-						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-						warehouse_valuation_change.valuation-=total_purchase_price
-						warehouse_valuation_change.save()
-						
-						if is_tax:
-							new_tax_transaction=tax_transaction()
-							new_tax_transaction.transaction_type=5
-							new_tax_transaction.tax_type="VAT"
-							new_tax_transaction.product=product
-							new_tax_transaction.product_name=product.name
-							new_tax_transaction.tax_percent=product.tax.percentage
-							new_tax_transaction.tax_value=line_total-line_taxable_total
-							new_tax_transaction.transaction_bill_id=new_debit_note.id
-							new_tax_transaction.transaction_bill_no=new_debit_note.note_id
-							new_tax_transaction.date=date
-							new_tax_transaction.tenant=this_tenant
-							new_tax_transaction.save()
-
-				except:
-					transaction.rollback()
-
-		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
 
@@ -1880,5 +1690,20 @@ def vendor_opening_balance(request):
 
 
 @api_view(['GET'],)
+def return_new_inventory(request):
+	return render(request,'purchase/purchase_return.html', {'extension': 'base.html'})
+
+@api_view(['GET'],)
 def debit_note_new_noninventory(request):
 	return render(request,'purchase/debit_note_voucher.html', {'extension': 'base.html'})
+
+@api_view(['GET'],)
+def purchase_receipt_vendor(request):
+	this_tenant=request.user.tenant
+	if request.method == "GET":
+		receipt_no = request.GET.get('receipt_no')
+		vendor_id = request.GET.get('vendor_id')
+		receipt = purchase_receipt.objects.for_tenant(this_tenant).exclude(final_payment_date__isnull=False).\
+			get(supplier_invoice = receipt_no, vendor = vendor_id).values('subtotal', 'cgsttotal', 'sgsttotal', 'igsttotal','total', 'amount_paid',)
+	jsondata = json.dumps(receipt,  cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

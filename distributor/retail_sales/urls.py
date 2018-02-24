@@ -45,4 +45,7 @@ urlpatterns = [
     url(r'^retail-dashboard/data/$', views.retail_dashboard_data, name='retail_dashboard_data'),
 
     url(r'^retail-daily-sales/data/$', views.retail_daily_sales_data, name='retail_daily_sales_data'),
+
+    url(r'^hsn-report/$', views.hsn_report, name='hsn_report'),
+    url(r'^hsn-report/data/$', views.hsn_report_data, name='hsn_report_data'),
 ]

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
@@ -651,7 +651,6 @@ def sales_invoice_delete(request):
 				except Exception as err:
 					response_data['error']  = err.args 
 					transaction.rollback()
-			print(response_data)
 			jsondata = json.dumps(response_data)
 			return HttpResponse(jsondata)
 
@@ -1288,9 +1287,6 @@ def sales_return_save(request):
 					#Change to total_return
 					total=Decimal(request.data.get('total')).quantize(TWOPLACES)
 
-					print(subtotal)
-					print(total)
-
 					# raise IntegrityError(('Try'))
 					
 					sum_total = subtotal+cgsttotal+sgsttotal
@@ -1770,6 +1766,31 @@ def retail_daily_sales_data(request):
 					values('payment_mode_id', 'payment_mode_name').order_by('payment_mode_id', 'payment_mode_name',).annotate(value = Sum('total')))
 		
 		response_data = invoices
+
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+
+@login_required
+def hsn_report(request):
+	extension="base.html"
+	return render (request, 'sales/hsn_report.html',{'extension':extension})
+
+@api_view(['GET'],)
+def hsn_report_data(request):
+	this_tenant=request.user.tenant
+	calltype=request.GET.get('calltype')
+	response_data={}
+	if (calltype == 'apply_filter'):
+		start=request.GET.get('start')
+		end=request.GET.get('end')
+		invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=[start,end]).all()
+		all_items=invoice_line_item.objects.for_tenant(this_tenant).filter(retail_invoice__in = invoices).values('product_hsn').\
+					annotate(taxable_value=Sum('line_before_tax'), total_amount=Sum('line_total'),cgst_amount=Sum('cgst_value'), \
+					igst_amount = Sum('igst_value'), quantities=Sum(F('quantity') * F('unit_multi')) ).\
+					order_by('product_hsn')
+	
+	response_data['object']=list(all_items)
 
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

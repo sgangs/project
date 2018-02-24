@@ -709,7 +709,6 @@ def import_product(request):
 			f = request.FILES['file']
 			data['name'] = f.name
 			data['size'] = f.size / 1024
-			print(data['size'])
 			if 'xls' not in f.name and 'xlsx' not in f.name:
 				data['error'] = 2
 				data['info'] = 'file type must be excel!'

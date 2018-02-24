@@ -220,7 +220,7 @@ class Product(models.Model):
 	# 	ordering = ('name',)
 
 	def __str__(self):
-		return self.name
+		return (self.name +" ("+self.sku+")")
 
 #This is the list of Services
 class Service(models.Model):

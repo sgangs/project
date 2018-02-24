@@ -98,7 +98,6 @@ def inventory_data(request):
 
 	elif (calltype == 'manufacturer products'):
 		manufacturer_id = request.GET.get('manufac_id')
-		print(manufacturer_id)
 		if not manufacturer_id or manufacturer_id == 'null':
 			products=Product.objects.for_tenant(this_tenant).filter(manufacturer__isnull=True)
 		else:
@@ -337,7 +336,6 @@ def inventory_transfer_data(request):
 					new_inventory_transfer.save()
 
 					for data in all_data:
-						print(data)
 						original_qty=data['quantity']
 						product_id=data['product_id']
 						unit_id=data['unit_id']
@@ -422,7 +420,6 @@ def transfer_list(request):
 @user_passes_test_custom(tenant_has_inventory, redirect_namespace='inventory:not_maintained_inventory')
 def transfer_list_data(request):
 	this_tenant=request.user.tenant
-	print('here')
 	if request.method == 'GET':
 		calltype = request.GET.get('calltype')
 		page_no = request.GET.get('page_no')
@@ -599,7 +596,6 @@ def write_pdf_view(request, pk_detail):
 			return redirect('master:product_data')
 
 	except Exception as err:
-		print(err)
 		messages.add_message(request, messages.WARNING, "Barcode for the product doesn't exist")
 		return redirect('master:product_data')
 

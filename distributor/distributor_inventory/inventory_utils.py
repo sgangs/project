@@ -48,11 +48,9 @@ def opening_inventory_upload_save(excel_data, this_tenant, check_type = 'name'):
 	tmp = xlrd.open_workbook(file_contents=excel_data.read())
 	sheet = tmp.sheet_by_index(0)
 	num_rows = sheet.nrows
-	print(num_rows)
 	warehouse=Warehouse.objects.for_tenant(this_tenant).get(default=True)
 	for i in range(2, num_rows):
 		row = sheet.row_values(i)
-		print(row)
 		if (row[0] == None or row[0] == "" or row[1] == None or row[1] == "" or row[1] == 0 or row[1] == "0" or row[2] == None or row[2] == "") :
 			row_no.append(i+1)
 		else:

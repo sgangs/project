@@ -26,9 +26,8 @@ $(document).on('keydown.autocomplete', '.name', function() {
             $(el).closest('tr').find('td:nth-child(1) input').val(ui['item']['id']);
             default_unit=ui['item']['unit']
             $(el).closest('tr').find('td:nth-child(6) .unit').val(ui['item']['unit_id']);
-            $(el).closest('tr').find('td:nth-child(7)').html(unit_multi[ui['item']['unit_id']]);
-            // $(el).closest('tr').find('td:nth-child(18) ').html(vat_type[ui['item']['vat_type']]);
-            // vat_percent=ui['item']['tax']
+            $(el).closest('tr').find('td:nth-child(5)').html(unit_multi[ui['item']['unit_id']]);
+            
             if (is_igst){
                 $(el).closest('tr').find('td:nth-child(16) input').val(0);
                 $(el).closest('tr').find('td:nth-child(18) input').val(0);

@@ -84,7 +84,7 @@ def product_register(excel_data, this_tenant):
         unit=Unit.objects.for_tenant(this_tenant).get(name='Number')
         manufacturers=Manufacturer.objects.for_tenant(this_tenant).all()
         groups=Group.objects.for_tenant(this_tenant).all()
-        for i in range(1, num_rows):
+        for i in range(2, num_rows):
             manufac = None
             group_selected = None
 

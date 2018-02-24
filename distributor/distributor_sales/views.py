@@ -40,13 +40,14 @@ def get_product(request):
 		products = Product.objects.for_tenant(this_tenant).filter(name__icontains = q )[:10].select_related('default_unit', \
 			'cgst','sgst','igst')
 		response_data = []
+		maintain_inventory = this_tenant.maintain_inventory
 		for item in products:
 			item_json = {}
 			item_json['id'] = item.id
 			item_json['label'] = item.name
 			item_json['unit_id'] = item.default_unit.id
 			item_json['unit'] = item.default_unit.symbol
-			item_json['inventory'] = this_tenant.maintain_inventory
+			item_json['inventory'] = maintain_inventory
 			# item_json['vat_type'] = item.vat_type
 			try:
 				item_json['cgst'] = item.cgst.percentage
