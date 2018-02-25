@@ -181,8 +181,47 @@ $('#vendor').on('change', function() {
 })
 
 $('.adj_receipt').on('change', function() {
-    console.log($('.adj_receipt').val());
-    console.log($('.vendor').find(':selected').data('id'));
+    var proceed = true;
+    var adjustment_receipt = $('.adj_receipt').val();
+    var vendor_id = $('.vendor').find(':selected').data('id');
+    
+    if (adjustment_receipt == '' || adjustment_receipt == undefined || adjustment_receipt == 'undefined' || adjustment_receipt == null ||
+        adjustment_receipt == 'null' || vendor_id == '' || vendor_id == undefined || vendor_id == 'undefined' || 
+        vendor_id == null || vendor_id == 'null'){
+        proceed = false;
+        if (vendor_id == '' || vendor_id == undefined || vendor_id == 'undefined' || vendor_id == null || vendor_id == 'null'){
+            swal("Oops...", "Please select a vendor.", "error");
+        }
+    }
+    if (proceed){
+        $.ajax({
+            url : "/purchase/purchase-receipt-vendor/", 
+            type: "GET",
+            data:{receipt_no: adjustment_receipt,
+                vendor_id: vendor_id},
+            dataType: 'json',
+            // handle a successful response
+            success : function(jsondata) {
+                if (jsondata == 'No data'){
+                    swal("Oops...", "Receipt does not exist or receipt is completely paid off.", "error");
+                    $('.adj_receipt_found').val('not-found');    
+                }
+                else{
+                    $('.adj_value_total').val(jsondata['total']);
+                    var total = parseFloat(jsondata['total']);
+                    var paid = parseFloat(jsondata['amount_paid']);
+                    var due = total - paid
+                    $('.adj_value_due').val(due);
+                }
+                // swal("Oops...", "No warehouse data exist.", "error");
+            },
+            // handle a non-successful response
+            error : function() {
+                swal("Oops...", "Could not fetch data.", "error");
+            }
+        });
+    }   
+    
 })
 
 
@@ -503,7 +542,18 @@ function get_total(){
     $('.subtotal_receipt').html(subtotal.toFixed(2))
     $('.taxtotal_receipt').html(tax_total.toFixed(2))
     $('.round').val(round_value.toFixed(2))
-    show_total=round_off(total+round_value);
+    show_total = round_off(total+round_value);
+    due_total = $('.adj_value_due').val();
+    if (show_total > due_total){
+        if ($('.adj_receipt_error').val() == 'error'){}
+        else{
+            swal("Oops...", "Total purchase return amount cannot be more than amount due against selected purchase receipt.", "error");
+            $('.adj_receipt_error').val('error');
+        }
+    }
+    else{
+        $('.adj_receipt_error').val('');
+    }
     $('.total_receipt').html(show_total.toFixed(2))
 };
 

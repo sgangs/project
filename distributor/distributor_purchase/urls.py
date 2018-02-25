@@ -16,6 +16,8 @@ urlpatterns = [
     url(r'^receipt/api/getproduct/barcode$', views.get_product_data_barcode, name='get_product_data_barcode'),
     url(r'^productinventorydetails/$', views.product_inventory_details, name='product_inventory_details'),
 
+    url(r'^purchase-receipt-vendor/$', views.purchase_receipt_vendor, name='purchase_receipt_vendor'),
+
     # url(r'^receipt/api/getproduct/warehouse/$', views.get_product_inventory, name='get_product_inventory'),
 
     

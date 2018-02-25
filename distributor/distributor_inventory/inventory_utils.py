@@ -104,19 +104,19 @@ def opening_inventory_upload_save(excel_data, this_tenant, check_type = 'name'):
 			current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
 			inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
 				get(account_inventory=inventory_acct, accounting_period = current_period)
-			# try:
-			total_valuation = Decimal(total_valuation)
-			inventory_acct_year.first_debit+=total_valuation
-			# except:
-			# 	inventory_acct_year.first_debit=total_valuation
-			# try:
-			inventory_acct_year.opening_debit+=total_valuation
-			# except:
-			# 	inventory_acct_year.opening_debit=total_valuation
-			# try:
-			inventory_acct_year.current_debit+=total_valuation
-			# except:
-			# 	inventory_acct_year.current_debit=total_valuation
+			try:
+				total_valuation = Decimal(total_valuation)
+				inventory_acct_year.first_debit+=total_valuation
+			except:
+				inventory_acct_year.first_debit=total_valuation
+			try:
+				inventory_acct_year.opening_debit+=total_valuation
+			except:
+				inventory_acct_year.opening_debit=total_valuation
+			try:
+				inventory_acct_year.current_debit+=total_valuation
+			except:
+				inventory_acct_year.current_debit=total_valuation
 			inventory_acct_year.save()
 		except:
 			transaction.rollback()
