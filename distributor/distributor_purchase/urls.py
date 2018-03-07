@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^receipt/noninventory/save/$', views.purchase_receipt_noninventory_save, name='purchase_receipt_noninventory_save'),
 
     url(r'^return/inventory/$', views.return_new_inventory, name='return_new_inventory'),
+    url(r'^return/inventory/save/$', views.purchase_return_inventory_save, name='purchase_return_inventory_save'),
 
 
     url(r'^return/noninventory/$', views.debit_note_new_noninventory, name='debit_note_return_view'),
@@ -47,7 +48,9 @@ urlpatterns = [
 
     url(r'^vendor-ledger/$', views.vendor_ledger, name='vendor_ledger'),
     url(r'^vendor-ledger/data/$', views.vendor_ledger_data, name='vendor_ledger_data'),
+    
     url(r'^vendor/opening-balance/$', views.vendor_opening_balance, name='vendor_opening_balance'),
+    url(r'^vendor/opening-payment-list/$', views.vendor_opening_payment_list, name='vendor_opening_payment_list'),
 
     url(r'^order/$', views.purchase_order_new, name='purchase_order_new'),
     url(r'^order/save/$', views.purchase_order_save, name='purchase_order_save'),

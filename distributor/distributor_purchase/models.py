@@ -42,7 +42,7 @@ class purchase_receipt(models.Model):
 	#GST Type  means B2B registered, 2 means B2B unregistered.
 	gst_type=models.PositiveSmallIntegerField(default=1)
 	grand_discount_type=models.PositiveSmallIntegerField(default=0)
-	grand_discount=models.DecimalField(max_digits=8, decimal_places=2, default=0)
+	grand_discount=models.DecimalField(max_digits=8, decimal_places=2, default=0) #Grand Discount is cash discount.
 	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
 	taxtotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -180,17 +180,19 @@ class other_payment(models.Model):
 
 
 # #This is to add debit notes of two types - Either for return of goods or for excess payment
-class debit_note(models.Model):
-	note_type=((1,'Goods Return'),
-			(2,'Payment Adjustment'))
+class purchase_return(models.Model):
+	note_type=((1,'Inventory Return'),
+			(2,'Non-inventory Adjustment'))
 	note_id = models.CharField(blank=True, max_length=12)
 	note_type = models.CharField(max_length=12,choices=note_type)
 	
-	supplier_invoice = models.CharField(max_length=200,blank=True, null=True)
+	supplier_note_no = models.CharField(max_length=200,blank=True, null=True)
+	adjustmnet_receipt_no = models.CharField(max_length=200,blank=True, null=True)
+	
 	date=models.DateField(default=datetime.now)
 
 	vendor=models.ForeignKey(Vendor,blank=True, null=True, 
-						related_name='debitNote_purchase_master_vendor', on_delete=models.SET_NULL)
+						related_name='purchaseReturn_purchase_master_vendor', on_delete=models.SET_NULL)
 	vendor_name=models.CharField(max_length=200)
 	vendor_address=models.TextField(blank=True, null=True)
 	vendor_state=models.CharField(max_length=4,blank=True, null=True)
@@ -200,20 +202,22 @@ class debit_note(models.Model):
 	dl_2=models.CharField("Drug License 2", max_length=10, blank=True, null=True)
 	
 	warehouse=models.ForeignKey(Warehouse,blank=True, null=True, \
-						related_name='debitNote_purchase_master_warehouse', on_delete=models.SET_NULL)
+						related_name='purchaseReturn_purchase_master_warehouse', on_delete=models.SET_NULL)
 	warehouse_address=models.TextField()
 	warehouse_state=models.CharField(max_length=4)
 	warehouse_city=models.CharField(max_length=50)
 	warehouse_pin=models.CharField(max_length=8)
 
+	#GST Type  means B2B registered, 2 means B2B unregistered.
+	gst_type=models.PositiveSmallIntegerField(default=1)
+
 	subtotal=models.DecimalField(max_digits=12, decimal_places=2)
-	taxtotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
 
-	tenant=models.ForeignKey(Tenant,related_name='debitNote_purchase_user_tenant')
+	tenant=models.ForeignKey(Tenant,related_name='purchaseReturn_purchase_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
 		
@@ -232,7 +236,7 @@ class debit_note(models.Model):
 				next_note_number='{0:03d}'.format(last_note_number + 1)
 			self.note_id=int(today_string + next_note_number)
 
-		super(debit_note, self).save(*args, **kwargs)
+		super(purchase_return, self).save(*args, **kwargs)
 
 	#class Meta:
 	#	ordering = ('date',)
@@ -242,22 +246,21 @@ class debit_note(models.Model):
 
 
 #This model is for line items of a debit note for return of goods
-class debit_note_line_item(models.Model):
-	# inventory_type=(('Reusable','Reusable'),
-	# 		('Returnable','Returnable'),)
-	debit_note=models.ForeignKey(debit_note, related_name='debitNoteLineItem_debitNote',)
-	product=models.ForeignKey(Product,blank=True, null=True, related_name='debitNoteLineItem_purchase_master_product',\
+class return_line_item(models.Model):
+	purchase_return=models.ForeignKey(purchase_return, related_name='returnLineItem_purchaseReturn',)
+	product=models.ForeignKey(Product,blank=True, null=True, related_name='returnLineItem_purchase_master_product',\
 						on_delete=models.SET_NULL)
-	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
 	product_sku=models.CharField(max_length =50)
+	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	
 	unit=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 
 	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
 	
-	purchase_price=models.DecimalField(max_digits=10, decimal_places=2)
+	real_purchase_price=models.DecimalField(max_digits=10, decimal_places=2)
+	return_purchase_price=models.DecimalField(max_digits=10, decimal_places=2)
 	tentative_sales_price=models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 	mrp=models.DecimalField('MRP', max_digits=10, decimal_places=2, blank=True, null=True)
 	
@@ -269,19 +272,12 @@ class debit_note_line_item(models.Model):
 	sgst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
 	igst_value=models.DecimalField(max_digits=8, decimal_places=2, default=0)
 
-	line_tax=models.DecimalField(max_digits=12, decimal_places=2)
+	line_taxable_value=models.DecimalField(max_digits=12, decimal_places=2)
 	line_total=models.DecimalField(max_digits=12, decimal_places=2)
 	
-	tenant=models.ForeignKey(Tenant,related_name='debitNoteLineItem_purchase_user_tenant')
+	tenant=models.ForeignKey(Tenant,related_name='returnLineItem_purchase_user_tenant')
 	objects = TenantManager()
 	updated = models.DateTimeField(auto_now=True)
-
-# #This model is for line items of a debit note for excess payment
-# class debitNoteLineDetails(models.Model):
-# 	details=models.TextField()
-# 	value=models.DecimalField(max_digits=10, decimal_places=2)
-# 	vat_percent=models.DecimalField(max_digits=4, decimal_places=2)
-# 	debitnote_no=models.ForeignKey(debitNote, related_name='debitNoteLineDetails_debitNote')
 
 
 class purchase_order(models.Model):

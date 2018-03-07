@@ -45,4 +45,11 @@ urlpatterns = [
     url(r'^gst-payment/$', views.gst_payment, name='gst_payment'),
 
     url(r'^customerpending/$', views.customer_pending, name='customer_pending'),
+
+    url(r'^relation-list/$', views.get_relation_list, name='get_relation_list'),
+
+    url(r'^linked-account-list/$', views.linked_account_list, name='linked_account_list'),
+    url(r'^linked-account-list/data/$', views.linked_account_list_data, name='linked_account_list_data'),
+    # url(r'^customerpending/$', views.customer_pending, name='customer_pending'),
+
 ]

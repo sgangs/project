@@ -103,3 +103,9 @@ gst_invoice_type=((1,'B2BR'), #B2B Registered
 
 #This value is used to determine the point where B2CL & B2CS gets segregated. Initially this value is Rs. 2,50,000
 small_large_limt = 250000
+
+
+account_relation_list=((1,'Main Purchase Account'),
+		(2,'Main Sales Account'),
+		(3,'Main Purchase Cash Discount Account'),
+		(4,'Main Sales Cash Discount Account'),)

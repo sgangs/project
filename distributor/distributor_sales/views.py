@@ -1774,6 +1774,7 @@ def sales_return_save(request):
 									new_inventory_ledger.transaction_bill_id=new_invoice.return_id
 									new_inventory_ledger.tenant=this_tenant
 									new_inventory_ledger.save()
+						
 						line_item.quantity_returned+=original_quantity
 						line_item.save()
 						LineItem = return_line_item()
@@ -1812,7 +1813,6 @@ def sales_return_save(request):
 						LineItem.save()
 
 						#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
-
 						if maintain_inventory:
 							for k,v in price_list.items():
 								#Change ledger type

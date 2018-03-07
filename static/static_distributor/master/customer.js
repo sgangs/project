@@ -1,5 +1,6 @@
 $(function(){
 
+var states=[];
 load_states()
 
 function load_states(){

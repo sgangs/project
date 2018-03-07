@@ -225,6 +225,15 @@ $(".details").on("change", ".name", function(){
     this.title=this.value;
 }); 
 
+$(".billdata").on("keydown", ".cd_discount", function(){
+    get_total();
+});
+
+$(".billdata").on("keyup", ".cd_discount", function(){
+    get_total();
+});
+
+
 // $( ".gd" ).change(function() {
 //     get_total();
 // });
@@ -356,7 +365,14 @@ function get_total(){
     igst_grand_total=round_off(igst_grand_total);
     total=round_off(subtotal+tax_total);
     round_value=round_off((Math.round(total)-total));
-    payable=round_off(total+round_value);
+    
+    var cash_discount = parseFloat($('.cd_discount').val());
+    if(isNaN(cash_discount)){
+        cash_discount=0;
+    }
+    
+    total_payable = total - cash_discount;
+    payable=round_off(total_payable+round_value);
     
     // gd_type=$('.gdt').find(':selected').data('id')
     // gd_value=parseFloat($('.gd').val())
@@ -470,11 +486,15 @@ $('.submit').click(function(e) {
 function new_data(){
     var items=[];
     var proceed=true;
-    vendorid=$('.vendor').find(':selected').data('id');
-    warehouseid=$('.warehouse').find(':selected').data('id');
-    invoice_no=$('.invoice').val()
-    date=$('.date').val()
-    duedate=$('.duedate').val()
+    var vendorid=$('.vendor').find(':selected').data('id');
+    var warehouseid=$('.warehouse').find(':selected').data('id');
+    var invoice_no=$('.invoice').val()
+    var date=$('.date').val()
+    var duedate=$('.duedate').val()
+    var cash_discount = parseFloat($('.cd_discount').val());
+    if(isNaN(cash_discount)){
+        cash_discount=0;
+    }
     // grand_discount_type=$('.gdt').find(':selected').data('id');
     // grand_discount_value=$('.gd').val();
     subtotal=round_off(parseFloat($('.subtotal_receipt').html()));
@@ -641,6 +661,7 @@ function new_data(){
                     order_pk: order_pk,
                     // grand_discount_type: grand_discount_type,
                     // grand_discount_value: grand_discount_value,
+                    cash_discount: cash_discount,
                     subtotal: subtotal,
                     // taxtotal: taxtotal
                     calledfrom : calledfrom,

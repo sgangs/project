@@ -19,7 +19,7 @@ from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Vendor, Warehouse
 from distributor_account.models import Account, tax_transaction, payment_mode,accounting_period, Journal, journal_entry, account_year,\
-									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory
+									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory, account_relation
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
 from distributor_inventory.inventory_utils import create_new_inventory_ledger
@@ -234,7 +234,14 @@ def purchase_receipt_save(request):
 					igsttotal=Decimal(request.data.get('igsttotal'))
 					round_value=Decimal(request.data.get('round_value'))
 					total=Decimal(request.data.get('total'))
+					cash_discount=Decimal(request.data.get('cash_discount'))
 					sum_total = subtotal+cgsttotal+sgsttotal
+
+					if (cash_discount != 0):
+						try:
+							related_acct = account_relation.objects.for_tenant(this_tenant).get(relation = 3)
+						except:
+							raise IntegrityError (('Kindly link Main Purchase Cash Discount with an account to register cash discount.'))
 					
 					duedate=request.data.get('duedate')
 
@@ -256,11 +263,11 @@ def purchase_receipt_save(request):
 						warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 					
 					vendor.current_balance+= total
-					vendor.save
+					vendor.save()
 
 					
-					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate,\
-							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, 0, from_purchase_order, order_id, inventory_type=True)
+					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate, subtotal, cgsttotal, sgsttotal,\
+						igsttotal, round_value, total, cash_discount, 0, from_purchase_order, order_id, inventory_type=True)
 					
 					cgst_paid={}
 					sgst_paid={}
@@ -540,12 +547,20 @@ def purchase_receipt_save(request):
 					if (round_value!=0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
 						new_journal_entry(this_tenant, journal, round_value, account, 1, date)
+					if (cash_discount!=0):
+						relation = account_relation.objects.for_tenant(this_tenant).get(relation = 3)
+						# account = Account.objects.for_tenant(this_tenant).get(id = )
+						account = relation.account
+						new_journal_entry(this_tenant, journal, cash_discount, account, 2, date)
 						
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
 					new_journal_entry(this_tenant, journal, total, account, 2, date, vendor.name, vendor.id)						
 							
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+					print(debit)
+					print(credit)
+					
 					if (debit != credit):
 						raise IntegrityError (('Debit and credit value not matching'))
 					if this_tenant.maintain_inventory:
@@ -639,7 +654,7 @@ def purchase_receipt_noninventory_save(request):
 					vendor.save()
 
 					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate, subtotal, \
-						cgsttotal, sgsttotal, igsttotal, round_value, total, 0, from_purchase_order, order_id=None, inventory_type=False)
+						cgsttotal, sgsttotal, igsttotal, round_value, total, 0, 0, from_purchase_order, order_id=None, inventory_type=False)
 					
 					cgst_paid={}
 					sgst_paid={}
@@ -882,7 +897,7 @@ def receipts_details(request, pk):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
 		receipt=purchase_receipt.objects.for_tenant(this_tenant).values('id','receipt_id','supplier_invoice',\
-		'date','vendor_name','vendor_address','vendor_city','vendor_pin','vendor_gst','warehouse_address','warehouse_city',\
+		'date','vendor_name','vendor_address','vendor_city','vendor_pin','vendor_gst','warehouse_address','warehouse_city','grand_discount',\
 		'warehouse_pin','payable_by','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff','total','amount_paid', 'inventory_type').get(id=pk)
 
 		receipt['tenant_name']=this_tenant.name
@@ -1655,13 +1670,44 @@ def vendor_opening_balance(request):
 
 					journal=new_journal(this_tenant,date,group_name="General",\
 						remarks=remarks_payment, trn_id=new_payment.id, trn_type=12, other_data=payment_json)
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+					account = Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
 					new_journal_entry(this_tenant, journal, amount_paid, account, 1, date, vendor.name, vendor.id)
 					new_journal_entry(this_tenant, journal, amount_paid, mode.payment_account, 2, date)
 			
 			except Exception as err:
 				response_data  = err.args 
 				transaction.rollback()
+
+		elif (calltype == 'delete_payment'):
+			delete_list = json.loads(request.data.get('delete_list'))
+			# try:
+			with transaction.atomic():
+				try:
+					for data in delete_list:
+						payment_id = data['payment_id']
+						payment_data = other_payment.objects.for_tenant(this_tenant).get(id = payment_id)
+						vendor = Vendor.objects.for_tenant(this_tenant).get(id = payment_data.vendorid)
+						this_balance = payment_data.amount_paid
+						vendor.current_balance+= this_balance
+						vendor.save()
+						old_journal=Journal.objects.for_tenant(this_tenant).get(trn_type=12, transaction_bill_id=payment_data.id)
+						journal_line_items=journal_entry.objects.for_tenant(this_tenant).filter(journal=old_journal)
+						acct_period = accounting_period.objects.for_tenant(this_tenant).get(start__lte=old_journal.date, end__gte=old_journal.date)
+								
+						for item in journal_line_items:
+							trn_type = item.transaction_type
+							account = item.account
+							account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+							if (trn_type == 1):
+								account_journal_year.current_debit=account_journal_year.current_debit-item.value
+							elif (trn_type == 2):
+								account_journal_year.current_credit=account_journal_year.current_credit-item.value
+							account_journal_year.save()
+						old_journal.delete()
+						payment_data.delete()
+				except Exception as err:
+					response_data  = err.args 
+					transaction.rollback()
 		
 		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
@@ -1677,9 +1723,23 @@ def vendor_opening_balance(request):
 			response_data['opening_balance'] = opening_balance
 			response_data['opening_balance_paid'] = total_payment['amount_paid__sum']
 
+		elif (calltype == 'vendor_opening_list'):
+			vendorid = request.GET.get('vendorid')
+			vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
+			opening_balance = vendor.opening_balance
+			total_payment = other_payment.objects.for_tenant(this_tenant).filter(vendorid = vendorid, payment_reason_type = 1)\
+				.values('id','payment_mode_name','payment_reason_details', 'amount_paid', 'cheque_rtgs_number', 'paid_on').order_by('paid_on')
+			
+			response_data['opening_balance'] = opening_balance
+			response_data['payment_list'] = list(total_payment)
+
 		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 			# print(total_payment)
+
+@api_view(['GET'],)
+def vendor_opening_payment_list(request):
+	return render(request,'purchase/vendor_opening_payment_list.html', {'extension': 'base.html',})
 
 
 @api_view(['GET'],)
@@ -1710,15 +1770,15 @@ def purchase_return_inventory_save(request):
 		calltype = request.data.get('calltype')
 		response_data = {}
 		this_tenant=request.user.tenant
-		from_purchase_order = False
 		#saving the receipt
 		if (calltype == 'save' or 'mobilesave'):
 			calledfrom = request.data.get('calledfrom')
-			if (calledfrom == 'purchaseorder'):
-				from_purchase_order = True
+			
 			with transaction.atomic():
 				try:
-					supplier_return_no = request.data.get('supplier_return_no')
+					maintain_inventory = this_tenant.maintain_inventory
+
+					supplier_note_no = request.data.get('supplier_note_no')
 					adjustment_receipt_no = request.data.get('adjustment_receipt_no')
 					date = request.data.get('date')
 					vendor_id = request.data.get('vendor')
@@ -1731,13 +1791,15 @@ def purchase_return_inventory_save(request):
 					else:
 						is_igst = False
 					
-					subtotal = Decimal(request.data.get('subtotal'))
-					cgsttotal = Decimal(request.data.get('cgsttotal'))
-					sgsttotal = Decimal(request.data.get('sgsttotal'))
-					igsttotal = Decimal(request.data.get('igsttotal'))
-					round_value = Decimal(request.data.get('round_value'))
-					total = Decimal(request.data.get('total'))
+					subtotal = Decimal(request.data.get('subtotal')).quantize(TWOPLACES)
+					cgsttotal = Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
+					sgsttotal = Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
+					igsttotal = Decimal(request.data.get('igsttotal')).quantize(TWOPLACES)
+					round_value = Decimal(request.data.get('round_value')).quantize(TWOPLACES)
+					total = Decimal(request.data.get('total')).quantize(TWOPLACES)
 					sum_total = subtotal+cgsttotal+sgsttotal
+
+					total_actual_purchase_price = 0
 					
 					date=request.data.get('date')
 					
@@ -1746,17 +1808,35 @@ def purchase_return_inventory_save(request):
 					else:
 						bill_data = request.data.get('bill_details')
 						
-					
 					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
 					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
 					
 					vendor.current_balance-= total
-					vendor.save
+					vendor.save()
 
-					
-					new_receipt=new_purchase_receipt(this_tenant, supplier_invoice, vendor, warehouse, date, duedate,\
-							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, 0, from_purchase_order, order_id, inventory_type=True)
-					
+					try:
+						adjustment_receipt = purchase_receipt.objects.for_tenant(this_tenant)\
+							.get(supplier_invoice = adjustment_receipt_no, vendor = vendor_id)
+					except:
+						raise IntegrityError('Purchase receipt does not exixt.')
+
+					new_receipt=new_purchase_return_inventory(this_tenant, supplier_note_no, vendor, warehouse, date, \
+							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, adjustment_receipt_no, 1)
+
+
+					total_value = adjustment_receipt.total
+					amount_already_paid = adjustment_receipt.amount_paid
+					amount_due = total_value - amount_already_paid
+					if (total>amount_due):
+						raise IntegrityError('Retrun amount cannot be greater than amount due.')
+					elif (amount_due==total):
+						adjustment_receipt.amount_paid+=total
+						adjustment_receipt.final_payment_date = date
+						adjustment_receipt.save()
+					else:
+						adjustment_receipt.amount_paid+=total
+						adjustment_receipt.save()
+
 					cgst_paid={}
 					sgst_paid={}
 					igst_paid={}
@@ -1771,12 +1851,10 @@ def purchase_return_inventory_save(request):
 				#saving the receipt_line_item and linking them with foreign key to receipt
 					for data in bill_data:
 						productid=data['product_id']
-						if (from_purchase_order):
-							order_line_item_id=data['order_line_item_id']
-							order_line_item_data = order_line_item.objects.for_tenant(this_tenant).get(id = order_line_item_id)
-							unitid=order_line_item_data.unit_id
-						else:
-							unitid=data['unit_id']
+						unitid=data['unit_id']
+						
+						price_list={}
+						price_list_list=[]
 						
 						try:
 							batch=data['batch']
@@ -1791,16 +1869,11 @@ def purchase_return_inventory_save(request):
 						except:
 							serial_no=''
 
-						discount_type=data['disc_type']
-						discount_value=Decimal(data['disc'])
-						discount_type_2=data['disc_type_2']
-						discount_value_2=Decimal(data['disc_2'])
-
 						try:
-							cgst_p=Decimal(data['cgst_p'])
-							cgst_v=Decimal(data['cgst_v'])
-							sgst_p=Decimal(data['sgst_p'])
-							sgst_v=Decimal(data['sgst_v'])
+							cgst_p=Decimal(data['cgst_p']).quantize(TWOPLACES)
+							cgst_v=Decimal(data['cgst_v']).quantize(TWOPLACES)
+							sgst_p=Decimal(data['sgst_p']).quantize(TWOPLACES)
+							sgst_v=Decimal(data['sgst_v']).quantize(TWOPLACES)
 						except:
 							cgst_p=0
 							cgst_v=0
@@ -1817,19 +1890,19 @@ def purchase_return_inventory_save(request):
 						sgst_total+=sgst_v
 						igst_total+=igst_v
 
-						line_taxable_total=Decimal(data['taxable_total'])
-						line_total=Decimal(data['line_total'])
+						line_taxable_total=Decimal(data['taxable_total']).quantize(TWOPLACES)
+						line_total=Decimal(data['line_total']).quantize(TWOPLACES)
 						
 						product=Product.objects.for_tenant(request.user.tenant).get(id=productid)
 						
 						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
 						multiplier=unit.multiplier
 						
-						original_purchase_price=Decimal(data['purchase'])
-						real_purchase_price=Decimal(data['purchase_real'])
+						original_purchase_price=Decimal(data['purchase']).quantize(TWOPLACES)
+						real_purchase_price=Decimal(data['purchase_real']).quantize(TWOPLACES)
 						
 						try:
-							original_tentative_sales_price=Decimal(data['sales'])
+							original_tentative_sales_price=Decimal(data['tsp']).quantize(TWOPLACES)
 						except:
 							original_tentative_sales_price=0
 						try:
@@ -1843,8 +1916,10 @@ def purchase_return_inventory_save(request):
 						mrp=original_mrp/multiplier
 
 						# original_quantity=Decimal(data['quantity']) + Decimal(0.000)
-						original_quantity=Decimal(data['quantity'])
+						original_quantity=Decimal(data['quantity']).quantize(TWOPLACES)
 						quantity=original_quantity*multiplier
+
+						total_actual_purchase_price+=(real_purchase_price*quantity)
 
 						if maintain_inventory:
 							product_list=Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0,\
@@ -1867,7 +1942,7 @@ def purchase_return_inventory_save(request):
 													'pur_rate':item.purchase_price}
 									total_purchase_price+=original_available*item.purchase_price
 									quantity_updated-=original_available
-									# item.delete()
+									item.delete()
 									
 								else:
 									item.quantity_available-=quantity_updated
@@ -1883,13 +1958,12 @@ def purchase_return_inventory_save(request):
 							if (quantity_updated>0):
 								raise IntegrityError('Stock/Inventory not available for: '+product.name )
 						
-						LineItem = receipt_line_item()
-						LineItem.purchase_receipt = new_receipt
+						LineItem = return_line_item()
+						LineItem.purchase_return = new_receipt
 						LineItem.product= product
 						LineItem.product_name= product.name
 						LineItem.product_sku=product.sku
 						LineItem.product_hsn=product.hsn_code
-						LineItem.date = date
 						LineItem.cgst_percent=cgst_p
 						LineItem.cgst_value=cgst_v
 						LineItem.sgst_percent=sgst_p
@@ -1899,103 +1973,31 @@ def purchase_return_inventory_save(request):
 						LineItem.unit=unit.symbol
 						LineItem.unit_multi=unit.multiplier
 						LineItem.quantity=original_quantity
-						LineItem.free_with_tax=original_free_with_tax
-						# print(LineItem.quantity)
-						# print(type(LineItem.quantity))
-						if (product.has_batch):
-							LineItem.batch=batch
-							LineItem.manufacturing_date=manufacturing_date
-							LineItem.expiry_date=expiry_date
-						if (product.has_instance):
-							LineItem.serial_no=serial_no
 						
-						LineItem.purchase_price=original_purchase_price
+						# if (product.has_batch):
+						# 	LineItem.batch=batch
+						# 	LineItem.manufacturing_date=manufacturing_date
+						# 	LineItem.expiry_date=expiry_date
+						# if (product.has_instance):
+						# 	LineItem.serial_no=serial_no
+						
+						LineItem.return_purchase_price=original_purchase_price
 						LineItem.tentative_sales_price=original_tentative_sales_price
 						LineItem.mrp=original_mrp
-						LineItem.discount_type=discount_type
-						LineItem.discount_value=discount_value
-						LineItem.discount2_type=discount_type_2
-						LineItem.discount2_value=discount_value_2
-						LineItem.line_tax=line_taxable_total
+						LineItem.real_purchase_price = real_purchase_price
+						LineItem.line_taxable_value=line_taxable_total
 						LineItem.line_total=line_total
 						LineItem.tenant=this_tenant
 						LineItem.save()
-						# There will be multiple effects in the inventory
-						if this_tenant.maintain_inventory:
-							inventory=Inventory()
-							inventory.product=product
-							inventory.warehouse=warehouse
-							inventory.purchase_quantity=quantity
-							inventory.quantity_available=quantity
-							inventory.purchase_date=date
-							# if product.has_batch:
-							# 	inventory.batch=batch
-							# 	inventory.manufacturing_date=manufacturing_date
-							# 	inventory.expiry_date=expiry_date
-							# if product.has_instance:
-							# 	inventory.serial_no=serial_no
-							if not discount_value:
-								pass
-							else:
-								if (discount_type == 1):
-									purchase_price=(purchase_price)-(discount_value*purchase_price/100)
-								elif(discount_type == 2):
-									purchase_price=(purchase_price-discount_value/quantity)
-							if not discount_value_2:
-								pass
-							else:
-								if (discount_type_2 == 1):
-									purchase_price=(purchase_price)-(discount_value_2*purchase_price/100)
-								elif(discount_type_2 == 2):
-									purchase_price=(purchase_price-discount_value_2/quantity)
-							inventory.purchase_price=purchase_price
-							inventory.tentative_sales_price=tentative_sales_price
-							inventory.mrp=mrp
-							inventory.tenant=this_tenant
-							inventory.save()
-							if (total_free>0):
-								inventory=Inventory()
-								inventory.product=product
-								inventory.warehouse=warehouse
-								inventory.purchase_quantity=total_free
-								inventory.quantity_available=total_free
-								inventory.purchase_date=date
-								# if product.has_batch:
-								# 	inventory.batch=batch
-								# 	inventory.manufacturing_date=manufacturing_date
-								# 	inventory.expiry_date=expiry_date
-								# if product.has_instance:
-								# 	inventory.serial_no=serial_no
-								inventory.purchase_price=0
-								inventory.tentative_sales_price=tentative_sales_price
-								inventory.mrp=mrp
-								inventory.tenant=this_tenant
-								inventory.save()
-								#For free item
-								create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
-								0, mrp,new_receipt.receipt_id, this_tenant)
-
-							#For not-free items
-							create_new_inventory_ledger(product,warehouse, 1, date, quantity, \
-								purchase_price, mrp,new_receipt.receipt_id, this_tenant)								
-							
-							total_purchase_price+=quantity*purchase_price
-							# warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-							# warehouse_valuation_change.valuation+=quantity*purchase_price
-							# warehouse_valuation_change.save()
-
-						if (from_purchase_order):
-							#Close Order if quantity is zero for every line item
-							order_all_line_items=order_line_item.objects.filter(purchase_order = order)
-							will_close = True
-							for each_row in order_all_line_items:
-								qty_avl = each_row.quantity - each_row.quantity_delivered
-								if (qty_avl > 0):
-									will_close = False
-							if (will_close):
-								order.is_closed = True
-								order.save()
-
+						# There will be multiple effects in the inventory, ad effect wil be same as sales.
+						
+						if maintain_inventory:						
+							#Update this. Need to include purchase price here. For each purchase price there will be a ledger entry
+							for k,v in price_list.items():
+								#Change transaction type to 5
+								new_inventory_ledger_purchase(product, warehouse, 5, date, v['quantity'],\
+										v['pur_rate'], real_purchase_price, new_receipt.note_id, this_tenant)
+						
 						if (is_igst):
 							if (igst_p in igst_paid):
 								igst_paid[igst_p][0]+=igst_v
@@ -2022,37 +2024,37 @@ def purchase_return_inventory_save(request):
 					if (is_igst):
 						for k,v in igst_paid.items():
 							if v[2]>0:
-								new_tax_transaction_register("IGST",1, k, v[0],v[1],v[2], new_receipt.id,\
-											new_receipt.supplier_invoice, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
+								new_tax_transaction_register("IGST",4, k, v[0],v[1],v[2], new_receipt.id,\
+											new_receipt.supplier_note_no, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
 					else:
 						for k,v in cgst_paid.items():
 							if v[2]>0:
-								new_tax_transaction_register("CGST",1, k, v[0],v[1],v[2], new_receipt.id,\
-											new_receipt.supplier_invoice, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
+								new_tax_transaction_register("CGST",4, k, v[0],v[1],v[2], new_receipt.id,\
+											new_receipt.supplier_note_no, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
 						for k,v in sgst_paid.items():
 							if v[2]>0:
-								new_tax_transaction_register("SGST",1, k, v[0],v[1],v[2], new_receipt.id,\
-											new_receipt.supplier_invoice, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
+								new_tax_transaction_register("SGST",4, k, v[0],v[1],v[2], new_receipt.id,\
+											new_receipt.supplier_note_no, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
 
-					remarks="Purchase Receipt No: "+str(new_receipt.supplier_invoice)
-					journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=1)
+					remarks="Purchase Return Note No: "+str(new_receipt.supplier_note_no)
+					journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=3)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Purchase")
-					new_journal_entry(this_tenant, journal, subtotal, account, 1, date)
+					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
 					if (cgst_total>0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Input")
-						new_journal_entry(this_tenant, journal, cgst_total, account, 1, date)
+						new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
 					if (sgst_total>0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Input")
-						new_journal_entry(this_tenant, journal, sgst_total, account, 1, date)
+						new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
 					if (igst_total>0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Input")
-						new_journal_entry(this_tenant, journal, igst_total, account, 1, date)
+						new_journal_entry(this_tenant, journal, igst_total, account, 2, date)
 					if (round_value!=0):
 						account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
-						new_journal_entry(this_tenant, journal, round_value, account, 1, date)
+						new_journal_entry(this_tenant, journal, round_value, account, 2, date)
 						
-					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-					new_journal_entry(this_tenant, journal, total, account, 2, date, vendor.name, vendor.id)						
+					account = Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+					new_journal_entry(this_tenant, journal, total, account, 1, date, vendor.name, vendor.id)						
 							
 					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
 					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
@@ -2061,7 +2063,7 @@ def purchase_return_inventory_save(request):
 					if this_tenant.maintain_inventory:
 
 						warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
-						warehouse_valuation_change.valuation+=total_purchase_price
+						warehouse_valuation_change.valuation-=total_purchase_price
 						warehouse_valuation_change.save()
 
 
@@ -2069,16 +2071,16 @@ def purchase_return_inventory_save(request):
 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
 											get(account_inventory=inventory_acct, accounting_period = acct_period)
-						inventory_acct_year.current_debit+=subtotal
+						inventory_acct_year.current_debit-=total_purchase_price
 						inventory_acct_year.save()
 						new_journal_inv=journal_inventory()
 						new_journal_inv.date=date
 						new_journal_inv.transaction_bill_id=new_receipt.id
-						new_journal_inv.trn_type=1
+						new_journal_inv.trn_type=3
 						new_journal_inv.tenant=this_tenant
 						new_journal_inv.save()
 						new_entry_inv=journal_entry_inventory()
-						new_entry_inv.transaction_type=1
+						new_entry_inv.transaction_type=2
 						new_entry_inv.journal=new_journal_inv
 						new_entry_inv.account=inventory_acct
 						new_entry_inv.value=subtotal

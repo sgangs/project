@@ -9,7 +9,7 @@ from datetime import datetime
 from distributor_user.models import Tenant
 from distributor.variable_list import account_type_general
 from distributor_master.models import Product
-from distributor.variable_list import state_list
+from distributor.variable_list import state_list, account_relation_list
 
 
 class TenantManager(models.Manager):
@@ -85,10 +85,25 @@ class Account(models.Model):
 	
 	class Meta:
 		unique_together = (("key", "tenant"),("name", "tenant"))
-		ordering = ['account_type','name',]
-
+	
 	def __str__(self):
 		return self.name
+
+class account_relation(models.Model):
+	id=models.BigAutoField(primary_key=True)
+	account = models.ForeignKey(Account, related_name='accountRelation_account')
+	relation=models.PositiveSmallIntegerField(db_index=True, choices=account_relation_list)
+	tenant=models.ForeignKey(Tenant, related_name='accountRelation_account_user_tenant')
+	objects = TenantManager()
+	updated = models.DateTimeField(auto_now=True)
+	
+	
+	class Meta:
+		unique_together = (("relation", "tenant"))
+	
+	def __str__(self):
+		return self.relation
+
 
 class account_year(models.Model):
 	id=models.BigAutoField(primary_key=True)
@@ -173,7 +188,7 @@ class journal_group(models.Model):
 #transaction options are:
 #1 - Purchase
 #2 - Purchase Payment
-#3 - Purchase Debit Note
+#3 - Purchase Debit Note/Purchase Return
 #4 - Sales
 #5 - Sales Collection
 #6 - Sales Credit Note
@@ -184,8 +199,8 @@ class journal_group(models.Model):
 #11 - Service Credit Note
 #12 - Opening Payment Vendor
 #13 - Other Payment Vendor
-#12 - Opening Payment Customer
-#13 - Other Payment Customer
+#14 - Opening Payment Customer
+#15 - Other Payment Customer
 
 #This is a list of journal entry
 class Journal(models.Model):

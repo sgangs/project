@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from .serializers import *
 
 from distributor_master.models import Product
-from distributor.variable_list import account_type_general, state_list
+from distributor.variable_list import account_type_general, state_list, account_relation_list
 from distributor_user.models import Tenant
 from .models import *
 from .journalentry import *
@@ -839,3 +839,41 @@ def get_account_account_year(request):
 		jsondata = json.dumps(acct_year, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 
+
+@api_view(['GET'],)
+def get_relation_list(request):
+	relation_dict=dict((x, y) for x, y in account_relation_list)
+	jsondata = json.dumps(relation_dict)
+	return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+def linked_account_list(request):
+	extension="base.html"
+	return render(request, 'account/link_account_relation.html', {'extension':extension})
+
+
+@api_view(['GET', 'POST'],)
+def linked_account_list_data(request):
+	this_tenant=request.user.tenant
+	response_data=[]
+	if request.method == 'POST':
+		relation = request.data.get('relation')
+		account_id = request.data.get('account')
+		account = Account.objects.for_tenant(this_tenant).get(id = account_id)
+		try:
+			new_relation = account_relation.objects.for_tenant(this_tenant).get(relation = relation)
+		except:
+			new_relation = account_relation()
+			new_relation.tenant = this_tenant
+			new_relation.relation = relation
+		new_relation.account = account
+		new_relation.save()
+
+	elif request.method == 'GET':
+		response_data = list(account_relation.objects.for_tenant(this_tenant).values('account__name', 'relation'))
+		print(response_data)
+
+		
+	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

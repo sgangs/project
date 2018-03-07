@@ -1,9 +1,12 @@
 #from datetime import datetime
-from distributor_purchase.models import purchase_receipt, purchase_order
+from distributor_purchase.models import purchase_receipt, purchase_order, purchase_return
 # from distributor_master.models import Product, Unit
+from distributor_inventory.models import Inventory, inventory_ledger
+
+from distributor.global_utils import new_tax_transaction_register
 
 def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, duedate, subtotal, cgsttotal, sgsttotal, igsttotal, 
-		round_value, total, amount_paid = 0, from_purchase_order = False, order_id = None, inventory_type=True):
+		round_value, total, cash_discount = 0, amount_paid = 0, from_purchase_order = False, order_id = None, inventory_type=True):
 
 	vendor_name=vendor.name
 	ven_address=vendor.address_1+", "+vendor.address_2
@@ -47,7 +50,7 @@ def new_purchase_receipt(tenant, supplier_invoice, vendor, warehouse, date, dued
 	new_receipt.warehouse_pin=ware_pin
 	
 	# new_receipt.grand_discount_type=grand_discount_type
-	# new_receipt.grand_discount_value=grand_discount_value
+	new_receipt.grand_discount = cash_discount
 	new_receipt.subtotal=subtotal
 	new_receipt.cgsttotal=cgsttotal
 	new_receipt.sgsttotal=sgsttotal
@@ -120,15 +123,71 @@ def new_purchase_order(tenant, supplier_order, vendor, warehouse, date, delivery
 	return new_order
 
 
-# def new_debit_note(tenant, vendor_key, warehouse_object, total, tax_total, date, note_type):
-# 	debit_note=debitNote()
-# 	debit_note.tenant=tenant
-# 	debit_note.vendor_key = vendor_key
-# 	debit_note.warehouse=warehouse_object
-# 	debit_note.total = total
-# 	debit_note.tax = tax_total
-# 	debit_note.date = date
-# 	debit_note.note_type = note_type
-# 	#debit_note.invoice_no=
-# 	debit_note.save()
-# 	return debit_note
+def new_purchase_return_inventory(tenant, supplier_note_no, vendor, warehouse, date, subtotal, cgsttotal, sgsttotal, igsttotal, 
+		round_value, total, adjustmnet_receipt_no, note_type=1):
+
+	vendor_name=vendor.name
+	ven_address=vendor.address_1+", "+vendor.address_2
+	ven_state=vendor.state
+	ven_city=vendor.city
+	ven_pin=vendor.pin
+	ven_gst=vendor.gst
+
+
+	ware_address=warehouse.address_1+", "+warehouse.address_2
+	ware_state=warehouse.state
+	ware_city=warehouse.city
+	ware_pin=warehouse.pin
+	
+	new_receipt=purchase_return()
+	new_receipt.tenant=tenant
+
+	new_receipt.supplier_note_no = supplier_note_no
+	new_receipt.adjustmnet_receipt_no = adjustmnet_receipt_no
+	new_receipt.date = date
+	
+	new_receipt.vendor=vendor
+	new_receipt.vendor_name=vendor_name
+	try:
+		new_receipt.vendor_address=ven_address
+	except:
+		new_receipt.vendor_address=''
+	new_receipt.vendor_state=ven_state
+	new_receipt.vendor_city=ven_city
+	new_receipt.vendor_pin=ven_pin
+	new_receipt.vendor_gst=ven_gst
+
+	if (ven_gst):
+		new_receipt.gst_type=1
+	else:
+		new_receipt.gst_type=2
+
+	new_receipt.warehouse=warehouse
+	new_receipt.warehouse_address=ware_address
+	new_receipt.warehouse_state=ware_state
+	new_receipt.warehouse_city=ware_city
+	new_receipt.warehouse_pin=ware_pin
+	
+	new_receipt.subtotal=subtotal
+	new_receipt.cgsttotal=cgsttotal
+	new_receipt.sgsttotal=sgsttotal
+	new_receipt.igsttotal=igsttotal
+	new_receipt.roundoff=round_value
+	new_receipt.total = total
+	new_receipt.note_type = note_type
+	new_receipt.save()
+	return new_receipt
+
+
+def new_inventory_ledger_purchase(product, warehouse, trn_type, date, quantity, pur_rate, sales_rate, invoice_id, this_tenant):
+	new_inventory_ledger=inventory_ledger()
+	new_inventory_ledger.product=product
+	new_inventory_ledger.warehouse=warehouse
+	new_inventory_ledger.transaction_type=trn_type
+	new_inventory_ledger.date=date
+	new_inventory_ledger.quantity=quantity
+	new_inventory_ledger.actual_sales_price=sales_rate
+	new_inventory_ledger.purchase_price=pur_rate
+	new_inventory_ledger.transaction_bill_id=invoice_id
+	new_inventory_ledger.tenant=this_tenant
+	new_inventory_ledger.save()

@@ -31,6 +31,7 @@ function load_data(){
             $('.cgsttotal_receipt').append((parseFloat(jsondata['cgsttotal'])).toFixed(2));
             $('.sgsttotal_receipt').append((parseFloat(jsondata['sgsttotal'])).toFixed(2));
             $('.round').append(jsondata['roundoff']);
+            $('.cd_discount').append(jsondata['grand_discount']);
             $('.total_receipt').append(jsondata['total']);
             if (jsondata['inventory_type'] == "True" || jsondata['inventory_type'] == true){
                 $.each(jsondata['line_items'], function(){
