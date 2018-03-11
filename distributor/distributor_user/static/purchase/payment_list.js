@@ -59,6 +59,8 @@ function load_receipts(page_no){
         success : function(jsondata) {
             $("#payment_table .data").remove();
 
+            // console.log(jsondata);
+
             $.each(jsondata['object'], function(){
                 // console.log(this.purchase_receipt.id);
                 rec_date=this.purchase_receipt.date
@@ -68,7 +70,7 @@ function load_receipts(page_no){
                 pay_date=pay_date.split("-").reverse().join("-")
                 
                 $('#payment_table').append("<tr class='data' align='center'>"+
-                "<td hidden='true'></td>"+
+                "<td hidden='true'>"+this.id+"</td>"+
                 "<td>"+this.purchase_receipt.receipt_id+"</td>"+
                 "<td>"+this.purchase_receipt.supplier_invoice+"</td>"+
                 "<td>"+rec_date+"</td>"+
@@ -80,6 +82,7 @@ function load_receipts(page_no){
                 "<td>"+pay_date+"</td>"+
                 "<td>"+this.payment_mode_name+"</td>"+
                 "<td>"+$.trim(this.cheque_rtgs_number)+"</td>"+
+                "<td><input type='checkbox'></td>"+
                 "</tr>");
             })
             apply_navbutton(jsondata, page_no)
@@ -194,7 +197,7 @@ function filter_data(page_no) {
 
             filter_applied=true;
 
-            console.log(jsondata);
+            // console.log(jsondata);
             
             $.each(jsondata['object'], function(){
                 // console.log(this.purchase_receipt.id);
@@ -205,7 +208,7 @@ function filter_data(page_no) {
                 pay_date=pay_date.split("-").reverse().join("-")
                 
                 $('#payment_table').append("<tr class='data' align='center'>"+
-                "<td hidden='true'></td>"+
+                "<td hidden='true'>"+this.id+"</td>"+
                 "<td>"+this.purchase_receipt.receipt_id+"</td>"+
                 "<td>"+this.purchase_receipt.supplier_invoice+"</td>"+
                 "<td>"+rec_date+"</td>"+
@@ -217,6 +220,7 @@ function filter_data(page_no) {
                 "<td>"+pay_date+"</td>"+
                 "<td>"+this.payment_mode_name+"</td>"+
                 "<td>"+$.trim(this.cheque_rtgs_number)+"</td>"+
+                "<td><input type='checkbox'></td>"+
                 "</tr>");
             })
             apply_navbutton(jsondata, page_no)
@@ -238,6 +242,77 @@ $(".add_nav").on("click", ".navbtn", function(){
     }
 });
 
+
+$('.deletebtn').click(function(e) {
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure you want to delete the payment details?",
+        type: "warning",
+        showCancelButton: true,
+      // confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete payment details!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: true,
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){new_data()},600)            
+        }
+    })
+});
+    
+function new_data(){
+    var items=[]
+    var count = 0;
+    $("#payment_table tr.data").each(function() {
+        var payment_id = $(this).find('td:nth-child(1)').html();
+        var is_selected = $(this).find('td:nth-child(13) input').is(":checked");
+        if (is_selected){
+            count+=1;
+            var item = {
+                payment_id : payment_id,
+                };
+            items.push(item);
+            
+        }
+    });
+    
+    if (count>0){
+        (function() {
+            $.ajax({
+                url : "/purchase/receipt/paymentsave/" , 
+                type: "POST",
+                data:{payment_id_list: JSON.stringify(items),
+                    calltype: "delete_payment",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // contentType: "application/json",
+                        // handle a successful response
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "Payment details registered.", "success");
+                        // setTimeout(location.reload(true),2500);
+                        if (filter_applied){
+                            filter_data(1)
+                        }
+                        else{
+                            load_receipts(1)
+                        }
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }
+    else{
+        swal("Hmm...", "Please select atleast one entry to delete.", "info");
+    }
+}
 
 
 });

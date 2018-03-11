@@ -917,72 +917,111 @@ def receipts_details(request, pk):
 def receipts_detail_view(request, pk):
 	return render(request,'purchase/purchase_receipt_detail.html', {'extension': 'base.html', 'pk':pk})
 
-# @login_required
+# Add delete payment option here.
 @api_view(['POST'],)
 def payment_register(request):
 	this_tenant=request.user.tenant
 	if request.method == 'POST':
 		response_data=[]
-		vendorid = request.data.get('vendorid')
-		modeid = request.data.get('modeid')
-		date = request.data.get('date')
-		payment_details = json.loads(request.data.get('payment_details'))
 		
-		vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
-		mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
+		calltype = request.data.get('calltype')
+		
+		if (calltype == 'new_payment_multiple'):
+			vendorid = request.data.get('vendorid')
+			modeid = request.data.get('modeid')
+			date = request.data.get('date')
+			payment_details = json.loads(request.data.get('payment_details'))
+			
+			vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
+			mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
 
-		total_payment=0
-		invoiceids=""
-		cheque_rtgs_all=""
-		payment_pk={}
-		cheque_rtgs_checker = []
-		with transaction.atomic():
-			try:
-				for item in payment_details:
-					purchase_receipt_id=item['receipt_pk']
-					amount_paid=Decimal(item['amount'])
-					cheque_rtgs_number=item['cheque_rtgs_number']
-					receipt=purchase_receipt.objects.for_tenant(this_tenant).get(id=purchase_receipt_id)
-					receipt.amount_paid+=amount_paid
-					if (round(receipt.total - receipt.amount_paid) == 0):
-						receipt.final_payment_date=date
-					receipt.save()
+			total_payment=0
+			invoiceids=""
+			cheque_rtgs_all=""
+			payment_pk={}
+			cheque_rtgs_checker = []
+			with transaction.atomic():
+				try:
+					for item in payment_details:
+						purchase_receipt_id=item['receipt_pk']
+						amount_paid=Decimal(item['amount'])
+						cheque_rtgs_number=item['cheque_rtgs_number']
+						receipt=purchase_receipt.objects.for_tenant(this_tenant).get(id=purchase_receipt_id)
+						receipt.amount_paid+=amount_paid
+						if (round(receipt.total - receipt.amount_paid) == 0):
+							receipt.final_payment_date=date
+						receipt.save()
 
-					new_purchase_payment = purchase_payment()
-					new_purchase_payment.payment_mode=mode
-					new_purchase_payment.payment_mode_name=mode.name
-					new_purchase_payment.purchase_receipt=receipt
-					new_purchase_payment.amount_paid=amount_paid
-					new_purchase_payment.cheque_rtgs_number=cheque_rtgs_number
-					new_purchase_payment.paid_on=date
-					# new_purchase_payment.remarks=remarks
-					new_purchase_payment.tenant=this_tenant
-					new_purchase_payment.save()
+						new_purchase_payment = purchase_payment()
+						new_purchase_payment.payment_mode=mode
+						new_purchase_payment.payment_mode_name=mode.name
+						new_purchase_payment.purchase_receipt=receipt
+						new_purchase_payment.amount_paid=amount_paid
+						new_purchase_payment.cheque_rtgs_number=cheque_rtgs_number
+						new_purchase_payment.paid_on=date
+						# new_purchase_payment.remarks=remarks
+						new_purchase_payment.tenant=this_tenant
+						new_purchase_payment.save()
 
-					total_payment+= amount_paid
-					invoiceids+= str(receipt.supplier_invoice)+", "
+						total_payment+= amount_paid
+						invoiceids+= str(receipt.supplier_invoice)+", "
+						
+						if not cheque_rtgs_number in cheque_rtgs_checker:
+							cheque_rtgs_checker.append(cheque_rtgs_number)
+							cheque_rtgs_all+= str(cheque_rtgs_number)+", "
+						payment_pk[str(receipt.supplier_invoice)]=new_purchase_payment.id
+
+					vendor.current_balance-= total_payment
+					vendor.save()
+
+					payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+
+					if len(cheque_rtgs_all)>0:
+						invoiceids+= "Cheque No:  "+cheque_rtgs_all
+
+					journal=new_journal(this_tenant,date,group_name="Purchase",\
+						remarks='Payment Against: '+invoiceids, trn_id=new_purchase_payment.id, trn_type=2, other_data=payment_json)
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+					new_journal_entry(this_tenant, journal, total_payment, account, 1, date, vendor.name, vendor.id)
+					new_journal_entry(this_tenant, journal, total_payment, mode.payment_account, 2, date)
 					
-					if not cheque_rtgs_number in cheque_rtgs_checker:
-						cheque_rtgs_checker.append(cheque_rtgs_number)
-						cheque_rtgs_all+= str(cheque_rtgs_number)+", "
-					payment_pk[str(receipt.supplier_invoice)]=new_purchase_payment.id
+				except:
+					transaction.rollback()
 
-				vendor.current_balance-= total_payment
-				vendor.save()
-
-				payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
-
-				if len(cheque_rtgs_all)>0:
-					invoiceids+= "Cheque No:  "+cheque_rtgs_all
-
-				journal=new_journal(this_tenant,date,group_name="Purchase",\
-					remarks='Payment Against: '+invoiceids, trn_id=new_purchase_payment.id, trn_type=2, other_data=payment_json)
-				account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
-				new_journal_entry(this_tenant, journal, total_payment, account, 1, date, vendor.name, vendor.id)
-				new_journal_entry(this_tenant, journal, total_payment, mode.payment_account, 2, date)
-				
-			except:
-				transaction.rollback()
+		elif (calltype == 'delete_payment'):
+			payment_id_list = json.loads(request.data.get('payment_id_list'))
+			with transaction.atomic():
+				try:
+					for item in payment_id_list:
+						payment_id = item['payment_id']
+						payment_details = purchase_payment.objects.for_tenant(this_tenant).get(id = payment_id)
+						amount_paid = payment_details.amount_paid
+						receipt = payment_details.purchase_receipt
+						receipt.amount_paid-=amount_paid
+						receipt.final_payment_date = None
+						receipt.save()
+						vendor = receipt.vendor
+						vendor.current_balance+= amount_paid
+						vendor.save()
+						
+						#delete journal
+						old_journal=Journal.objects.for_tenant(this_tenant).get(trn_type = 2, transaction_bill_id = payment_details.id)
+						# Update the current balance of all journal related accounts
+						journal_line_items=journal_entry.objects.for_tenant(this_tenant).filter(journal = old_journal)
+						acct_period = accounting_period.objects.for_tenant(this_tenant).get(start__lte = old_journal.date, end__gte = old_journal.date)
+						for item in journal_line_items:
+							trn_type = item.transaction_type
+							account = item.account
+							account_journal_year=account_year.objects.get(account=account, accounting_period = acct_period)
+							if (trn_type == 1):
+								account_journal_year.current_debit=account_journal_year.current_debit-item.value
+							elif (trn_type == 2):
+								account_journal_year.current_credit=account_journal_year.current_credit-item.value
+							account_journal_year.save()
+						old_journal.delete()
+						payment_details.delete()
+				except:
+					transaction.rollback()
 
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

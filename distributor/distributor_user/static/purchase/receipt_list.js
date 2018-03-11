@@ -384,7 +384,6 @@ function load_metadata(){
 }
 
 
-
 load_vendor()
 
 function load_vendor(){
@@ -627,7 +626,7 @@ function new_data(){
                     date:date.split("/").reverse().join("-"),
                     total_payment: total_payment,
                     payment_details: JSON.stringify(items),
-                    calltype: "save",
+                    calltype: "new_payment_multiple",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               
                 // contentType: "application/json",

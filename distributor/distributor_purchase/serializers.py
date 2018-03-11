@@ -14,5 +14,5 @@ class PaymentSerializers (serializers.ModelSerializer):
 	purchase_receipt = ReceiptSerializers()
 	class Meta:
 		model = purchase_payment
-		fields = ('payment_mode_name','payment_mode','purchase_receipt','amount_paid', 'cheque_rtgs_number','paid_on','remarks')
+		fields = ('id','payment_mode_name','payment_mode','purchase_receipt','amount_paid', 'cheque_rtgs_number','paid_on','remarks')
 

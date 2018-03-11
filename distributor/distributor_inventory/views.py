@@ -141,7 +141,7 @@ def opening_inventory_data(request):
 			# serial_no=request.POST.get('serial_no')
 			purchase_price=Decimal(request.POST.get('purchase'))
 			tentative_sales_price=request.POST.get('tsp')
-			mrp=request.POST.get('mrp')
+			mrp = request.POST.get('mrp')
 			date=request.POST.get('date')
 
 			if not date:
@@ -185,14 +185,6 @@ def opening_inventory_data(request):
 					warehouse_valuation_change.valuation+=total_inventory_value
 					warehouse_valuation_change.save()
 
-					# inventory_account=Account.objects.for_tenant(this_tenant).get(name='Inventory')
-					# current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
-					# inventory_account_data=account_year.objects.for_tenant(this_tenant).get(account=inventory_account, \
-					# 						accounting_period=current_period)
-					# inventory_account_data.first_debit=total_inventory_value
-					# inventory_account_data.current_debit+=total_inventory_value
-					# inventory_account_data.save()
-
 					inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 					current_period=accounting_period.objects.for_tenant(this_tenant).get(current_period=True)
 					inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\
@@ -210,7 +202,6 @@ def opening_inventory_data(request):
 					except:
 						inventory_acct_year.current_debit=total_inventory_value
 					inventory_acct_year.save()
-
 
 				except:
 					transaction.rollback()
@@ -546,7 +537,6 @@ def write_pdf_view(request, pk_detail):
 		response = HttpResponse(content_type='application/pdf')
 		response['Content-Disposition'] = 'attachment;; filename="Barcode"'+name_text+'"48.pdf"'	
 		
-
 		buffer = BytesIO()
 		# size = potrait(A4)
 		
@@ -563,13 +553,6 @@ def write_pdf_view(request, pk_detail):
 		# p.drawString(100, 100, 'Hello world.')
 		if barcode:
 			barcode = code128.Code128(barcode,barHeight=15*mm,barWidth = 0.25*mm, humanReadable=True)
-			# y=5
-			# for i in range(12):
-			# 	x=5
-			# 	for j in range(4):
-			# 		barcode.drawOn(p,x*mm,y*mm)
-			# 		x=x+52.5
-			# 	y=y+24.75
 			
 			y=15
 			for i in range(12):

@@ -236,7 +236,7 @@ def sales_invoice_save(request):
 													'pur_rate':item.purchase_price}
 									total_purchase_price+=original_available*item.purchase_price
 									quantity_updated-=original_available
-									# item.delete()
+									item.delete()
 									
 								else:
 									item.quantity_available-=quantity_updated
@@ -1049,7 +1049,7 @@ def sales_invoice_edit(request):
 													'pur_rate':item.purchase_price}
 									total_purchase_price+=original_available*item.purchase_price
 									quantity_updated-=original_available
-									# item.delete()
+									item.delete()
 									
 								else:
 									item.quantity_available-=quantity_updated
