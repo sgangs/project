@@ -256,12 +256,12 @@ $('.deletebtn').click(function(e) {
         html: true,
     }, function(isConfirm){
         if (isConfirm){
-            setTimeout(function(){new_data()},600)            
+            setTimeout(function(){delete_data()},600)            
         }
     })
 });
     
-function new_data(){
+function delete_data(){
     var items=[]
     var count = 0;
     $("#payment_table tr.data").each(function() {
@@ -291,7 +291,7 @@ function new_data(){
                 success : function(jsondata) {
                     var show_success=true
                     if (show_success){
-                        swal("Hooray", "Payment details registered.", "success");
+                        swal("Hooray", "Payment details deleted.", "success");
                         // setTimeout(location.reload(true),2500);
                         if (filter_applied){
                             filter_data(1)

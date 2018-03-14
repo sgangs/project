@@ -19,7 +19,7 @@ from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Customer, Warehouse, Manufacturer
 from distributor_inventory.models import Inventory
-from distributor_account.models import Account, tax_transaction, payment_mode, accounting_period,\
+from distributor_account.models import Account, tax_transaction, payment_mode, accounting_period, account_year,\
 									account_inventory, account_year_inventory, journal_inventory, journal_entry_inventory
 from distributor_account.journalentry import new_journal, new_journal_entry
 from distributor_inventory.models import Inventory, inventory_ledger, warehouse_valuation
@@ -714,135 +714,165 @@ def payment_register(request):
 	this_tenant=request.user.tenant
 	if request.method == 'POST':
 		response_data = []
-		total_amount_collected = 0
-		customerid = request.data.get('customerid')
-		modeid = request.data.get('modeid')
-		date = request.data.get('date')
-		payment_details = json.loads(request.data.get('payment_details'))
-		payment_type = request.data.get('payment_type')
 		calltype = request.data.get('calltype')
-		invoiceids=""
-		cheque_rtgs_all=""
-		payment_pk={}
-		cheque_rtgs_checker = []
-		if (calltype == "first_time"):
-			with transaction.atomic():
-				try:
-					mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
-					for item in payment_details:
-						invoice_id=item['invoice_pk']
-						amount_received=Decimal(item['amount'])
-						cheque_rtgs_number=item['cheque_rtgs_number']
-				
-						invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
-						invoice.amount_paid+=amount_received
-						if (round(invoice.total - invoice.amount_paid) == 0):
-							if (payment_type == 'not_final'):
-								pass
-							else:
-								invoice.final_payment_date=date
-						elif (round(invoice.total - invoice.amount_paid) < 0):
-							raise IntegrityError
-						invoice.save()
-						customer = invoice.customer
-
-						new_sales_payment = sales_payment()
-						new_sales_payment.payment_mode=mode
-						new_sales_payment.payment_mode_name=mode.name
-						new_sales_payment.sales_invoice=invoice
-						new_sales_payment.amount_received=amount_received
-						new_sales_payment.cheque_rtgs_number=cheque_rtgs_number
-						new_sales_payment.paid_on=date
-						# new_purchase_payment.remarks=remarks
-						if (payment_type == 'not_final'):
-							new_sales_payment.is_finalized = False
-						else:	
-							new_sales_payment.is_finalized = True
-						new_sales_payment.tenant=this_tenant
-						new_sales_payment.save()
-						total_amount_collected+= amount_received
-						invoiceids+= str(invoice.invoice_id)+", "
-						if not cheque_rtgs_number in cheque_rtgs_checker:
-							cheque_rtgs_checker.append(cheque_rtgs_number)
-							cheque_rtgs_all+= cheque_rtgs_number+", "
-						payment_pk[str(invoice.invoice_id)]=new_sales_payment.id
-					
-					if not (payment_type == 'not_final'):
-						payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
-						if len(cheque_rtgs_all)>0:
-							invoiceids+= "Cheque No:  "+cheque_rtgs_all
-						# raise IntegrityError
-						journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
-							,trn_id=new_sales_payment.id, trn_type=5, other_data=payment_json)
-						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
-						new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date, customer.name, customer.id)
-						new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
-
-				except:
-					transaction.rollback()
-
-		elif (calltype == 'update_payment'):
-			with transaction.atomic():
-				try:
-					if (payment_type == 'finalize'):
+		if (calltype == "first_time" or calltype == 'update_payment'):
+			total_amount_collected = 0
+			customerid = request.data.get('customerid')
+			modeid = request.data.get('modeid')
+			date = request.data.get('date')
+			payment_details = json.loads(request.data.get('payment_details'))
+			payment_type = request.data.get('payment_type')
+			invoiceids=""
+			cheque_rtgs_all=""
+			payment_pk={}
+			cheque_rtgs_checker = []
+			if (calltype == "first_time"):
+				with transaction.atomic():
+					try:
+						mode = payment_mode.objects.for_tenant(this_tenant).get(id=modeid)
 						for item in payment_details:
-							payment_id = item['payment_pk']
-							invoice_id = item['invoice_pk']
-							new_amount_received = Decimal(item['amount'])
-							date = item['payment_date']
+							invoice_id=item['invoice_pk']
+							amount_received=Decimal(item['amount'])
 							cheque_rtgs_number=item['cheque_rtgs_number']
-
-							old_sales_payment = sales_payment.objects.get(id = payment_id)
-							old_amount_received = old_sales_payment.amount_received
-							mode = old_sales_payment.payment_mode
-
+					
 							invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
-							total_already_paid = invoice.amount_paid
-							invoice.amount_paid = total_already_paid - old_amount_received + new_amount_received
+							invoice.amount_paid+=amount_received
 							if (round(invoice.total - invoice.amount_paid) == 0):
-								invoice.final_payment_date=date
+								if (payment_type == 'not_final'):
+									pass
+								else:
+									invoice.final_payment_date=date
 							elif (round(invoice.total - invoice.amount_paid) < 0):
 								raise IntegrityError
 							invoice.save()
 							customer = invoice.customer
 
-							old_sales_payment.amount_received=new_amount_received
-							old_sales_payment.cheque_rtgs_number=cheque_rtgs_number
-							old_sales_payment.paid_on=date
-							old_sales_payment.is_finalized = True
-							old_sales_payment.save()
-							
-							total_amount_collected+= new_amount_received
-
+							new_sales_payment = sales_payment()
+							new_sales_payment.payment_mode=mode
+							new_sales_payment.payment_mode_name=mode.name
+							new_sales_payment.sales_invoice=invoice
+							new_sales_payment.amount_received=amount_received
+							new_sales_payment.cheque_rtgs_number=cheque_rtgs_number
+							new_sales_payment.paid_on=date
+							# new_purchase_payment.remarks=remarks
+							if (payment_type == 'not_final'):
+								new_sales_payment.is_finalized = False
+							else:	
+								new_sales_payment.is_finalized = True
+							new_sales_payment.tenant=this_tenant
+							new_sales_payment.save()
+							total_amount_collected+= amount_received
 							invoiceids+= str(invoice.invoice_id)+", "
 							if not cheque_rtgs_number in cheque_rtgs_checker:
 								cheque_rtgs_checker.append(cheque_rtgs_number)
 								cheque_rtgs_all+= cheque_rtgs_number+", "
-								payment_pk[str(invoice.invoice_id)]=old_sales_payment.id
-						payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
-						if len(cheque_rtgs_all)>0:
-							invoiceids+= "Cheque No:  "+cheque_rtgs_all
-						journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
-								,trn_id=old_sales_payment.id, trn_type=5, other_data=payment_json)
-						account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
-						new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date, customer.name, customer.id)
-						new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
-					elif (payment_type == 'delete'):
-						for item in payment_details:
-							payment_id = item['payment_pk']
-							invoice_id = item['invoice_pk']
-							
-							old_sales_payment = sales_payment.objects.get(id = payment_id)
-							old_amount_received = old_sales_payment.amount_received
-							
-							invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
-							total_already_paid = invoice.amount_paid
-							invoice.amount_paid = total_already_paid - old_amount_received
-							invoice.save()
-							
-							old_sales_payment.delete()
-				except:
-					transaction.rollback()	
+							payment_pk[str(invoice.invoice_id)]=new_sales_payment.id
+						
+						if not (payment_type == 'not_final'):
+							payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+							if len(cheque_rtgs_all)>0:
+								invoiceids+= "Cheque No:  "+cheque_rtgs_all
+							# raise IntegrityError
+							journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
+								,trn_id=new_sales_payment.id, trn_type=5, other_data=payment_json)
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
+							new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date, customer.name, customer.id)
+							new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
+
+					except:
+						transaction.rollback()
+
+			elif (calltype == 'update_payment'):
+				with transaction.atomic():
+					try:
+						if (payment_type == 'finalize'):
+							for item in payment_details:
+								payment_id = item['payment_pk']
+								invoice_id = item['invoice_pk']
+								new_amount_received = Decimal(item['amount'])
+								date = item['payment_date']
+								cheque_rtgs_number=item['cheque_rtgs_number']
+
+								old_sales_payment = sales_payment.objects.get(id = payment_id)
+								old_amount_received = old_sales_payment.amount_received
+								mode = old_sales_payment.payment_mode
+
+								invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
+								total_already_paid = invoice.amount_paid
+								invoice.amount_paid = total_already_paid - old_amount_received + new_amount_received
+								if (round(invoice.total - invoice.amount_paid) == 0):
+									invoice.final_payment_date=date
+								elif (round(invoice.total - invoice.amount_paid) < 0):
+									raise IntegrityError
+								invoice.save()
+								customer = invoice.customer
+
+								old_sales_payment.amount_received=new_amount_received
+								old_sales_payment.cheque_rtgs_number=cheque_rtgs_number
+								old_sales_payment.paid_on=date
+								old_sales_payment.is_finalized = True
+								old_sales_payment.save()
+								
+								total_amount_collected+= new_amount_received
+
+								invoiceids+= str(invoice.invoice_id)+", "
+								if not cheque_rtgs_number in cheque_rtgs_checker:
+									cheque_rtgs_checker.append(cheque_rtgs_number)
+									cheque_rtgs_all+= cheque_rtgs_number+", "
+									payment_pk[str(invoice.invoice_id)]=old_sales_payment.id
+							payment_json=json.dumps(payment_pk, cls=DjangoJSONEncoder)
+							if len(cheque_rtgs_all)>0:
+								invoiceids+= "Cheque No:  "+cheque_rtgs_all
+							journal=new_journal(this_tenant,date,group_name="Sales", remarks="Collection Against: "+invoiceids\
+									,trn_id=old_sales_payment.id, trn_type=5, other_data=payment_json)
+							account= Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Receivable")
+							new_journal_entry(this_tenant, journal, total_amount_collected, account, 2, date, customer.name, customer.id)
+							new_journal_entry(this_tenant, journal, total_amount_collected, mode.payment_account, 1, date)
+						elif (payment_type == 'delete'):
+							for item in payment_details:
+								payment_id = item['payment_pk']
+								invoice_id = item['invoice_pk']
+								
+								old_sales_payment = sales_payment.objects.get(id = payment_id)
+								old_amount_received = old_sales_payment.amount_received
+								
+								invoice=sales_invoice.objects.for_tenant(this_tenant).get(id=invoice_id)
+								total_already_paid = invoice.amount_paid
+								invoice.amount_paid = total_already_paid - old_amount_received
+								invoice.save()
+								
+								old_sales_payment.delete()
+					except:
+						transaction.rollback()	
+
+		elif (calltype == 'delete_payment'):
+			payment_id_list = json.loads(request.data.get('payment_id_list'))
+			for item in payment_id_list:
+				payment_id = item['payment_id']
+				sales_payment_details = sales_payment.objects.for_tenant(this_tenant).get(id = payment_id)
+				amount_received = sales_payment_details.amount_received
+				invoice_selected =sales_payment_details.sales_invoice
+				
+				invoice_selected.amount_paid-=amount_received
+				invoice_selected.final_payment_date=None
+				invoice_selected.save()
+
+				#delete journal
+				old_journal=Journal.objects.for_tenant(this_tenant).get(trn_type = 5, transaction_bill_id = sales_payment_details.id)
+				# Update the current balance of all journal related accounts
+				journal_line_items=journal_entry.objects.for_tenant(this_tenant).filter(journal = old_journal)
+				acct_period = accounting_period.objects.for_tenant(this_tenant).get(start__lte = old_journal.date, end__gte = old_journal.date)
+				for item in journal_line_items:
+					trn_type = item.transaction_type
+					account = item.account
+					account_journal_year = account_year.objects.get(account=account, accounting_period = acct_period)
+					if (trn_type == 1):
+						account_journal_year.current_debit=account_journal_year.current_debit-item.value
+					elif (trn_type == 2):
+						account_journal_year.current_credit=account_journal_year.current_credit-item.value
+					account_journal_year.save()
+				old_journal.delete()
+				sales_payment_details.delete()
 
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
