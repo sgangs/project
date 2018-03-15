@@ -538,7 +538,6 @@ def sales_invoice_save(request):
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
-
 #This is used bth in app & website. Change to POST before prodcution.
 @api_view(['GET'],)
 def sales_invoice_delete(request):
@@ -659,7 +658,7 @@ def sales_invoice_delete(request):
 def sales_invoice_edit_view(request):
 	return render(request,'retail_sales/edit_invoice.html', {'extension': 'base.html'})
 
-
+#Edit Sales Invoice and Sales
 @api_view(['POST'],)
 def sales_invoice_edit(request):
 		if request.method == 'POST':
@@ -1087,9 +1086,50 @@ def sales_invoice_edit(request):
 					except:
 						transaction.rollback()
 
+			elif (calltype == 'change_payment_mode'):
+				with transaction.atomic():
+				# with transaction.atomic():
+					try:
+						revised_mode_id = request.data.get('revised_mode_id')
+						invoice_pk=request.data.get('invoice_id')
+
+						old_invoice = retail_invoice.objects.for_tenant(this_tenant).get(id=invoice_pk)
+						date = old_invoice.date
+						total = old_invoice.total
+						old_pay_mode_id = old_invoice.payment_mode_id
+
+						if (revised_mode_id == old_pay_mode_id):
+							jsondata = json.dumps(response_data)
+							return HttpResponse(jsondata)
+
+
+						payment_mode_selected=payment_mode.objects.for_tenant(this_tenant).get(id=revised_mode_id)
+
+						old_invoice.payment_mode_id=payment_mode_selected.id
+						old_invoice.payment_mode_name=payment_mode_selected.name
+						old_invoice.save()
+
+						journal_selected=Journal.objects.for_tenant(this_tenant).get(transaction_bill_id = old_invoice.id, trn_type = 7)
+						journal_entry_selected = journal_entry.objects.for_tenant(this_tenant).get(journal = journal_selected, transaction_type = 1)
+
+						acct_period = accounting_period.objects.for_tenant(this_tenant).\
+										get(start__lte = journal_selected.date, end__gte = journal_selected.date)
+						account = journal_entry_selected.account
+						account_journal_year = account_year.objects.get(account=account, accounting_period = acct_period)
+						account_journal_year.current_debit-= journal_entry_selected.value
+						account_journal_year.save()
+
+						journal_entry_selected.delete()
+
+						pay_mode_account = payment_mode_selected.payment_account
+						new_journal_entry(this_tenant, journal_selected, total, pay_mode_account, 1, date)
+
+					except Exception as err:
+						response_data['error'] = err
+						transaction.rollback()
+
 			jsondata = json.dumps(response_data)
 			return HttpResponse(jsondata)
-
 
 @api_view(['GET', 'POST'],)
 def invoice_details(request, pk):
@@ -1147,8 +1187,9 @@ def all_invoice_app(request):
 		end=date_first.date.today()
 		start=end-date_first.timedelta(days=3)
 		response_data={}
+		
 		invoices=retail_invoice.objects.for_tenant(this_tenant).filter(date__range=(start,end)).values('id','invoice_id', \
-				'date','total', 'cgsttotal','sgsttotal').order_by('-date', '-invoice_id')
+				'date','total', 'cgsttotal','sgsttotal', 'payment_mode_id', 'payment_mode_name').order_by('-date', '-invoice_id')
 		
 			# page_no=1
 			# paginator = Paginator(invoices, 3)
