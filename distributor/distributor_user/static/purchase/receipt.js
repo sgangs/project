@@ -226,13 +226,13 @@ $(".details").on("change", ".name", function(){
 }); 
 
 $(".billdata").on("keydown", ".cd_discount", function(){
-    // get_total();
-    round_manual();
+    get_total();
+    // round_manual();
 });
 
 $(".billdata").on("keyup", ".cd_discount", function(){
-    // get_total();
-    round_manual();
+    get_total();
+    // round_manual();
 });
 
 
@@ -370,15 +370,16 @@ function get_total(){
     cgst_grand_total=round_off(cgst_grand_total);
     sgst_grand_total=round_off(sgst_grand_total);
     igst_grand_total=round_off(igst_grand_total);
-    total=round_off(subtotal+tax_total);
-    round_value=round_off((Math.round(total)-total));
     
     var cash_discount = parseFloat($('.cd_discount').val());
     if(isNaN(cash_discount)){
         cash_discount=0;
     }
+
+    total=round_off(subtotal+tax_total-cash_discount);
+    round_value=round_off((Math.round(total)-total));
     
-    total_payable = total - cash_discount;
+    total_payable = total;
     payable=round_off(total_payable+round_value);
     
     // gd_type=$('.gdt').find(':selected').data('id')
