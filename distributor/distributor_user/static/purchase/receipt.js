@@ -226,11 +226,13 @@ $(".details").on("change", ".name", function(){
 }); 
 
 $(".billdata").on("keydown", ".cd_discount", function(){
-    get_total();
+    // get_total();
+    round_manual();
 });
 
 $(".billdata").on("keyup", ".cd_discount", function(){
-    get_total();
+    // get_total();
+    round_manual();
 });
 
 
@@ -274,9 +276,14 @@ function round_manual(argument) {
     if(isNaN(round_value)){
         round_value = 0.00;
     }
-    total = round_off(subtotal + taxtotal + round_value);
+    var cash_discount = parseFloat($('.cd_discount').val());
+    if(isNaN(cash_discount)){
+        cash_discount=0;
+    }
+    total = round_off(subtotal + taxtotal + round_value - cash_discount);
     $('.total_receipt').html(total.toFixed(2));
 }
+
 
 function get_total(){
     var subtotal=0, total=0, tax_total=0, cgst_grand_total=0, sgst_grand_total=0, igst_grand_total=0;
