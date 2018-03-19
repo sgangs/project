@@ -229,19 +229,6 @@ def RegisterView(request):
                     create_accountChart(new_tenant,"CGST Output",\
                         "Current Liabilities", "CGST Output Account", "cgstout", period, ledgername=None, is_first_year=True)
                     
-                    # create_accountChart(new_tenant,"VAT Payments",\
-                    #     "Tax Expense", "VAT Payment Account", "vatpay", period, ledgername=None, is_first_year=True)
-                    # create_accountChart(new_tenant,"VAT Input",\
-                    #     "Current Assets", "VAT Input Account", "vatin", period, ledgername=None, is_first_year=True)
-                    # create_accountChart(new_tenant,"VAT Output",\
-                    #     "Current Liabilities", "VAT Output Account", "vatout", period, ledgername=None, is_first_year=True)
-                    
-                    #This account will consider COGS return - as we store purchase value only in COGS
-                    #this contra is something like purchase contra
-                    # create_accountInventory(new_tenant,"Cost of Goods Sold Contra", "Direct Expense",\
-                    #     "Parent COGS Contra Accounts", "cogs contra", period, ledgername=None, is_first_year=True, is_contra=True)
-                        #This is used to consider sales return - check if it should be expense or revenue
-                    
                     create_accountChart(new_tenant,"Inventory Waste Expense", "Direct Expense",\
                         "Parent Inventory Wastage", "inventory waste", period, ledgername=None, is_first_year=True, is_contra=True)
                     

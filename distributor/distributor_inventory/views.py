@@ -64,13 +64,19 @@ def inventory_data(request):
 	calltype = request.GET.get('calltype')
 	
 	if (calltype == 'stockwise'):
-		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+		manufacturer_id = request.GET.get('manufacturer_id')
+		products=Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer_id)
+
+		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
 					select_related('product', 'warehouse').values('product__name','product__sku','purchase_date','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name','purchase_date',))
 	
 	elif (calltype == 'current'):
-		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
+		manufacturer_id = request.GET.get('manufacturer_id')
+		products=Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer_id)
+		
+		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
 					select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__sku','product__name'))
@@ -81,10 +87,19 @@ def inventory_data(request):
 						annotate(total_value=Sum(F('quantity_available')*F('purchase_price'))))
 	
 	elif(calltype == 'download_current'):
-		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0).\
-					select_related('product', 'warehouse').values('product__name','expiry_date',\
+		manufacturer_id = request.GET.get('manufacturer_id')
+		products=Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer_id)
+
+		# current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
+		# 			select_related('product', 'warehouse').values('product__name',\
+		# 			'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
+		# 			annotate(available=Sum('quantity_available')).annotate(value=F('quantity_available')*F('purchase_price')).order_by('product__name'))
+
+		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
+					select_related('product', 'warehouse').values('product__name',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__name'))
+
 		context = {
 			'inventories': current_inventory,
 			'tenant':this_tenant

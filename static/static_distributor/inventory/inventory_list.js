@@ -1,8 +1,12 @@
 $(function(){
 
-var cur=0,age=0, manufac=0;
+var cur=0,age=0, manufac=0, manufac_id=-1;
 
-load_current_inventory()
+$('.cur').hide();
+$('.age').hide();
+$('.manufac').hide();
+
+// load_current_inventory()
 
 $('.cur').click(function(){
     load_current_inventory();
@@ -19,7 +23,8 @@ function load_current_inventory(){
         $.ajax({
             url : "/inventory/getcurrentdata",
             type: "GET",
-            data:{calltype: 'current'},
+            data:{calltype: 'current',
+                manufacturer_id: manufac_id},
             dataType: 'json',
             // handle a successful response
             success : function(jsondata) {
@@ -50,6 +55,33 @@ function load_current_inventory(){
     }
 }
 
+load_manufacturer()
+
+function load_manufacturer(){
+
+    $.ajax({
+        url : "/master/manufacbrand/manufacdata/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                $('#manufacDownload').append($('<option>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+                
+            });
+            $('#manufacDownload').selectpicker('refresh');
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "Could not fetch manufacturer data. Try again later.", "error");
+        }
+    });
+}
+
+
 // load_current_inventory()
 
 $('.age').click(function(){
@@ -67,7 +99,8 @@ function load_ageing_inventory(){
         $.ajax({
             url : "/inventory/getcurrentdata",
             type: "GET",
-            data:{calltype: 'stockwise'},
+            data:{calltype: 'stockwise',
+                    manufacturer_id : manufac_id},
             dataType: 'json',
             // handle a successful response
             success : function(jsondata) {
@@ -104,13 +137,14 @@ $('.manufac').click(function(){
     load_manufacturer_inventory();
 });
 
+load_manufacturer_inventory();
 
 function load_manufacturer_inventory(){
     $('.manufacturer').attr('hidden', false);
     $('.current').attr('hidden', true);
     $('.ageing').attr('hidden', true);
-    $('.cur').show();
-    $('.age').show();
+    $('.cur').hide();
+    $('.age').hide();
     $('.manufac').hide();
     if (manufac == 0){
         $.ajax({
@@ -143,7 +177,7 @@ $("#manufacturer_inventory").on("click", ".link", function(){
     $('.manufacturer').attr('hidden', true);
     $('.current').attr('hidden', false);
     $('.ageing').attr('hidden', true);
-    $('.cur').show();
+    $('.cur').hide();
     $('.age').show();
     $('.manufac').show();
     manufac_id=$(this).closest('tr').find('td:nth-child(1)').html();
@@ -190,11 +224,25 @@ function encodeQueryData(data) {
 
 
 $('.download').click(function(e){
-    
-    var data = { 'calltype': 'download_current', };
-    var querystring = encodeQueryData(data);
-    var download_url='/inventory/getcurrentdata/?'+querystring
-    location.href = download_url;
+    $('#manufac').modal('show');
 });
+
+$('.download_manufacwise').click(function(e){
+    
+    var manufacturer_id=$(".manufacDownload").find(':selected').data('id');
+    
+    if (manufacturer_id == 'undefined' || manufacturer_id == undefined || manufacturer_id == '' 
+            || typeof(manufacturer_id) == undefined || $.trim(manufacturer_id).length == 0){
+        swal("Ughh...", "Kindly select a manufacturer to proceed.", "warning");
+    }
+    else{
+        var data = { 'calltype': 'download_current', 'manufacturer_id': manufacturer_id};
+        var querystring = encodeQueryData(data);
+        var download_url='/inventory/getcurrentdata/?'+querystring
+        location.href = download_url;
+    }
+
+});
+
 
 });
