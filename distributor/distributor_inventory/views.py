@@ -75,7 +75,7 @@ def inventory_data(request):
 	elif (calltype == 'current'):
 		manufacturer_id = request.GET.get('manufacturer_id')
 		products=Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer_id)
-		
+
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
 					select_related('product', 'warehouse').values('product__name','product__sku','expiry_date',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
@@ -89,11 +89,6 @@ def inventory_data(request):
 	elif(calltype == 'download_current'):
 		manufacturer_id = request.GET.get('manufacturer_id')
 		products=Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer_id)
-
-		# current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
-		# 			select_related('product', 'warehouse').values('product__name',\
-		# 			'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
-		# 			annotate(available=Sum('quantity_available')).annotate(value=F('quantity_available')*F('purchase_price')).order_by('product__name'))
 
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
 					select_related('product', 'warehouse').values('product__name',\

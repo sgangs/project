@@ -803,38 +803,37 @@ def all_receipts(request):
 				'receipt_id','supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by',)\
 				.order_by('-date', 'receipt_id')
 		elif (calltype == 'apply_filter'):
-			vendors=json.loads(request.GET.get('vendors'))
-			start=request.GET.get('start')
-			end=request.GET.get('end')
-			invoice_no=request.GET.get('invoice_no')
-			receipts=[]
-			sent_with=request.GET.get('sent_with')
-			order_no=request.GET.get('order_no')
+			vendors = json.loads(request.GET.get('vendors'))
+			start = request.GET.get('start')
+			end = request.GET.get('end')
+			invoice_no = request.GET.get('invoice_no')
+			receipts = []
+			sent_with = request.GET.get('sent_with')
+			order_no = request.GET.get('order_no')
 			if (len(vendors)>0):
 				vendors_list=[]
 				for item in vendors:
 					vendors_list.append(item['vendorid'])
 				if (sent_with == 'all_receipts'):
-					receipts=purchase_receipt.objects.for_tenant(this_tenant).filter(vendor__in=vendors_list).values('id',\
+					receipts=purchase_receipt.objects.for_tenant(this_tenant).filter(vendor__in=vendors_list, date__range=[start,end]).values('id',\
 						'receipt_id', 'supplier_invoice','date','vendor_name','total', 'amount_paid', 'payable_by',).\
 						order_by('-date', 'receipt_id')
 				if (sent_with == 'unpaid_receipts'):
 					receipts=purchase_receipt.objects.for_tenant(this_tenant).\
-						filter(final_payment_date__isnull=True, vendor__in=vendors_list).values('id',\
+						filter(final_payment_date__isnull=True, vendor__in=vendors_list, date__range=[start,end]).values('id',\
 						'receipt_id','supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by',)\
 						.order_by('-date', 'receipt_id')
 			else:
 				if (sent_with == 'all_receipts'):
-					receipts=purchase_receipt.objects.for_tenant(this_tenant).all().values('id',\
+					receipts=purchase_receipt.objects.for_tenant(this_tenant).filter(date__range=[start,end]).values('id',\
 						'receipt_id', 'supplier_invoice','date','vendor_name','total', 'amount_paid', 'payable_by',).\
 						order_by('-date', 'receipt_id')
 				if (sent_with == 'unpaid_receipts'):
 					receipts=purchase_receipt.objects.for_tenant(this_tenant).\
-						filter(final_payment_date__isnull=True).values('id',\
+						filter(final_payment_date__isnull=True, date__range=[start,end]).values('id',\
 						'receipt_id','supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by',)\
 						.order_by('-date', 'receipt_id')
-			if (start and end):
-				receipts=receipts.filter(date__range=[start,end])
+			
 			if (order_no):
 				order=purchase_order.objects.for_tenant(this_tenant).get(order_id=order_no)
 				receipts=receipts.filter(order_id=order.id)
@@ -1782,14 +1781,6 @@ def vendor_opening_payment_list(request):
 
 
 @api_view(['GET'],)
-def return_new_inventory(request):
-	return render(request,'purchase/purchase_return.html', {'extension': 'base.html'})
-
-@api_view(['GET'],)
-def debit_note_new_noninventory(request):
-	return render(request,'purchase/debit_note_voucher.html', {'extension': 'base.html'})
-
-@api_view(['GET'],)
 def purchase_receipt_vendor(request):
 	this_tenant=request.user.tenant
 	if request.method == "GET":
@@ -1803,7 +1794,12 @@ def purchase_receipt_vendor(request):
 	jsondata = json.dumps(receipt,  cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
-@api_view(['GET','POST'],)
+@api_view(['GET'],)
+def return_new_inventory(request):
+	return render(request,'purchase/purchase_return.html', {'extension': 'base.html'})
+
+
+@api_view(['POST'],)
 def purchase_return_inventory_save(request):
 	if request.method == 'POST':
 		calltype = request.data.get('calltype')
@@ -1939,20 +1935,32 @@ def purchase_return_inventory_save(request):
 						
 						original_purchase_price=Decimal(data['purchase']).quantize(TWOPLACES)
 						real_purchase_price=Decimal(data['purchase_real']).quantize(TWOPLACES)
-						
 						try:
-							original_tentative_sales_price=Decimal(data['tsp']).quantize(TWOPLACES)
+							if (data['tsp'] == 'null'):
+								original_tentative_sales_price = None
+							else:	
+								original_tentative_sales_price=Decimal(data['tsp']).quantize(TWOPLACES)
 						except:
 							original_tentative_sales_price=0
 						try:
-							original_mrp=Decimal(data['mrp'])
+							if (data['mrp'] == 'null'):
+								original_mrp = None
+							else:
+								original_mrp=Decimal(data['mrp'])
 						except:
 							original_mrp=0
 						
 						
 						purchase_price=Decimal(original_purchase_price/multiplier)
-						tentative_sales_price=original_tentative_sales_price/multiplier
-						mrp=original_mrp/multiplier
+						if (original_tentative_sales_price == None):
+							tentative_sales_price = None
+						else:	
+							tentative_sales_price=original_tentative_sales_price/multiplier
+
+						if (original_mrp == None):
+							mrp = None
+						else:
+							mrp=original_mrp/multiplier
 
 						# original_quantity=Decimal(data['quantity']) + Decimal(0.000)
 						original_quantity=Decimal(data['quantity']).quantize(TWOPLACES)
@@ -1997,37 +2005,9 @@ def purchase_return_inventory_save(request):
 							if (quantity_updated>0):
 								raise IntegrityError('Stock/Inventory not available for: '+product.name )
 						
-						LineItem = return_line_item()
-						LineItem.purchase_return = new_receipt
-						LineItem.product= product
-						LineItem.product_name= product.name
-						LineItem.product_sku=product.sku
-						LineItem.product_hsn=product.hsn_code
-						LineItem.cgst_percent=cgst_p
-						LineItem.cgst_value=cgst_v
-						LineItem.sgst_percent=sgst_p
-						LineItem.sgst_value=sgst_v
-						LineItem.igst_percent=igst_p
-						LineItem.igst_value=igst_v
-						LineItem.unit=unit.symbol
-						LineItem.unit_multi=unit.multiplier
-						LineItem.quantity=original_quantity
-						
-						# if (product.has_batch):
-						# 	LineItem.batch=batch
-						# 	LineItem.manufacturing_date=manufacturing_date
-						# 	LineItem.expiry_date=expiry_date
-						# if (product.has_instance):
-						# 	LineItem.serial_no=serial_no
-						
-						LineItem.return_purchase_price=original_purchase_price
-						LineItem.tentative_sales_price=original_tentative_sales_price
-						LineItem.mrp=original_mrp
-						LineItem.real_purchase_price = real_purchase_price
-						LineItem.line_taxable_value=line_taxable_total
-						LineItem.line_total=line_total
-						LineItem.tenant=this_tenant
-						LineItem.save()
+						LineItem = new_return_line_item(new_receipt, product, product.name, product.sku, product.hsn_code, cgst_p, cgst_v, sgst_p,\
+									sgst_v, igst_p, igst_v, unit, unit.symbol, unit.multiplier, original_quantity, original_purchase_price,\
+									original_tentative_sales_price, original_mrp, real_purchase_price, line_taxable_total, line_total, this_tenant)
 						# There will be multiple effects in the inventory, ad effect wil be same as sales.
 						
 						if maintain_inventory:						
@@ -2126,13 +2106,302 @@ def purchase_return_inventory_save(request):
 						new_entry_inv.tenant=this_tenant
 						new_entry_inv.save()
 
-					if (calltype == 'save'):
-						response_data=new_receipt.id
-					else:
-						# response_data['pk']=new_invoice.id
-						response_data['id']=new_receipt.id
+					response_data['id']=new_receipt.id
 				except:
 					transaction.rollback()
 
 		jsondata = json.dumps(response_data)
+		return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+def return_new_noninventory(request):
+	return render(request,'purchase/purchase_return_noninventory.html', {'extension': 'base.html'})
+
+@api_view(['POST'],)
+def purchase_return_noninventory_save(request):
+	if request.method == 'POST':
+		calltype = request.data.get('calltype')
+		response_data = {}
+		this_tenant=request.user.tenant
+		#saving the receipt
+		if (calltype == 'save' or 'mobilesave'):
+			calledfrom = request.data.get('calledfrom')
+			
+			with transaction.atomic():
+				try:
+					
+					supplier_note_no = request.data.get('supplier_note_no')
+					adjustment_receipt_no = request.data.get('adjustment_receipt_no')
+					date = request.data.get('date')
+					vendor_id = request.data.get('vendor')
+					warehouse_id = request.data.get('warehouse')
+					
+					is_igst = request.data.get('is_igst')
+
+					if (is_igst == 'true' or is_igst == True):
+						is_igst = True
+					else:
+						is_igst = False
+					
+					subtotal = Decimal(request.data.get('subtotal')).quantize(TWOPLACES)
+					cgsttotal = Decimal(request.data.get('cgsttotal')).quantize(TWOPLACES)
+					sgsttotal = Decimal(request.data.get('sgsttotal')).quantize(TWOPLACES)
+					igsttotal = Decimal(request.data.get('igsttotal')).quantize(TWOPLACES)
+					round_value = Decimal(request.data.get('round_value')).quantize(TWOPLACES)
+					total = Decimal(request.data.get('total')).quantize(TWOPLACES)
+					sum_total = subtotal+cgsttotal+sgsttotal
+
+					return_reason = request.data.get('return_reason')
+
+					date = request.data.get('date')
+					
+					if (calltype == 'save'):
+						bill_data = json.loads(request.data.get('bill_details'))
+					else:
+						bill_data = request.data.get('bill_details')
+						
+					vendor = Vendor.objects.for_tenant(this_tenant).get(id=vendor_id)
+					warehouse = Warehouse.objects.for_tenant(this_tenant).get(id=warehouse_id)
+					
+					vendor.current_balance-= total
+					vendor.save()
+
+					try:
+						adjustment_receipt = purchase_receipt.objects.for_tenant(this_tenant)\
+							.get(supplier_invoice = adjustment_receipt_no, vendor = vendor_id)
+					except:
+						raise IntegrityError('Purchase receipt does not exixt.')
+
+					new_receipt=new_purchase_return_inventory(this_tenant, supplier_note_no, vendor, warehouse, date, \
+							subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, adjustment_receipt_no, 2)
+
+
+					total_value = adjustment_receipt.total
+					amount_already_paid = adjustment_receipt.amount_paid
+					amount_due = total_value - amount_already_paid
+					if (total>amount_due):
+						raise IntegrityError('Retrun amount cannot be greater than amount due.')
+					elif (amount_due==total):
+						adjustment_receipt.amount_paid+=total
+						adjustment_receipt.final_payment_date = date
+						adjustment_receipt.save()
+					else:
+						adjustment_receipt.amount_paid+=total
+						adjustment_receipt.save()
+
+					cgst_paid={}
+					sgst_paid={}
+					igst_paid={}
+					cgst_total=0
+					sgst_total=0
+					igst_total=0
+
+					vendor_gst=vendor.gst
+					vendor_state=vendor.state
+
+					#saving the receipt_line_item and linking them with foreign key to receipt
+					for data in bill_data:
+						product_description=data['product_description']
+						unitid=data['unit_id']
+						
+						try:
+							cgst_p=Decimal(data['cgst_p']).quantize(TWOPLACES)
+							cgst_v=Decimal(data['cgst_v']).quantize(TWOPLACES)
+							sgst_p=Decimal(data['sgst_p']).quantize(TWOPLACES)
+							sgst_v=Decimal(data['sgst_v']).quantize(TWOPLACES)
+						except:
+							cgst_p=0
+							cgst_v=0
+							sgst_p=0
+							sgst_v=0
+						try:
+							igst_p=Decimal(data['igst_p'])
+							igst_v=Decimal(data['igst_v'])
+						except:
+							igst_p=0
+							igst_v=0
+
+						cgst_total+=cgst_v
+						sgst_total+=sgst_v
+						igst_total+=igst_v
+
+						line_taxable_total=Decimal(data['taxable_total']).quantize(TWOPLACES)
+						line_total=Decimal(data['line_total']).quantize(TWOPLACES)
+						
+						unit=Unit.objects.for_tenant(this_tenant).get(id=unitid)
+						multiplier=unit.multiplier
+
+						actual_purchase_price = Decimal(data['purchase']).quantize(TWOPLACES)
+						
+						quantity=Decimal(data['quantity']).quantize(TWOPLACES)
+						# quantity=original_quantity*multiplier
+
+						LineItem = new_return_line_item(new_receipt, None, product_description, None, None, cgst_p, cgst_v, sgst_p,\
+									sgst_v, igst_p, igst_v, unit, unit.symbol, unit.multiplier, quantity, actual_purchase_price,\
+									None, None, 0, line_taxable_total, line_total, this_tenant)
+						# There will be multiple effects in the inventory, ad effect wil be same as sales.
+						
+						if (is_igst):
+							if (igst_p in igst_paid):
+								igst_paid[igst_p][0]+=igst_v
+								igst_paid[igst_p][1]=total
+								igst_paid[igst_p][2]+=line_taxable_total
+							else:
+								igst_paid[igst_p]=[igst_v, total, line_taxable_total]
+
+						else:
+							if (cgst_p in cgst_paid):
+								cgst_paid[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][1]=total
+								cgst_paid[cgst_p][2]+=line_taxable_total
+							else:
+								cgst_paid[cgst_p]=[cgst_v, total, line_taxable_total]
+							if (sgst_p in sgst_paid):
+								sgst_paid[sgst_p][0]+=sgst_v
+								sgst_paid[sgst_p][1]=total
+								sgst_paid[sgst_p][2]+=line_taxable_total
+							else:
+								sgst_paid[sgst_p]=[sgst_v, total, line_taxable_total]
+
+					is_vendor_gst = True if vendor_gst else False
+					if (is_igst):
+						for k,v in igst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("IGST",4, k, v[0],v[1],v[2], new_receipt.id,\
+											new_receipt.supplier_note_no, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
+					else:
+						for k,v in cgst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("CGST",4, k, v[0],v[1],v[2], new_receipt.id,\
+											new_receipt.supplier_note_no, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
+						for k,v in sgst_paid.items():
+							if v[2]>0:
+								new_tax_transaction_register("SGST",4, k, v[0],v[1],v[2], new_receipt.id,\
+											new_receipt.supplier_note_no, date, this_tenant, is_vendor_gst, vendor_gst, vendor_state)
+
+					remarks="Purchase Return Note No: "+str(new_receipt.supplier_note_no)
+					journal=new_journal(this_tenant, date,"Purchase",remarks, trn_id=new_receipt.id, trn_type=3)
+					account= Account.objects.for_tenant(this_tenant).get(name__exact="Purchase")
+					new_journal_entry(this_tenant, journal, subtotal, account, 2, date)
+					if (cgst_total>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="CGST Input")
+						new_journal_entry(this_tenant, journal, cgst_total, account, 2, date)
+					if (sgst_total>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="SGST Input")
+						new_journal_entry(this_tenant, journal, sgst_total, account, 2, date)
+					if (igst_total>0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="IGST Input")
+						new_journal_entry(this_tenant, journal, igst_total, account, 2, date)
+					if (round_value!=0):
+						account= Account.objects.for_tenant(this_tenant).get(name__exact="Rounding Adjustment")
+						new_journal_entry(this_tenant, journal, round_value, account, 2, date)
+						
+					account = Account.objects.for_tenant(this_tenant).get(name__exact="Accounts Payable")
+					new_journal_entry(this_tenant, journal, total, account, 1, date, vendor.name, vendor.id)						
+							
+					debit = journal.journalEntry_journal.filter(transaction_type=1).aggregate(Sum('value'))
+					credit = journal.journalEntry_journal.filter(transaction_type=2).aggregate(Sum('value'))
+					if (debit != credit):
+						raise IntegrityError (('Debit and credit value not matching'))					
+
+					response_data['id']=new_receipt.id
+				except:
+					transaction.rollback()
+
+		jsondata = json.dumps(response_data)
+		print(jsondata)
+		return HttpResponse(jsondata)
+
+
+@api_view(['GET'],)
+def all_return_view(request):
+	extension="base.html"
+	return render (request, 'purchase/return_list.html',{'extension':extension})
+
+
+@api_view(['GET'],)
+def all_return_data(request):
+	this_tenant=request.user.tenant
+	page_no = request.GET.get('page_no')
+	filter_data={}
+	response_data={}
+	if request.method == 'GET':
+		calltype = request.GET.get('calltype')
+		if (calltype == 'all_return'):
+			returns = purchase_return.objects.for_tenant(this_tenant).all().values('id','note_id', 'supplier_note_no', \
+				'adjustmnet_receipt_no','date','vendor_name','total',).order_by('-date', 'note_id')
+		
+		elif (calltype == 'apply_filter'):
+			vendors = json.loads(request.GET.get('vendors'))
+			start = request.GET.get('start')
+			end = request.GET.get('end')
+			supplier_note_no = request.GET.get('supplier_note_no')
+			adjustmnet_receipt_no = request.GET.get('adjustmnet_receipt_no')
+			returns = []
+			
+			if (len(vendors)>0):
+				vendors_list=[]
+				for item in vendors:
+					vendors_list.append(item['vendorid'])
+
+				returns = purchase_return.objects.for_tenant(this_tenant).filter(vendor__in=vendors_list, date__range=[start,end]).\
+					values('id','note_id', 'supplier_note_no', 'adjustmnet_receipt_no','date','vendor_name','total',).order_by('-date', 'note_id')
+
+			else:
+				returns = purchase_return.objects.for_tenant(this_tenant).filter(vendor__in=vendors_list, date__range=[start,end]).\
+					values('id','note_id', 'supplier_note_no', 'adjustmnet_receipt_no','date','vendor_name','total',).order_by('-date', 'note_id')
+
+			# if (start and end):
+			# 	returns=returns.filter(date__range=[start,end])
+			if supplier_note_no:
+				returns=returns.filter(supplier_note_no__icontains=supplier_note_no)
+			if adjustmnet_receipt_no:
+				returns=returns.filter(adjustmnet_receipt_no__icontains=adjustmnet_receipt_no)
+
+		# page_no = 1
+		response_data={}
+		# print(receipts.count())
+		if page_no:
+			# if (page_no == str(1)):
+			# 	filter_summary=returns.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
+			# 	filter_data['total_pending'] = filter_summary['pending']
+			# 	filter_data['total_value'] = filter_summary['total_sum']
+				
+			response_data =  paginate_data(page_no, 10, list(returns))
+			# if (page_no == str(1)):
+				# response_data.update(filter_data)
+			 
+		else:
+			# filter_summary=returns.aggregate(pending=Sum('total')-Sum('amount_paid'), total_sum=Sum('total'))
+			# filter_data['total_pending'] = filter_summary['pending']
+			# filter_data['total_value'] = filter_summary['total_sum']
+			response_data['object']=list(returns)
+	
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def return_detail_view(request, pk):
+	extension="base.html"
+	return render (request, 'purchase/purchase_return_detail.html',{'extension':extension, 'pk': pk})
+
+@api_view(['GET', 'POST'],)
+def return_details(request, pk):
+	this_tenant=request.user.tenant
+	if request.method == 'GET':
+		return_detail = purchase_return.objects.for_tenant(this_tenant).values('id','supplier_note_no','adjustmnet_receipt_no',\
+		'date','vendor_name','vendor_address','vendor_city','vendor_pin','vendor_gst','warehouse_address','warehouse_city',\
+		'warehouse_pin','subtotal','cgsttotal','sgsttotal','igsttotal','roundoff','total', 'note_type').get(id=pk)
+
+		return_detail['tenant_name'] = this_tenant.name
+		return_detail['tenant_gst'] = this_tenant.gst
+		return_detail['tenant_address'] = this_tenant.address_1+","+this_tenant.address_2
+		
+		line_items = list(return_line_item.objects.filter(purchase_return=return_detail['id']).values('id','product_name','product_hsn',\
+			'unit_symbol','unit_multi','quantity', 'return_purchase_price', 'tentative_sales_price','mrp','cgst_percent','sgst_percent','igst_percent',\
+			'cgst_value','sgst_value','igst_value','line_taxable_value','line_total'))
+		return_detail['line_items'] = line_items
+		
+		jsondata = json.dumps(return_detail, cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)

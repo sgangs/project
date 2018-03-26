@@ -48,7 +48,7 @@ class purchase_receipt(models.Model):
 	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	roundoff=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	roundoff=models.DecimalField(max_digits=4, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
 	# itemwise_discount_total=models.DecimalField(max_digits=12, decimal_places=2)
 	amount_paid=models.DecimalField(max_digits=12, decimal_places=2)
@@ -102,7 +102,7 @@ class receipt_line_item(models.Model):
 	date=models.DateField(default=dt.date.today)
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
-	product_sku=models.CharField(max_length =50, blank=True, null=True)
+	product_sku=models.CharField(max_length =20, blank=True, null=True)
 	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	vat_type=models.CharField(max_length =15, blank=True, null=True)
 	tax_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -183,6 +183,8 @@ class other_payment(models.Model):
 class purchase_return(models.Model):
 	note_type=((1,'Inventory Return'),
 			(2,'Non-inventory Adjustment'))
+
+	id=models.BigAutoField(primary_key=True)
 	note_id = models.CharField(blank=True, max_length=12)
 	note_type = models.CharField(max_length=12,choices=note_type)
 	
@@ -194,6 +196,7 @@ class purchase_return(models.Model):
 	vendor=models.ForeignKey(Vendor,blank=True, null=True, 
 						related_name='purchaseReturn_purchase_master_vendor', on_delete=models.SET_NULL)
 	vendor_name=models.CharField(max_length=200)
+	vendor_gst=models.CharField(max_length=20, blank=True, null=True)
 	vendor_address=models.TextField(blank=True, null=True)
 	vendor_state=models.CharField(max_length=4,blank=True, null=True)
 	vendor_city=models.CharField(max_length=50, blank=True, null=True)
@@ -215,6 +218,7 @@ class purchase_return(models.Model):
 	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	roundoff=models.DecimalField(max_digits=4, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
 
 	tenant=models.ForeignKey(Tenant,related_name='purchaseReturn_purchase_user_tenant')
@@ -247,14 +251,16 @@ class purchase_return(models.Model):
 
 #This model is for line items of a debit note for return of goods
 class return_line_item(models.Model):
+	id=models.BigAutoField(primary_key=True)
 	purchase_return=models.ForeignKey(purchase_return, related_name='returnLineItem_purchaseReturn',)
 	product=models.ForeignKey(Product,blank=True, null=True, related_name='returnLineItem_purchase_master_product',\
 						on_delete=models.SET_NULL)
 	product_name=models.CharField(max_length =200)
-	product_sku=models.CharField(max_length =50)
+	product_sku=models.CharField(max_length =20, blank=True, null=True)
 	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	
-	unit=models.CharField(max_length=20)
+	unit_id=models.BigIntegerField(db_index=True,blank=True, null=True)
+	unit_symbol=models.CharField(max_length=20)
 	unit_multi=models.DecimalField(max_digits=5, decimal_places=2, default=1)
 
 	quantity=models.DecimalField(max_digits=10, decimal_places=3, default=0)
@@ -310,7 +316,7 @@ class purchase_order(models.Model):
 	cgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	sgsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	igsttotal=models.DecimalField(max_digits=12, decimal_places=2, default=0)
-	roundoff=models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	roundoff=models.DecimalField(max_digits=4, decimal_places=2, default=0)
 	total=models.DecimalField(max_digits=12, decimal_places=2)
 	# itemwise_discount_total=models.DecimalField(max_digits=12, decimal_places=2)
 	delivery_by=models.DateField(blank=True, null=True)
@@ -360,7 +366,7 @@ class order_line_item(models.Model):
 	date=models.DateField(default=dt.date.today)
 	# product_pk=models.BigIntegerField(blank=True, null=True)
 	product_name=models.CharField(max_length =200)
-	product_sku=models.CharField(max_length =50)
+	product_sku=models.CharField(max_length =20, blank=True, null=True)
 	product_hsn=models.CharField(max_length=20, db_index=True, blank=True, null=True)
 	
 	unit=models.CharField(max_length=20)

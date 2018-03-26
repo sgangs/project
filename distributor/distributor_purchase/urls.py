@@ -37,9 +37,14 @@ urlpatterns = [
     url(r'^return/inventory/$', views.return_new_inventory, name='return_new_inventory'),
     url(r'^return/inventory/save/$', views.purchase_return_inventory_save, name='purchase_return_inventory_save'),
 
+    url(r'^return/noninventory/$', views.return_new_noninventory, name='return_new_noninventory'),
+    url(r'^return/noninventory/save/$', views.purchase_return_noninventory_save, name='purchase_return_noninventory_save'),
 
-    url(r'^return/noninventory/$', views.debit_note_new_noninventory, name='debit_note_return_view'),
+    url(r'^return/list/$', views.all_return_view, name='all_return_view'),
+    url(r'^return/list/data/$', views.all_return_data, name='all_return_data'),
     
+    url(r'^return/detailview/(?P<pk>[-\S]+)/$', views.return_detail_view, name='return_detail_view'),
+    url(r'^return/detail/(?P<pk>[-\S]+)/$', views.return_details, name='return_details'),
     # url(r'^purchase_graph/$', views.purchase_crossfilter, name='purchase_crossfilter'),
     # url(r'^purchase_graph/data/$', views.receipts_crossfilter, name='receipts_crossfilter'),
 

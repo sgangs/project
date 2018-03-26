@@ -615,39 +615,17 @@ function add_row(){
 $('.submit').click(function(e) {
     swal({
         title: "Are you sure?",
-        text: "Are you sure you want to generate a new sales invoice?",
+        text: "Are you sure you want to generate a new return/credit note?",
         type: "info",
         showCancelButton: true,
         confirmButtonColor: "#11BB55",
-        confirmButtonText: "Yes, generate new sales invoice!",
+        confirmButtonText: "Yes, generate new return/credit note!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: false
     }, function(isConfirm){
         if (isConfirm){
-            setTimeout(function(){new_data(false)},600)            
-        }
-    })
-});
-
-$('.submit_final').click(function(e) {
-    // speak_text("Are you sure you want to create and finalize a new invoice? Note that you cannot edit this invoice once finalized.");
-    // var msg = new SpeechSynthesisUtterance("Are you sure you want to create and finalize a new invoice?"+
-    //         " Note that you cannot edit this invoice once finalized.");
-    // window.speechSynthesis.speak(msg);
-    swal({
-        title: "Are You Sure To Finalize?",
-        text: "Are you sure you want to create and finalize a new sales invoice?<p>Note that you cannot edit this invoice once finalized.</p>",
-        type: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, finalize & generate new sales invoice!",
-        closeOnConfirm: true,
-        closeOnCancel: true,
-        html: true
-    }, function(isConfirm){
-        if (isConfirm){
-            setTimeout(function(){reconfirm()},600)            
+            setTimeout(function(){reconfirm(false)},600)            
         }
     })
 });
@@ -656,11 +634,11 @@ function reconfirm() {
     // speak_text("Please reconfirm you want to finalize this invoice.");
     swal({
         title: "Please Reconfirm.",
-        text: "<p>Are you sure you want to finalize a new sales invoice?</p><p>Note that it cannot be edited</p>",
+        text: "<p>Are you sure you want to finalize a new return/credit note?</p>",
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
-        confirmButtonText: "Yes, finalize & generate new sales invoice!",
+        confirmButtonText: "Yes, finalize & generate new return/credit note!",
         closeOnConfirm: true,
         closeOnCancel: true,
         html: true
@@ -678,12 +656,13 @@ function new_data(is_final){
     
     var is_igst = $('.is_igst').is(':checked');
 
-    vendor_id=$('.vendor').find(':selected').data('id');
-    warehouseid=$('.warehouse').find(':selected').data('id');
-    date = $('.date').val();
-    supplier_note_no = $('.supplier_note_no').val();
-    adjustment_receipt_no = $('.adj_receipt').val();
-    adj_receipt_error = $('.adj_receipt_error').val();
+    var vendor_id=$('.vendor').find(':selected').data('id');
+    var warehouseid=$('.warehouse').find(':selected').data('id');
+    var date = $('.date').val();
+    var supplier_note_no = $('.supplier_note_no').val();
+    var adjustment_receipt_no = $('.adj_receipt').val();
+    var adj_receipt_error = $('.adj_receipt_error').val();
+    var adj_receipt_found = $('.adj_receipt_found').val()
 
     subtotal=round_off(parseFloat($('.subtotal_receipt').html()));
     var cgsttotal=0, sgsttotal=0, igsttotal=0;
@@ -698,6 +677,10 @@ function new_data(is_final){
     if (adj_receipt_error == 'error'){
         proceed = false;
         swal("Oops...", "Error in adjustmenr receipt. Check if available balance is more than return balance.", "error");
+    }
+    if (adj_receipt_found == 'not-found'){
+        proceed = false;
+        swal("Oops...", "Adjustment Receipt not found. Kindly rechek.", "error");
     }
 
     $(".details tr.data").each(function() {
@@ -827,8 +810,8 @@ function new_data(is_final){
                     }
                     else{
                         swal("Hooray", "New purchase return generated", "success");
-                        // var url='/sales/invoice/detailview/'+jsondata['invoice_id']+'/'
-                        // location.href = url;
+                        var url='/purchase/return/detailview/'+jsondata['id']+'/'
+                        location.href = url;
                     }
                     //console.log(jsondata);
                 },

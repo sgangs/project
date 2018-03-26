@@ -16,3 +16,13 @@ class PaymentSerializers (serializers.ModelSerializer):
 		model = purchase_payment
 		fields = ('id','payment_mode_name','payment_mode','purchase_receipt','amount_paid', 'cheque_rtgs_number','paid_on','remarks')
 
+
+
+class ReturnLineItemSerializers (serializers.ModelSerializer):
+	class Meta:
+		model = return_line_item
+		# fields = ('id','payment_mode_name','payment_mode','purchase_receipt','amount_paid', 'cheque_rtgs_number','paid_on','remarks')
+
+	def create(self, validated_data):
+		return return_line_item.objects.create(**validated_data)
+

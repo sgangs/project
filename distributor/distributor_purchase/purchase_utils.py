@@ -1,5 +1,5 @@
 #from datetime import datetime
-from distributor_purchase.models import purchase_receipt, purchase_order, purchase_return
+from distributor_purchase.models import purchase_receipt, purchase_order, purchase_return, return_line_item
 # from distributor_master.models import Product, Unit
 from distributor_inventory.models import Inventory, inventory_ledger
 
@@ -191,3 +191,43 @@ def new_inventory_ledger_purchase(product, warehouse, trn_type, date, quantity, 
 	new_inventory_ledger.transaction_bill_id=invoice_id
 	new_inventory_ledger.tenant=this_tenant
 	new_inventory_ledger.save()
+
+
+def new_return_line_item(new_receipt, product, product_name, product_sku, product_hsn_code, cgst_p, cgst_v, sgst_p,sgst_v, igst_p, igst_v, unit,\
+	unit_symbol, unit_multiplier, original_quantity, original_purchase_price, original_tentative_sales_price, original_mrp, real_purchase_price,\
+	line_taxable_total, line_total, this_tenant):
+
+	LineItem = return_line_item()
+	LineItem.purchase_return = new_receipt
+	LineItem.product = product
+	LineItem.product_name = product_name
+	LineItem.product_sku = product_sku
+	LineItem.product_hsn = product_hsn_code
+	LineItem.cgst_percent = cgst_p
+	LineItem.cgst_value = cgst_v
+	LineItem.sgst_percent = sgst_p
+	LineItem.sgst_value = sgst_v
+	LineItem.igst_percent = igst_p
+	LineItem.igst_value = igst_v
+	LineItem.unit_id = unit.id
+	LineItem.unit_symbol = unit_symbol
+	LineItem.unit_multi = unit_multiplier
+	LineItem.quantity = original_quantity
+	
+	# if (product.has_batch):
+	# 	LineItem.batch=batch
+	# 	LineItem.manufacturing_date=manufacturing_date
+	# 	LineItem.expiry_date=expiry_date
+	# if (product.has_instance):
+	# 	LineItem.serial_no=serial_no
+	LineItem.return_purchase_price = original_purchase_price
+	LineItem.tentative_sales_price = original_tentative_sales_price
+	LineItem.mrp = original_mrp
+	#real_purchase_price is the purchase price as per the actual purchase, based on purchase history.
+	LineItem.real_purchase_price = real_purchase_price
+	LineItem.line_taxable_value = line_taxable_total
+	LineItem.line_total = line_total
+	LineItem.tenant = this_tenant
+	LineItem.save()
+
+	return LineItem
