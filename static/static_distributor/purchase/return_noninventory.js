@@ -502,7 +502,7 @@ function new_data(is_final){
     }
     if (adj_receipt_found == 'not-found'){
         proceed = false;
-        swal("Oops...", "Receipt not found. Kindly rechek.", "error");
+        swal("Oops...", "Adjustment Receipt not found. Kindly rechek.", "error");
     }
 
     $(".details tr.data").each(function() {

@@ -66,13 +66,12 @@ function load_returns(page_no){
                 // "<td hidden='true'>"+url+"</td>"+
                 "<td hidden='true'>"+this.id+"</td>"+
                 "<td><a href="+url+" class='new_link'>"+this.note_id+"</a></td>"+
-                "<td>"+this.note_id+"</td>"+
                 "<td>"+this.supplier_note_no+"</td>"+
                 "<td>"+this.adjustmnet_receipt_no+"</td>"+
                 "<td>"+date+"</td>"+
                 "<td>"+this.vendor_name+"</td>"+
                 "<td>"+this.total+"</td>"+
-                "<td class='delete' style='text-decoration: underline; cursor: pointer'>Delete Invoice</td>"+
+                "<td class='delete' style='text-decoration: underline; cursor: pointer'>Delete Return</td>"+
                 "</tr>");
             })
 
@@ -164,38 +163,33 @@ function filter_data(page_no) {
             $("#receipt_table .data").remove();
             $('#filter').modal('hide');
             $.each(jsondata['object'], function(){
-                var url='/purchase/receipt/detailview/'+this.id+'/'
-                var download_url='/purchase/receipt/excel/'+this.id+'/'
-                var this_id=this.id
+                var url='/purchase/return/detailview/'+this.id+'/'
+                // var this_id=this.id
                 date=this.date
                 date=date.split("-").reverse().join("-")
                 $('#receipt_table').append("<tr class='data' align='center'>"+
-                "<td hidden='true'>"+url+"</td>"+
-                "<td hidden='true'>"+this_id+"</td>"+
-                // "<td class='link' style='text-decoration: underline; cursor: pointer'>"+this.receipt_id+"</td>"+
-                "<td><a href="+url+" class='new_link'>"+this.receipt_id+"</a></td>"+
-                "<td>"+this.supplier_invoice+"</td>"+
+                // "<td hidden='true'>"+url+"</td>"+
+                "<td hidden='true'>"+this.id+"</td>"+
+                "<td><a href="+url+" class='new_link'>"+this.note_id+"</a></td>"+
+                "<td>"+this.supplier_note_no+"</td>"+
+                "<td>"+this.adjustmnet_receipt_no+"</td>"+
                 "<td>"+date+"</td>"+
-                "<td>"+$.trim(this.payable_by)+"</td>"+
                 "<td>"+this.vendor_name+"</td>"+
                 "<td>"+this.total+"</td>"+
-                "<td>"+this.amount_paid+"</td>"+
-                "<td><a href='"+download_url+"'><button class='btn btn-primary btn-xs new'><i class='fa fa-download'>"+
-                        "</i> Download Excel Format</button></a></td>"+
-                "<td class='link' style='text-decoration: underline; cursor: pointer'>Delete Invoice</td>"+
+                "<td class='delete' style='text-decoration: underline; cursor: pointer'>Delete Return</td>"+
                 "</tr>");
             })
 
             apply_navbutton(jsondata, page_no);
-            if (page_no == 1){
-                $('.invoice_summary').show();
-                $('.amount_invoiced').html('Rs.'+jsondata['total_value'])
-                $('.amount_pending').html('Rs.'+jsondata['total_pending'])
-            }
+            // if (page_no == 1){
+            //     $('.invoice_summary').show();
+            //     $('.amount_invoiced').html('Rs.'+jsondata['total_value'])
+            //     $('.amount_pending').html('Rs.'+jsondata['total_pending'])
+            // }
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No purchase receipt exist.", "error");
+            swal("Oops...", "Could not fetch return data. Kindly retry again.", "error");
         }
     });
 

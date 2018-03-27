@@ -203,8 +203,14 @@
             </li>
             <li><a href="{% url 'purchase:receipt_list' %}">Receipt List</a></li>
             <li><a href="{% url 'purchase:payment_list_view' %}">Payment Report</a></li>
-            <li><a href="#">Purchase Return</a></li>
-            <li><a href="#">Purchase Return List</a></li>
+            <li title="Click to create purchase receipt"><a href="#">Generate Purchase Return</a>
+              <ul>
+                <li><a href="{% url 'purchase:return_new_inventory' %}">Purchase Return</a></li>
+                <li><a href="{% url 'purchase:return_new_noninventory' %}"> Purchase Return (Non Invenotry)/Credit Note</a></li>
+                <li></li>
+              </ul>
+            </li>
+            <li><a href="{% url 'purchase:all_return_view' %}">Purchase Return List</a></li>
             <li><a href="{% url 'purchase:vendor_ledger' %}">Vendor Ledger</a></li>
           </ul>
         </li>
