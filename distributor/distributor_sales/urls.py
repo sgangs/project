@@ -64,5 +64,8 @@ urlpatterns = [
     url(r'^billsummary-profit/$', views.billsummary_profit, name='billsummary_profit'),
     url(r'^billsummary-profit/data/$', views.billsummary_profit_data, name='billsummary_profit_data'),
     # url(r'^customer-detail/pdf/$', views.customer_data_pdf, name='customer_data_pdf'),
+
+    url(r'^analysis/abc/view/$', views.sales_abc_analysis_view, name='sales_abc_analysis_view'),
+    url(r'^analysis/abc/$', views.sales_abc_analysis, name='sales_abc_analysis'),
 ]
 

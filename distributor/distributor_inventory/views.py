@@ -704,46 +704,60 @@ def delete_opening_inventory(request):
 		inventory_id_list = json.loads(request.data.get('inventory_id_list'))
 		# revised_qty = request.data.get('revised_qty')
 		# Put this insode atomic transaction
+		print(inventory_id_list)
 		proceed = True
 		total_purchase_price = 0
 		with transaction.atomic():
 			try:
+				warehouse_final = ''
 				for each_item in inventory_id_list:
 					# Get revised_qty, inventory_id
 					revised_qty = each_item['revised_qty']
 					inventory_id = each_item['inventory_id']
 					initial_inventory_selected=initial_inventory.objects.for_tenant(this_tenant).get(id = inventory_id)
-					if not revised_qty:
-						proceed = False
-					else:
-						if (revised_qty < 0):
+					try:
+						revised_qty =int(revised_qty)
+					except:
+						try:
+							revised_qty = float(revised_qty)
+						except:
 							raise IntegrityError
-						quantity_reduced = initial_inventory_selected.quantity - revised_qty 
-						product=initial_inventory_selected.product
-						purchase_price = initial_inventory_selected.purchase_price
-						warehouse = initial_inventory_selected.warehouse
-						tsp = initial_inventory_selected.tentative_sales_price
-						mrp = initial_inventory_selected.mrp
-						available_inventory = Inventory.objects.for_tenant(this_tenant).filter(product = product, \
+					# if not int(revised_qty) or not float(revised_qty):
+					# 	proceed = False
+					# else:
+					if (revised_qty < 0):
+						raise IntegrityError
+					quantity_reduced = initial_inventory_selected.quantity - revised_qty 
+					product=initial_inventory_selected.product
+					purchase_price = initial_inventory_selected.purchase_price
+					warehouse = initial_inventory_selected.warehouse
+					tsp = initial_inventory_selected.tentative_sales_price
+					mrp = initial_inventory_selected.mrp
+					available_inventory = Inventory.objects.for_tenant(this_tenant).filter(product = product, \
 												quantity_available__gt=0, warehouse = warehouse, \
 												purchase_price = purchase_price, tentative_sales_price = tsp, mrp = mrp).order_by('purchase_date')
-						quantity_reduced_loop = quantity_reduced
-						for item in available_inventory:
-							if item.quantity_available > quantity_reduced_loop:
-								item.quantity_available = item.quantity_available - quantity_reduced_loop
-								total_purchase_price+=purchase_price*quantity_reduced_loop
-								quantity_reduced_loop = 0
-							else:
-								total_purchase_price+=purchase_price*item.quantity_available
-								quantity_reduced_loop-=item.quantity_available
-								item.quantity_available = 0
-							item.save()
-						if quantity_reduced_loop > 0:
-							raise IntegrityError
-						initial_inventory_selected.quantity=revised_qty
-						initial_inventory_selected.save()
+					quantity_reduced_loop = quantity_reduced
+					for item in available_inventory:
+						if item.quantity_available > quantity_reduced_loop:
+							item.quantity_available = item.quantity_available - quantity_reduced_loop
+							total_purchase_price+=purchase_price*quantity_reduced_loop
+							quantity_reduced_loop = 0
+						else:
+							total_purchase_price+=purchase_price*item.quantity_available
+							quantity_reduced_loop-=item.quantity_available
+							item.quantity_available = 0
+						item.save()
+					if quantity_reduced_loop > 0:
+						raise IntegrityError
+					initial_inventory_selected.quantity=revised_qty
+					initial_inventory_selected.save()
+					warehouse_final = warehouse
+					print(warehouse_final)
+				
+				print("here")
+				print(warehouse_final)
 
-				warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse)
+				warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse_final)
 				warehouse_valuation_change.valuation-=total_purchase_price
 				warehouse_valuation_change.save()
 
@@ -851,5 +865,4 @@ def product_movement_data(request):
 	response_data = newdata
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
-
-
+	

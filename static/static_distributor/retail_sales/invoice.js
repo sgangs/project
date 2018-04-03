@@ -110,7 +110,7 @@ function load_warehouse(){
                     'text': this.address_1 + " "+ this.address_2
                 }));
             });
-            $('#warehouse').selectpicker('refresh')
+            $('#warehouse').selectpicker('refresh');
         },
         // handle a non-successful response
         error : function() {

@@ -1,5 +1,7 @@
 import datetime as date_first
 from decimal import Decimal
+from datetime import timedelta, date
+import calendar
 import json
 
 
@@ -8,6 +10,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
 from django.db.models import Sum, Count, F
+from django.db.models.functions import TruncMonth
 from django.shortcuts import render, redirect
 from django.template import Context
 from django.http import HttpResponse
@@ -2126,7 +2129,6 @@ def group_sales_report_select(request):
 
 @api_view(['GET'],)
 def get_group_sales_report_select(request):
-	from django.db.models.functions import TruncMonth
 	this_tenant = request.user.tenant
 	response_data={}
 	calltype = request.GET.get('calltype')
@@ -2161,7 +2163,6 @@ def product_segment_sales_report(request):
 
 @api_view(['GET'],)
 def product_segment_sales_report_data(request):
-	from django.db.models.functions import TruncMonth
 	this_tenant = request.user.tenant
 	response_data={}
 	calltype = request.GET.get('calltype')
@@ -2254,4 +2255,64 @@ def customer_ledger_data(request):
 	jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)
 
+@api_view(['GET'],)
+def sales_abc_analysis_view(request):
+	extension="base.html"
+	return render (request, 'sales/sales_analysis_abc.html',{'extension':extension})
 
+
+@api_view(['GET'],)
+def sales_abc_analysis(request):
+	this_tenant = request.user.tenant
+	response_data={}
+	
+	month = int(request.GET.get('month'))
+	year = int(request.GET.get('year'))
+	warehouse = request.GET.get('warehouse')
+	last_day = calendar.monthrange(year,month)[1]
+	start = date(year, month, 1)
+	end = date(year, month, last_day)
+	invoices = sales_invoice.objects.for_tenant(this_tenant).filter(warehouse = warehouse, date__range=[start,end])
+	
+	total_sales = invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice__in = invoices).aggregate(tot_sales = Sum('line_total'))
+	ts = total_sales['tot_sales']
+	line_items = invoice_line_item.objects.for_tenant(this_tenant).filter(sales_invoice__in = invoices).\
+					values('product','product_name', 'product_sku').\
+					annotate(sales_total = Sum('line_total')).annotate(sales_percent = (F('sales_total')/ts*100)).\
+					order_by('-sales_total','product__name', 'product__sku')
+	# total_sales = line_items.aggregate(tot_sales = Sum('sales_total'))
+	# line_items = line_items.annotate(sales_percent=F('sales_total')*F('line_total'))
+	a_count = 0
+	a_total = 0
+	b_count = 0
+	b_total = 0
+	c_count = 0
+	c_total = 0
+
+	total_percent = 0
+	for item in line_items:
+		if (total_percent < 70):
+			item['product_type'] = 'A'
+			a_count+=1
+			a_total+=item['sales_percent']
+		elif (total_percent > 70 and total_percent < 90):
+			item['product_type'] = 'B'
+			b_count+=1
+			b_total+=item['sales_percent']
+		else:
+			item['product_type'] = 'C'
+			c_count+=1
+			c_total+=item['sales_percent']
+
+		total_percent+=item['sales_percent']
+	
+	response_data['items'] = list(line_items)
+	response_data['a_count'] = a_count
+	response_data['a_total'] = a_total
+	response_data['b_count'] = b_count
+	response_data['b_total'] = b_total
+	response_data['c_count'] = c_count
+	response_data['c_total'] = c_total
+
+	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+	return HttpResponse(jsondata)

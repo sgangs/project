@@ -1,5 +1,17 @@
 $(function(){
 
+function swal_messages_display(msg, timer, title, message_type){
+    swal({
+        title: title,
+        text: msg,
+        type: message_type,
+        allowOutsideClick: true,
+        timer:timer,
+    });
+}
+
+
+
 load_accounts()
 
 function load_accounts(){
@@ -9,6 +21,8 @@ function load_accounts(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
+            $("#period .data").remove();
+            $('#account_period_current').find('option').remove();
             $.each(jsondata, function(){
                 start_date = this.start.split("-").reverse().join("-")
                 end_date = this.end.split("-").reverse().join("-")
@@ -19,12 +33,19 @@ function load_accounts(){
                 "<td class='capitalize'>"+this.finalized+"</td>"+
                 "<td class='capitalize'>"+this.current_period+"</td>"+
                 "</tr>");
+
+                $('#account_period_current').append($('<option>',{
+                    'data-id': this.id,
+                    'text': start_date + " to "+ end_date
+                }));
             })
             $('.capitalize').css('textTransform', 'capitalize');
+            $('#account_period_current').selectpicker('refresh');
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "There were erros in retriving data. Kindly try after sometimes or contact support. ", "error");
+            swal_messages_display("There were erros in retriving data. Kindly try after sometimes or contact support. ", 2500, "Oops...", "error")
+            // swal("Oops...", "There were erros in retriving data. Kindly try after sometimes or contact support. ", "error");
         }
     });
 }
@@ -89,5 +110,64 @@ function new_data(){
         }());
     }
 }
+
+
+$('.submit_change').click(function(e) {
+    swal({
+        title: "Are you sure?",
+        text: "Are you sure to change current accounting perood?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, change current accounting period!",
+        closeOnConfirm: true,
+        closeOnCancel: true,
+        html: false
+    }, function(isConfirm){
+        if (isConfirm){
+            setTimeout(function(){change_year()},600)
+        }
+    })
+});
+    
+function change_year(){
+    var proceed=true;
+    period_id=$('.account_period_current').find(':selected').data('id');
+    if (period_id == '' || period_id =='undefined' || typeof(period_id) == undefined ){
+        proceed = false;
+        swal("Oops...", "Please select an accounting year", "error");
+    }
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "data/" , 
+                type: "POST",
+                data:{period_id: period_id,
+                    calltype: "change_current_period",
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                // contentType: "application/json",
+                        // handle a successful response
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        $('#changeMode').modal('hide');
+                        swal_messages_display("Current period changed.", 2000, "Hooray", "success")
+                        // swal("Hooray", "Current period changed.", "success");
+                        // setTimeout(location.reload(true),2500);
+                        load_accounts();
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal_messages_display("Recheck your inputs. There were some errors!", 2500, "Oops...", "error")
+                    // swal("Oops...", "Recheck your inputs. There were some errors!", "error");
+                }
+            });
+        }());
+    }
+}
+
 
 });

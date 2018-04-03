@@ -621,7 +621,7 @@ def account_period_data(request):
 					transaction.rollback()
 
 		elif (calltype == 'change_current_period'):
-			new_current_period_id = request.data.get('new_current_period')
+			new_current_period_id = request.data.get('period_id')
 			try:
 				previous_current_period = accounting_period.objects.for_tenant(this_tenant).get(current_period = True)
 				new_current_period = accounting_period.objects.for_tenant(this_tenant).get(id = new_current_period_id)

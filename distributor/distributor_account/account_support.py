@@ -49,39 +49,41 @@ def get_trial_balance(request, start, end):
         item_credit=0
         journal_debit={}
         journal_credit={}
-        
-        this_account_year = account_year.objects.for_tenant(this_tenant).get(account = item, accounting_period = acct_period)
-        journal_debit['value__sum'] = this_account_year.current_debit
-        journal_credit['value__sum'] = this_account_year.current_credit
-        # journals=journal_entry.objects.for_tenant(this_tenant).\
-        #     filter(journal__date__range=(start,end), account=item)
-        # journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
-        # journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
-        if (journal_debit['value__sum'] == None or journal_debit['value__sum'] == 0):
-            journal_debit['value__sum'] = 0
-            this_debit=False
-        if (journal_credit['value__sum'] == None or journal_credit['value__sum'] == 0):
-            journal_credit['value__sum'] = 0
-            this_credit=False
+        try:
+            this_account_year = account_year.objects.for_tenant(this_tenant).get(account = item, accounting_period = acct_period)
+            journal_debit['value__sum'] = this_account_year.current_debit
+            journal_credit['value__sum'] = this_account_year.current_credit
+            # journals=journal_entry.objects.for_tenant(this_tenant).\
+            #     filter(journal__date__range=(start,end), account=item)
+            # journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
+            # journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
+            if (journal_debit['value__sum'] == None or journal_debit['value__sum'] == 0):
+                journal_debit['value__sum'] = 0
+                this_debit=False
+            if (journal_credit['value__sum'] == None or journal_credit['value__sum'] == 0):
+                journal_credit['value__sum'] = 0
+                this_credit=False
 
-        if (this_debit or this_credit):
-            if (item.account_type in ('ca','nca','rec','direxp','taxexp','indexp')):
-                debit+=journal_debit['value__sum']-journal_credit['value__sum']
-                item_debit=journal_debit['value__sum']-journal_credit['value__sum']
-                item_credit=""
-            elif (item.account_type in ('cl','pay', 'ncl','dirrev','indrev')):
-                credit+=journal_credit['value__sum']-journal_debit['value__sum']
-                item_credit=journal_credit['value__sum']-journal_debit['value__sum']
-                item_debit=""
-            elif(item.account_type in ('equ')):
-                if (journal_credit['value__sum']>journal_debit['value__sum']):
-                    item_credit=journal_credit['value__sum']-journal_debit['value__sum']
-                    item_debit=""
-                else:
+            if (this_debit or this_credit):
+                if (item.account_type in ('ca','nca','rec','direxp','taxexp','indexp')):
+                    debit+=journal_debit['value__sum']-journal_credit['value__sum']
                     item_debit=journal_debit['value__sum']-journal_credit['value__sum']
                     item_credit=""
-            response_data.append({'data_type':'journal','account':item.name,'account_type':item.account_type,\
-                                'debit':str(item_debit),'credit':str(item_credit)})
+                elif (item.account_type in ('cl','pay', 'ncl','dirrev','indrev')):
+                    credit+=journal_credit['value__sum']-journal_debit['value__sum']
+                    item_credit=journal_credit['value__sum']-journal_debit['value__sum']
+                    item_debit=""
+                elif(item.account_type in ('equ')):
+                    if (journal_credit['value__sum']>journal_debit['value__sum']):
+                        item_credit=journal_credit['value__sum']-journal_debit['value__sum']
+                        item_debit=""
+                    else:
+                        item_debit=journal_debit['value__sum']-journal_credit['value__sum']
+                        item_credit=""
+                response_data.append({'data_type':'journal','account':item.name,'account_type':item.account_type,\
+                                    'debit':str(item_debit),'credit':str(item_credit)})
+        except:
+            pass
 
     debit+=opening_stock
     response_data.append({'data_type':'value','debit':str(debit),'credit':str(credit)})
@@ -109,64 +111,67 @@ def get_profit_loss(request, start, end, period, sent='p-l'):
         #     filter(journal__date__range=(start,end), account=item)
         # journal_debit=journals.filter(transaction_type=1).aggregate(Sum('value'))
         # journal_credit=journals.filter(transaction_type=2).aggregate(Sum('value'))
-        this_account_year=account_year.objects.for_tenant(request.user.tenant).\
-            get(account=item, accounting_period = period)
-        journal_debit['value__sum']=this_account_year.current_debit
-        journal_credit['value__sum']=this_account_year.current_credit
-        
-        # if (journal_debit['value__sum'] == None):
-        if (journal_debit['value__sum'] == 0):
-            journal_debit['value__sum'] = 0
-            this_debit = False
-        # if (journal_credit['value__sum'] == None):
-        if (journal_credit['value__sum'] == 0):
-            journal_credit['value__sum'] = 0
-            this_credit = False
-        if (item.account_type in ('dirrev','indev')):
-            total-=journal_debit['value__sum']
-            total+=journal_credit['value__sum']
-            if(item.account_type in ('dirrev')):
-                income+=total
-                if (sent=='p-l'):
-                    if (this_debit or this_credit):
-                        response_data.append({'data_type':'income','account':item.name,'total':str(total)})
-            else:
-                other_income+=total
-                if (sent == 'p-l'):
-                    if (this_debit or this_credit):
-                        response_data.append({'data_type':'other_income','account':item.name,'total':str(total)})
-        elif (item.account_type in ('direxp', 'taxexp','indexp')):
-            total+=journal_debit['value__sum']
-            total-=journal_credit['value__sum']
-            if(item.account_type in ('direxp')):
-                # print(item.name)
-                expense+=total
-                if (sent == 'p-l'):
-                    if (this_debit or this_credit):
-                        response_data.append({'data_type':'expense','account':item.name,'total':str(total)})
-            # elif(item.account_type in ('indexp')):
-            #     other_expense+=total
-            #     if (sent == 'p-l'):
-            #         response_data.append({'data_type':'other_expense','account':item.name,'total':str(total)})
-            else:
-                other_expense+=total
-                if (sent == 'p-l'):
-                    if (this_debit or this_credit):
-                        response_data.append({'data_type':'other_expense','account':item.name,'total':str(total)})
-            # else:
-            #     tax_expense+=total
-            #     if (sent == 'p-l'):
-            #         response_data.append({'data_type':'tax_expense','account':item.name,'total':str(total)})
-        
-        inventory_acct=account_inventory.objects.for_tenant(request.user.tenant).get(name__exact="Inventory")
-        acct_period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
-        inventory_this_year=account_year_inventory.objects.for_tenant(request.user.tenant).\
-                        get(account_inventory=inventory_acct, accounting_period = acct_period)
-        opening_stock=inventory_this_year.opening_debit - inventory_this_year.opening_credit
-        closing_stock=inventory_this_year.current_debit - inventory_this_year.current_credit
-        gross_income=income-expense-opening_stock+closing_stock
-        net_income=gross_income+other_income-other_expense
+        try:
+            this_account_year=account_year.objects.for_tenant(request.user.tenant).\
+                get(account=item, accounting_period = period)
+            journal_debit['value__sum']=this_account_year.current_debit
+            journal_credit['value__sum']=this_account_year.current_credit
+            
+            # if (journal_debit['value__sum'] == None):
+            if (journal_debit['value__sum'] == 0):
+                journal_debit['value__sum'] = 0
+                this_debit = False
+            # if (journal_credit['value__sum'] == None):
+            if (journal_credit['value__sum'] == 0):
+                journal_credit['value__sum'] = 0
+                this_credit = False
+            if (item.account_type in ('dirrev','indev')):
+                total-=journal_debit['value__sum']
+                total+=journal_credit['value__sum']
+                if(item.account_type in ('dirrev')):
+                    income+=total
+                    if (sent=='p-l'):
+                        if (this_debit or this_credit):
+                            response_data.append({'data_type':'income','account':item.name,'total':str(total)})
+                else:
+                    other_income+=total
+                    if (sent == 'p-l'):
+                        if (this_debit or this_credit):
+                            response_data.append({'data_type':'other_income','account':item.name,'total':str(total)})
+            elif (item.account_type in ('direxp', 'taxexp','indexp')):
+                total+=journal_debit['value__sum']
+                total-=journal_credit['value__sum']
+                if(item.account_type in ('direxp')):
+                    # print(item.name)
+                    expense+=total
+                    if (sent == 'p-l'):
+                        if (this_debit or this_credit):
+                            response_data.append({'data_type':'expense','account':item.name,'total':str(total)})
+                # elif(item.account_type in ('indexp')):
+                #     other_expense+=total
+                #     if (sent == 'p-l'):
+                #         response_data.append({'data_type':'other_expense','account':item.name,'total':str(total)})
+                else:
+                    other_expense+=total
+                    if (sent == 'p-l'):
+                        if (this_debit or this_credit):
+                            response_data.append({'data_type':'other_expense','account':item.name,'total':str(total)})
+                # else:
+                #     tax_expense+=total
+                #     if (sent == 'p-l'):
+                #         response_data.append({'data_type':'tax_expense','account':item.name,'total':str(total)})
+            
+            inventory_acct=account_inventory.objects.for_tenant(request.user.tenant).get(name__exact="Inventory")
+            acct_period=accounting_period.objects.for_tenant(request.user.tenant).get(current_period=True)
+            inventory_this_year=account_year_inventory.objects.for_tenant(request.user.tenant).\
+                            get(account_inventory=inventory_acct, accounting_period = acct_period)
+            opening_stock=inventory_this_year.opening_debit - inventory_this_year.opening_credit
+            closing_stock=inventory_this_year.current_debit - inventory_this_year.current_credit
+            gross_income=income-expense-opening_stock+closing_stock
+            net_income=gross_income+other_income-other_expense
         # income_after_tax=net_income-tax_expense
+        except:
+            pass
 
     if (sent == 'p-l'):
         response_data.append({'data_type':'gross','income':str(gross_income)})

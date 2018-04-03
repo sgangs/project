@@ -425,7 +425,8 @@ def sales_invoice_save(request):
 						# 	sgst_paid[sgst_p]=sgst_v
 
 						if (cgst_p in cgst_paid):
-							[cgst_p][0]+=cgst_v
+							# [cgst_p][0]+=cgst_v
+							cgst_paid[cgst_p][0]+=cgst_v
 							cgst_paid[cgst_p][1]=total
 							cgst_paid[cgst_p][2]+=line_taxable_total
 						else:
@@ -976,7 +977,7 @@ def sales_invoice_edit(request):
 							# 	sgst_paid[sgst_p]=sgst_v
 
 							if (cgst_p in cgst_paid):
-								[cgst_p][0]+=cgst_v
+								cgst_paid[cgst_p][0]+=cgst_v
 								cgst_paid[cgst_p][1]=total
 								cgst_paid[cgst_p][2]+=line_taxable_total
 							else:

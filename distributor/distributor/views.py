@@ -189,7 +189,7 @@ def RegisterView(request):
                     valuation.tenant=new_tenant
                     valuation.save()
                     today=datetime.now()
-                    if (today.month >4):
+                    if (today.month >3):
                         start_date=datetime(year=today.year, month=4, day=1)
                         end_date=datetime(year=today.year+1, month=3, day=31)
                     else:
