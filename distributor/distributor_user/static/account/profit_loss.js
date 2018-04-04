@@ -7,9 +7,14 @@ income=0;
     opening=0;
     closing=0;
     console.log(accounts)
+    var has_purchase = false;
     for (i in accounts){
+      if (accounts[i].account == "Purchase"){
+        has_purchase = true;
+      }
       if (accounts[i].data_type=='opening'){
         opening=i;
+        console.log("here");
       }
       else if (accounts[i].data_type=='closing'){
         closing=i;
@@ -36,28 +41,50 @@ income=0;
         "<td></td>"+
         "</tr>");  
         }
-        if (accounts[i].account == "Purchase"){
-          $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
-          "<td>Opening Stock</td>"+
-          "<td>("+parseFloat(accounts[opening].income)+")</td>"+
-          "</tr>");
-          $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
-          "<td>"+accounts[i].account+"</td>"+
-          "<td>("+Math.abs(parseFloat(accounts[i].total))+")</td>"+
-          "</tr>");
-          console.log(parseFloat(accounts[i].total))
-          $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
-          "<td>Closing Stock</td>"+
-          "<td>"+parseFloat(accounts[closing].income)+"</td>"+
-          "</tr>");
+        if (has_purchase){
+          if (accounts[i].account == "Purchase"){
+            $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+            "<td>Opening Stock</td>"+
+            "<td>("+parseFloat(accounts[opening].income)+")</td>"+
+            "</tr>");
+            $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+            "<td>"+accounts[i].account+"</td>"+
+            "<td>("+Math.abs(parseFloat(accounts[i].total))+")</td>"+
+            "</tr>");
+            $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+            "<td>Closing Stock</td>"+
+            "<td>"+parseFloat(accounts[closing].income)+"</td>"+
+            "</tr>");
+          }
+          else{
+            $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+            "<td>"+accounts[i].account+"</td>"+
+            "<td>("+Math.abs(parseFloat(accounts[i].total))+")</td>"+
+            "</tr>");
+          }
         }
         else{
+          if (expense == 0){
+            if (opening != 0){
+              $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+              "<td>Opening Stock</td>"+
+              "<td>("+parseFloat(accounts[opening].income)+")</td>"+
+              "</tr>");
+            }
+            if (closing != 0){
+              $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
+              "<td>Closing Stock</td>"+
+              "<td>"+parseFloat(accounts[closing].income)+"</td>"+
+              "</tr>");
+            }
+          }          
           $('#trail_balance').append("<tr class='data' style='text-align: center'>"+
-          "<td>"+accounts[i].account+"</td>"+
-          "<td>("+Math.abs(parseFloat(accounts[i].total))+")</td>"+
-          "</tr>");
-        }      
-        expense+=1;              
+            "<td>"+accounts[i].account+"</td>"+
+            "<td>("+Math.abs(parseFloat(accounts[i].total))+")</td>"+
+            "</tr>");
+        }
+
+        expense+=1;
       }
     }
     for (i in accounts){

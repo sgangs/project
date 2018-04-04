@@ -86,15 +86,6 @@ function create_line_chart(chart_data){
 
     // console.log(a_count_cum);
     // console.log(a_total_cum);
-    b_count = 9;
-    c_count = 80;
-    b_count_cum = 10;
-    b_total_cum = 80;
-    c_count_cum = 90
-    console.log(b_count_cum);
-    console.log(b_total_cum);
-
-
     var ctx=$("#abc-graph");
     // var myChart = new Chart(ctx, {
     //     type: 'line',
@@ -117,7 +108,7 @@ function create_line_chart(chart_data){
     // });
 
     var myChart = new Chart(ctx, {
-        type: 'line',
+        type: 'scatter',
           data: {
             datasets: [{ 
                 data: [{
@@ -133,7 +124,7 @@ function create_line_chart(chart_data){
                     x:c_count_cum,
                     y:c_total_cum
                 }],
-                label: "Total No. of products in Category",
+                label: "Total No. of prods in Category",
                 borderColor: "#3e95cd",
                 fill: false 
               }
