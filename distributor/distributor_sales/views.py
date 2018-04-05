@@ -414,7 +414,7 @@ def all_invoices(request):
 		elif (calltype== 'customer_pending'):
 			customerid = request.GET.get('customerid')
 			invoices=sales_invoice.objects.for_tenant(this_tenant).filter(customer=customerid, is_final=True, final_payment_date__isnull=True,).\
-			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')[:300]
+			values('id','invoice_id','date','customer_name','total', 'amount_paid', 'payable_by')
 
 		elif (calltype == 'apply_filter'):
 

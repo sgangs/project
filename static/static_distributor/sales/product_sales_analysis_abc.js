@@ -124,7 +124,7 @@ function create_line_chart(chart_data){
                     x:c_count_cum,
                     y:c_total_cum
                 }],
-                label: "Total No. of prods in Category",
+                label: "Total No. of products in Category",
                 borderColor: "#3e95cd",
                 fill: false 
               }
