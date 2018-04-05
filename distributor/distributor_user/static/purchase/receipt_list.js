@@ -441,6 +441,7 @@ $('.vendor').change(function() {
                     $("#payment_table .payment_data").remove();
                     $('.detaildiv').attr('hidden',false);
                     $('.register').attr('disabled',false);
+                    console.log(jsondata);
                     $.each(jsondata['object'], function(){
                         date=this.date
                         date=date.split("-").reverse().join("-")

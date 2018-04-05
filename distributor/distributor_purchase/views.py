@@ -67,7 +67,7 @@ def get_product(request):
 			response_data.append(item_json)
 			data = json.dumps(response_data)
 		else:
-			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:8].\
+			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].\
 						select_related('default_unit', 'tax')
 			response_data = []
 			for item in products:
@@ -845,7 +845,7 @@ def all_receipts(request):
 			vendor=Vendor.objects.for_tenant(this_tenant).get(id=vendorid)
 			# print(vendor)
 			receipts=purchase_receipt.objects.for_tenant(this_tenant).filter(vendor=vendor, final_payment_date__isnull=True).\
-				values('id','receipt_id', 'supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by')
+				values('id','receipt_id', 'supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by').order_by('-date', 'receipt_id')
 		# response_data = list(receipts)
 
 		# page_no = 1
