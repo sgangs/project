@@ -847,9 +847,11 @@ def all_receipts(request):
 			receipts=purchase_receipt.objects.for_tenant(this_tenant).filter(vendor=vendor, final_payment_date__isnull=True).\
 				values('id','receipt_id', 'supplier_invoice', 'date','vendor_name','total', 'amount_paid', 'payable_by').order_by('-date', 'receipt_id')
 		# response_data = list(receipts)
+			response_data['object']=list(receipts)
+			jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+			return HttpResponse(jsondata)
 
 		# page_no = 1
-		response_data={}
 		# print(receipts.count())
 		if page_no:
 			if (page_no == str(1)):
