@@ -427,15 +427,6 @@ function get_qty_avl(el){
         free_tax=0;
     // }
     var unit_multi_selected = parseFloat($(el).closest('tr').find('td:nth-child(7)').html());
-    // var ori_tsp=parseFloat($(el).closest('tr').find('td:nth-child(8)').html());
-    // $(el).closest('tr').find('td:nth-child(8)').html(ori_tsp*unit_multi_selected);
-    // var ori_mrp=parseFloat($(el).closest('tr').find('td:nth-child(9)').html());
-    // $(el).closest('tr').find('td:nth-child(9)').html(ori_mrp*unit_multi_selected);
-    // var ori_sr=parseFloat($(el).closest('tr').find('td:nth-child(10) input').val());
-    // $(el).closest('tr').find('td:nth-child(10) input').val(ori_sr*unit_multi_selected);
-    // console.log (ori_sr);
-    // console.log(unit_multi_selected);
-
 
     quantity_avl=quantity_avl/unit_multi_selected;
     if (!$(el).closest('tr').hasClass("has-error")){

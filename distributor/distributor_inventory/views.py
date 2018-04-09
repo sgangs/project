@@ -704,7 +704,6 @@ def delete_opening_inventory(request):
 		inventory_id_list = json.loads(request.data.get('inventory_id_list'))
 		# revised_qty = request.data.get('revised_qty')
 		# Put this insode atomic transaction
-		print(inventory_id_list)
 		proceed = True
 		total_purchase_price = 0
 		with transaction.atomic():
@@ -752,11 +751,7 @@ def delete_opening_inventory(request):
 					initial_inventory_selected.quantity=revised_qty
 					initial_inventory_selected.save()
 					warehouse_final = warehouse
-					print(warehouse_final)
 				
-				print("here")
-				print(warehouse_final)
-
 				warehouse_valuation_change=warehouse_valuation.objects.for_tenant(this_tenant).get(warehouse=warehouse_final)
 				warehouse_valuation_change.valuation-=total_purchase_price
 				warehouse_valuation_change.save()

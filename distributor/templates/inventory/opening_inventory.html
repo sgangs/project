@@ -15,8 +15,9 @@
 
 <h3 class="text-center">Opening/Joining Inventory</h3>
 <div>
-	<button type="submit" class="btn btn-primary btn-xs open"><i class="fa fa-star"></i> Add opening Inventory</button>
-	<a href="{% url 'inventory:import_opening_inventory' %}"><button type="submit" class="btn btn-primary btn-xs upload_opening"><i class="fa fa-cloud-upload"></i> Bulk upload opening Inventory</button></a>
+	<button type="submit" class="btn btn-success btn-xs open"><i class="fa fa-plus"></i> Add opening Inventory</button>
+	<a href="{% url 'inventory:import_opening_inventory' %}"><button type="submit" class="btn btn-primary btn-xs upload_opening"><i class="fa fa-cloud-upload"></i> Upload opening Inventory</button></a>
+	<a href="{% url 'inventory:delete_inventory_view' %}"><button type="submit" class="btn btn-danger btn-xs"><i class="fa fa-minus"></i> Delete Inventory</button></a>
 </div>
 <br>
 <p>Opening/Joining inventory is the inventory on the date you joined Tech Assisto</p>
