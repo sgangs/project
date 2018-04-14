@@ -61,6 +61,52 @@ $('.date_range').daterangepicker({
 });
 };
 
+function fill_profit_table(jsondata){
+
+    $("#profit_table .data").remove();
+    var total_sales = 0;
+    var total_purchase = 0;
+    var total_profit = 0;
+    var total_sales_tax = 0;
+            
+    $.each(jsondata['object'], function(){
+                
+        invoice_date=this.date;
+        invoice_date=invoice_date.split("-").reverse().join("-");
+
+        profit = parseFloat(this.subtotal) - parseFloat(this.purchase);
+        profit_percent = (profit/parseFloat(this.subtotal))*100
+                
+        total_sales+= parseFloat(this.subtotal);
+        total_purchase+= parseFloat(this.purchase);
+        total_profit+= profit;
+        total_sales_tax+= parseFloat(this.total);
+                
+        $('#profit_table').append("<tr class='data' align='center'>"+
+            "<td hidden='true'></td>"+
+            "<td>"+this.invoice_id+"</td>"+
+            "<td>"+invoice_date+"</td>"+
+            "<td>"+this.customer_name+"</td>"+
+            "<td>"+this.subtotal+"</td>"+
+            "<td>"+parseFloat(this.purchase).toFixed(2)+"</td>"+
+            "<td>"+profit.toFixed(2)+"</td>"+
+            "<td>"+profit_percent.toFixed(2)+"%</td>"+
+            "<td>"+this.total+"</td>"+
+            "</tr>");
+    })
+    var total_profit_percent = total_profit/total_sales*100;
+    $('#profit_table').append("<tr class='data' align='center'>"+
+        "<td hidden='true'></td>"+
+        "<td colspan='3'><b>TOTAL</b></td>"+
+        "<td><b>"+total_sales.toFixed(2)+"</b></td>"+
+        "<td><b>"+total_purchase.toFixed(2)+"</b></td>"+
+        "<td><b>"+total_profit.toFixed(2)+"</b></td>"+
+        "<td><b>"+total_profit_percent.toFixed(2)+"%</b></td>"+
+        "<td><b>"+total_sales_tax.toFixed(2)+"</b></td>"+
+        "</tr>");
+
+}
+
 
 
 load_receipts(1);
@@ -81,29 +127,9 @@ function load_receipts(page_no){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            $("#profit_table .data").remove();
-            
-            $.each(jsondata['object'], function(){
-                
-                invoice_date=this.date;
-                invoice_date=invoice_date.split("-").reverse().join("-");
+            fill_profit_table(jsondata)
 
-                profit = parseFloat(this.subtotal) - parseFloat(this.purchase);
-                profit_percent = (profit/parseFloat(this.subtotal))*100
-                
-                $('#profit_table').append("<tr class='data' align='center'>"+
-                "<td hidden='true'></td>"+
-                "<td>"+this.invoice_id+"</td>"+
-                // "<td>"+this.purchase_receipt.supplier_invoice+"</td>"+
-                "<td>"+invoice_date+"</td>"+
-                "<td>"+this.customer_name+"</td>"+
-                "<td>"+this.subtotal+"</td>"+
-                "<td>"+parseFloat(this.purchase).toFixed(2)+"</td>"+
-                "<td>"+profit.toFixed(2)+"</td>"+
-                "<td>"+profit_percent.toFixed(2)+"%</td>"+
-                "<td>"+this.total+"</td>"+
-                "</tr>");
-            })
+
             // apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response
@@ -184,32 +210,10 @@ function filter_data(page_no) {
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            $("#profit_table .data").remove();
             $('#filter').modal('hide');
-
             filter_applied=true;
             
-            $.each(jsondata['object'], function(){
-                
-                invoice_date=this.date;
-                invoice_date=invoice_date.split("-").reverse().join("-");
-
-                profit = parseFloat(this.subtotal) - parseFloat(this.purchase);
-                profit_percent = (profit/parseFloat(this.subtotal))*100
-                
-                $('#profit_table').append("<tr class='data' align='center'>"+
-                "<td hidden='true'></td>"+
-                "<td>"+this.invoice_id+"</td>"+
-                // "<td>"+this.purchase_receipt.supplier_invoice+"</td>"+
-                "<td>"+invoice_date+"</td>"+
-                "<td>"+this.customer_name+"</td>"+
-                "<td>"+this.subtotal+"</td>"+
-                "<td>"+parseFloat(this.purchase).toFixed(2)+"</td>"+
-                "<td>"+profit.toFixed(2)+"</td>"+
-                "<td>"+profit_percent.toFixed(2)+"%</td>"+
-                "<td>"+this.total+"</td>"+
-                "</tr>");
-            })
+            fill_profit_table(jsondata)
             // apply_navbutton(jsondata, page_no)
         },
         // handle a non-successful response

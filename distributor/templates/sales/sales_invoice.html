@@ -23,16 +23,24 @@
 
 <div class="row">
 	<div class="form-group col-xs-3">
-		<label class="control-label">Select Warehouse</label>
+		<label class="control-label">Warehouse</label>
 		<select class="form-control selectpicker warehouse" id="warehouse" data-live-search="true">
 			<option disabled selected hidden style='display: none' value>Select Warehouse</option>				
 		</select>		 
 	</div>
 
 	<div class="form-group col-xs-3">
-		<label class="control-label">Select Customer</label>
+		<label class="control-label">Customer</label>
 		<select class="form-control selectpicker customer" id="customer" data-live-search="true">
 			<option disabled selected hidden style='display: none' value>Select Customer</option>				
+		</select>		 
+	</div>
+	<div class="form-group col-xs-2">
+		<label class="control-label">Product Identifier</label>
+		<select class="form-control selectpicker identifier" id="identifier" data-live-search="true">
+			<option selected data-id='name'>Identify by Name</option>
+			<option data-id='sku'>Identify by SKU</option>
+			<option data-id='code'>Identify by Barcode</option>
 		</select>		 
 	</div>
 	<div class="form-group col-xs-2">

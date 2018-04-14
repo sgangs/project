@@ -38,10 +38,10 @@ def get_product(request):
 	this_tenant=request.user.tenant
 	if request.method == 'GET':
 		q = request.GET.get('term', '')
-		calltype=request.GET.get('calltype')
+		calltype = request.GET.get('calltype')
 		maintain_inventory = this_tenant.maintain_inventory
 		if (calltype == 'product_id'):
-			prod_id=request.GET.get('productid')
+			prod_id = request.GET.get('productid')
 			product = Product.objects.for_tenant(this_tenant).get(id=prod_id)
 						# select_related('default_unit', 'tax')
 			response_data = []
@@ -67,13 +67,27 @@ def get_product(request):
 			response_data.append(item_json)
 			data = json.dumps(response_data)
 		else:
-			products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].\
-						select_related('default_unit', 'tax')
+			entry_type = request.GET.get('entryType')
+			if (entry_type == 'name'):
+				products = Product.objects.for_tenant(this_tenant).filter(name__icontains  = q )[:10].\
+						select_related('default_unit', 'cgst','sgst','igst')
+			elif (entry_type == 'sku'):
+				products = Product.objects.for_tenant(this_tenant).filter(sku__icontains  = q )[:10].\
+						select_related('default_unit', 'cgst','sgst','igst')
+			elif (entry_type == 'code'):
+				products = Product.objects.for_tenant(this_tenant).filter(barcode__contains  = q )[:10].\
+						select_related('default_unit', 'cgst','sgst','igst')
+
 			response_data = []
 			for item in products:
 				item_json = {}
 				item_json['id'] = item.id
-				item_json['label'] = item.name
+				if (entry_type == 'name'):
+					item_json['label'] = item.name
+				elif (entry_type == 'sku'):
+					item_json['label'] = item.name+": "+item.sku
+				elif (entry_type == 'code'):
+					item_json['label'] = item.name+": "+item.barcode
 				item_json['unit_id'] = item.default_unit.id
 				item_json['unit'] = item.default_unit.symbol
 				item_json['inventory'] = maintain_inventory

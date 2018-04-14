@@ -14,7 +14,14 @@ function round_off(value){
 $(document).on('keydown.autocomplete', '.name', function() {
     var el=this;
     $(this).autocomplete({
-        source : "api/getproduct", 
+        // source : "api/getproduct",
+        source: function(request, response) {
+            $.getJSON(
+                "api/getproduct",
+                { term:request.term, entryType:$('.identifier :selected').data('id') }, 
+                response
+            );
+        },
         minLength: 3,
         timeout: 200,
         select: function( event, ui ) {

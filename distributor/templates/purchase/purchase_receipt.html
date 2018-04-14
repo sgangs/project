@@ -58,25 +58,31 @@
 </div>  -->
 
 <div class="row">
-	<div class="form-group col-xs-3">
-		<label class="control-label">Select Vendor</label>
-		<select class="form-control selectpicker vendor" id="vendor" data-live-search="true">
-			<option disabled selected hidden style='display: none' value>Select Vendor</option>				
+	<div class="form-group col-xs-2">
+		<label class="control-label">Vendor</label>
+		<select class="form-control selectpicker vendor" id="vendor" data-live-search="true" title="Select Vendor">
 		</select>		 
 	</div>
 	<div class="form-group col-xs-2">
 		<label class="control-label">Supplier/ Invoice No</label>
 		<input class="form-control invoice">		 
 	</div>
-	<div class="form-group col-xs-3">
-		<label class="control-label">Select Warehouse</label>
-		<select class="form-control selectpicker warehouse" id="warehouse" data-live-search="true">
-			<option disabled selected hidden style='display: none' value>Select Warehouse</option>				
+	<div class="form-group col-xs-2">
+		<label class="control-label">Warehouse</label>
+		<select class="form-control selectpicker warehouse" id="warehouse" data-live-search="true" title="Select Warehouse">
 		</select>		 
 	</div>
 	<div class="form-group col-xs-2">
 		<label class="control-label">Invoice Date</label>				 
 		<input class="form-control date">
+	</div>
+	<div class="form-group col-xs-2">
+		<label class="control-label">Product Identifier</label>
+		<select class="form-control selectpicker identifier" id="identifier" data-live-search="true">
+			<option selected data-id='name'>Identify by Name</option>
+			<option data-id='sku'>Identify by SKU</option>
+			<option data-id='code'>Identify by Barcode</option>
+		</select>		 
 	</div>
 	<div class="form-group col-xs-2">
 		<label class="control-label tax_type_label">Change if IGST</label>
