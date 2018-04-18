@@ -919,7 +919,7 @@ def receipts_details(request, pk):
 		receipt['tenant_gst']=this_tenant.gst
 		receipt['tenant_address']=this_tenant.address_1+","+this_tenant.address_2
 		
-		line_items=list(receipt_line_item.objects.filter(purchase_receipt=receipt['id']).values('id','product_name','product_hsn',\
+		line_items=list(receipt_line_item.objects.filter(purchase_receipt=receipt['id']).values('id','product_name','product_hsn', 'product_sku',\
 			'unit','unit_multi','quantity','free_with_tax','purchase_price', 'tentative_sales_price','mrp','discount_type',\
 			'discount_value','discount2_type','discount2_value','cgst_percent','sgst_percent','igst_percent',\
 			'cgst_value','sgst_value','igst_value','line_tax','line_total'))
@@ -1585,8 +1585,8 @@ def order_details(request):
 		receipt['tenant_gst']=this_tenant.gst
 		receipt['tenant_address']=this_tenant.address_1+","+this_tenant.address_2
 		
-		line_items=list(order_line_item.objects.filter(purchase_order=receipt['id']).values('id','product_id', 'product_name','product_hsn',\
-			'unit','unit_multi','quantity', 'quantity_delivered','free_with_tax','purchase_price','discount_type',\
+		line_items=list(order_line_item.objects.filter(purchase_order=receipt['id']).values('id','product_id', 'product_name','product_hsn', \
+			'product_sku', 'unit','unit_multi','quantity', 'quantity_delivered','free_with_tax','purchase_price','discount_type',\
 			'discount_value','discount2_type','discount2_value','cgst_percent','sgst_percent','igst_percent',\
 			'cgst_value','sgst_value','igst_value','line_tax','line_total'))
 		receipt['line_items']=line_items
@@ -2414,7 +2414,7 @@ def return_details(request, pk):
 		return_detail['tenant_gst'] = this_tenant.gst
 		return_detail['tenant_address'] = this_tenant.address_1+","+this_tenant.address_2
 		
-		line_items = list(return_line_item.objects.filter(purchase_return=return_detail['id']).values('id','product_name','product_hsn',\
+		line_items = list(return_line_item.objects.filter(purchase_return=return_detail['id']).values('id','product_name','product_hsn', 'product_sku',\
 			'unit_symbol','unit_multi','quantity', 'return_purchase_price', 'tentative_sales_price','mrp','cgst_percent','sgst_percent','igst_percent',\
 			'cgst_value','sgst_value','igst_value','line_taxable_value','line_total'))
 		return_detail['line_items'] = line_items

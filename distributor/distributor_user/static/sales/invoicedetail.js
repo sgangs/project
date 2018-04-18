@@ -268,6 +268,7 @@ function load_data(){
                 }
                 $('.details').append("<tr class='data text-center'>"+
                     "<td colspan='2'><font size='1'>"+this.product_name+"</font></td>"+
+                    "<td class='hidden-print'><font size='1'>"+this.product_sku+"</font></td>"+
                     "<td><font size='1'>"+$.trim(this.product_hsn)+"</font></td>"+
                     "<td><font size='1'>"+parseFloat(this.quantity)+"</font></td>"+
                     // "<td id='not_print'>"+this.free_without_tax+"</td>"+
@@ -336,14 +337,12 @@ $('.printout').click(function(){
 
     // $(".template2").attr('hidden', true);
 
-
-
-     $(".print_style").
+    $(".print_style").
         // text("@media print {#print{display: block;}#not_print{display: none;}} @page{size: landscape; margin: 0mm;}");
         text("@media print {#print{display: block;}#not_print{display: none;}"+
             ".details { border: solid #000 !important; border-width: 0.5px 0 0 0.5px !important; }"+
             ".details th, .details td { border: solid #000 !important; border-width: 0 0.5px 0.5px 0 !important; }} "+
-            "@page{size: auto; margin: 0mm;}");
+            "@page{size: auto; margin: 2mm;}");
 
     window.print();
 

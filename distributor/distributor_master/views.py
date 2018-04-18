@@ -1285,3 +1285,43 @@ def service_group_data(request):
 
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
+
+@api_view(['GET'],)
+def product_print_barcode(request):
+	this_tenant = request.user.tenant
+	if request.method == 'GET':
+		entry_type = request.GET.get('entryType')
+		name = request.GET.get('name')
+		response_data = {}
+
+		if (entry_type == 'name' or entry_type == 'Identify By Name'):
+			try:
+				product = Product.objects.for_tenant(this_tenant).get(name__iexact  = name)
+			except:
+				product = ""
+		elif (entry_type == 'sku'  or entry_type == 'Identify By SKU'):
+			try:
+				product = Product.objects.for_tenant(this_tenant).get(sku__iexact  = name)
+			except:
+				product = ""
+		elif (entry_type == 'code'  or entry_type == 'Identify By Barcode'):
+			try:
+				product = Product.objects.for_tenant(this_tenant).get(barcode  = name)
+			except:
+				product = ""
+		try:
+			response_data['name'] = product.name
+			response_data['sku'] = product.sku
+			if (product.barcode):
+				response_data['barcode'] = product.barcode
+			else:
+				raise IntegrityError (('Barcode does not exist'))
+		except:
+			raise IntegrityError (('Could not fetch product'))
+		try:
+			response_data['rate'] = product_sales_rate.objects.get(product = product).tentative_sales_rate
+		except:
+			response_data['rate'] = ''
+		
+		jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
+		return HttpResponse(jsondata)

@@ -134,7 +134,6 @@ function load_products(){
 }
 
 function create_table(){
-    console.log(month);
     $.ajax({
         url : "data/", 
         type: "GET",
@@ -145,14 +144,13 @@ function create_table(){
         dataType: 'json',
         // handle a successful response
         success : function(jsondata) {
-            console.log(jsondata);
             $("#product_movement .data").remove();
             $.each(products, function(){
                 var product_id = this.id
                 var rowId = 'data_'+product_id
                 $('#product_movement').append("<tr class='data' id='"+rowId+"' align='center'>"+
                     "<td hidden>"+product_id+"</td>"+
-                    "<td>"+this.name+"</td>");
+                    "<td><small>"+this.name+": "+this.sku+"</small></td>");
                 $.each(day_list,function(){
                     search_key = product_id + "_" + this
                     var rowRef = document.getElementById(rowId);
@@ -163,11 +161,16 @@ function create_table(){
                         if (quantity == null || quantity == 'null' || quantity == 'None' || quantity == ''){
                             quantity = 0;
                         }
-                        var newText  = document.createTextNode(Math.round(quantity * 1000)/1000)
+                        if (quantity != 0){
+                            var newText  = document.createTextNode(Math.round(quantity * 1000)/1000)
+                        }
+                        else{
+                            var newText = document.createTextNode(" ");
+                        }
                         newCell.appendChild(newText);
                     }
                     else{
-                        var newText  = document.createTextNode(0)
+                        var newText  = document.createTextNode(" ");
                         newCell.appendChild(newText);
                     }
 
@@ -176,92 +179,11 @@ function create_table(){
         },
         // handle a non-successful response
         error : function() {
-            swal("Oops...", "No warehouse data exist.", "error");
+            swal("Oops...", "There were errors in fetching data. Kindly retry.", "error");
         }
     });
     // day_list = getDaysInMonth(1,2018)
 }
-
-
-// console.log(getDaysInMonth(1,2018));
-
-// $('.get_data').click(function load_movement(){
-//     warehouse=$('.warehouse').find(':selected').data('id');
-//     product=$('.product_id').val()
-//     date=$('.date').val()
-//     // if(moment(startdate, 'DD-MM-YYYY',true).isValid()){
-//     //     startdate=startdate.split("-").reverse().join("-")
-//     //     console.log(startdate);
-//     // }
-//     // if(moment(enddate, 'DD-MM-YYYY',true).isValid()){
-//     //     enddate=enddate.split("-").reverse().join("-")
-//     // }
-//     var proceed = true;
-//     if ($.trim(warehouse).length == 0 || typeof(warehouse) == 'undefined' || $.trim(product).length == 0 || typeof(product) == 'undefined'){
-//         proceed=false;
-//     }
-//     if (proceed){
-//         $.ajax({
-//             url : "data/",
-//             type: "GET",
-//             data:{calltype: 'productid',
-//                 product: product,
-//                 warehouse: warehouse,
-//                 date:date.split("/").reverse().join("-")},
-//             dataType: 'json',
-//                 // handle a successful response
-//             success : function(jsondata) {
-//                 $("#product_movement .data").remove();
-//                 var count=0;
-//                 var final_qty=0;
-//                 var final_rate=0;
-//                 $.each(jsondata, function(){
-//                     if (typeof(this.date) == 'undefined'){
-//                         $('#product_movement').append("<tr class='data' align='center'>"+
-//                         "<td hidden='true'></td>"+
-//                         "<td>"+trn_type[parseInt(this.transaction_type)]+"</td>"+
-//                         "<td></td>"+
-//                         "<td></td>"+
-//                         "<td>"+this.current_qty+"</td>"+
-//                         "<td>Rs."+this.current_val+"</td>"+
-//                         "</tr>");
-//                     }
-//                     else{
-//                         if (count == 0){
-//                             final_qty = this.current_qty;
-//                             final_rate = this.current_val;
-//                         }
-//                         count++;     
-//                         $('#product_movement').append("<tr class='data' align='center'>"+
-//                         "<td hidden='true'></td>"+
-//                         "<td>"+trn_type[parseInt(this.transaction_type)]+"</td>"+
-//                         "<td>"+this.date.split("-").reverse().join("-")+"</td>"+
-//                         "<td>"+this.quantity+"</td>"+
-//                         "<td>"+this.current_qty+"</td>"+
-//                         "<td>Rs."+this.current_val+"</td>"+
-//                         "</tr>");   
-//                     }
-//                 })
-//                 if (count >0){
-//                     $('#product_movement').prepend("<tr class='data' align='center'>"+
-//                         "<td hidden='true'></td>"+
-//                         "<td>Closing Balance</td>"+
-//                         "<td></td>"+
-//                         "<td></td>"+
-//                         "<td>"+final_qty+"</td>"+
-//                         "<td>Rs."+final_rate+"</td>"+
-//                         "</tr>");
-
-//                 }
-//                 console.log(final_qty);
-//             },
-//                 // handle a non-successful response
-//             error : function() {
-//                 swal("Oops...", "There was an error.", "error");
-//             }
-//         });
-//     }
-// });
 
 
 });

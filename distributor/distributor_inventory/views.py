@@ -91,7 +91,7 @@ def inventory_data(request):
 		products=Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer_id)
 
 		current_inventory=list(Inventory.objects.for_tenant(this_tenant).filter(quantity_available__gt=0, product__in = products).\
-					select_related('product', 'warehouse').values('product__name',\
+					select_related('product', 'warehouse').values('product__name','product__sku',\
 					'purchase_price','warehouse__address_1','warehouse__address_2', 'warehouse__city').\
 					annotate(available=Sum('quantity_available')).order_by('product__name'))
 
@@ -799,7 +799,7 @@ def product_movement_consolidated_data(request):
 	end = request.GET.get('end')
 	warehouse = request.GET.get('warehouse')
 	inventory_details = list(inventory_ledger.objects.for_tenant(this_tenant).filter(warehouse = warehouse, date__range=[start, end]).\
-					select_related('product').values('product','product__name').order_by('product__name').annotate(\
+					select_related('product').values('product','product__name', 'product__sku').order_by('product__name').annotate(\
 						purchase_total=Sum(Case(When(transaction_type = 1, then = "quantity"))),\
 						sales_total=Sum(Case(When(transaction_type__in = [2,9], then = "quantity")))))
 
@@ -819,7 +819,7 @@ def product_monthly_movement_product(request):
 	this_tenant = request.user.tenant
 	manufacturer = request.GET.get('manufacturer')
 	response_data={}
-	products = list(Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer).values('id', 'name'))
+	products = list(Product.objects.for_tenant(this_tenant).filter(manufacturer = manufacturer).values('id', 'name', 'sku'))
 	response_data = products
 	jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
 	return HttpResponse(jsondata)

@@ -646,7 +646,7 @@ def invoice_details(request, pk):
 		if invoice['customer_pin'] == None:
 			invoice['customer_pin'] = ''
 		
-		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id',\
+		line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id', 'product_sku',\
 			'product_hsn','unit','unit_multi','quantity','quantity_returned','sales_price',\
 			'tentative_sales_price','mrp','discount_type','discount_value','discount2_type','discount2_value', 'line_tax',\
 			'line_total', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
@@ -679,7 +679,7 @@ def update_invoice_details(request):
 				'warehouse_city','warehouse_pin','warehouse','payable_by','grand_discount_type','grand_discount','subtotal',\
 				'cgsttotal','sgsttotal','igsttotal', 'roundoff','total','amount_paid', 'return_value').get(invoice_id=invoice_id)
 
-			line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id',\
+			line_items=list(invoice_line_item.objects.filter(sales_invoice=invoice['id']).values('id','product_name','product_id', 'product_sku',\
 				'product_hsn','unit','unit_multi','quantity','quantity_returned','sales_price',\
 				'tentative_sales_price','mrp','discount_type','discount_value','discount2_type','discount2_value', 'line_tax',\
 				'line_total', 'cgst_percent','sgst_percent','igst_percent','cgst_value','sgst_value','igst_value',))
@@ -703,12 +703,12 @@ def update_invoice_details(request):
 							values('tentative_sales_price','mrp').annotate(avl=Sum('quantity_available'))[0]['avl']
 				except:
 					qty_avl=0
-				response_data.append({'id':item.id,'product_name':item.product_name,'product_id': item.product_id,'unit':item.unit,\
-					'unit_multi':item.unit_multi,'quantity':item.quantity,'quantity_returned':item.quantity_returned,'sales_price': item.sales_price,\
-					'tentative_sales_price': item.tentative_sales_price,'mrp':item.mrp,'discount_type': item.discount_type, \
-					'discount_value':item.discount_value,'discount2_type':item.discount2_type,'discount2_value':item.discount2_value, \
-					'line_tax':item.line_tax,'line_total':item.line_total, 'cgst_percent': item.cgst_percent, 'sgst_percent': item.sgst_percent,\
-					'igst_percent':item.igst_percent, 'cgst_value':item.cgst_value,'sgst_value':item.sgst_value,\
+				response_data.append({'id':item.id,'product_name':item.product_name,'product_id': item.product_id,'unit':item.unit, \
+					'product_sku': item.product_sku,'unit_multi':item.unit_multi,'quantity':item.quantity,'quantity_returned':item.quantity_returned,\
+					'sales_price': item.sales_price,'tentative_sales_price': item.tentative_sales_price,'mrp':item.mrp,\
+					'discount_type': item.discount_type, 'discount_value':item.discount_value,'discount2_type':item.discount2_type,\
+					'discount2_value':item.discount2_value, 'line_tax':item.line_tax,'line_total':item.line_total, 'cgst_percent': item.cgst_percent,\
+					'sgst_percent': item.sgst_percent,'igst_percent':item.igst_percent, 'cgst_value':item.cgst_value,'sgst_value':item.sgst_value,\
 					'igst_value':item.igst_value, 'qty_avl':qty_avl+item.quantity-item.quantity_returned})
 
 			invoice['line_items']=response_data

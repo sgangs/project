@@ -59,7 +59,8 @@ function load_data(){
                     // total_pretax=this.line_total - this.cgst_value - this.sgst_value - this.igst_value;
                     $('.details').append("<tr class='data text-center'>"+
                         "<td span='4'>"+this.product_name+"</td>"+
-                        "<td span='4'>"+$.trim(this.product_hsn)+"</td>"+
+                        "<td class='hidden-print'>"+this.product_sku+"</td>"+
+                        "<td>"+$.trim(this.product_hsn)+"</td>"+
                         "<td>"+this.quantity+"</td>"+
                         // "<td class='hidden-print'>"+this.free_without_tax+"</td>"+
                         "<td>"+this.free_with_tax+"</td>"+
@@ -93,6 +94,7 @@ function load_data(){
                 $.each(jsondata['line_items'], function(){
                     $('.details').append("<tr class='data text-center'>"+
                         "<td span='4'>"+this.product_name+"</td>"+
+                        "<td hidden></td>"+
                         "<td span='4' hidden>"+$.trim(this.product_hsn)+"</td>"+
                         "<td hidden>"+this.quantity+"</td>"+
                         // "<td class='hidden-print'>"+this.free_without_tax+"</td>"+
