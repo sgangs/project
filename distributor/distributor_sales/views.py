@@ -40,7 +40,6 @@ def get_product(request):
 	this_tenant=request.user.tenant
 	if request.method == "GET":
 		entry_type = request.GET.get('entryType')
-		print(entry_type)
 		q = request.GET.get('term', '')
 		if (entry_type == 'name'):
 			products = Product.objects.for_tenant(this_tenant).filter(name__icontains = q )[:10].\
@@ -395,7 +394,6 @@ def sales_invoice_save(request):
 			except Exception as err:
 				response_data  = err.args 
 				transaction.rollback()
-		print(response_data)
 		jsondata = json.dumps(response_data)
 		return HttpResponse(jsondata)
 
