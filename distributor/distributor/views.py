@@ -400,6 +400,15 @@ def tenant_user_metadata(request):
     response_data['tenant_state']=state_dict[this_tenant.state]
     response_data['first_name']=this_user.first_name
     response_data['last_name']=this_user.last_name
+    try:
+        response_data['tenant_phone']=str(this_user.phone)
+    except:
+        response_data['tenant_phone']=''
+    # x = this_user.phone
+    # response_data['phone'] = x
+    # print(x)
+    # print(str(x))
+    # print(type(x))
     jsondata = json.dumps(response_data, cls=DjangoJSONEncoder)
     return HttpResponse(jsondata)
 
