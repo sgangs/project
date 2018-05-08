@@ -1,52 +1,54 @@
-{% extends "landingbase.html" %}
+<!DOCTYPE html>
+<html lang="en" >
 
-{% block title %}
+<head>
+  <meta charset="UTF-8">
+  <title>Login to Tech Assisto</title>
 
-{% load static from staticfiles %}
+  {% load static from staticfiles %}
 
-<!-- {% load crispy_forms_tags %} -->
+  <link type ="image/x-icon" href= "{% static 'img/Logo_Favicon.ico' %}" rel="icon">
+  <link rel="stylesheet" href="{% static 'login_style.css' %}">
 
-<title>Log-in</title>
-<style type="text/css">
-    p.id{
-        text-transform: capitalize;
-    }
-</style>    
-{% endblock %}
-{% block content %}
+  
+</head>
+
+<body>
+  <div class="wrapper fadeInDown">
+  <h2>If you don't have an account and want to register your business, <a href='{% url 'register' %}'> please click here </a></h2>
+  <br>
+  <div id="formContent">
+    <!-- Tabs Titles -->
+    <h2 class="active"> Log In </h2>
+    <!-- <h2 class="inactive underlineHover">Regist </h2> -->
+
+    <!-- Icon -->
+    <div class="fadeIn first">
+      <img src="{% static 'img/login_img.svg' %}"  id="icon" alt="User Icon" />
+    </div>
+
     {% if form.errors %}
-        <!-- <p>Your username and password didn't match. Please try again.</p> -->
-        <p></p>
-    {% else %}
-        <h1></h1>
-        <p>If you don't have an account and want to register your business, please <a style="color:#6bd4fa;" href='{% url 'register' %}'>click here</a></p>
+      <h2 style="color:#843e3e;">Please enter a correct username and password. Note that both fields may be case-sensitive.</h2>
     {% endif %}
 
+    <!-- Login Form -->
+    <form action="{% url 'login' %}" class='getin' method="post" autocomplete="off" >
+      <input type="text" id="login" class="fadeIn second user_pass" name="username" placeholder="Username" required>
+      <input type="password" id="password" class="fadeIn third user_pass" name="password" placeholder="Password" required>
+      {% csrf_token %}
+      <input type="submit" class="fadeIn fourth" value="Log In">
+      <input type="hidden" name="next" value="{% url "landing" %}" />
+    </form>
 
-       
-<div class="row">
-    <div class="login-form col-md-5">
-        <form action="{% url 'login' %}" class='getin' method="post">
-            {{ form|crispy }}
-            {% csrf_token %}
-            <p><input type="submit" class="btn btn-primary" value="Log-in"></p>
-            <input type="hidden" name="next" value="{% url "landing" %}" />
-            
-        </form>
-        <p><a href="{% url 'password_reset' %}">Forgotten your password?</a></p>
-        <!--<p><a href="#">Register Here</a></p>-->
+    <!-- Remind Passowrd -->
+    <div id="formFooter">
+      <a class="underlineHover" href="{% url 'password_reset' %}">Forgot Password?</a>
     </div>
-    <div class="col-md-7 text-center">
-        <p><img src="{% static 'gif/welcome.gif' %}" alt="Welcome!!"></p>
-    </div>
+
+  </div>
 </div>
+  
 
-<script type="text/javascript">
-    $('#id_username').attr( "autocomplete", "off" ); 
-</script>
+</body>
 
-{% endblock %}
-
-
-
-
+</html>

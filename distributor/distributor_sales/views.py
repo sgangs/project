@@ -16,8 +16,6 @@ from django.template import Context
 from django.http import HttpResponse
 
 from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from distributor_master.models import Unit, Product, Customer, Warehouse, Manufacturer
