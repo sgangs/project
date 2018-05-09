@@ -18,6 +18,7 @@ function load_data(){
             $('.pan').val(jsondata['pan']);
             $('.dl1').val(jsondata['dl_1']);
             $('.dl2').val(jsondata['dl_2']);
+            $('.phone').val(jsondata['phone_no']);
             
             $.each(jsondata['distributor_sales_policy'], function(){
                 count=$('.policy_table tr').length;
@@ -52,29 +53,31 @@ $('.policy_table').on("click", ".delete", function() {
 });
 
 
-/*$("#tax").on("click", ".name", function(){
-    pk=$(this).closest('tr').find('td:nth-child(1)').html()
-    console.log(pk);
-    el=this;
-    var url="individual/"+pk+"/";
-    (function() {
-        $.ajax({
-            url : url, 
-            type: "GET",
-            dataType: 'json',
-            // handle a successful response
-            success : function(jsondata) {
-                console.log(jsondata);
-            },
-            // handle a non-successful response
-            error : function() {
-                // console.log("here")
-                swal("Oops...", "There were some error.", "error");
-            }
-        });
-    }());
+var number_valid=true;
+
+var telInput = $('.phone'), errorMsg = $("#error-msg"), validMsg = $("#valid-msg");
+
+var reset = function() {
+  telInput.removeClass("error");
+  errorMsg.addClass("hide");
+  validMsg.addClass("hide");
+}
+
+telInput.blur(function() {
+  reset();
+  if ($.trim(telInput.val())) {
+    if (telInput.intlTelInput("isValidNumber")) {
+      validMsg.removeClass("hide");
+      number_valid=true;
+      phone=telInput.intlTelInput("getNumber");
+    } else {
+      telInput.addClass("error");
+      errorMsg.removeClass("hide");
+      number_valid=false
+    }
+  }
 });
-*/
+
 
 $('.addmore').click(function(){
     count=$('.details tr').length;
@@ -117,6 +120,14 @@ function new_data(){
     var distributor_sales_policy = [];
 
     var policy_count = 0;
+    var phone = $(".phone").intlTelInput("getNumber");
+
+    if (number_valid){
+        proceed = true
+    }
+    else{
+        proceed = false
+    }
 
     $(".policy_table tr.data").each(function() {
         policy_count+=1;
@@ -136,38 +147,42 @@ function new_data(){
         }
     });
 
+
     if (policy_count > 5){
         swal("Hmm...", "There can be a maximum of 5 sales policy. Currently there are "+policy_count+" policies", "error");
         $('#policy').modal('show');
         var proceed = false;
     }
 
-    (function() {
-        $.ajax({
-            url : "data/" , 
-            type: "POST",
-            data:{gst: gst,
-                pan:pan,
-                dl1: dl1,
-                dl2: dl2,
-                distributor_sales_policy : JSON.stringify(distributor_sales_policy),
-                csrfmiddlewaretoken: csrf_token},
-            dataType: 'json',               
-            
-            success : function(jsondata) {
-                var show_success=true
-                if (show_success){
-                    swal("Hooray", "Company Settings updated.", "success");
-                    setTimeout(location.reload(true),1000);
+    if (proceed){
+        (function() {
+            $.ajax({
+                url : "data/" , 
+                type: "POST",
+                data:{gst: gst,
+                    pan:pan,
+                    dl1: dl1,
+                    dl2: dl2,
+                    phone: phone,
+                    distributor_sales_policy : JSON.stringify(distributor_sales_policy),
+                    csrfmiddlewaretoken: csrf_token},
+                dataType: 'json',               
+                
+                success : function(jsondata) {
+                    var show_success=true
+                    if (show_success){
+                        swal("Hooray", "Company Settings updated.", "success");
+                        setTimeout(location.reload(true),1500);
+                    }
+                    //console.log(jsondata);
+                },
+                // handle a non-successful response
+                error : function() {
+                    swal("Oops...", "Recheck your inputs. There were some errors!", "error");
                 }
-                //console.log(jsondata);
-            },
-            // handle a non-successful response
-            error : function() {
-                swal("Oops...", "Recheck your inputs. There were some errors!", "error");
-            }
-        });
-    }());
+            });
+        }());
+    }
 }
 
 });

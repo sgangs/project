@@ -19,49 +19,57 @@
           <input type="text" class="form-control name" maxlength="100" disabled>)
     </div> -->
     <br>
-      <div class="form-group row companyaddressdiv">
+      <div class="form-group row companyaddressdiv" align="left">
         <label class="control-label col-sm-3 col-form-label">Address Line 1</label>
         <div class="col-sm-9">
           <input type="text" class="form-control address1" maxlength="100" disabled>
         </div>
       </div>
-      <div class="form-group row companyaddressdiv">
+      <div class="form-group row companyaddressdiv" align="left">
         <label class="control-label col-sm-3 col-form-label">Address Line 2</label>
         <div class="col-sm-9">
           <input type="text" class="form-control address2" maxlength="100" disabled>
         </div>
       </div>
-      <div class="form-group row companyaddressdiv">
+      <div class="form-group row companyaddressdiv" align="left">
         <label class="control-label col-sm-3 col-form-label">Pincode</label>
         <div class="col-sm-9">
           <input type="text" class="form-control pin" maxlength="8" disabled>
         </div>
       </div>
-      <div class="form-group row companynamediv">
+      <div class="form-group row phonediv" align="left">
+        <label for="classname" class="col-sm-3 col-form-label">Phone/Contact</label>
+        <div class="col-sm-9">
+          <input type="tel" class="form-control phone" align="left" >
+          <span id="valid-msg" class="hide">✓ Valid</span>
+          <span id="error-msg" class="hide">Invalid number</span>
+        </div>
+      </div>
+      <div class="form-group row companynamediv" align="left">
         <label class="control-label col-sm-3 col-form-label">GST Number</label>
         <div class="col-sm-9">
           <input type="text" class="form-control gst" maxlength="20">
         </div>
       </div>
-      <div class="form-group row companypandiv">
+      <div class="form-group row companypandiv" align="left">
         <label class="control-label col-sm-3 col-form-label">PAN Number</label>
         <div class="col-sm-9">
           <input type="text" class="form-control pan" maxlength="20">
         </div>
       </div>
-      <div class="form-group row companydl1div">
+      <div class="form-group row companydl1div" align="left">
         <label class="control-label col-sm-3 col-form-label">Drug License 1</label>
         <div class="col-sm-9">
           <input type="text" class="form-control dl1" maxlength="10">
         </div>
       </div>
-      <div class="form-group row companydl2div">
+      <div class="form-group row companydl2div" align="left">
         <label class="control-label col-sm-3 col-form-label">Drug License 2</label>
         <div class="col-sm-9">
           <input type="text" class="form-control dl2" maxlength="10">
         </div>
       </div>
-      <div class="form-group row companypolicy1div">
+      <div class="form-group row companypolicy1div" align="left">
         <label class="control-label col-sm-3 col-form-label">Sales Policy</label>
         <div class="col-sm-9"  align="left">
           <button type="submit" class="btn btn-primary btn-xs addpolicy_btn"> Click here for sales policy, to be printed on Distributor Invoices (max - 5 policies)</button>
@@ -118,14 +126,13 @@
   </div>
 </div>
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/css/intlTelInput.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/js/intlTelInput.min.js"></script>
+
   {% load static from staticfiles %}
 
   <script src="{% static 'user_tenant/tenant_settings.js' %}"></script>
-  <script type="text/javascript">
-    csrf_token='{{csrf_token}}';
-    $('.addpolicy_btn').attr('data-toggle',"modal")
-    $('.addpolicy_btn').attr('data-target',"#policy")
-  </script>
+  
 
   <style type="text/css">
     
@@ -148,8 +155,30 @@
     .update_btn:hover {
         background-color: #440066; /* Darker than purple */
         color: #aa66cc;
-    }    
+    }
+
+    .iti-flag {background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/img/flags.png");}  
+    @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2 / 1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {
+          .iti-flag {background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/img/flags@2x.pngpath/to/flags@2x.png");}
+    }     
   </style>
+
+  <script type="text/javascript">
+    csrf_token='{{csrf_token}}';
+    $('.addpolicy_btn').attr('data-toggle',"modal")
+    $('.addpolicy_btn').attr('data-target',"#policy")
+
+    $(".phone").intlTelInput({
+      initialCountry: "IN",
+      geoIpLookup: function(callback) {
+        $.get('http://ipinfo.io', function() {}, "jsonp").always(function(resp) {
+          var countryCode = (resp && resp.country) ? resp.country : "";
+          callback(countryCode);
+        });
+      },
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.12/js/utils.js" // just for formatting/placeholders etc
+    });
+  </script>
 
   <!-- Sweetalert JS -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />

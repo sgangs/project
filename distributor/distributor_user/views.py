@@ -45,6 +45,7 @@ def tenant_settings_data(request):
 		response_data['city']=this_tenant.city
 		response_data['pin']=this_tenant.pin
 		response_data['distributor_sales_policy']=this_tenant.distributor_sales_policy
+		response_data['phone_no'] = str(this_tenant.phone)
 
 	elif request.method == 'POST':
 		gst = request.data.get('gst')
@@ -59,12 +60,27 @@ def tenant_settings_data(request):
 			distributor_sales_policy = json.loads(request.data.get('distributor_sales_policy'))
 		except:
 			distributor_sales_policy = []
+
+		phone = request.data.get('phone')
+		if (len(phone) > 0):
+			try:
+				parsed_phone = phonenumbers.parse(phone, None)
+				if not phonenumbers.is_valid_number(parsed_phone):
+					response_data['error'] = "Phone number not valid"
+					jsondata = json.dumps(response_data)
+					return HttpResponse(jsondata)
+			except:
+				response_data['error'] = "Phone number not valid"
+				jsondata = json.dumps(response_data)
+				return HttpResponse(jsondata)
 		
 		this_tenant.gst = gst
 		this_tenant.pan = pan
 		this_tenant.dl_1 = dl_1
 		this_tenant.dl_2 = dl_2
+		this_tenant.phone = phone
 		this_tenant.distributor_sales_policy = distributor_sales_policy
+
 		this_tenant.save()
 
 	jsondata = json.dumps(response_data,  cls=DjangoJSONEncoder)
@@ -155,7 +171,6 @@ def user_list_data(request):
 								jsondata = json.dumps(response_data)
 								return HttpResponse(jsondata)
 						except:
-							print("error in phone")
 							response_data['error'] = "Phone number not valid"
 							jsondata = json.dumps(response_data)
 							return HttpResponse(jsondata)
