@@ -365,9 +365,13 @@ def account_details_view(request):
 	if request.method == 'GET':
 		accounts=Account.objects.for_tenant(this_tenant).exclude(key__in=["vatin","vatout","vatpay", "pur_return", "sales_return"])
 		for item in accounts:
-			this_account_year=account_year.objects.get(account=item, accounting_period=current_year)
-			response_data.append({'id':item.id,'name':item.name,'key':item.key, 'type':type_dict[item.account_type], \
-				'debit':this_account_year.current_debit, 'credit':this_account_year.current_credit})
+			try:
+				this_account_year=account_year.objects.get(account=item, accounting_period=current_year)
+				response_data.append({'id':item.id,'name':item.name,'key':item.key, 'type':type_dict[item.account_type], \
+					'debit':this_account_year.current_debit, 'credit':this_account_year.current_credit})
+			except:
+				response_data.append({'id':item.id,'name':item.name,'key':item.key, 'type':type_dict[item.account_type], \
+					'debit':0, 'credit':0})
 		jsondata = json.dumps(response_data,cls=DjangoJSONEncoder)
 		return HttpResponse(jsondata)
 	if request.method == 'POST':
