@@ -177,7 +177,6 @@ $("#vendor").on("click", ".link", function(){
             // handle a successful response
         success : function(jsondata) {
             $('#modal_details').modal('show');
-            console.log(jsondata)
             $('.id_data').val(jsondata['id'])
             $('.name_data').val(jsondata['name'])
             $('.key_data').val(jsondata['key'])
@@ -266,6 +265,8 @@ function update_data(){
     tin_data=$('.tin_data').val()
     gst_data=$('.gst_data').val()
     details_data=$('.details_data').val()
+    phone_data = $('.phone_data').val()
+    console.log(phone_data)
     phone_update_check();
 
     if (name_data == '' || name_data =='undefined' || key_data == '' || key_data =='undefined' ){
