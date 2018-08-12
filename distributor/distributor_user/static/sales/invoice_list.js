@@ -436,17 +436,19 @@ function filter_data(page_no) {
         }        
     });
 
-    var manufacturers=[];
-    $.each($(".manufacturer_filter option:selected"), function(){
-        manufacturerid=$(this).data('id');
-        // if (customerid == 'undefined' || typeof(customerid) == undefined){
-        if ($.trim(manufacturerid).length>0){
-            var manufacturer={
-                manufacturerid: manufacturerid
-            };
-            manufacturers.push(manufacturer);
-        }        
-    });
+    // var manufacturers=[];
+    // $.each($(".manufacturer_filter option:selected"), function(){
+    //     manufacturerid=$(this).data('id');
+    //     // if (customerid == 'undefined' || typeof(customerid) == undefined){
+    //     if ($.trim(manufacturerid).length>0){
+    //         var manufacturer={
+    //             manufacturerid: manufacturerid
+    //         };
+    //         manufacturers.push(manufacturer);
+    //     }        
+    // });
+
+    manufacturer =$(".manufacturer_filter").find(':selected').data('id');
 
 
     if (unpaid_invoices){
@@ -483,7 +485,7 @@ function filter_data(page_no) {
             payment_status: payment_status,
             groups: JSON.stringify(groups),
             customers: JSON.stringify(customers),
-            manufacturers: JSON.stringify(manufacturers),
+            manufacturer: manufacturer,
             page_no: page_no,
             csrfmiddlewaretoken: csrf_token},
         dataType: 'json',

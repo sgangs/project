@@ -113,6 +113,9 @@ def sales_invoice_save(request):
 				# try:	
 					customer_id = request.data.get('customer')
 					warehouse_id=request.data.get('warehouse')
+					manufacturer_id = None
+					manufacturer_id=request.data.get('manufacturer')
+					print(manufacturer_id)
 					date=request.data.get('date')
 
 					# Final save will determine whether sales invoice will be finalized or temporary and editable
@@ -152,7 +155,7 @@ def sales_invoice_save(request):
 					amount_paid = 0
 					
 					new_invoice = new_sales_invoice_save(this_tenant, date, customer, customer_name, customer_address, customer_state, warehouse,\
-						final_save, small_large_limt, subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, duedate, amount_paid)
+						final_save, small_large_limt, subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, duedate, amount_paid, manufacturer_id)
 					
 					cgst_paid={}
 					sgst_paid={}
@@ -428,16 +431,17 @@ def all_invoices(request):
 
 		elif (calltype == 'apply_filter'):
 
-			customers=json.loads(request.GET.get('customers'))
-			groups=json.loads(request.GET.get('groups'))
-			start=request.GET.get('start')
-			end=request.GET.get('end')
-			invoice_no=request.GET.get('invoice_no')
-			invoice_status=request.GET.get('invoice_status')
-			productid=request.GET.get('productid')
-			sent_with=request.GET.get('sent_with')
-			returntype=request.GET.get('returntype')
-			payment_status=request.GET.get('payment_status')
+			customers = json.loads(request.GET.get('customers'))
+			groups = json.loads(request.GET.get('groups'))
+			start = request.GET.get('start')
+			end = request.GET.get('end')
+			invoice_no = request.GET.get('invoice_no')
+			invoice_status = request.GET.get('invoice_status')
+			productid = request.GET.get('productid')
+			sent_with = request.GET.get('sent_with')
+			returntype = request.GET.get('returntype')
+			payment_status = request.GET.get('payment_status')
+			manufacturer = request.GET.get('manufacturer')
 			
 			if (start and end):
 				if (payment_status == 'unpaid'):
@@ -489,13 +493,18 @@ def all_invoices(request):
 			
 				# invoices = invoices.filter(invoiceLineItem_salesInvoice__product__in=products)
 
+			if manufacturer:
+				invoices=invoices.filter(manufacturer=manufacturer)
+
 			if invoice_no:
 				invoices=invoices.filter(invoice_id__icontains=invoice_no)
+			
 			if invoice_status:
 				if (invoice_status == 'open'):
 					invoices=invoices.filter(is_final=False)
 				elif (invoice_status == 'final'):
 					invoices=invoices.filter(is_final=True)
+			
 			if productid:
 				product=Product.objects.for_tenant(this_tenant).get(id=productid)
 				invoices=invoices.filter(invoiceLineItem_salesInvoice__product=product).values('id','invoice_id','date','customer_name','total',\
@@ -1375,10 +1384,7 @@ def finalize_open_invoices(request):
 					total_purchase_price = 0
 					remarks="Sales Invoice No: "+str(new_invoice.invoice_id)
 					line_items=invoice_line_item.objects.filter(sales_invoice=new_invoice)
-					for item in line_items:
-						product_items=json.loads(item.other_data)['detail']
-						for i in product_items:
-							total_purchase_price += Decimal(i['pur_rate'])*Decimal(i['quantity'])
+
 					
 					journal=new_journal(this_tenant, date,"Sales",remarks,trn_id= new_invoice.id, trn_type=4)
 					account= Account.objects.for_tenant(this_tenant).get(name__exact="Sales")
@@ -1410,6 +1416,11 @@ def finalize_open_invoices(request):
 						raise IntegrityError
 
 					if this_tenant.maintain_inventory:
+						for item in line_items:
+							product_items=json.loads(item.other_data)['detail']
+							for i in product_items:
+								total_purchase_price += Decimal(i['pur_rate'])*Decimal(i['quantity'])
+
 						inventory_acct=account_inventory.objects.for_tenant(this_tenant).get(name__exact="Inventory")
 						acct_period=accounting_period.objects.for_tenant(this_tenant).get(start__lte=date, end__gte=date)
 						inventory_acct_year=account_year_inventory.objects.for_tenant(this_tenant).\

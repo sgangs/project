@@ -39,6 +39,8 @@ class sales_invoice(models.Model):
 	warehouse_pin=models.CharField(max_length=8)
 
 	is_final=models.BooleanField(default=True)
+
+	manufacturer = models.BigIntegerField(db_index=True, blank = True, null = True)
 	
 	#GST Type 1 means B2B registered, 2 means B2CL, 3 means B2CS.
 	gst_type=models.PositiveSmallIntegerField(default=1)

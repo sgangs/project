@@ -9,7 +9,7 @@ from distributor_inventory.models import Inventory, inventory_ledger
 from distributor.global_utils import new_tax_transaction_register
 
 def new_sales_invoice_save(this_tenant, date, customer, customer_name, customer_address, customer_state, warehouse, final_save, small_large_limt, 
-    subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, duedate, amount_paid):
+    subtotal, cgsttotal, sgsttotal, igsttotal, round_value, total, duedate, amount_paid, manufacturer_id = None):
 
     new_invoice=sales_invoice()
     new_invoice.tenant=this_tenant
@@ -26,6 +26,8 @@ def new_sales_invoice_save(this_tenant, date, customer, customer_name, customer_
     new_invoice.dl_1=customer.dl_1
     new_invoice.dl_2=customer.dl_2
     
+    new_invoice.manufacturer = manufacturer_id
+
     new_invoice.warehouse=warehouse
     ware_address=warehouse.address_1+", "+warehouse.address_2
     new_invoice.warehouse_address=ware_address
