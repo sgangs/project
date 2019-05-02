@@ -401,7 +401,7 @@ def tenant_user_metadata(request):
     response_data['first_name']=this_user.first_name
     response_data['last_name']=this_user.last_name
     try:
-        response_data['tenant_phone']=str(this_user.phone)
+        response_data['tenant_phone']=str(this_tenant.phone)
     except:
         response_data['tenant_phone']=''
     # x = this_user.phone

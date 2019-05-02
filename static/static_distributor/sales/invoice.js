@@ -175,6 +175,29 @@ function load_customers(){
     });
 }
 
+load_manufacturer()
+
+function load_manufacturer(){
+    $.ajax({
+        url : "/master/manufacbrand/manufacdata/", 
+        type: "GET",
+        dataType: 'json',
+        // handle a successful response
+        success : function(jsondata) {
+            $.each(jsondata, function(){
+                $('#manufacturer').append($('<option>',{
+                    'data-id': this.id,
+                    'text': this.name
+                }));
+            });
+            $('#manufacturer').selectpicker('refresh')
+        },
+        // handle a non-successful response
+        error : function() {
+            swal("Oops...", "Couldn't fetch manufacturer data.", "error");
+        }
+    });
+}
 
 $('.customer').on('change', function() {
     customerid=$('.customer').find(':selected').data('id')
@@ -871,6 +894,7 @@ function new_data(is_final){
 
     customerid=$('.customer').find(':selected').data('id');
     warehouseid=$('.warehouse').find(':selected').data('id');
+    manufacturerid=$('.manufacturer').find(':selected').data('id');
     date=$('.date').val()
     duedate=$('.duedate').val()
     grand_discount_type=$('.gdt').find(':selected').data('id');
@@ -1029,6 +1053,7 @@ function new_data(is_final){
                     total: total,
                     duedate: duedate.split("/").reverse().join("-"),
                     bill_details: JSON.stringify(items),
+                    manufacturer: manufacturerid,
                     calltype: "save",
                     csrfmiddlewaretoken: csrf_token},
                 dataType: 'json',               

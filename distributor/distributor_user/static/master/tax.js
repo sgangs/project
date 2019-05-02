@@ -73,10 +73,8 @@ function new_data(){
     var proceed=true;
     var name=$('.newname').val();
     var percentage=parseFloat($('.newpercent').val());
-    console.log(name);
-    console.log(percentage);
     
-    if (name == '' || name =='undefined' || percentage == '' || percentage =='undefined' || isNaN(percentage)){
+    if (name == '' || name =='undefined' || percentage =='undefined' || isNaN(percentage)){
         proceed = false;
     }
     if (proceed){

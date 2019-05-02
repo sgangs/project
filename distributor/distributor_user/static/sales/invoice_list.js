@@ -240,7 +240,7 @@ function date_update(){
             format: 'DD-MM-YYYY',
         },
         "dateLimit": {
-            "days": 90
+            "days": 366
         },
         'autoApply':true,
         // 'minDate': moment(start),

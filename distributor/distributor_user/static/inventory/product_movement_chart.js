@@ -6,6 +6,7 @@ trn_type=["Closing Balance", "Purchase", "Sales", "Sales Return", "Other Inward"
 var manufacturer, warehouse, date, month, year;
 var products = []
 var day_list = []
+var this_date = ""
 
 // load_current_inventory()
 
@@ -83,6 +84,7 @@ $('.get_data').click(function (){
     manufacturer = $('.manufacturer').find(':selected').data('id');
     warehouse = $('.warehouse').find(':selected').data('id');
     date=$('.date').val()
+    this_date = date.split("-").pop()
     proceed = true;
     if ($.trim(warehouse).length == 0 || typeof(warehouse) == 'undefined' || typeof(warehouse) == undefined){
         swal("Ughh...", "Please select a warehouse", "error");
@@ -121,7 +123,8 @@ function load_products(){
         success : function(jsondata) {
             products = jsondata
             actual_month = parseInt(month) - 1;
-            day_list = getDaysInMonth(actual_month,2018);
+            day_list = getDaysInMonth(actual_month,this_date);
+            // console.log()
             // $.each(products, function(){
 
             create_table();
@@ -153,6 +156,7 @@ function create_table(){
                     "<td><small>"+this.name+": "+this.sku+"</small></td>");
                 $.each(day_list,function(){
                     search_key = product_id + "_" + this
+                    // console.log(this)
                     var rowRef = document.getElementById(rowId);
                     var newCell   = rowRef.insertCell(-1);
                     newCell.id = search_key;
