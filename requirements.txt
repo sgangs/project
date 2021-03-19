@@ -18,7 +18,7 @@ django-filter==1.0.1
 django-phonenumber-field==1.1.0
 django-recaptcha==1.2.1
 django-scheduler==0.8.2
-djangorestframework==3.5.3
+djangorestframework==3.11.2
 djangorestframework-jwt==1.10.0
 et-xmlfile==1.0.1
 flower==0.9.1
