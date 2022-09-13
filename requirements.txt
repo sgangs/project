@@ -21,7 +21,7 @@ django-scheduler==0.8.2
 djangorestframework==3.5.3
 djangorestframework-jwt==1.10.0
 et-xmlfile==1.0.1
-flower==0.9.1
+flower==1.2.0
 hashids==1.2.0
 html5lib==1.0b10
 httplib2==0.10.3
